@@ -5,6 +5,7 @@ The monitoring infrastructure consists of several components, wrapped in docker 
 
 ### prerequisites
 * git
+* docker
 
 ### Install
 
