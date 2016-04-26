@@ -2,8 +2,8 @@
     "dashboard": 
     {
         "id": null,
-        "title": "Scylla Cluster Metrics",
-        "originalTitle": "Scylla Cluster Metrics",
+        "title": "Scylla Per Server Metrics",
+        "originalTitle": "Scylla Per Server Metrics",
         "tags": [],
         "style": "dark",
         "timezone": "browser",
@@ -42,7 +42,7 @@
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": false,
+                            "show": true,
                             "total": false,
                             "values": false
                         },
@@ -60,7 +60,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(delta(collectd_transport_total_requests{type=\"requests_served\"}[1m])/1)",
+                                "expr": "sum(delta(collectd_transport_total_requests{type=\"requests_served\"}[1m])/1) by (instance)",
                                 "intervalFactor": 2,
                                 "metric": "",
                                 "refId": "A",
@@ -69,7 +69,7 @@
                         ],
                         "timeFrom": null,
                         "timeShift": null,
-                        "title": "Requests Served",
+                        "title": "Requests Served Per Server",
                         "tooltip": {
                             "shared": true,
                             "value_type": "cumulative"
@@ -91,7 +91,7 @@
                 "height": "250px",
                 "panels": [
                     {
-                        "title": "Load",
+                        "title": "Load Per Server",
                         "error": false,
                         "span": 12,
                         "editable": true,
@@ -127,7 +127,7 @@
                         "stack": false,
                         "percentage": false,
                         "legend": {
-                            "show": false,
+                            "show": true,
                             "values": false,
                             "min": false,
                             "max": false,
@@ -146,7 +146,7 @@
                         "targets": [
                             {
                                 "refId": "A",
-                                "expr": "avg(collectd_reactor_gauge{type=\"load\"} )",
+                                "expr": "avg(collectd_reactor_gauge{type=\"load\"} ) by (instance)",
                                 "intervalFactor": 2,
                                 "step": 2
                             }
@@ -186,7 +186,7 @@
                 "collapse": false,
                 "panels": [
                     {
-                        "title": "Foreground Writes",
+                        "title": "Foreground Writes Per Server",
                         "error": false,
                         "span": 6,
                         "editable": true,
@@ -222,7 +222,7 @@
                         "stack": false,
                         "percentage": false,
                         "legend": {
-                            "show": false,
+                            "show": true,
                             "values": false,
                             "min": false,
                             "max": false,
@@ -241,7 +241,7 @@
                         "targets": [
                             {
                                 "refId": "A",
-                                "expr": "sum(collectd_storage_proxy_queue_length{type=\"foreground writes\"})",
+                                "expr": "sum(collectd_storage_proxy_queue_length{type=\"foreground writes\"}) by (instance)",
                                 "intervalFactor": 2,
                                 "step": 2
                             }
@@ -251,7 +251,7 @@
                         "links": []
                     },
                     {
-                        "title": "Foreground Reads",
+                        "title": "Foreground Reads Per Server",
                         "error": false,
                         "span": 6,
                         "editable": true,
@@ -287,7 +287,7 @@
                         "stack": false,
                         "percentage": false,
                         "legend": {
-                            "show": false,
+                            "show": true,
                             "values": false,
                             "min": false,
                             "max": false,
@@ -306,7 +306,7 @@
                         "targets": [
                             {
                                 "refId": "A",
-                                "expr": "sum(collectd_storage_proxy_queue_length{type=\"reads\"})",
+                                "expr": "sum(collectd_storage_proxy_queue_length{type=\"reads\"}) by (instance)",
                                 "intervalFactor": 2,
                                 "step": 2,
                                 "metric": ""
@@ -349,7 +349,7 @@
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": false,
+                            "show": true,
                             "total": false,
                             "values": false
                         },
@@ -367,7 +367,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(collectd_storage_proxy_queue_length{type=\"background reads\"})",
+                                "expr": "sum(collectd_storage_proxy_queue_length{type=\"background reads\"}) by (instance)",
                                 "intervalFactor": 2,
                                 "refId": "A",
                                 "step": 2
@@ -375,7 +375,7 @@
                         ],
                         "timeFrom": null,
                         "timeShift": null,
-                        "title": "Background Reads",
+                        "title": "Background Reads Per Server",
                         "tooltip": {
                             "shared": true,
                             "value_type": "cumulative"
@@ -414,7 +414,7 @@
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": false,
+                            "show": true,
                             "total": false,
                             "values": false
                         },
@@ -432,7 +432,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(collectd_storage_proxy_queue_length{type=\"background writes\"})",
+                                "expr": "sum(collectd_storage_proxy_queue_length{type=\"background writes\"}) by (instance)",
                                 "intervalFactor": 2,
                                 "refId": "A",
                                 "step": 2
@@ -440,7 +440,7 @@
                         ],
                         "timeFrom": null,
                         "timeShift": null,
-                        "title": "Background Writes",
+                        "title": "Background Writes Per Server",
                         "tooltip": {
                             "shared": true,
                             "value_type": "cumulative"
@@ -508,7 +508,7 @@
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": false,
+                            "show": true,
                             "total": false,
                             "values": false
                         },
@@ -526,7 +526,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(delta(collectd_storage_proxy_total_operations{type=\"write timeouts\"}[1m])/1)",
+                                "expr": "sum(delta(collectd_storage_proxy_total_operations{type=\"write timeouts\"}[1m])/1) by (instance)",
                                 "intervalFactor": 2,
                                 "refId": "A",
                                 "step": 2
@@ -534,7 +534,7 @@
                         ],
                         "timeFrom": null,
                         "timeShift": null,
-                        "title": "Write Timeouts Per Minute",
+                        "title": "Write Timeouts Per Minute Per Server",
                         "tooltip": {
                             "shared": true,
                             "value_type": "cumulative"
@@ -573,7 +573,7 @@
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": false,
+                            "show": true,
                             "total": false,
                             "values": false
                         },
@@ -591,7 +591,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(delta(collectd_storage_proxy_total_operations{type=\"read unavailable\"}[1m])/1)",
+                                "expr": "sum(delta(collectd_storage_proxy_total_operations{type=\"read unavailable\"}[1m])/1) by (instance)",
                                 "intervalFactor": 2,
                                 "refId": "A",
                                 "step": 2
@@ -599,7 +599,7 @@
                         ],
                         "timeFrom": null,
                         "timeShift": null,
-                        "title": "Read Unavailable Per Minute",
+                        "title": "Read Unavailable Per Minute Per Server",
                         "tooltip": {
                             "shared": true,
                             "value_type": "cumulative"
@@ -646,7 +646,7 @@
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": false,
+                            "show": true,
                             "total": false,
                             "values": false
                         },
@@ -664,7 +664,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(delta(collectd_storage_proxy_total_operations{type=\"write unavailable\"}[1m])/1)",
+                                "expr": "sum(delta(collectd_storage_proxy_total_operations{type=\"write unavailable\"}[1m])/1) by (instance)",
                                 "intervalFactor": 2,
                                 "refId": "A",
                                 "step": 2
@@ -672,7 +672,7 @@
                         ],
                         "timeFrom": null,
                         "timeShift": null,
-                        "title": "Write Unavailable Per Minute",
+                        "title": "Write Unavailable Per Minute Per Server",
                         "tooltip": {
                             "shared": true,
                             "value_type": "cumulative"
@@ -711,7 +711,7 @@
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": false,
+                            "show": true,
                             "total": false,
                             "values": false
                         },
@@ -729,7 +729,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(delta(collectd_storage_proxy_total_operations{type=\"read timeouts\"}[1m])/1)",
+                                "expr": "sum(delta(collectd_storage_proxy_total_operations{type=\"read timeouts\"}[1m])/1) by (instance)",
                                 "intervalFactor": 2,
                                 "refId": "A",
                                 "step": 2
@@ -737,7 +737,7 @@
                         ],
                         "timeFrom": null,
                         "timeShift": null,
-                        "title": "Read Timeouts Per Minute",
+                        "title": "Read Timeouts Per Minute Per Server",
                         "tooltip": {
                             "shared": true,
                             "value_type": "cumulative"
@@ -816,7 +816,7 @@
                         "stack": false,
                         "percentage": false,
                         "legend": {
-                            "show": false,
+                            "show": true,
                             "values": false,
                             "min": false,
                             "max": false,
@@ -835,7 +835,7 @@
                         "targets": [
                             {
                                 "refId": "A",
-                                "expr": "sum(delta(collectd_cache_total_operations{type=\"hits\"}[1m])/1)",
+                                "expr": "sum(delta(collectd_cache_total_operations{type=\"hits\"}[1m])/1) by (instance)",
                                 "intervalFactor": 2,
                                 "step": 2
                             }
@@ -881,7 +881,7 @@
                         "stack": false,
                         "percentage": false,
                         "legend": {
-                            "show": false,
+                            "show": true,
                             "values": false,
                             "min": false,
                             "max": false,
@@ -900,7 +900,7 @@
                         "targets": [
                             {
                                 "refId": "A",
-                                "expr": "sum(delta(collectd_cache_total_operations{type=\"misses\"}[1m])/1)",
+                                "expr": "sum(delta(collectd_cache_total_operations{type=\"misses\"}[1m])/1) by (instance)",
                                 "intervalFactor": 2,
                                 "step": 2
                             }
