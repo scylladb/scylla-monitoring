@@ -14,6 +14,12 @@ git clone https://github.com/tzach/scylla-grafana-monitoring.git
 cd scylla-grafana-monitoring
 ```
 
+```
+Start docker service if needed
+ubuntu $ sudo systemctl restart docker
+centos $ sudo service docker start
+```
+
 Update `prometheus/prometheus.yml` with the targets (server you wish to monitor). 
 
 ### Run locally
