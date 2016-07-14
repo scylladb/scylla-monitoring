@@ -82,7 +82,7 @@
                         },
                         "targets": [
                             {
-                                "expr": "3",
+                                "expr": "count(up)",
                                 "intervalFactor": 2,
                                 "legendFormat": "",
                                 "refId": "A",
@@ -101,7 +101,7 @@
                                 "value": "null"
                             }
                         ],
-                        "valueName": "avg"
+                        "valueName": "current"
                     },
                     {
                         "cacheTimeout": null,
@@ -145,13 +145,13 @@
                         },
                         "targets": [
                             {
-                                "expr": "0",
+                                "expr": "count(up)-count(collectd_processes_ps_code{processes=\"scylla\"}>0)",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 20
                             }
                         ],
-                        "thresholds": "1,2,3",
+                        "thresholds": "1,2",
                         "title": "Dead Nodes",
                         "transparent": true,
                         "type": "singlestat",
@@ -163,131 +163,7 @@
                                 "value": "null"
                             }
                         ],
-                        "valueName": "avg"
-                    },
-                    {
-                        "cacheTimeout": null,
-                        "colorBackground": false,
-                        "colorValue": true,
-                        "colors": [
-                            "rgba(50, 172, 45, 0.97)",
-                            "rgba(250, 113, 0, 0.89)",
-                            "rgba(255, 0, 0, 0.9)"
-                        ],
-                        "datasource": "prometheus",
-                        "editable": true,
-                        "error": false,
-                        "format": "none",
-                        "gauge": {
-                            "maxValue": 100,
-                            "minValue": 0,
-                            "show": false,
-                            "thresholdLabels": false,
-                            "thresholdMarkers": false
-                        },
-                        "id": 37,
-                        "interval": null,
-                        "isNew": true,
-                        "links": [
-
-                        ],
-                        "maxDataPoints": 100,
-                        "nullPointMode": "connected",
-                        "nullText": null,
-                        "postfix": "",
-                        "postfixFontSize": "50%",
-                        "prefix": "",
-                        "prefixFontSize": "50%",
-                        "span": 1,
-                        "sparkline": {
-                            "fillColor": "rgba(31, 118, 189, 0.18)",
-                            "full": false,
-                            "lineColor": "rgb(31, 120, 193)",
-                            "show": false
-                        },
-                        "targets": [
-                            {
-                                "expr": "0",
-                                "intervalFactor": 2,
-                                "refId": "A",
-                                "step": 40
-                            }
-                        ],
-                        "thresholds": "1,2,3",
-                        "title": "Bootstrap Nodes",
-                        "transparent": true,
-                        "type": "singlestat",
-                        "valueFontSize": "150%",
-                        "valueMaps": [
-                            {
-                                "op": "=",
-                                "text": "N/A",
-                                "value": "null"
-                            }
-                        ],
-                        "valueName": "avg"
-                    },
-                    {
-                        "cacheTimeout": null,
-                        "colorBackground": false,
-                        "colorValue": true,
-                        "colors": [
-                            "rgba(50, 172, 45, 0.97)",
-                            "rgba(250, 113, 0, 0.89)",
-                            "rgba(255, 0, 0, 0.9)"
-                        ],
-                        "datasource": "prometheus",
-                        "editable": true,
-                        "error": false,
-                        "format": "none",
-                        "gauge": {
-                            "maxValue": 100,
-                            "minValue": 0,
-                            "show": false,
-                            "thresholdLabels": false,
-                            "thresholdMarkers": false
-                        },
-                        "id": 34,
-                        "interval": null,
-                        "isNew": true,
-                        "links": [
-
-                        ],
-                        "maxDataPoints": 100,
-                        "nullPointMode": "connected",
-                        "nullText": null,
-                        "postfix": "",
-                        "postfixFontSize": "50%",
-                        "prefix": "",
-                        "prefixFontSize": "50%",
-                        "span": 1,
-                        "sparkline": {
-                            "fillColor": "rgba(31, 118, 189, 0.18)",
-                            "full": false,
-                            "lineColor": "rgb(31, 120, 193)",
-                            "show": false
-                        },
-                        "targets": [
-                            {
-                                "expr": "0",
-                                "intervalFactor": 2,
-                                "refId": "A",
-                                "step": 40
-                            }
-                        ],
-                        "thresholds": "1,2,3",
-                        "title": "Slow Nodes",
-                        "transparent": true,
-                        "type": "singlestat",
-                        "valueFontSize": "150%",
-                        "valueMaps": [
-                            {
-                                "op": "=",
-                                "text": "N/A",
-                                "value": "null"
-                            }
-                        ],
-                        "valueName": "avg"
+                        "valueName": "current"
                     },
                     {
                         "content": "##  ",
@@ -299,7 +175,7 @@
 
                         ],
                         "mode": "markdown",
-                        "span": 6,
+                        "span": 8,
                         "style": {
 
                         },
@@ -551,12 +427,11 @@
                 "editable": true,
                 "height": "25px",
                 "panels": [
-                    {
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Timeouts and Errors</h1>",
+		    {
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Reads and Writes</h1>",
                         "editable": true,
                         "error": false,
-                        "height": "30",
-                        "id": 8,
+                        "id": 35,
                         "isNew": true,
                         "links": [
 
@@ -569,12 +444,13 @@
                         "title": "",
                         "transparent": true,
                         "type": "text"
-                    },
-                    {
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Reads and Writes</h1>",
+		    },
+		    {
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Timeouts and Errors</h1>",
                         "editable": true,
                         "error": false,
-                        "id": 35,
+                        "height": "30",
+                        "id": 8,
                         "isNew": true,
                         "links": [
 
