@@ -10,7 +10,7 @@ sudo docker run -d -i -p 3000:3000 \
      -e "GF_INSTALL_PLUGINS=grafana-piechart-panel" \
      grafana/grafana:3.1.0
 
-sleep 3
+sleep 10
 curl -XPOST -i http://localhost:3000/api/datasources \
      --data-binary '{"name":"prometheus", "type":"prometheus", "url":"'"http://$DB_IP:9090"'", "access":"proxy", "basicAuth":false}' \
      -H "Content-Type: application/json"
