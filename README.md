@@ -10,7 +10,7 @@ The monitoring infrastructure consists of several components, wrapped in docker 
 ### Install
 
 ```
-git clone https://github.com/tzach/scylla-grafana-monitoring.git
+git clone https://github.com/scylladb/scylla-grafana-monitoring.git
 cd scylla-grafana-monitoring
 ```
 
