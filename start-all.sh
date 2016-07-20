@@ -2,7 +2,7 @@
 
 DB_IP=$1
 
-sudo docker run -d -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml -p 9090:9090 prom/prometheus
+sudo docker run -d -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml -p 9090:9090 prom/prometheus:v1.0.0
 sudo docker run -d -i -p 3000:3000 \
      -e "GF_AUTH_BASIC_ENABLED=false" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=true" \
