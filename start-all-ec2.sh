@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-source start-all.sh `curl http://169.254.169.254/latest/meta-data/public-ipv4`
+echo "This file is deprecated and kept for backward compatibility. You should use start-all.sh directly"
+
+source start-all.sh

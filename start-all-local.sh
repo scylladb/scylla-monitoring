@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-source start-all.sh 127.0.0.1
+echo "This file is deprecated and kept for backward compatibility. You should use start-all.sh directly"
+
+source start-all.sh
