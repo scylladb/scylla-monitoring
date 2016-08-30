@@ -21,18 +21,18 @@ ubuntu $ sudo systemctl restart docker
 centos $ sudo service docker start
 ```
 
-Update `prometheus/prometheus.yml` with the targets (server you wish to monitor). 
+Update `prometheus/prometheus.yml` with the targets (server you wish to monitor).
 
-### Run locally
-
-```
-./start-all-local.sh
-```
-
-### Run on EC2
+### Run
 
 ```
-./start-all-ec2.sh
+./start-all.sh
+```
+
+### Kill
+
+```
+./kill-all.sh
 ```
 
 ### Use
