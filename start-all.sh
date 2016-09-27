@@ -9,7 +9,11 @@ sudo docker run -d -i -p 3000:3000 \
      -e "GF_INSTALL_PLUGINS=grafana-piechart-panel" \
      --name agraf grafana/grafana:3.1.0
 
-sleep 10
+# Wait till Grafana API
+until $(curl --output /dev/null -f --silent http://localhost:3000/api/org); do
+    printf '.'
+    sleep 5
+done
 
 DB_IP="$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' aprom)"
 
