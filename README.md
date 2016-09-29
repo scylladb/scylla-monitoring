@@ -1,3 +1,4 @@
+# Scylla monitoring with Grafana and Prometheus
 
 The monitoring infrastructure consists of several components, wrapped in docker containers:
  * `prometheus` - collects and stores metrics
@@ -31,22 +32,23 @@ Update `prometheus/prometheus.yml` with the targets (server you wish to monitor)
 
 ### Load original data to prometheus server
 
-```
+
 Additional parameters:
-  -v <data>:/prometheus
+  -d data_dir
 
 Full commandline:
-  sudo docker run -d -v <data>:/prometheus -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z -p 9090:9090 --name aprom prom/prometheus:v1.0.0
 
-Comment:
-  <data> is the local path to original data directory
-
-Data source:
-1. Download from docker prometheus server, reference:
-https://github.com/scylladb/scylla/wiki/How-to-report-a-Scylla-problem#prometheus
-2. Get from Scylla-Cluster-Test log.
-3. etc
 ```
+./start-all.sh -d data_dir
+```
+Comment:
+  `data_dir` is the local path to original data directory
+
+Data source for Prometheus data:
+* Download from docker prometheus server, reference: https://github.com/scylladb/scylla/wiki/How-to-report-a-Scylla-problem#prometheus
+* Get from Scylla-Cluster-Test log.
+* Others
+
 
 ### Kill
 
