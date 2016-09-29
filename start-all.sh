@@ -25,7 +25,7 @@ then
     sudo docker run -d -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z -p 9090:9090 --name aprom prom/prometheus:v1.0.0
 else
     echo "Loading prometheus data from $DATA_DIR"
-    sudo docker run -d -v $DATA_DIR:/prometheus -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z -p 9090:9090 --name aprom prom/prometheus:v1.0.0
+    sudo docker run -d -v $DATA_DIR:/prometheus:Z -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z -p 9090:9090 --name aprom prom/prometheus:v1.0.0
 fi
 
 sudo docker run -d -i -p 3000:3000 \
