@@ -24,6 +24,12 @@ centos $ sudo service docker start
 
 Update `prometheus/prometheus.yml` with the targets (server you wish to monitor).
 
+For example
+
+```
+  - targets: ["172.17.0.3:9103","172.17.0.2:9103"]
+```
+
 ### Run
 
 ```
