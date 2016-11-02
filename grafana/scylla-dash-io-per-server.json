@@ -93,7 +93,7 @@
               },
               "targets": [
                 {
-                  "expr": "count(up)",
+                  "expr": "count(up{job=\"scylla\"})",
                   "intervalFactor": 2,
                   "legendFormat": "",
                   "refId": "A",
@@ -172,7 +172,7 @@
               },
               "targets": [
                 {
-                  "expr": "count(up)-count(collectd_processes_ps_code{processes=\"scylla\"}>0)",
+                  "expr": "count(up{job=\"scylla\"})-count(seastar_memory{metric=\"free\",shard=\"0\",type=\"total_operations\"})",
                   "intervalFactor": 1,
                   "refId": "A",
                   "step": 120
@@ -248,7 +248,7 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_transport_total_requests{type=\"requests_served\"}[30s])) + sum(irate(collectd_thrift_total_requests{type=\"served\"}[30s]))",
+                  "expr": "sum(irate(seastar_transport{type=\"total_requests\", metric=\"requests_served\"}[30s])) + sum(irate(seastar_thrift{type=\"total_requests\", metric=\"served\"}[30s]))",
                   "intervalFactor": 2,
                   "refId": "A",
                   "step": 30
@@ -350,7 +350,7 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "avg(collectd_reactor_gauge{type=\"load\"} ) by (instance)",
+                  "expr": "avg(seastar_reactor{type=\"gauge\", metric=\"load\"} ) by (instance)",
                   "intervalFactor": 2,
                   "refId": "A",
                   "step": 30
@@ -425,7 +425,7 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_transport_total_requests{type=\"requests_served\"}[30s])) by (instance) + sum(irate(collectd_thrift_total_requests{type=\"served\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_transport{type=\"total_requests\", metric=\"requests_served\"}[30s])) by (instance) + sum(irate(seastar_thrift{type=\"total_requests\", metric=\"served\"}[30s])) by (instance)",
                   "intervalFactor": 2,
                   "metric": "",
                   "refId": "A",
@@ -492,14 +492,14 @@
               "strokeWidth": 1,
               "targets": [
                 {
-                  "expr": "sum(collectd_df_complex{df=\"var-lib-scylla\", type=\"free\"})/1000000000",
+                  "expr": "sum(node_filesystem_files_free{mountpoint=\"/var/lib/scylla\"})/1000000000",
                   "intervalFactor": 2,
                   "metric": "",
                   "refId": "A",
                   "step": 7200
                 },
                 {
-                  "expr": "sum(collectd_df_complex{df=\"var-lib-scylla\", type=\"used\"})/1000000000",
+                  "expr": "(sum(node_filesystem_size{mountpoint=\"/var/lib/scylla\"})-sum(node_filesystem_files_free{mountpoint=\"/var/lib/scylla\"}))/1000000000",
                   "intervalFactor": 2,
                   "refId": "B",
                   "step": 7200
@@ -577,7 +577,7 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "irate(collectd_disk_ops_1{disk=\"md0\"}[30s])",
+                  "expr": "irate(node_disk_writes_completed{device=\"md0\"}[30s])",
                   "intervalFactor": 2,
                   "legendFormat": "",
                   "metric": "",
@@ -653,7 +653,7 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "irate(collectd_disk_ops_0{disk=\"md0\"}[30s])",
+                  "expr": "irate(node_disk_reads_completed{device=\"md0\"}[30s])",
                   "intervalFactor": 2,
                   "refId": "A",
                   "step": 20
@@ -735,7 +735,7 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "irate(collectd_disk_octets_1{disk=\"md0\"}[30s])",
+                  "expr": "irate(node_disk_bytes_written{device=\"md0\"}[30s])",
                   "intervalFactor": 2,
                   "metric": "",
                   "refId": "A",
@@ -810,7 +810,7 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "irate(collectd_disk_octets_0{disk=\"md0\"}[30s])",
+                  "expr": "irate(node_disk_bytes_read{device=\"md0\"}[30s])",
                   "intervalFactor": 2,
                   "refId": "A",
                   "step": 20
@@ -915,9 +915,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_delay{type=~\"compaction.*\"}[30s])*1000000) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"delay\", metric=~\"compaction.*\"}[30s])*1000000) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -991,9 +991,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_derive{type=~\"compaction.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"derive\", metric=~\"compaction.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1067,9 +1067,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_total_operations{type=~\"compaction.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"total_operations\", metric=~\"compaction.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1143,9 +1143,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_delay{type=~\"query.*\"}[30s])*1000000) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"delay\", metric=~\"query.*\"}[30s])*1000000) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1219,9 +1219,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_derive{type=~\"query.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"derive\", metric=~\"query.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1295,9 +1295,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_total_operations{type=~\"query.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"total_operations\", metric=~\"query.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1372,9 +1372,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_delay{type=~\"commitlog.*\"}[30s])*1000000) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"delay\", metric=~\"commitlog.*\"}[30s])*1000000) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1448,9 +1448,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_derive{type=~\"commitlog.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"derive\", metric=~\"commitlog.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1524,9 +1524,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_total_operations{type=~\"commitlog.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"total_operations\", metric=~\"commitlog.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1600,9 +1600,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_delay{type=~\"memtable.*\"}[30s])*1000000) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"delay\", metric=~\"memtable.*\"}[30s])*1000000) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1676,9 +1676,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_derive{type=~\"memtable.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"derive\", metric=~\"memtable.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1752,9 +1752,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_total_operations{type=~\"memtable.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"total_operations\", metric=~\"memtable.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1828,9 +1828,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_delay{type=~\"streaming_read.*\"}[30s])*1000000) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"delay\", metric=~\"streaming_read.*\"}[30s])*1000000) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1904,9 +1904,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_derive{type=~\"streaming_read.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"derive\", metric=~\"streaming_read.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -1980,9 +1980,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_total_operations{type=~\"streaming_reads.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"total_operations\", metric=~\"streaming_reads.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -2056,9 +2056,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_delay{type=~\"streaming_write.*\"}[30s])*1000000) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"delay\", metric=~\"streaming_write.*\"}[30s])*1000000) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -2132,9 +2132,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_derive{type=~\"streaming_write.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"derive\", metric=~\"streaming_write.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
@@ -2208,9 +2208,9 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "sum(irate(collectd_io_queue_total_operations{type=~\"streaming_write.*\"}[30s])) by (instance)",
+                  "expr": "sum(irate(seastar_io_queue{type=\"total_operations\", metric=~\"streaming_write.*\"}[30s])) by (instance)",
                   "intervalFactor": 2,
-                  "metric": "collectd_io_queue_delay",
+                  "metric": "seastar_io_queue_delay",
                   "refId": "A",
                   "step": 30
                 }
