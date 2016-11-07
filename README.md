@@ -1,5 +1,10 @@
 # Scylla monitoring with Grafana and Prometheus
 
+### Notice for users of Scylla version prior to 1.4
+If you are using a Scylla version before 1.4, or if you are using Prometheus over collectd, check out the v0.1 tag.
+
+`git checkout v0.1`
+
 The monitoring infrastructure consists of several components, wrapped in docker containers:
  * `prometheus` - collects and stores metrics
  * `grafana` - dashboard server
