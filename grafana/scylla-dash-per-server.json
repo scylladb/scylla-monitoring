@@ -1343,7 +1343,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "irate(node_disk_writes_completed{device=\"md0\"}[30s])",
+                                "expr": "irate(node_disk_writes_completed{device=\"$current_disk\"}[30s])",
                                 "intervalFactor": 2,
                                 "legendFormat": "",
                                 "metric": "",
@@ -1425,7 +1425,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "irate(node_disk_reads_completed{device=\"md0\"}[30s])",
+                                "expr": "irate(node_disk_reads_completed{device=\"$current_disk\"}[30s])",
                                 "intervalFactor": 2,
                                 "refId": "A",
                                 "step": 10
@@ -1673,7 +1673,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "irate(node_disk_bytes_written{device=\"md0\"}[30s])",
+                                "expr": "irate(node_disk_bytes_written{device=\"$current_disk\"}[30s])",
                                 "intervalFactor": 2,
                                 "metric": "",
                                 "refId": "A",
@@ -1754,7 +1754,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "irate(node_disk_bytes_read{device=\"md0\"}[30s])",
+                                "expr": "irate(node_disk_bytes_read{device=\"$current_disk\"}[30s])",
                                 "intervalFactor": 2,
                                 "refId": "A",
                                 "step": 10
@@ -2516,7 +2516,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "irate(node_network_receive_packets{device=\"eth0\"}[30s])",
+                                "expr": "irate(node_network_receive_packets{device=\"$current_if\"}[30s])",
                                 "intervalFactor": 2,
                                 "metric": "",
                                 "refId": "A",
@@ -2597,7 +2597,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "irate(node_network_transmit_packets{device=\"eth0\"}[30s])",
+                                "expr": "irate(node_network_transmit_packets{device=\"$current_if\"}[30s])",
                                 "intervalFactor": 2,
                                 "metric": "",
                                 "refId": "A",
@@ -2686,7 +2686,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "irate(node_network_receive_bytes{device=\"eth0\"}[30s])",
+                                "expr": "irate(node_network_receive_bytes{device=\"$current_if\"}[30s])",
                                 "intervalFactor": 2,
                                 "metric": "",
                                 "refId": "A",
@@ -2767,7 +2767,7 @@
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "irate(node_network_transmit_bytes{device=\"eth0\"}[30s])",
+                                "expr": "irate(node_network_transmit_bytes{device=\"$current_if\"}[30s])",
                                 "intervalFactor": 2,
                                 "metric": "",
                                 "refId": "A",
@@ -2955,7 +2955,32 @@
         },
         "templating": {
             "list": [
-
+		     {
+		        "type": "query",
+		        "datasource": "prometheus",
+		        "refresh": 1,
+		        "name": "current_disk",
+		        "hide": 0,
+		        "options": [],
+		        "includeAll": false,
+		        "multi": false,
+		        "regex": "/.*device=\"([^\\\"]*)\".*/",
+		        "current": {},
+		        "query": "node_disk_bytes_read"
+		      },
+		      {
+		        "type": "query",
+		        "datasource": "prometheus",
+		        "refresh": 1,
+		        "name": "current_if",
+		        "hide": 0,
+		        "options": [],
+		        "includeAll": false,
+		        "multi": false,
+		        "regex": "/.*device=\"([^\\\"]*)\".*/",
+		        "current": {},
+		        "query": "node_network_receive_packets"
+		      }
             ]
         },
         "annotations": {

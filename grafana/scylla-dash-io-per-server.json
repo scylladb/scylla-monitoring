@@ -577,7 +577,7 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "irate(node_disk_writes_completed{device=\"md0\"}[30s])",
+                  "expr": "irate(node_disk_writes_completed{device=\"$current_disk\"}[30s])",
                   "intervalFactor": 2,
                   "legendFormat": "",
                   "metric": "",
@@ -653,7 +653,7 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "irate(node_disk_reads_completed{device=\"md0\"}[30s])",
+                  "expr": "irate(node_disk_reads_completed{device=\"$current_disk\"}[30s])",
                   "intervalFactor": 2,
                   "refId": "A",
                   "step": 20
@@ -735,7 +735,7 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "irate(node_disk_bytes_written{device=\"md0\"}[30s])",
+                  "expr": "irate(node_disk_bytes_written{device=\"$current_disk\"}[30s])",
                   "intervalFactor": 2,
                   "metric": "",
                   "refId": "A",
@@ -810,7 +810,7 @@
               "steppedLine": false,
               "targets": [
                 {
-                  "expr": "irate(node_disk_bytes_read{device=\"md0\"}[30s])",
+                  "expr": "irate(node_disk_bytes_read{device=\"$current_disk\"}[30s])",
                   "intervalFactor": 2,
                   "refId": "A",
                   "step": 20
@@ -2280,7 +2280,21 @@
         ]
       },
       "templating": {
-        "list": []
+        "list": [
+	     {
+	        "type": "query",
+	        "datasource": "prometheus",
+	        "refresh": 1,
+	        "name": "current_disk",
+	        "hide": 0,
+	        "options": [],
+	        "includeAll": false,
+	        "multi": false,
+	        "regex": "/.*device=\"([^\\\"]*)\".*/",
+	        "current": {},
+	        "query": "node_disk_bytes_read"
+	      }
+        ]
       },
       "annotations": {
         "list": []
