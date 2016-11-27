@@ -1,9 +1,16 @@
 # Scylla monitoring with Grafana and Prometheus
 
-### Notice for users of Scylla version prior to 1.4
+<table style="border-style: solid;">
+  <tr>
+    <td>
+** Notice for users of Scylla versions prior to 1.4 **<br>
 If you are using a Scylla version before 1.4, or if you are using Prometheus over collectd, check out the v0.1 tag.
+<br><br>
 
 `git checkout v0.1`
+</td>
+</tr>
+</table>
 
 The monitoring infrastructure consists of several components, wrapped in docker containers:
  * `prometheus` - collects and stores metrics
@@ -46,11 +53,36 @@ For example
 ### Run
 
 ```
-./start-all.sh
+./start-all.sh -d data_dir
 ```
 
-### Load original data to prometheus server
+<table style="border-style: solid;">
+  <tr>
+    <td>
+ ** Note: The -d data_dir is optional, but without it, prometheus will erase all data between runs.
+ <br>
+ For systems in production it is recomended to use an external directory. **
+</td>
+</tr>
+</table>
 
+### Kill
+
+```
+./kill-all.sh
+```
+
+### Use
+Direct your browser to `your-server-ip:3000`
+
+#### Choose Disk and network interface
+The dashboard holds a drop down menue at its upper left corner for disk and network interface.
+You should choose relevent disk and interface for the dashboard to show the graphs. 
+
+### Update Scylla servers to send metrics
+See [here](https://github.com/scylladb/scylla/wiki/Monitor-Scylla-with-Prometheus-and-Grafana#14-and-later-instruction)
+
+### Load original data to prometheus server
 
 Additional parameters:
   -d data_dir
@@ -68,15 +100,3 @@ Data source for Prometheus data:
 * Get from Scylla-Cluster-Test log.
 * Others
 
-
-### Kill
-
-```
-./kill-all.sh
-```
-
-### Use
-Direct your browser to `your-server-ip:3000`
-
-### Update Scylla servers to send metrics
-See [here](https://github.com/scylladb/scylla/wiki/Monitor-Scylla-with-Prometheus-and-Grafana#setting-scylla)
