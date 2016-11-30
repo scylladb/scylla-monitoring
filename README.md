@@ -1,17 +1,13 @@
 # Scylla monitoring with Grafana and Prometheus
 
-<table style="border-style: solid;">
-  <tr>
-    <td>
-** Notice for users of Scylla versions prior to 1.4 **<br>
-If you are using a Scylla version before 1.4, or if you are using Prometheus over collectd, check out the v0.1 tag.
-<br><br>
+___
+**Notice for users of Scylla versions prior to 1.4**
+
+
+**If you are using a Scylla version before 1.4, or if you are using Prometheus over collectd, check out the v0.1 tag.**
 
 `git checkout v0.1`
-</td>
-</tr>
-</table>
-
+___
 The monitoring infrastructure consists of several components, wrapped in docker containers:
  * `prometheus` - collects and stores metrics
  * `grafana` - dashboard server
@@ -56,15 +52,12 @@ For example
 ./start-all.sh -d data_dir
 ```
 
-<table style="border-style: solid;">
-  <tr>
-    <td>
- ** Note: The -d data_dir is optional, but without it, prometheus will erase all data between runs.
- <br>
- For systems in production it is recomended to use an external directory. **
-</td>
-</tr>
-</table>
+___
+**Note: The -d data_dir is optional, but without it, prometheus will erase all data between runs.**
+
+
+**For systems in production it is recomended to use an external directory.**
+___
 
 ### Kill
 
