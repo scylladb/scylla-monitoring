@@ -52,6 +52,27 @@ For example
 ./start-all.sh -d data_dir
 ```
 
+#### Multiple version support
+As counters changes their names between versions, we create a new dashboard for each new version.
+We use tags to distinguish between the different versions, to keep the dashboard menue, relativerly short,
+by default, only the last two releases are loaded. You can load specific versions by using the `-v` flag.
+ 
+* You can supply multiple comma delimited versions, for example to load only 1.5 and 1.6 version:
+ ```
+ ./start-all.sh -v 1.5,1.6
+ ```
+
+* Use the `all` to load all available versions.
+
+* The master branch is called master, so to load 1.6 and master you would use:
+ ```
+ ./start-all.sh -v 1.6,master
+ ```
+
+* If you only need the latest version you can use:
+ ```
+ ./start-all.sh -v latest
+ ```
 ___
 **Note: The -d data_dir is optional, but without it, prometheus will erase all data between runs.**
 
