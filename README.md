@@ -52,11 +52,32 @@ For example
 ./start-all.sh -d data_dir
 ```
 
+#### Multiple versions support
+As counters change their names between versions, we create a new dashboard for each new version.
+We use tags to distinguish between the different versions, to keep the dashboard menu, relatively short,
+by default, only the last two releases are loaded. You can load specific versions by using the `-v` flag.
+ 
+* You can supply multiple comma delimited versions, for example to load only 1.5 and 1.6 version:
+ ```
+ ./start-all.sh -v 1.5,1.6
+ ```
+
+* Use the `all` to load all available versions.
+
+* The master branch is called master, so to load 1.6 and master you would use:
+ ```
+ ./start-all.sh -v 1.6,master
+ ```
+
+* If you only need the latest version you can use:
+ ```
+ ./start-all.sh -v latest
+ ```
 ___
 **Note: The -d data_dir is optional, but without it, prometheus will erase all data between runs.**
 
 
-**For systems in production it is recomended to use an external directory.**
+**For systems in production it is recommended to use an external directory.**
 ___
 
 ### Kill
@@ -69,7 +90,7 @@ ___
 Direct your browser to `your-server-ip:3000`
 
 #### Choose Disk and network interface
-The dashboard holds a drop down menue at its upper left corner for disk and network interface.
+The dashboard holds a drop down menu at its upper left corner for disk and network interface.
 You should choose relevent disk and interface for the dashboard to show the graphs. 
 
 ### Update Scylla servers to send metrics

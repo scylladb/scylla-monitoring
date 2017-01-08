@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 
-usage="$(basename "$0") [-h] [-d Prometheus data-dir] -- starts Grafana and Prometheus Docker instances"
+. versions.sh
+VERSIONS=$DEFAULT_VERSION
+usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-v comma seperated versions] -- starts Grafana and Prometheus Docker instances"
 
-while getopts ':hd:' option; do
+while getopts ':hdv:' option; do
   case "$option" in
     h) echo "$usage"
        exit
+       ;;
+    v) VERSIONS=$OPTARG
        ;;
     d) DATA_DIR=$OPTARG
        ;;
@@ -38,6 +42,13 @@ fi
 if [ $? -ne 0 ]; then
     echo "Error: Prometheus container failed to start"
     exit 1
+fi
+if [ "$VERSIONS" = "latest" ]; then
+	VERSIONS=$LATEST
+else
+	if [ "$VERSIONS" = "all" ]; then
+		VERSIONS=$ALL
+	fi
 fi
 
 # Number of retries waiting for a Docker container to start
@@ -90,7 +101,7 @@ DB_IP="$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' aprom)"
 curl -XPOST -i http://localhost:3000/api/datasources \
      --data-binary '{"name":"prometheus", "type":"prometheus", "url":"'"http://$DB_IP:9090"'", "access":"proxy", "basicAuth":false}' \
      -H "Content-Type: application/json"
-for v in 1.5 1.6; do
+IFS=',' ;for v in $VERSIONS; do
 	curl -XPOST -i http://localhost:3000/api/dashboards/db --data-binary @./grafana/scylla-dash.$v.json -H "Content-Type: application/json"
 	curl -XPOST -i http://localhost:3000/api/dashboards/db --data-binary @./grafana/scylla-dash-per-server.$v.json -H "Content-Type: application/json"
 	curl -XPOST -i http://localhost:3000/api/dashboards/db --data-binary @./grafana/scylla-dash-io-per-server.$v.json -H "Content-Type: application/json"
