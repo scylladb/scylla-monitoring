@@ -4,7 +4,7 @@
 VERSIONS=$DEFAULT_VERSION
 usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-v comma seperated versions] -- starts Grafana and Prometheus Docker instances"
 
-while getopts ':hdv:' option; do
+while getopts ':hd:v:' option; do
   case "$option" in
     h) echo "$usage"
        exit
