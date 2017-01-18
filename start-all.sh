@@ -96,10 +96,8 @@ then
         exit 1
 fi
 
-DB_IP="$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' aprom)"
-
-curl -XPOST -i http://localhost:3000/api/datasources \
-     --data-binary '{"name":"prometheus", "type":"prometheus", "url":"'"http://$DB_IP:9090"'", "access":"proxy", "basicAuth":false}' \
+curl -XPOST -i http://localhost:$GRAFANA_PORT/api/datasources \
+     --data-binary '{"name":"prometheus", "type":"prometheus", "url":"'"http://127.0.0.1:9090"'", "access":"direct", "basicAuth":false}' \
      -H "Content-Type: application/json"
 IFS=',' ;for v in $VERSIONS; do
 	curl -XPOST -i http://localhost:3000/api/dashboards/db --data-binary @./grafana/scylla-dash.$v.json -H "Content-Type: application/json"
