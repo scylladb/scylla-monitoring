@@ -2,9 +2,9 @@
 
 . versions.sh
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] [-n comma separated list of nodes to monitor ] -- starts Grafana and Prometheus Docker instances"
 
-while getopts ':hd:g:p:v:' option; do
+while getopts ':hd:g:p:v:n:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -16,6 +16,8 @@ while getopts ':hd:g:p:v:' option; do
     g) GRAFANA_PORT=$OPTARG
        ;;
     p) PROMETHEUS_PORT=$OPTARG
+       ;;
+    n) NODES=$OPTARG
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -41,6 +43,17 @@ else
     PROMETHEUS_NAME=aprom-$PROMETHEUS_PORT
 fi
 
+if [ -z $NODES ]; then
+    NODES="127.0.0.1"
+    PROMETHEUS_FILE="$PWD/prometheus/prometheus.yml"
+else
+    # Don't put in a temporary location. The file needs to be still present if we are
+    # to restart the container upon reboot (for example)
+    PROMETHEUS_FILE="$PWD/prometheus/prometheus-$PROMETHEUS_PORT.yml"
+    python gen-prometheus.py $NODES > $PROMETHEUS_FILE
+fi
+
+
 # Exit if Docker engine is not running
 if [ ! "$(sudo docker ps)" ]
 then
@@ -50,10 +63,10 @@ fi
 
 if [ -z $DATA_DIR ]
 then
-    sudo docker run -d -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:v1.0.0
+    sudo docker run -d -v $PROMETHEUS_FILE:/etc/prometheus/prometheus.yml:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:v1.0.0
 else
     echo "Loading prometheus data from $DATA_DIR"
-    sudo docker run -d -v $DATA_DIR:/prometheus:Z -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:v1.0.0
+    sudo docker run -d -v $DATA_DIR:/prometheus:Z -v $PROMETHEUS_FILE:/etc/prometheus/prometheus.yml:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:v1.0.0
 fi
 
 if [ $? -ne 0 ]; then

@@ -32,7 +32,8 @@ if [ -z $PROMETHEUS_PORT ]; then
 else
     PROMETHEUS_NAME=aprom-$PROMETHEUS_PORT
 fi
-
+PROMETHEUS_FILE="$PWD/prometheus/prometheus-$PROMETHEUS_PORT.yml"
 
 sudo docker kill $GRAFANA_NAME $PROMETHEUS_NAME
 sudo docker rm $GRAFANA_NAME $PROMETHEUS_NAME
+rm $PROMETHEUS_FILE 2>/dev/null
