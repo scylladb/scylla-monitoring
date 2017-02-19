@@ -4,6 +4,9 @@
 VERSIONS=$DEFAULT_VERSION
 usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] -- starts Grafana and Prometheus Docker instances"
 
+GRAFANA_VERSION=4.1.1
+PROMETHEUS_VERSION=v1.5.2
+
 while getopts ':hd:g:p:v:' option; do
   case "$option" in
     h) echo "$usage"
@@ -50,10 +53,10 @@ fi
 
 if [ -z $DATA_DIR ]
 then
-    sudo docker run -d -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:v1.0.0
+    sudo docker run -d -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
 else
     echo "Loading prometheus data from $DATA_DIR"
-    sudo docker run -d -v $DATA_DIR:/prometheus:Z -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:v1.0.0
+    sudo docker run -d -v $DATA_DIR:/prometheus:Z -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
 fi
 
 if [ $? -ne 0 ]; then
@@ -91,7 +94,7 @@ sudo docker run -d -i -p $GRAFANA_PORT:3000 \
      -e "GF_AUTH_ANONYMOUS_ENABLED=true" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
      -e "GF_INSTALL_PLUGINS=grafana-piechart-panel" \
-     --name $GRAFANA_NAME grafana/grafana:3.1.0
+     --name $GRAFANA_NAME grafana/grafana:$GRAFANA_VERSION
 
 if [ $? -ne 0 ]; then
     echo "Error: Grafana container failed to start"
