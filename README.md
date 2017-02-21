@@ -30,19 +30,24 @@ ubuntu $ sudo systemctl restart docker
 centos $ sudo service docker start
 ```
 
-Update `prometheus/prometheus.yml` with the targets (server you wish to monitor).
+Update `prometheus/scylla_servers.yaml` and `prometheus/node_exporter_servers.yaml` with the targets (server you wish to monitor).
 For every server there are two targets, one under `scylla` job which is used for the scylla metrics.
 Use port 9180.
-For example
+For example, update targets in `prometheus/scylla_servers.yaml` :
 
 ```
-  - targets: ["172.17.0.3:9180","172.17.0.2:9180"]
+- targets:
+  - 172.17.0.2:9180
+  - 172.17.0.3:9180
 ```
+
 Second, for general node information (disk, network, etc.) add the server under `node_exporter` job. Use port 9100.
-For example
+For example, update targets in `prometheus/node_exporter_servers.yaml` :
 
 ```
-  - targets: ["172.17.0.3:9100","172.17.0.2:9100"]
+- targets:
+  - 172.17.0.2:9100
+  - 172.17.0.3:9100
 ```
 
 
