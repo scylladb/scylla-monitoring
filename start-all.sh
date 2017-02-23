@@ -5,7 +5,7 @@ VERSIONS=$DEFAULT_VERSION
 usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] -- starts Grafana and Prometheus Docker instances"
 
 GRAFANA_VERSION=4.1.1
-PROMETHEUS_VERSION=v1.5.2
+PROMETHEUS_VERSION=v1.4.1
 
 while getopts ':hd:g:p:v:' option; do
   case "$option" in
