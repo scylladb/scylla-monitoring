@@ -50,6 +50,11 @@ For example, update targets in `prometheus/node_exporter_servers.yaml` :
   - 172.17.0.3:9100
 ```
 
+You can also use your own target files instead of updating `scylla_servers.yaml` and `node_exporter_servers.yaml`, using the `-s` for scylla target file and `-n` for node taget file. For example:
+
+```
+./start-all.sh -s my_scylla_server.yaml -n my_node_exporter_servers.yml -d data_dir
+```
 
 ### Run
 
