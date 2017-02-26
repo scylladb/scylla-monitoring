@@ -32,7 +32,10 @@ if [ -z $PROMETHEUS_PORT ]; then
 else
     PROMETHEUS_NAME=aprom-$PROMETHEUS_PORT
 fi
-
+SCYLLA_NODES_FILE="$PWD/prometheus/scylla-$PROMETHEUS_PORT.yml"
+NODE_EXPORTER_NODES_FILE="$PWD/prometheus/node-$PROMETHEUS_PORT.yml"
 
 sudo docker kill $GRAFANA_NAME $PROMETHEUS_NAME
 sudo docker rm $GRAFANA_NAME $PROMETHEUS_NAME
+rm $SCYLLA_NODES_FILE 2>/dev/null
+rm $NODE_EXPORTER_NODES_FILE 2>/dev/null

@@ -2,12 +2,12 @@
 
 . versions.sh
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] [-n comma separated list of nodes to monitor ] -- starts Grafana and Prometheus Docker instances"
 
 GRAFANA_VERSION=4.1.1
 PROMETHEUS_VERSION=v1.5.2
 
-while getopts ':hd:g:p:v:' option; do
+while getopts ':hd:g:p:v:n:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -19,6 +19,8 @@ while getopts ':hd:g:p:v:' option; do
     g) GRAFANA_PORT=$OPTARG
        ;;
     p) PROMETHEUS_PORT=$OPTARG
+       ;;
+    n) NODES=$OPTARG
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -44,6 +46,16 @@ else
     PROMETHEUS_NAME=aprom-$PROMETHEUS_PORT
 fi
 
+if [ -z $NODES ]; then
+    NODES="127.0.0.1"
+fi
+# Don't put in a temporary location. The file needs to be still present if we are
+# to restart the container upon reboot (for example)
+SCYLLA_NODES_FILE="$PWD/prometheus/scylla_servers-$PROMETHEUS_PORT.yml"
+NODE_EXPORTER_NODES_FILE="$PWD/prometheus/node_exporter_servers-$PROMETHEUS_PORT.yml"
+python gen-prometheus.py $NODES 9180 > $SCYLLA_NODES_FILE
+python gen-prometheus.py $NODES 9100 > $NODE_EXPORTER_NODES_FILE
+
 # Exit if Docker engine is not running
 if [ ! "$(sudo docker ps)" ]
 then
@@ -51,14 +63,22 @@ then
         exit 1
 fi
 
-if [ -z $DATA_DIR ]
-then
-    sudo docker run -d \
-         -v $PWD/prometheus/:/etc/prometheus/:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
+if [ -z $DATA_DIR ]; then
+    DATADIR=""
 else
     echo "Loading prometheus data from $DATA_DIR"
-    sudo docker run -d -v $DATA_DIR:/prometheus:Z -v $PWD/prometheus/:/etc/prometheus/:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
+    DATADIR="-v $DATA_DIR:/prometheus:Z"
 fi
+
+# Note: list files with -v individually, because different containers will be
+# monitoring different nodes.
+sudo docker run -d \
+    -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+    -v $SCYLLA_NODES_FILE:/etc/prometheus/scylla_servers.yml:Z \
+    -v $NODE_EXPORTER_NODES_FILE:/etc/prometheus/node_exporter_servers.yml:Z \
+    -p $PROMETHEUS_PORT:9090 \
+    --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION \
+    $DATADIR
 
 if [ $? -ne 0 ]; then
     echo "Error: Prometheus container failed to start"
