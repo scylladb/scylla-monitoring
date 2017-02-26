@@ -2,15 +2,16 @@
 
 . versions.sh
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] -- starts Grafana and Prometheus Docker instances"
 
 GRAFANA_VERSION=4.1.1
 PROMETHEUS_VERSION=v1.5.2
+LOCAL=""
 
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
 NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
 
-while getopts ':hd:g:p:v:s:n:' option; do
+while getopts ':hdl:g:p:v:s:n:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -26,6 +27,8 @@ while getopts ':hd:g:p:v:s:n:' option; do
     s) SCYLLA_TARGET_FILE=$OPTARG
        ;;
     n) NODE_TARGET_FILE=$OPTARG
+       ;;
+    l) LOCAL="--net=host"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -60,14 +63,14 @@ fi
 
 if [ -z $DATA_DIR ]
 then
-    sudo docker run -d \
+    sudo docker run -d $LOCAL \
          -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/prometheus/node_exporter_servers.yml:Z \
          -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
 else
     echo "Loading prometheus data from $DATA_DIR"
-    sudo docker run -d -v $DATA_DIR:/prometheus:Z \
+    sudo docker run -d $LOCAL -v $DATA_DIR:/prometheus:Z \
          -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/prometheus/node_exporter_servers.yml:Z \
@@ -104,7 +107,7 @@ then
         exit 1
 fi
 
-sudo docker run -d -i -p $GRAFANA_PORT:3000 \
+sudo docker run -d $LOCAL -i -p $GRAFANA_PORT:3000 \
      -e "GF_AUTH_BASIC_ENABLED=false" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=true" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \

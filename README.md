@@ -90,6 +90,11 @@ ___
 **For systems in production it is recommended to use an external directory.**
 ___
 
+
+#### Connecting Scylla and the Monitoring locally - the local flag
+When runing the prometheus and grafan on the same host as scylla, use the local `-l` flag, so processes inside the
+containers will share the host network stack and would have access to the `localhost`.
+
 ### Kill
 
 ```
