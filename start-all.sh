@@ -2,12 +2,13 @@
 
 . versions.sh
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-v comma seperated versions] [-l] [-g grafana port ] [ -p prometheus port ] -- starts Grafana and Prometheus Docker instances"
 
 GRAFANA_VERSION=4.1.1
 PROMETHEUS_VERSION=v1.5.2
+LOCAL=""
 
-while getopts ':hd:g:p:v:' option; do
+while getopts ':hld:g:p:v:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -19,6 +20,8 @@ while getopts ':hd:g:p:v:' option; do
     g) GRAFANA_PORT=$OPTARG
        ;;
     p) PROMETHEUS_PORT=$OPTARG
+       ;;
+    l) LOCAL="--net=host"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -53,11 +56,11 @@ fi
 
 if [ -z $DATA_DIR ]
 then
-    sudo docker run -d \
+    sudo docker run -d $LOCAL \
          -v $PWD/prometheus/:/etc/prometheus/:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
 else
     echo "Loading prometheus data from $DATA_DIR"
-    sudo docker run -d -v $DATA_DIR:/prometheus:Z -v $PWD/prometheus/:/etc/prometheus/:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
+    sudo docker run -d $LOCAL -v $DATA_DIR:/prometheus:Z -v $PWD/prometheus/:/etc/prometheus/:Z -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
 fi
 
 if [ $? -ne 0 ]; then
@@ -90,7 +93,7 @@ then
         exit 1
 fi
 
-sudo docker run -d -i -p $GRAFANA_PORT:3000 \
+sudo docker run -d $LOCAL -i -p $GRAFANA_PORT:3000 \
      -e "GF_AUTH_BASIC_ENABLED=false" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=true" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
