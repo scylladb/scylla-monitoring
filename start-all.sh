@@ -11,7 +11,7 @@ LOCAL=""
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
 NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
 
-while getopts ':hdl:g:p:v:s:n:' option; do
+while getopts ':hld:g:p:v:s:n:' option; do
   case "$option" in
     h) echo "$usage"
        exit
