@@ -35,4 +35,4 @@ fi
 
 
 sudo docker kill $GRAFANA_NAME $PROMETHEUS_NAME
-sudo docker rm $GRAFANA_NAME $PROMETHEUS_NAME
+sudo docker rm -v $GRAFANA_NAME $PROMETHEUS_NAME
