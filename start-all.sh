@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
+if [ "$1" = "-e" ]; then
+. enterprise_versions.sh
+else		
 . versions.sh
+fi
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] -- starts Grafana and Prometheus Docker instances"
 
 GRAFANA_VERSION=4.1.1
 PROMETHEUS_VERSION=v1.5.2
@@ -11,7 +15,7 @@ LOCAL=""
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
 NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
 
-while getopts ':hld:g:p:v:s:n:' option; do
+while getopts ':hled:g:p:v:s:n:' option; do
   case "$option" in
     h) echo "$usage"
        exit
