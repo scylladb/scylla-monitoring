@@ -69,15 +69,15 @@ if [ -z $DATA_DIR ]
 then
     sudo docker run -d $LOCAL \
          -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-         -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/prometheus/scylla_servers.yml:Z \
-         -v $(readlink -m $NODE_TARGET_FILE):/etc/prometheus/node_exporter_servers.yml:Z \
+         -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
+         -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
          -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
 else
     echo "Loading prometheus data from $DATA_DIR"
     sudo docker run -d $LOCAL -v $DATA_DIR:/prometheus:Z \
          -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-         -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/prometheus/scylla_servers.yml:Z \
-         -v $(readlink -m $NODE_TARGET_FILE):/etc/prometheus/node_exporter_servers.yml:Z \
+         -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
+         -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
          -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
 fi
 
