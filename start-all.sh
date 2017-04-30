@@ -142,11 +142,4 @@ fi
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
 DB_ADDRESS="$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $PROMETHEUS_NAME):9090"
 
-curl -XPOST -i http://localhost:$GRAFANA_PORT/api/datasources \
-     --data-binary '{"name":"prometheus", "type":"prometheus", "url":"'"http://$DB_ADDRESS"'", "access":"proxy", "basicAuth":false}' \
-     -H "Content-Type: application/json"
-IFS=',' ;for v in $VERSIONS; do
-	curl -XPOST -i http://localhost:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/scylla-dash.$v.json -H "Content-Type: application/json"
-	curl -XPOST -i http://localhost:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/scylla-dash-per-server.$v.json -H "Content-Type: application/json"
-	curl -XPOST -i http://localhost:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/scylla-dash-io-per-server.$v.json -H "Content-Type: application/json"
-done
+./load-grafana.sh -p $DB_ADDRESS -g $GRAFANA_PORT -v $VERSIONS
