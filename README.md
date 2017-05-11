@@ -8,7 +8,7 @@ ___
 
 `git checkout v0.1`
 ___
-The monitoring infrastructure consists of several components, wrapped in docker containers:
+The monitoring infrastructure consists of several components, wrapped in Docker containers:
  * `prometheus` - collects and stores metrics
  * `grafana` - dashboard server
 
@@ -31,7 +31,7 @@ centos $ sudo service docker start
 ```
 
 Update `prometheus/scylla_servers.yaml` and `prometheus/node_exporter_servers.yaml` with the targets (server you wish to monitor).
-For every server there are two targets, one under `scylla` job which is used for the scylla metrics.
+For every server, there are two targets, one under `scylla` job which is used for the scylla metrics.
 Use port 9180.
 For example, update targets in `prometheus/scylla_servers.yaml` :
 
@@ -84,7 +84,7 @@ by default, only the last two releases are loaded. You can load specific version
  ./start-all.sh -v latest
  ```
 ___
-**Note: The -d data_dir is optional, but without it, prometheus will erase all data between runs.**
+**Note: The -d data_dir is optional, but without it, Prometheus will erase all data between runs.**
 
 
 **For systems in production it is recommended to use an external directory.**
@@ -92,7 +92,7 @@ ___
 
 
 #### Connecting Scylla and the Monitoring locally - the local flag
-When runing the prometheus and grafan on the same host as scylla, use the local `-l` flag, so processes inside the
+When running the Prometheus and Grafana on the same host as scylla, use the local `-l` flag, so processes inside the
 containers will share the host network stack and would have access to the `localhost`.
 
 ### Kill
@@ -106,12 +106,12 @@ Direct your browser to `your-server-ip:3000`
 
 #### Choose Disk and network interface
 The dashboard holds a drop down menu at its upper left corner for disk and network interface.
-You should choose relevent disk and interface for the dashboard to show the graphs. 
+You should choose relevant disk and interface for the dashboard to show the graphs. 
 
 ### Update Scylla servers to send metrics
 See [here](https://github.com/scylladb/scylla/wiki/Monitor-Scylla-with-Prometheus-and-Grafana#14-and-later-instruction)
 
-### Load original data to prometheus server
+### Load original data to Prometheus server
 
 Additional parameters:
   -d data_dir
@@ -125,7 +125,6 @@ Comment:
   `data_dir` is the local path to original data directory
 
 Data source for Prometheus data:
-* Download from docker prometheus server, reference: https://github.com/scylladb/scylla/wiki/How-to-report-a-Scylla-problem#prometheus
+* Download from Docker Prometheus server, reference: https://github.com/scylladb/scylla/wiki/How-to-report-a-Scylla-problem#prometheus
 * Get from Scylla-Cluster-Test log.
 * Others
-
