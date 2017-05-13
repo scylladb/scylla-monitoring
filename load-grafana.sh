@@ -5,8 +5,13 @@ VERSIONS=$DEFAULT_VERSION
 GRAFANA_PORT=3000
 DB_ADDRESS="127.0.0.1:9090"
 
-while getopts 'g:p:v:' option; do
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-p ip:port address of prometheus ] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+
+while getopts ':hg:p:v:' option; do
   case "$option" in
+    h) echo "$usage"
+       exit
+       ;;
     v) VERSIONS=$OPTARG
        ;;
     g) GRAFANA_PORT=$OPTARG
