@@ -56,6 +56,18 @@ You can also use your own target files instead of updating `scylla_servers.yaml`
 ./start-all.sh -s my_scylla_server.yaml -n my_node_exporter_servers.yml -d data_dir
 ```
 
+In many deployments the contents of those files are very similar, with the same servers being listed differing only in the ports scylla and node_exporter listen to. To automatically generate the target files, one can use the `genconfig.py` script, using the `-n` and `-s` flags to control which files get created:
+
+```
+./genconfig.py -ns -d myconf 192.168.0.1 192.168.0.2
+```
+
+After that, the monitoring stack can be started pointing to the servers at `192.168.0.1` and `192.168.0.2` with::
+
+```
+./start-all.sh -s myconf/scylla_server.yaml -n myconf/node_exporter_servers.yaml
+```
+
 ### Run
 
 ```
@@ -128,3 +140,14 @@ Data source for Prometheus data:
 * Download from Docker Prometheus server, reference: https://github.com/scylladb/scylla/wiki/How-to-report-a-Scylla-problem#prometheus
 * Get from Scylla-Cluster-Test log.
 * Others
+
+### Using your own Grafana installation
+
+Some users who already have grafana installed can just upload the Scylla dashboards into your existing grafana environment.
+This is possible using the `load-grafana.sh` script.
+
+For example, if you have prometheus running at `192.168.0.1:9090`, and grafana at localhost's port `3000`, you can do:
+
+```
+./load-grafana.sh -p 192.168.0.1:9090 -g 3000
+```
