@@ -30,10 +30,10 @@ ubuntu $ sudo systemctl restart docker
 centos $ sudo service docker start
 ```
 
-Update `prometheus/scylla_servers.yaml` and `prometheus/node_exporter_servers.yaml` with the targets (server you wish to monitor).
+Update `prometheus/scylla_servers.yml` and `prometheus/node_exporter_servers.yml` with the targets (server you wish to monitor).
 For every server, there are two targets, one under `scylla` job which is used for the scylla metrics.
 Use port 9180.
-For example, update targets in `prometheus/scylla_servers.yaml` :
+For example, update targets in `prometheus/scylla_servers.yml` :
 
 ```
 - targets:
@@ -42,7 +42,7 @@ For example, update targets in `prometheus/scylla_servers.yaml` :
 ```
 
 Second, for general node information (disk, network, etc.) add the server under `node_exporter` job. Use port 9100.
-For example, update targets in `prometheus/node_exporter_servers.yaml` :
+For example, update targets in `prometheus/node_exporter_servers.yml` :
 
 ```
 - targets:
@@ -50,10 +50,10 @@ For example, update targets in `prometheus/node_exporter_servers.yaml` :
   - 172.17.0.3:9100
 ```
 
-You can also use your own target files instead of updating `scylla_servers.yaml` and `node_exporter_servers.yaml`, using the `-s` for scylla target file and `-n` for node taget file. For example:
+You can also use your own target files instead of updating `scylla_servers.yml` and `node_exporter_servers.yml`, using the `-s` for scylla target file and `-n` for node taget file. For example:
 
 ```
-./start-all.sh -s my_scylla_server.yaml -n my_node_exporter_servers.yml -d data_dir
+./start-all.sh -s my_scylla_server.yml -n my_node_exporter_servers.yml -d data_dir
 ```
 
 In many deployments the contents of those files are very similar, with the same servers being listed differing only in the ports scylla and node_exporter listen to. To automatically generate the target files, one can use the `genconfig.py` script, using the `-n` and `-s` flags to control which files get created:
@@ -65,7 +65,7 @@ In many deployments the contents of those files are very similar, with the same 
 After that, the monitoring stack can be started pointing to the servers at `192.168.0.1` and `192.168.0.2` with::
 
 ```
-./start-all.sh -s myconf/scylla_server.yaml -n myconf/node_exporter_servers.yaml
+./start-all.sh -s myconf/scylla_server.yml -n myconf/node_exporter_servers.yml
 ```
 
 ### Run
