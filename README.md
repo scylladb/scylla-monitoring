@@ -115,6 +115,7 @@ containers will share the host network stack and would have access to the `local
 
 ### Use
 Direct your browser to `your-server-ip:3000`
+By default, Grafana authentication is disabled. To enable it and set a password for user admin use the `-a` option
 
 #### Choose Disk and network interface
 The dashboard holds a drop down menu at its upper left corner for disk and network interface.

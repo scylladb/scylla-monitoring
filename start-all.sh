@@ -6,7 +6,7 @@ else
 . versions.sh
 fi
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] [-a admin password] -- starts Grafana and Prometheus Docker instances"
 
 GRAFANA_VERSION=4.1.1
 PROMETHEUS_VERSION=v1.5.2
@@ -15,7 +15,11 @@ LOCAL=""
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
 NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
 
-while getopts ':hled:g:p:v:s:n:' option; do
+GRAFANA_ADMIN_PASSWORD="admin"
+GRAFANA_AUTH=false
+GRAFANA_AUTH_ANONYMOUS=true
+
+while getopts ':hled:g:p:v:s:n:a:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -33,6 +37,10 @@ while getopts ':hled:g:p:v:s:n:' option; do
     n) NODE_TARGET_FILE=$OPTARG
        ;;
     l) LOCAL="--net=host"
+       ;;
+    a) GRAFANA_ADMIN_PASSWORD=$OPTARG
+       GRAFANA_AUTH=true
+       GRAFANA_AUTH_ANONYMOUS=false
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -111,11 +119,13 @@ then
         exit 1
 fi
 
+
 sudo docker run -d $LOCAL -i -p $GRAFANA_PORT:3000 \
-     -e "GF_AUTH_BASIC_ENABLED=false" \
-     -e "GF_AUTH_ANONYMOUS_ENABLED=true" \
+     -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
+     -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
      -e "GF_INSTALL_PLUGINS=grafana-piechart-panel" \
+     -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
      --name $GRAFANA_NAME grafana/grafana:$GRAFANA_VERSION
 
 if [ $? -ne 0 ]; then
@@ -142,4 +152,4 @@ fi
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
 DB_ADDRESS="$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $PROMETHEUS_NAME):9090"
 
-./load-grafana.sh -p $DB_ADDRESS -g $GRAFANA_PORT -v $VERSIONS
+./load-grafana.sh -p $DB_ADDRESS -g $GRAFANA_PORT -v $VERSIONS -a $GRAFANA_ADMIN_PASSWORD
