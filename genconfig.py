@@ -32,8 +32,8 @@ if __name__ == "__main__":
     arguments = parser.parse_args()
 
     if arguments.scylla:
-        dump_yaml(arguments.directory, 'scylla_servers.yaml', arguments.servers, scylla_port)
+        dump_yaml(arguments.directory, 'scylla_servers.yml', arguments.servers, scylla_port)
     
     if arguments.node:
-        dump_yaml(arguments.directory, 'node_exporter_servers.yaml', arguments.servers, node_exporter_port)
+        dump_yaml(arguments.directory, 'node_exporter_servers.yml', arguments.servers, node_exporter_port)
     
