@@ -10,14 +10,11 @@ usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-fil
 
 GRAFANA_VERSION=4.1.1
 PROMETHEUS_VERSION=v1.5.2
-LOCAL=""
 
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
 NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
 
-GRAFANA_ADMIN_PASSWORD="admin"
-GRAFANA_AUTH=false
-GRAFANA_AUTH_ANONYMOUS=true
+GRAFANA_ADMIN_PASSWORD=""
 
 while getopts ':hled:g:p:v:s:n:a:' option; do
   case "$option" in
@@ -38,9 +35,7 @@ while getopts ':hled:g:p:v:s:n:a:' option; do
        ;;
     l) LOCAL="--net=host"
        ;;
-    a) GRAFANA_ADMIN_PASSWORD=$OPTARG
-       GRAFANA_AUTH=true
-       GRAFANA_AUTH_ANONYMOUS=false
+    a) GRAFANA_ADMIN_PASSWORD="-a $OPTARG"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -101,6 +96,13 @@ else
 	fi
 fi
 
+if [ -z $LOCAL ]; then
+    GRAFANA_LOCAL=""
+    LOCAL=""
+else
+    GRAFANA_LOCAL="-l"
+fi
+
 # Number of retries waiting for a Docker container to start
 RETRIES=7
 
@@ -119,37 +121,8 @@ then
         exit 1
 fi
 
-
-sudo docker run -d $LOCAL -i -p $GRAFANA_PORT:3000 \
-     -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
-     -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
-     -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
-     -e "GF_INSTALL_PLUGINS=grafana-piechart-panel" \
-     -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
-     --name $GRAFANA_NAME grafana/grafana:$GRAFANA_VERSION
-
-if [ $? -ne 0 ]; then
-    echo "Error: Grafana container failed to start"
-    exit 1
-fi
-
-# Wait till Grafana API is available
-printf "Wait for Grafana container to start."
-TRIES=0
-until $(curl --output /dev/null -f --silent http://localhost:$GRAFANA_PORT/api/org) || [ $TRIES -eq $RETRIES ] ; do
-    printf '.'
-    ((TRIES=TRIES+1))
-    sleep 5
-done
-
-if [ ! "$(sudo docker ps -q -f name=$GRAFANA_NAME)" ]
-then
-        echo "Error: Grafana container failed to start"
-        exit 1
-fi
-
 # Can't use localhost here, because the monitoring may be running remotely.
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
 DB_ADDRESS="$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $PROMETHEUS_NAME):9090"
 
-./load-grafana.sh -p $DB_ADDRESS -g $GRAFANA_PORT -v $VERSIONS -a $GRAFANA_ADMIN_PASSWORD
+./start-grafana.sh -p $DB_ADDRESS -g $GRAFANA_PORT -v $VERSIONS $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL
