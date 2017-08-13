@@ -25,7 +25,7 @@ while getopts ':hled:g:p:v:s:n:a:' option; do
        ;;
     d) DATA_DIR=$OPTARG
        ;;
-    g) GRAFANA_PORT=$OPTARG
+    g) GRAFANA_PORT="-g $OPTARG"
        ;;
     p) PROMETHEUS_PORT=$OPTARG
        ;;
@@ -48,12 +48,6 @@ while getopts ':hled:g:p:v:s:n:a:' option; do
   esac
 done
 
-if [ -z $GRAFANA_PORT ]; then
-    GRAFANA_PORT=3000
-    GRAFANA_NAME=agraf
-else
-    GRAFANA_NAME=agraf-$GRAFANA_PORT
-fi
 if [ -z $PROMETHEUS_PORT ]; then
     PROMETHEUS_PORT=9090
     PROMETHEUS_NAME=aprom
@@ -125,4 +119,4 @@ fi
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
 DB_ADDRESS="$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $PROMETHEUS_NAME):9090"
 
-./start-grafana.sh -p $DB_ADDRESS -g $GRAFANA_PORT -v $VERSIONS $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL
+./start-grafana.sh -p $DB_ADDRESS $GRAFANA_PORT -v $VERSIONS $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL
