@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 
-usage="$(basename "$0") [-h] [-g grafana port ] [ -p prometheus port ] -- kills existing Grafana and Prometheus Docker instances at given ports"
+usage="$(basename "$0") [-h] [ -p prometheus port ] -- kills existing Prometheus Docker instances at given ports"
 
-while getopts ':hg:p:' option; do
+while getopts ':hp:' option; do
   case "$option" in
     h) echo "$usage"
        exit
-       ;;
-    g) GRAFANA_PORT=$OPTARG
        ;;
     p) PROMETHEUS_PORT=$OPTARG
        ;;
@@ -23,17 +21,11 @@ while getopts ':hg:p:' option; do
 done
 
 if [ -z $PROMETHEUS_PORT ]; then
-    ./kill-prometheus.sh
+    PROMETHEUS_NAME=aprom
 else
-    ./kill-prometheus.sh -p $PROMETHEUS_PORT
-fi
-
-if [ -z $GRAFANA_PORT ]; then
-    ./kill-grafana.sh
-else
-    ./kill-grafana.sh -g $GRAFANA_PORT
+    PROMETHEUS_NAME=aprom-$PROMETHEUS_PORT
 fi
 
 
-
-
+sudo docker kill $PROMETHEUS_NAME
+sudo docker rm -v $PROMETHEUS_NAME
