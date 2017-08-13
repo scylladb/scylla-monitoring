@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-usage="$(basename "$0") [-h] [-g grafana port ] -- kills existing Prometheus Docker instances at given ports"
+usage="$(basename "$0") [-h] [-g grafana port ] -- kills existing Grafana Docker instances at given ports"
 
 while getopts ':hg:' option; do
   case "$option" in
