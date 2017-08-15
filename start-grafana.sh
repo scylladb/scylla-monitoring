@@ -14,9 +14,9 @@ GRAFANA_ADMIN_PASSWORD="admin"
 GRAFANA_AUTH=false
 GRAFANA_AUTH_ANONYMOUS=true
 
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-p ip:port address of prometheus ] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-a admin password] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-a admin password] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hlg:p:v:a:x:c:' option; do
+while getopts ':hlg:p:v:a:x:c:j:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -36,6 +36,8 @@ while getopts ':hlg:p:v:a:x:c:' option; do
     x) HTTP_PROXY="$OPTARG"
        ;;
     c) GRAFANA_ENV_ARRAY+=("$OPTARG")
+       ;;
+    j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -95,4 +97,8 @@ then
         exit 1
 fi
 
-./load-grafana.sh -p $DB_ADDRESS -g $GRAFANA_PORT -v $VERSIONS -a $GRAFANA_ADMIN_PASSWORD
+for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
+        GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
+done
+
+./load-grafana.sh -p $DB_ADDRESS -g $GRAFANA_PORT -v $VERSIONS -a $GRAFANA_ADMIN_PASSWORD $GRAFANA_DASHBOARD_COMMAND
