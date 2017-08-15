@@ -6,7 +6,7 @@ else
 . versions.sh
 fi
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-g grafana port ] [ -p prometheus port ] [-a admin password] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-c grafana enviroment variable, multiple params are supported] [-g grafana port ] [ -p prometheus port ] [-a admin password] -- starts Grafana and Prometheus Docker instances"
 
 GRAFANA_VERSION=4.1.1
 PROMETHEUS_VERSION=v1.5.2
@@ -16,7 +16,7 @@ NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
 
 GRAFANA_ADMIN_PASSWORD=""
 
-while getopts ':hled:g:p:v:s:n:a:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -37,6 +37,8 @@ while getopts ':hled:g:p:v:s:n:a:' option; do
        ;;
     a) GRAFANA_ADMIN_PASSWORD="-a $OPTARG"
        ;;
+    c) GRAFANA_ENV_ARRAY+=("$OPTARG")
+       ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
        exit 1
@@ -54,6 +56,7 @@ if [ -z $PROMETHEUS_PORT ]; then
 else
     PROMETHEUS_NAME=aprom-$PROMETHEUS_PORT
 fi
+
 
 # Exit if Docker engine is not running
 if [ ! "$(sudo docker ps)" ]
@@ -119,4 +122,9 @@ fi
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
 DB_ADDRESS="$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $PROMETHEUS_NAME):9090"
 
-./start-grafana.sh -p $DB_ADDRESS $GRAFANA_PORT -v $VERSIONS $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL
+for val in "${GRAFANA_ENV_ARRAY[@]}"; do
+        GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -c $val"
+done
+
+
+./start-grafana.sh -p $DB_ADDRESS $GRAFANA_PORT -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL 
