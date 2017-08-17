@@ -6,7 +6,7 @@ else
 . versions.sh
 fi
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-c grafana enviroment variable, multiple params are supported] [-g grafana port ] [ -p prometheus port ] [-a admin password] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-g grafana port ] [ -p prometheus port ] [-a admin password] -- starts Grafana and Prometheus Docker instances"
 
 GRAFANA_VERSION=4.1.1
 PROMETHEUS_VERSION=v1.5.2
@@ -16,7 +16,7 @@ NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
 
 GRAFANA_ADMIN_PASSWORD=""
 
-while getopts ':hled:g:p:v:s:n:a:c:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:j:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -36,6 +36,8 @@ while getopts ':hled:g:p:v:s:n:a:c:' option; do
     l) LOCAL="--net=host"
        ;;
     a) GRAFANA_ADMIN_PASSWORD="-a $OPTARG"
+       ;;
+    j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
        ;;
     c) GRAFANA_ENV_ARRAY+=("$OPTARG")
        ;;
@@ -126,5 +128,10 @@ for val in "${GRAFANA_ENV_ARRAY[@]}"; do
         GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -c $val"
 done
 
+for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
+        GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
+done
 
-./start-grafana.sh -p $DB_ADDRESS $GRAFANA_PORT -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL 
+
+
+./start-grafana.sh -p $DB_ADDRESS $GRAFANA_PORT -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL 
