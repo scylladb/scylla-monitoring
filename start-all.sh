@@ -8,7 +8,6 @@ fi
 VERSIONS=$DEFAULT_VERSION
 usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-g grafana port ] [ -p prometheus port ] [-a admin password] -- starts Grafana and Prometheus Docker instances"
 
-GRAFANA_VERSION=4.1.1
 PROMETHEUS_VERSION=v1.5.2
 
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
