@@ -30,6 +30,6 @@ if [ "$(sudo docker ps -q -f name=$PROMETHEUS_NAME)" ]; then
     sudo docker kill $PROMETHEUS_NAME
 fi
 
-if [[ "$(sudo docker images -q $PROMETHEUS_NAME 2> /dev/null)" != "" ]]; then
+if [[ "$(sudo docker ps -aq --filter name=$PROMETHEUS_NAME 2> /dev/null)" != "" ]]; then
     sudo docker rm -v $PROMETHEUS_NAME
 fi
