@@ -79,7 +79,10 @@ else
          -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
-         -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
+         -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION \
+         -storage.local.retention=43800h -config.file=/etc/prometheus/prometheus.yml \
+         -storage.local.path=/prometheus -web.console.libraries=/etc/prometheus/console_libraries \
+         -web.console.templates=/etc/prometheus/consoles
 fi
 
 if [ $? -ne 0 ]; then
