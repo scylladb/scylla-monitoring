@@ -6,7 +6,7 @@ else
 . versions.sh
 fi
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-g grafana port ] [ -p prometheus port ] [-a admin password] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] -- starts Grafana and Prometheus Docker instances"
 
 PROMETHEUS_VERSION=v1.7.1
 
@@ -15,7 +15,7 @@ NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
 
 GRAFANA_ADMIN_PASSWORD=""
 
-while getopts ':hled:g:p:v:s:n:a:c:j:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:j:b:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -39,6 +39,8 @@ while getopts ':hled:g:p:v:s:n:a:c:j:' option; do
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
        ;;
     c) GRAFANA_ENV_ARRAY+=("$OPTARG")
+       ;;
+    b) PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=("$OPTARG")
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -66,20 +68,24 @@ then
         exit 1
 fi
 
+for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
+    PROMETHEUS_COMMAND_LINE_OPTIONS+=" -$val"
+done
+
 if [ -z $DATA_DIR ]
 then
     sudo docker run -d $LOCAL \
          -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
-         -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
+         -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION -config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
 else
     echo "Loading prometheus data from $DATA_DIR"
     sudo docker run -d $LOCAL -v $DATA_DIR:/prometheus:Z \
          -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
-         -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION
+         -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION  -config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
 fi
 
 if [ $? -ne 0 ]; then
