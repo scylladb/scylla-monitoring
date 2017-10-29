@@ -74,6 +74,11 @@ After that, the monitoring stack can be started pointing to the servers at `192.
 ./start-all.sh -d data_dir
 ```
 
+For full list of options
+```
+./start-all.sh -h
+```
+
 #### Multiple versions support
 As counters change their names between versions, we create a new dashboard for each new version.
 We use tags to distinguish between the different versions, to keep the dashboard menu, relatively short,
@@ -102,8 +107,13 @@ ___
 **For systems in production it is recommended to use an external directory.**
 ___
 
+#### Prometheus Command Line Options
 
-#### Connecting Scylla and the Monitoring locally - the local flag
+```
+-b storage.local.retention=1000h -b query.staleness-delta=1m
+```
+
+#### connecting Scylla and the Monitoring locally - the local flag
 When running the Prometheus and Grafana on the same host as scylla, use the local `-l` flag, so processes inside the
 containers will share the host network stack and would have access to the `localhost`.
 
