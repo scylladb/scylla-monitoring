@@ -29,9 +29,14 @@ curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@localhost:$GRAFANA_PORT/api/
      --data-binary '{"name":"prometheus", "type":"prometheus", "url":"'"http://$DB_ADDRESS"'", "access":"proxy", "basicAuth":false}' \
      -H "Content-Type: application/json"
 IFS=',' ;for v in $VERSIONS; do
-	curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@localhost:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/scylla-dash.$v.json -H "Content-Type: application/json"
-	curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@localhost:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/scylla-dash-per-server.$v.json -H "Content-Type: application/json"
-	curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@localhost:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/scylla-dash-io-per-server.$v.json -H "Content-Type: application/json"
+for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server; do
+	if [ -e grafana/$f.$v.template.json ]
+	then
+		echo grafana/$f.$v.template.json
+		./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json
+	fi
+	curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@localhost:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/$f.$v.json -H "Content-Type: application/json"
+done
 done
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
