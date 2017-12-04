@@ -162,7 +162,7 @@ def compact_obj(obj, types, args):
 def get_dashboard(name, types):
     global id
     id = 1
-    new_name = name.replace(".template.json", ".json")
+    new_name = name.replace("grafana/", "grafana/build/").replace(".template.json", ".json")
     result = get_json_file(name)
     update_object(result, types)
     write_json(new_name, result)
