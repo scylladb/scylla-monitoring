@@ -32,7 +32,6 @@ IFS=',' ;for v in $VERSIONS; do
 for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server; do
 	if [ -e grafana/$f.$v.template.json ]
 	then
-		echo grafana/$f.$v.template.json
 		./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json
 	fi
 	curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@localhost:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/$f.$v.json -H "Content-Type: application/json"
