@@ -1,3 +1,3 @@
-LATEST="2.0"
-ALL="1.5,1.6,1.7,2.0,master"
-DEFAULT_VERSION="1.7,2.0"
+LATEST="2.1"
+ALL="1.5,1.6,1.7,2.0,2.1,master"
+DEFAULT_VERSION="2.0,2.1"
