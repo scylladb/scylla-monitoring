@@ -14,9 +14,9 @@ GRAFANA_ADMIN_PASSWORD="admin"
 GRAFANA_AUTH=false
 GRAFANA_AUTH_ANONYMOUS=true
 
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-a admin password] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-a admin password] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hlg:p:v:a:x:c:j:' option; do
+while getopts ':hlg:n:p:v:a:x:c:j:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -24,6 +24,8 @@ while getopts ':hlg:p:v:a:x:c:j:' option; do
     v) VERSIONS=$OPTARG
        ;;
     g) GRAFANA_PORT=$OPTARG
+       ;;
+    n) GRAFANA_NAME=$OPTARG
        ;;
     p) DB_ADDRESS=$OPTARG
        ;;
@@ -52,8 +54,9 @@ done
 
 if [ -z $GRAFANA_PORT ]; then
     GRAFANA_PORT=3000
-    GRAFANA_NAME=agraf
-else
+fi
+
+if [ -z $GRAFANA_NAME ]; then
     GRAFANA_NAME=agraf-$GRAFANA_PORT
 fi
 
