@@ -54,6 +54,9 @@ done
 
 if [ -z $GRAFANA_PORT ]; then
     GRAFANA_PORT=3000
+    if [ -z $GRAFANA_NAME ]; then
+        GRAFANA_NAME=agraf
+    fi
 fi
 
 if [ -z $GRAFANA_NAME ]; then
