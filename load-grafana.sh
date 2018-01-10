@@ -32,6 +32,11 @@ curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/
      --data-binary '{"name":"prometheus", "type":"prometheus", "url":"'"http://$DB_ADDRESS"'", "access":"proxy", "basicAuth":false}' \
      -H "Content-Type: application/json"
 
+curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@localhost:$GRAFANA_PORT/api/datasources \
+     --data-binary '{"orgId":1,"name":"alertmanager","type":"camptocamp-prometheus-alertmanager-datasource","typeLogoUrl":"public/img/icn-datasource.svg","access":"proxy","url":"http://:9093","password":"","user":"","database":"","basicAuth":false,"isDefault":false,"jsonData":{}}' \
+     -H "Content-Type: application/json"
+
+
 mkdir -p grafana/build
 IFS=',' ;for v in $VERSIONS; do
 for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server; do
