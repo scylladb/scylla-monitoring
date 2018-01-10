@@ -25,6 +25,7 @@ done
 
 ./kill-container.sh $PROMETHEUS_PORT -b aprom
 ./kill-container.sh $GRAFANA_PORT -b agraf
+./kill-container.sh -b aalert
 
 
 
