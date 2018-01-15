@@ -131,6 +131,9 @@ fi
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
 DB_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $PROMETHEUS_NAME):9090"
 
+printf "Wait for alert manager container to start."
+AM_ADDRESS="$(./start-alertmanager.sh $GRAFANA_LOCAL)"
+
 for val in "${GRAFANA_ENV_ARRAY[@]}"; do
         GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -c $val"
 done
@@ -140,6 +143,4 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 done
 
 
-
-./start-grafana.sh -p $DB_ADDRESS $GRAFANA_PORT -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL 
-./start-alertmanager.sh $GRAFANA_LOCAL
+./start-grafana.sh -p $DB_ADDRESS $GRAFANA_PORT -m $AM_ADDRESS -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL 

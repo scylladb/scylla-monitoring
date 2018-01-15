@@ -41,9 +41,27 @@ fi
 
 sudo docker run -d $LOCAL -i -p $ALERTMANAGER_PORT:9093 \
 	-v $PWD/prometheus/rule_config.yml:/etc/alertmanager/config.yml:Z \
-     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION
+     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION > /dev/null
+
 
 if [ $? -ne 0 ]; then
     echo "Error: Alertmanager container failed to start"
     exit 1
 fi
+
+# Wait till Alertmanager is available
+RETRIES=5
+TRIES=0
+until $(curl --output /dev/null -f --silent http://localhost:$ALERTMANAGER_PORT) || [ $TRIES -eq $RETRIES ]; do
+    ((TRIES=TRIES+1))
+    sleep 5
+done
+
+if [ ! "$(sudo docker ps -q -f name=$ALERTMANAGER_NAME)" ]
+then
+    echo "Error: Alertmanager container failed to start"
+    exit 1
+fi
+
+AM_ADDRESS="$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $ALERTMANAGER_NAME):$ALERTMANAGER_PORT"
+echo $AM_ADDRESS
