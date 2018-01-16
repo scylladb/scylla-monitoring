@@ -53,6 +53,9 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:' option; do
   esac
 done
 
+printf "Wait for alert manager container to start."
+AM_ADDRESS="$(./start-alertmanager.sh $GRAFANA_LOCAL)"
+
 if [ -z $PROMETHEUS_PORT ]; then
     PROMETHEUS_PORT=9090
     PROMETHEUS_NAME=aprom
@@ -71,6 +74,8 @@ fi
 for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
     PROMETHEUS_COMMAND_LINE_OPTIONS+=" -$val"
 done
+
+sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template > $PWD/prometheus/prometheus.yml
 
 if [ -z $DATA_DIR ]
 then
@@ -130,9 +135,6 @@ fi
 # Can't use localhost here, because the monitoring may be running remotely.
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
 DB_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $PROMETHEUS_NAME):9090"
-
-printf "Wait for alert manager container to start."
-AM_ADDRESS="$(./start-alertmanager.sh $GRAFANA_LOCAL)"
 
 for val in "${GRAFANA_ENV_ARRAY[@]}"; do
         GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -c $val"
