@@ -26,10 +26,10 @@ else
     GRAFANA_NAME=agraf-$GRAFANA_PORT
 fi
 
-if [ "$(sudo docker ps -q -f name=$GRAFANA_NAME)" ]; then
-    sudo docker kill $GRAFANA_NAME
+if [ "$(docker ps -q -f name=$GRAFANA_NAME)" ]; then
+    docker kill $GRAFANA_NAME
 fi
 
-if [[ "$(sudo docker  ps -aq --filter name=$GRAFANA_NAME 2> /dev/null)" != "" ]]; then
-    sudo docker rm -v $GRAFANA_NAME
+if [[ "$(docker  ps -aq --filter name=$GRAFANA_NAME 2> /dev/null)" != "" ]]; then
+    docker rm -v $GRAFANA_NAME
 fi

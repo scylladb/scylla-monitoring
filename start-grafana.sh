@@ -72,7 +72,7 @@ for val in "${GRAFANA_ENV_ARRAY[@]}"; do
         GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e $val"
 done
 
-sudo docker run -d $LOCAL -i -p $GRAFANA_PORT:3000 \
+docker run -d $LOCAL -i -p $GRAFANA_PORT:3000 \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
@@ -97,7 +97,7 @@ until $(curl --output /dev/null -f --silent http://localhost:$GRAFANA_PORT/api/o
     sleep 5
 done
 
-if [ ! "$(sudo docker ps -q -f name=$GRAFANA_NAME)" ]
+if [ ! "$(docker ps -q -f name=$GRAFANA_NAME)" ]
 then
         echo "Error: Grafana container failed to start"
         exit 1
