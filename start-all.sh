@@ -62,7 +62,7 @@ fi
 
 
 # Exit if Docker engine is not running
-if [ ! "$(sudo docker ps)" ]
+if [ ! "$(docker ps)" ]
 then
         echo "Error: Docker engine is not running"
         exit 1
@@ -74,14 +74,14 @@ done
 
 if [ -z $DATA_DIR ]
 then
-    sudo docker run -d $LOCAL \
+    docker run -d $LOCAL \
          -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
          -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION -config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
 else
     echo "Loading prometheus data from $DATA_DIR"
-    sudo docker run -d $LOCAL -v $DATA_DIR:/prometheus:Z \
+    docker run -d $LOCAL -v $DATA_DIR:/prometheus:Z \
          -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
@@ -119,7 +119,7 @@ until $(curl --output /dev/null -f --silent http://localhost:$PROMETHEUS_PORT) |
     sleep 5
 done
 
-if [ ! "$(sudo docker ps -q -f name=$PROMETHEUS_NAME)" ]
+if [ ! "$(docker ps -q -f name=$PROMETHEUS_NAME)" ]
 then
         echo "Error: Prometheus container failed to start"
         exit 1
@@ -127,7 +127,7 @@ fi
 
 # Can't use localhost here, because the monitoring may be running remotely.
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
-DB_ADDRESS="$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $PROMETHEUS_NAME):9090"
+DB_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $PROMETHEUS_NAME):9090"
 
 for val in "${GRAFANA_ENV_ARRAY[@]}"; do
         GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -c $val"

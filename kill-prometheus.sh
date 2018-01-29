@@ -26,10 +26,10 @@ else
     PROMETHEUS_NAME=aprom-$PROMETHEUS_PORT
 fi
 
-if [ "$(sudo docker ps -q -f name=$PROMETHEUS_NAME)" ]; then
-    sudo docker kill $PROMETHEUS_NAME
+if [ "$(docker ps -q -f name=$PROMETHEUS_NAME)" ]; then
+    docker kill $PROMETHEUS_NAME
 fi
 
-if [[ "$(sudo docker ps -aq --filter name=$PROMETHEUS_NAME 2> /dev/null)" != "" ]]; then
-    sudo docker rm -v $PROMETHEUS_NAME
+if [[ "$(docker ps -aq --filter name=$PROMETHEUS_NAME 2> /dev/null)" != "" ]]; then
+    docker rm -v $PROMETHEUS_NAME
 fi
