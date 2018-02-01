@@ -31,10 +31,10 @@ if [ -z $NAME ]; then
 	fi
 fi
 
-if [ "$(sudo docker ps -q -f name=$NAME)" ]; then
-    sudo docker kill $NAME
+if [ "$(docker ps -q -f name=$NAME)" ]; then
+    docker kill $NAME
 fi
 
-if [[ "$(sudo docker ps -aq --filter name=$NAME 2> /dev/null)" != "" ]]; then
-    sudo docker rm -v $NAME
+if [[ "$(docker ps -aq --filter name=$NAME 2> /dev/null)" != "" ]]; then
+    docker rm -v $NAME
 fi
