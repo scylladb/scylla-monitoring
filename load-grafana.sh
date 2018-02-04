@@ -35,14 +35,18 @@ curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/
 mkdir -p grafana/build
 IFS=',' ;for v in $VERSIONS; do
 for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server; do
-	if [ -e grafana/$f.$v.template.json ]
-	then
-		./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json
-		curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/build/$f.$v.json -H "Content-Type: application/json"
-  else
-    curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/$f.$v.json -H "Content-Type: application/json"  
-	fi
-	
+    if [ -e grafana/$f.$v.template.json ]
+    then
+        ./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json
+        curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/build/$f.$v.json -H "Content-Type: application/json"
+    else
+        if [ -f @./grafana/$f.$v.json ]
+        then
+            curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/$f.$v.json -H "Content-Type: application/json"
+        else
+            printf "\nDashboard version $v, not found"
+        fi
+    fi
 done
 done
 
