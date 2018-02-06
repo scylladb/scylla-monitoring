@@ -62,7 +62,7 @@ For example, update targets in `prometheus/node_exporter_servers.yml` :
 You can also use your own target files instead of updating `scylla_servers.yml` and `node_exporter_servers.yml`, using the `-s` for scylla target file and `-n` for node taget file. For example:
 
 ```
-./start-all.sh -s my_scylla_server.yml -n my_node_exporter_servers.yml -d data_dir
+./start-all.sh -s my_scylla_servers.yml -n my_node_exporter_servers.yml -d data_dir
 ```
 
 In many deployments the contents of those files are very similar, with the same servers being listed differing only in the ports scylla and node_exporter listen to. To automatically generate the target files, one can use the `genconfig.py` script, using the `-n` and `-s` flags to control which files get created:
@@ -74,7 +74,7 @@ In many deployments the contents of those files are very similar, with the same 
 After that, the monitoring stack can be started pointing to the servers at `192.168.0.1` and `192.168.0.2` with::
 
 ```
-./start-all.sh -s myconf/scylla_server.yml -n myconf/node_exporter_servers.yml
+./start-all.sh -s myconf/scylla_servers.yml -n myconf/node_exporter_servers.yml
 ```
 
 ### Run
