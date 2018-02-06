@@ -12,9 +12,18 @@ The monitoring infrastructure consists of several components, wrapped in Docker 
  * `prometheus` - collects and stores metrics
  * `grafana` - dashboard server
 
-### prerequisites
+### Prerequisites
 * git
 * docker
+* python module pyyaml (for `genconfig.py`)
+
+On CentOS, you can do:
+
+```bash
+sudo yum install -y git docker python-pip
+sudo pip install --upgrade pip
+sudo pip install pyyaml
+```
 
 ### Install
 
