@@ -70,7 +70,7 @@
                         ],
                         "targets": [
                             {
-                                "expr": "avg(scylla_reactor_utilization{} ) ",
+                                "expr": "avg(scylla_reactor_utilization{} ) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Load",
                                 "refId": "A",
@@ -107,7 +107,7 @@
                         "pointradius": 1,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_transport_requests_served{}[30s])) + sum(irate(scylla_thrift_served{}[30s]))",
+                                "expr": "sum(irate(scylla_transport_requests_served{}[30s])) by ([[by]]) + sum(irate(scylla_thrift_served{}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Requests Served",
                                 "metric": "",
@@ -188,7 +188,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(scylla_storage_proxy_coordinator_foreground_writes{}) ",
+                                "expr": "sum(scylla_storage_proxy_coordinator_foreground_writes{}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Foreground Writes",
                                 "refId": "A",
@@ -224,7 +224,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(scylla_storage_proxy_coordinator_foreground_reads{}) ",
+                                "expr": "sum(scylla_storage_proxy_coordinator_foreground_reads{}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Foreground Reads",
                                 "metric": "",
@@ -262,7 +262,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_storage_proxy_coordinator_write_timeouts{}[30s])) ",
+                                "expr": "sum(irate(scylla_storage_proxy_coordinator_write_timeouts{}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Write Timeouts per Second",
                                 "refId": "A",
@@ -298,7 +298,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_storage_proxy_coordinator_write_unavailable{}[30s])) ",
+                                "expr": "sum(irate(scylla_storage_proxy_coordinator_write_unavailable{}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Write Unavailable per Second",
                                 "refId": "A",
@@ -340,7 +340,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(scylla_storage_proxy_coordinator_background_writes{}) ",
+                                "expr": "sum(scylla_storage_proxy_coordinator_background_writes{}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Background Writes",
                                 "refId": "A",
@@ -376,7 +376,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(scylla_storage_proxy_coordinator_background_reads{}) ",
+                                "expr": "sum(scylla_storage_proxy_coordinator_background_reads{}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Background Reads",
                                 "refId": "A",
@@ -413,7 +413,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_storage_proxy_coordinator_read_timeouts{}[30s])) ",
+                                "expr": "sum(irate(scylla_storage_proxy_coordinator_read_timeouts{}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Read Timeouts per Second",
                                 "refId": "A",
@@ -449,7 +449,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_storage_proxy_coordinator_read_unavailable{}[30s])) ",
+                                "expr": "sum(irate(scylla_storage_proxy_coordinator_read_unavailable{}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Read Unavailable per Second",
                                 "refId": "A",
@@ -512,7 +512,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_cache_row_hits{}[30s])) ",
+                                "expr": "sum(irate(scylla_cache_row_hits{}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Cache Hits",
                                 "refId": "A",
@@ -551,7 +551,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_cache_row_misses{}[30s])) ",
+                                "expr": "sum(irate(scylla_cache_row_misses{}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Cache Misses",
                                 "refId": "A",
@@ -615,17 +615,98 @@
                 "title": "New row"
             }
         ],
+        "templating": {
+            "list": [
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Instance",
+                        "value": "instance"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "Instance",
+                            "value": "instance"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Shard",
+                            "value": "shard"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        }
+                    ],
+                    "query": "Instance,Shard,Cluster",
+                    "type": "custom"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "All",
+                        "value": [
+                            "$__all"
+                        ]
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": true,
+                    "label": "node",
+                    "multi": true,
+                    "name": "node",
+                    "options": [],
+                    "query": "scylla_reactor_utilization",
+                    "refresh": 2,
+                    "regex": "/instance=\"([a-zA-Z0-9\\-\\.]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": true,
+                    "label": "shard",
+                    "multi": true,
+                    "name": "shard",
+                    "options": [],
+                    "query": "scylla_reactor_utilization{instance=~\"$node\"}",
+                    "refresh": 2,
+                    "regex": "/shard=\"([0-9]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                }
+            ]
+        },
 		"tags": [
 			"master"
 		],
-        "templating": {
-            "list": []
-        },
         "time": {
             "from": "now-30m",
             "to": "now"
         },
-        "title": "Scylla Cluster Metrics master",
+        "title": "Scylla Overview Metrics master",
         "version": 3
     }
 }
