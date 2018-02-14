@@ -6,14 +6,16 @@ GRAFANA_HOST="localhost"
 GRAFANA_PORT=3000
 DB_ADDRESS="127.0.0.1:9090"
 
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-H grafana hostname] [-m alert_manager ip:port] [-p ip:port address of prometheus ] [-a admin password] [-j additional dashboard to load to Grafana, multiple params are supported] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-H grafana hostname] [-m alert_manager ip:port] [-p ip:port address of prometheus ] [-a admin password] [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hg:H:p:v:a:j:m:' option; do
+while getopts ':hg:H:p:v:a:j:m:M:' option; do
   case "$option" in
     h) echo "$usage"
        exit
        ;;
     v) VERSIONS=$OPTARG
+       ;;
+    M) MANAGER_VERSION=$OPTARG
        ;;
     g) GRAFANA_PORT=$OPTARG
        ;;
@@ -58,6 +60,12 @@ for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server; do
     fi
 done
 done
+
+if [ -e grafana/scylla-manager.$MANAGER_VERSION.template.json ]
+then
+    ./make_dashboards.py -t grafana/types.json -d grafana/scylla-manager.$MANAGER_VERSION.template.json
+    curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/build/scylla-manager.$MANAGER_VERSION.json -H "Content-Type: application/json"
+fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @$val -H "Content-Type: application/json"
