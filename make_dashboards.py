@@ -110,7 +110,7 @@ def get_json_file(name):
 
 def write_json(name, obj):
     with open(name, 'w') as outfile:
-        json.dump(obj, outfile, sort_keys = True, indent = 4)
+        json.dump(obj, outfile, sort_keys = True, separators=(',', ': '), indent = 4)
     
 def merge_json_files(files):
     results = {}
