@@ -6,7 +6,7 @@ else
 . versions.sh
 fi
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port]-- starts Grafana and Prometheus Docker instances"
 
 PROMETHEUS_VERSION=v1.8.2
 
@@ -14,8 +14,9 @@ SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
 NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
 
 GRAFANA_ADMIN_PASSWORD=""
+ALERTMANAGER_PORT=""
 
-while getopts ':hled:g:p:v:s:n:a:c:j:b:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:j:b:m:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -25,6 +26,8 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:' option; do
     d) DATA_DIR=$OPTARG
        ;;
     g) GRAFANA_PORT="-g $OPTARG"
+       ;;
+    m) ALERTMANAGER_PORT="-p $OPTARG"
        ;;
     p) PROMETHEUS_PORT=$OPTARG
        ;;
@@ -54,7 +57,7 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:' option; do
 done
 
 printf "Wait for alert manager container to start."
-AM_ADDRESS="$(./start-alertmanager.sh $GRAFANA_LOCAL)"
+AM_ADDRESS="$(./start-alertmanager.sh $ALERTMANAGER_PORT $GRAFANA_LOCAL)"
 
 if [ -z $PROMETHEUS_PORT ]; then
     PROMETHEUS_PORT=9090
