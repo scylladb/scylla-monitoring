@@ -44,7 +44,7 @@ You'll need to add the Docker repo to your `/etc/apt/sources.list` (and accept t
 deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
 ```
 
-On Ubuntu, the latest package name is `docker-ce` for "Community Edition". You may want/need to adjust other Docker specific settings to meet your requirments. This gets a basic working Docker host.
+On Ubuntu, the latest package name is `docker-ce` for "Community Edition". You may want/need to adjust other Docker specific settings to meet your requirements. These instructions will get you a basic working Docker host.
 
 ```bash
 sudo apt-get update && apt-get install -y python-pip docker-ce git
