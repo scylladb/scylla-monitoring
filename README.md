@@ -11,7 +11,7 @@ ___
 
 ### Introduction
 
-An out-of-the-box configuration will have a server dedicated to running both Prometheus and Grafana. Some teams may already have existing Promotheus and/or Grafana infrastructure, in which case you are able to use.
+An out-of-the-box configuration will have a server dedicated to running both Prometheus and Grafana. Some teams may already have existing Promotheus and/or Grafana infrastructure, in which case you are able to use your existing architecture.
 
 The monitoring infrastructure consists of several components, wrapped in Docker containers:
 
