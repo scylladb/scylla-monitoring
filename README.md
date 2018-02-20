@@ -8,19 +8,46 @@ ___
 
 `git checkout v0.1`
 ___
+
+### Introduction
+
+An out-of-the-box configuration will have a server dedicated to running both Prometheus and Grafana. Some teams may already have existing Promotheus and/or Grafana infrastructure, in which case you are able to use.
+
 The monitoring infrastructure consists of several components, wrapped in Docker containers:
- * `prometheus` - collects and stores metrics
- * `grafana` - dashboard server
+
+* `prometheus` - collects and stores metrics
+* `grafana` - dashboard server
 
 ### Prerequisites
+
 * git
 * docker
 * python module pyyaml (for `genconfig.py`)
+
+#### CentOS: Prerequisites Installation
 
 On CentOS, you can do:
 
 ```bash
 sudo yum install -y git docker python-pip
+sudo pip install --upgrade pip
+sudo pip install pyyaml
+```
+
+#### Ubuntu 16.04: Prerequisites Installation
+
+On Ubuntu 16.04, you can do:
+
+You'll need to add the Docker repo to your `/etc/apt/sources.list` (and accept the key, see Docker website for full instructions).
+
+```bash
+deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+```
+
+On Ubuntu, the latest package name is `docker-ce` for "Community Edition". You may want/need to adjust other Docker specific settings to meet your requirments. This gets a basic working Docker host.
+
+```bash
+sudo apt-get update && apt-get install -y python-pip docker-ce git
 sudo pip install --upgrade pip
 sudo pip install pyyaml
 ```
@@ -32,7 +59,6 @@ git clone https://github.com/scylladb/scylla-grafana-monitoring.git
 cd scylla-grafana-monitoring
 ```
 
-
 Start docker service if needed
 ```
 ubuntu $ sudo systemctl restart docker
@@ -40,8 +66,10 @@ centos $ sudo service docker start
 ```
 
 Update `prometheus/scylla_servers.yml` and `prometheus/node_exporter_servers.yml` with the targets (server you wish to monitor).
+
 For every server, there are two targets, one under `scylla` job which is used for the scylla metrics.
 Use port 9180.
+
 For example, update targets in `prometheus/scylla_servers.yml` :
 
 ```
