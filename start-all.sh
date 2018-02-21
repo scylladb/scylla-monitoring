@@ -78,12 +78,13 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
     PROMETHEUS_COMMAND_LINE_OPTIONS+=" -$val"
 done
 
-sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template > $PWD/prometheus/prometheus.yml
+mkdir -p $PWD/prometheus/build/
+sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template > $PWD/prometheus/build/prometheus.yml
 
 if [ -z $DATA_DIR ]
 then
     docker run -d $LOCAL \
-         -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+         -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $PWD/prometheus/prometheus.rules:/etc/prometheus/prometheus.rules:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
@@ -91,7 +92,7 @@ then
 else
     echo "Loading prometheus data from $DATA_DIR"
     docker run -d $LOCAL -v $DATA_DIR:/prometheus:Z \
-         -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+         -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $PWD/prometheus/prometheus.rules:/etc/prometheus/prometheus.rules:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
