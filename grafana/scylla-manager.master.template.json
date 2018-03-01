@@ -1,0 +1,186 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "originalTitle": "Scylla Manager Metrics",
+        "rows": [
+            {
+                "class": "logo_row",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<img src=\"http://www.scylladb.com/wp-content/uploads/logo-scylla-white-simple.png\" height=\"70\">\n<hr style=\"border-top: 3px solid #5780c1;\">"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "150px",
+                "panels": [
+                    {
+                        "class": "single_stat_panel",
+                        "targets": [
+                            {
+                                "expr": "count(scrape_samples_scraped{job=\"scylla_manager\"}==0) OR vector(0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "",
+                         "valueMaps": [
+                        {
+                          "op": "=",
+                          "text": "Not Connected",
+                          "value": "1"
+                        },
+                        {
+                          "op": "=",
+                          "text": "Connected",
+                          "value": "0"
+                        }]
+                    }
+                ],
+                "title": "Statistic Row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "seriesOverrides": [
+                            {}
+                        ],
+                        "targets": [
+                            {
+                                "expr": "avg(repair_segments_total{} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Repair Segments Rate",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Repair Segments Rate",
+                        "tooltip": {
+                            "msResolution": false,
+                            "shared": true,
+                            "value_type": "cumulative"
+                        },
+                        "transparent": false,
+                        "yaxes": [
+                            {
+                                "format": "ops",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    }
+                ],
+                "title": "Main graphs"
+            }
+        ],
+        "templating": {
+            "list": [
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Host",
+                        "value": "host"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "Host",
+                            "value": "host"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Shard",
+                            "value": "shard"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        }
+                    ],
+                    "query": "Instance,Shard,Cluster",
+                    "type": "custom"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "All",
+                        "value": [
+                            "$__all"
+                        ]
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": true,
+                    "label": "host",
+                    "multi": true,
+                    "name": "host",
+                    "options": [],
+                    "query": "repair_segments_total",
+                    "refresh": 2,
+                    "regex": "/host=\"([a-zA-Z0-9\\-\\.]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": true,
+                    "label": "shard",
+                    "multi": true,
+                    "name": "shard",
+                    "options": [],
+                    "query": "repair_segments_total{host=~\"$host\"}",
+                    "refresh": 2,
+                    "regex": "/shard=\"([0-9]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                }
+            ]
+        },
+		"tags": [
+			"master"
+		],
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Scylla Manager Metrics master",
+        "version": 3
+    }
+}

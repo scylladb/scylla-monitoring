@@ -1,0 +1,9 @@
+# Alert for any instance that is unreachable for > 30 seconds.
+ALERT InstanceDown
+  IF up == 0
+  FOR 30s
+  LABELS { severity = "1" }
+  ANNOTATIONS {
+    summary = "Instance {{ $labels.instance }} down",
+    description = "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 30 seconds.",
+  }

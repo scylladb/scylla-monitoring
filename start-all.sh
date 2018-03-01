@@ -6,25 +6,29 @@ else
 . versions.sh
 fi
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] -- starts Grafana and Prometheus Docker instances"
-
+usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v1.8.2
 
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
 NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
-
+SCYLLA_MANGER_TARGET_FILE=$PWD/prometheus/scylla_manager_servers.yml
 GRAFANA_ADMIN_PASSWORD=""
+ALERTMANAGER_PORT=""
 
-while getopts ':hled:g:p:v:s:n:a:c:j:b:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:' option; do
   case "$option" in
     h) echo "$usage"
        exit
        ;;
     v) VERSIONS=$OPTARG
        ;;
+    M) MANAGER_VERSION=$OPTARG
+       ;;
     d) DATA_DIR=$OPTARG
        ;;
     g) GRAFANA_PORT="-g $OPTARG"
+       ;;
+    m) ALERTMANAGER_PORT="-p $OPTARG"
        ;;
     p) PROMETHEUS_PORT=$OPTARG
        ;;
@@ -53,6 +57,9 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:' option; do
   esac
 done
 
+printf "Wait for alert manager container to start."
+AM_ADDRESS="$(./start-alertmanager.sh $ALERTMANAGER_PORT $GRAFANA_LOCAL)"
+
 if [ -z $PROMETHEUS_PORT ]; then
     PROMETHEUS_PORT=9090
     PROMETHEUS_NAME=aprom
@@ -72,18 +79,25 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
     PROMETHEUS_COMMAND_LINE_OPTIONS+=" -$val"
 done
 
+mkdir -p $PWD/prometheus/build/
+sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template > $PWD/prometheus/build/prometheus.yml
+
 if [ -z $DATA_DIR ]
 then
     docker run -d $LOCAL \
-         -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+         -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+         -v $PWD/prometheus/prometheus.rules:/etc/prometheus/prometheus.rules:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
+         -v $(readlink -m $SCYLLA_MANGER_TARGET_FILE):/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
          -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION -config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
 else
     echo "Loading prometheus data from $DATA_DIR"
     docker run -d $LOCAL -v $DATA_DIR:/prometheus:Z \
-         -v $PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+         -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+         -v $PWD/prometheus/prometheus.rules:/etc/prometheus/prometheus.rules:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
+         -v $(readlink -m $SCYLLA_MANGER_TARGET_FILE):/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
          -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION  -config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
 fi
@@ -138,5 +152,4 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 done
 
 
-
-./start-grafana.sh -p $DB_ADDRESS $GRAFANA_PORT -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL 
+./start-grafana.sh -p $DB_ADDRESS $GRAFANA_PORT -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL

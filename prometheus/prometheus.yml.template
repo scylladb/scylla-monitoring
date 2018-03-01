@@ -6,6 +6,17 @@ global:
   # external systems (federation, remote storage, Alertmanager).
   external_labels:
     monitor: 'scylla-monitor'
+rule_files:
+  - /etc/prometheus/prometheus.rules
+    #
+# Alerting specifies settings related to the Alertmanager.
+alerting:
+        #  alert_relabel_configs:
+        #    [ - <relabel_config> ... ]
+  alertmanagers:
+  - static_configs:
+    - targets:
+        - AM_ADDRESS
 
 scrape_configs:
 - job_name: scylla
@@ -19,3 +30,9 @@ scrape_configs:
   file_sd_configs:
     - files:
       - /etc/scylla.d/prometheus/node_exporter_servers.yml
+
+- job_name: scylla_manager
+  honor_labels: true
+  file_sd_configs:
+    - files:
+      - /etc/scylla.d/prometheus/scylla_manager_servers.yml
