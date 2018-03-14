@@ -783,12 +783,9 @@
                 "height": "25px",
                 "panels": [
                     {
-                        "class": "text_header_panel",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Disk $monitor_disk</h1>"
-                    },
-                    {
-                        "class": "text_header_panel",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Cache</h1>"
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Disk $monitor_disk</h1>",
+                        "style": {}
                     }
                 ],
                 "title": "New row"
@@ -859,74 +856,6 @@
                     },
                     {
                         "class": "graph_panel",
-                        "fill": 0,
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "sum(irate(scylla_cache_row_hits{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Cache Hits",
-                        "yaxes": [
-                            {
-                                "format": "rps",
-                                "logBase": 1,
-                                "max": null,
-                                "min": 0,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
-                        ]
-                    },
-                    {
-                        "class": "graph_panel",
-                        "fill": 0,
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "sum(irate(scylla_cache_row_misses{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Cache Misses",
-                        "yaxes": [
-                            {
-                                "format": "rps",
-                                "logBase": 1,
-                                "max": null,
-                                "min": 0,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
-                        ]
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "panels": [
-                    {
-                        "class": "graph_panel",
                         "span": 3,
                         "targets": [
                             {
@@ -985,7 +914,222 @@
                                 "show": true
                             }
                         ]
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Cache</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_reads{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s]) - irate(scylla_cache_reads_with_misses{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads with no misses",
+                        "yaxes": [
+                            {
+                                "format": "rps",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
                     },
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_reads_with_misses{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads with misses",
+                        "yaxes": [
+                            {
+                                "format": "rps",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "class" : "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_row_hits{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Hits",
+                        "yaxes": [
+                            {
+                                "format": "rps",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_partition_hits{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Hits",
+                        "yaxes": [
+                            {
+                                "format": "rps",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_row_misses{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Misses",
+                        "yaxes": [
+                            {
+                                "format": "rps",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_partition_misses{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Misses",
+                        "yaxes": [
+                            {
+                                "format": "rps",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
                     {
                         "class": "graph_panel",
                         "fill": 0,
@@ -999,10 +1143,72 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Cache Insertions",
+                        "title": "Row Insertions",
                         "yaxes": [
                             {
                                 "format": "rps",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_partition_insertions{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Insertions",
+                        "yaxes": [
+                            {
+                                "format": "rps",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_row_evictions{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Evictions",
+                        "yaxes": [
+                            {
+                                "format": "ops",
                                 "logBase": 1,
                                 "max": null,
                                 "min": 0,
@@ -1030,7 +1236,43 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Cache Evictions",
+                        "title": "Partition Evictions",
+                        "yaxes": [
+                            {
+                                "format": "ops",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_rows_merged_from_memtable{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Merges",
                         "yaxes": [
                             {
                                 "format": "ops",
@@ -1049,11 +1291,6 @@
                         ]
                     },
                     {
-                        "class": "text_panel",
-                        "content": "&nbsp;",
-                        "span": 6
-                    },
-                    {
                         "class": "graph_panel",
                         "fill": 0,
                         "span": 3,
@@ -1066,7 +1303,38 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Cache Merges",
+                        "title": "Partition Merges",
+                        "yaxes": [
+                            {
+                                "format": "ops",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_row_removals{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Removals",
                         "yaxes": [
                             {
                                 "format": "ops",
@@ -1097,7 +1365,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Cache Removals",
+                        "title": "Partition Removals",
                         "yaxes": [
                             {
                                 "format": "ops",
@@ -1114,11 +1382,26 @@
                                 "show": true
                             }
                         ]
-                    },
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
                     {
-                        "class": "text_panel",
-                        "content": "&nbsp;",
-                        "span": 6
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_cache_rows{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Rows"
                     },
                     {
                         "class": "graph_panel",
@@ -1133,7 +1416,38 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Cache Partitions"
+                        "title": "Partitions"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "fill": 0,
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_cache_bytes_used{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Used Bytes",
+                        "yaxes": [
+                            {
+                                "format": "bytes",
+                                "logBase": 1,
+                                "max": null,
+                                "min": 0,
+                                "show": true
+                            },
+                            {
+                                "format": "short",
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
                     },
                     {
                         "class": "graph_panel",
@@ -1148,7 +1462,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Cache Total Bytes",
+                        "title": "Total Bytes",
                         "yaxes": [
                             {
                                 "format": "bytes",
