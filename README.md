@@ -1,12 +1,14 @@
 # Scylla monitoring with Grafana and Prometheus
 
 ___
-**Notice for users of Scylla versions prior to 1.4**
+**Notice Scylla Users upgrading to 2.1**
+You will need python installed for the solution to work.
 
+The sudo is removed from the start and kill scripts. Typically, when installing docker you add the current users
+to the docker group and do not use sudo.
 
-**If you are using a Scylla version before 1.4, or if you are using Prometheus over collectd, check out the v0.1 tag.**
+You can find out more on the [docker installation](https://docs.docker.com/install).
 
-`git checkout v0.1`
 ___
 
 ### Introduction
@@ -23,6 +25,7 @@ The monitoring infrastructure consists of several components, wrapped in Docker 
 * git
 * docker
 * python module pyyaml (for `genconfig.py`)
+* python module json (for `make_dashboards`)
 
 #### CentOS: Prerequisites Installation
 
@@ -206,3 +209,15 @@ Prometheus [Alertmanager](https://prometheus.io/docs/alerting/alertmanager/) han
 Alerts are generated according to the [Alerting rules](https://prometheus.io/docs/prometheus/1.8/configuration/alerting_rules/).
 
 The Alertmanager listen on port `9093` and you can use a web-browser to connect to it.
+
+## Notes on upgrades
+
+### 1.4 and earlier
+___
+**Notice for users of Scylla versions prior to 1.4**
+
+
+**If you are using a Scylla version before 1.4, or if you are using Prometheus over collectd, check out the v0.1 tag.**
+
+`git checkout v0.1`
+___
