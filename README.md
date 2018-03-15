@@ -108,6 +108,18 @@ After that, the monitoring stack can be started pointing to the servers at `192.
 ./start-all.sh -s myconf/scylla_servers.yml -n myconf/node_exporter_servers.yml
 ```
 
+#### node_exporter Installation
+[node_exporter](https://github.com/prometheus/node_exporter) is an exporter for hardware and OS metrics such as disk space.
+
+For a fully functional dashboard you need to have the node_exporter running on each of the nodes and configure the prometheus accordingly.
+
+When you run scylla_setup it would ask if you want to install the node_exporter and run it as a serivce.
+If you missed this step, you can install it on your own.
+
+To ease the installation you can use the `node_exporter_install` which would download and install the node_exporter
+as a service.
+
+
 ### Run
 
 ```
