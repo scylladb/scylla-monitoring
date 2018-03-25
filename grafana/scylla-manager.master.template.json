@@ -8,7 +8,7 @@
                 "panels": [
                     {
                         "class": "text_panel",
-                        "content": "<img src=\"http://www.scylladb.com/wp-content/uploads/logo-scylla-white-simple.png\" height=\"70\">\n<hr style=\"border-top: 3px solid #5780c1;\">"
+                        "content": "<img src=\"http://www.scylladb.com/wp-content/uploads/logo-scylla-white-simple.png\" height=\"70\">&nbsp;<span style=\"font-weight:bold; font-size:40px\">Manager</span>&nbsp;<span style=\"font-size:40px\"> [[cluster]]</span>\n<hr style=\"border-top: 3px solid #5780c1;\">"
                     }
                 ]
             },
@@ -18,27 +18,60 @@
                 "panels": [
                     {
                         "class": "single_stat_panel",
+                        "span": 3,
                         "targets": [
                             {
                                 "expr": "count(scrape_samples_scraped{job=\"scylla_manager\"}==0) OR vector(0)",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
                                 "refId": "A",
                                 "step": 40
                             }
                         ],
-                        "title": "",
+                        "valueFontSize": "80%",
                          "valueMaps": [
                         {
                           "op": "=",
-                          "text": "Not Connected",
+                          "text": "Scylla Manager</br>Not Reachable",
                           "value": "1"
                         },
                         {
                           "op": "=",
-                          "text": "Connected",
+                          "text": "Scylla Manager</br>Connected",
                           "value": "0"
                         }]
+                    },
+                    {
+                        "class": "single_stat_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_manager_task_active_count) or vector(0)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Active Repair Tasks"
+                    },
+                    {
+                        "class": "single_stat_panel",
+                        "span": 1,
+                        "thresholds": "0,0",
+                        "gauge": {
+                            "maxValue": 100,
+                            "minValue": 0,
+                            "show": true,
+                            "thresholdLabels": false,
+                            "thresholdMarkers": false
+                          },
+                         "targets": [
+                            {
+                              "expr": "scylla_manager_repair_progress{cluster=\"[[cluster]]\", host=\"\"}",
+                              "format": "time_series",
+                              "intervalFactor": 2,
+                              "refId": "A"
+                            }
+                          ],
+                          "title": "Repair progress"
                     }
                 ],
                 "title": "Statistic Row"
@@ -50,17 +83,27 @@
                         "class": "ops_panel",
                         "targets": [
                             {
-                                "expr": "avg(repair_segments_total{} ) by ([[by]])",
+                                "expr": "sum(irate(scylla_manager_repair_segments_success{cluster=\"[[cluster]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "Repair Segments Rate",
                                 "refId": "A",
                                 "step": 4
                             }
                         ],
                         "title": "Repair Segments Rate"
-                    }
-                ],
-                "title": "Main graphs"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_manager_repair_segments_error{cluster=\"[[cluster]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Repair Segments Error Rate"
+                    }],
+                "title": "Statistic Row"
             }
         ],
         "templating": {
@@ -69,8 +112,8 @@
                     "allValue": null,
                     "current": {
                         "tags": [],
-                        "text": "Host",
-                        "value": "host"
+                        "text": "Cluster",
+                        "value": "cluster"
                     },
                     "hide": 0,
                     "includeAll": false,
@@ -80,22 +123,47 @@
                     "options": [
                         {
                             "selected": true,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": false,
                             "text": "Host",
                             "value": "host"
                         },
                         {
                             "selected": false,
-                            "text": "Shard",
-                            "value": "shard"
+                            "text": "Keyspace",
+                            "value": "unit"
                         },
                         {
                             "selected": false,
-                            "text": "Cluster",
-                            "value": "cluster"
+                            "text": "Shard",
+                            "value": "shard"
                         }
                     ],
                     "query": "Instance,Shard,Cluster",
                     "type": "custom"
+                },
+                {
+                    "allValue": null,
+                    "current": {},
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "cluster",
+                    "multi": false,
+                    "name": "cluster",
+                    "options": [],
+                    "query": "scylla_manager_repair_segments_total",
+                    "refresh": 2,
+                    "regex": "/cluster=\"([a-zA-Z0-9\\-\\.]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
                 },
                 {
                     "allValue": null,
@@ -112,9 +180,32 @@
                     "multi": true,
                     "name": "host",
                     "options": [],
-                    "query": "repair_segments_total",
+                    "query": "scylla_manager_repair_segments_total",
                     "refresh": 2,
                     "regex": "/host=\"([a-zA-Z0-9\\-\\.]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": true,
+                    "label": "keyspace",
+                    "multi": true,
+                    "name": "keyspace",
+                    "options": [],
+                    "query": "scylla_manager_repair_segments_total{host=~\"$host\"}",
+                    "refresh": 2,
+                    "regex": "/unit=\"(.*)\".*/",
                     "sort": 0,
                     "tagValuesQuery": "",
                     "tags": [],
@@ -135,7 +226,7 @@
                     "multi": true,
                     "name": "shard",
                     "options": [],
-                    "query": "repair_segments_total{host=~\"$host\"}",
+                    "query": "scylla_manager_repair_segments_total{host=~\"$host\"}",
                     "refresh": 2,
                     "regex": "/shard=\"([0-9]*)\".*/",
                     "sort": 0,
