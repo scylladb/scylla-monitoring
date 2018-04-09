@@ -7,7 +7,7 @@ You will need python installed for the solution to work.
 The sudo is removed from the start and kill scripts. Typically, when installing docker you add the current users
 to the docker group and do not use sudo.
 
-You can find out more on the [docker installation](https://docs.docker.com/install).
+You can find out more on the [docker installation](https://docs.docker.com/install/linux/linux-postinstall/).
 
 ___
 
@@ -220,15 +220,3 @@ Prometheus [Alertmanager](https://prometheus.io/docs/alerting/alertmanager/) han
 Alerts are generated according to the [Alerting rules](https://prometheus.io/docs/prometheus/1.8/configuration/alerting_rules/).
 
 The Alertmanager listen on port `9093` and you can use a web-browser to connect to it.
-
-## Notes on upgrades
-
-### 1.4 and earlier
-___
-**Notice for users of Scylla versions prior to 1.4**
-
-
-**If you are using a Scylla version before 1.4, or if you are using Prometheus over collectd, check out the v0.1 tag.**
-
-`git checkout v0.1`
-___
