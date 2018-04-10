@@ -48,7 +48,9 @@ IFS=',' ;for v in $VERSIONS; do
 for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server; do
     if [ -e grafana/$f.$v.template.json ]
     then
-        ./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json
+        if [ ! -f "grafana/build/$f.$v.json" ] || [ "grafana/build/$f.$v.json" -ot "grafana/$f.$v.template.json" ]; then
+            ./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json
+        fi
         curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/build/$f.$v.json -H "Content-Type: application/json"
     else
         if [ -f grafana/$f.$v.json ]
@@ -63,7 +65,9 @@ done
 
 if [ -e grafana/scylla-manager.$MANAGER_VERSION.template.json ]
 then
-    ./make_dashboards.py -t grafana/types.json -d grafana/scylla-manager.$MANAGER_VERSION.template.json
+    if [ ! -f "grafana/build/scylla-manager.$MANAGER_VERSION.json" ] || [ "grafana/build/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/scylla-manager.$MANAGER_VERSION.template.json" ]; then
+        ./make_dashboards.py -t grafana/types.json -d grafana/scylla-manager.$MANAGER_VERSION.template.json
+    fi
     curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/build/scylla-manager.$MANAGER_VERSION.json -H "Content-Type: application/json"
 fi
 
