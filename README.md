@@ -1,12 +1,14 @@
 # Scylla monitoring with Grafana and Prometheus
 
 ___
-**Notice for users of Scylla versions prior to 1.4**
+**Notice Scylla Users upgrading to 2.1**
+You will need python installed for the solution to work.
 
+The sudo is removed from the start and kill scripts. Typically, when installing docker you add the current users
+to the docker group and do not use sudo.
 
-**If you are using a Scylla version before 1.4, or if you are using Prometheus over collectd, check out the v0.1 tag.**
+You can find out more on the [docker installation](https://docs.docker.com/install/linux/linux-postinstall/).
 
-`git checkout v0.1`
 ___
 
 ### Introduction
@@ -23,6 +25,7 @@ The monitoring infrastructure consists of several components, wrapped in Docker 
 * git
 * docker
 * python module pyyaml (for `genconfig.py`)
+* python module json (for `make_dashboards`)
 
 #### CentOS: Prerequisites Installation
 
@@ -104,6 +107,17 @@ After that, the monitoring stack can be started pointing to the servers at `192.
 ```
 ./start-all.sh -s myconf/scylla_servers.yml -n myconf/node_exporter_servers.yml
 ```
+
+#### node_exporter Installation
+[node_exporter](https://github.com/prometheus/node_exporter) is an exporter of hardware and OS metrics such as disk space.
+
+For a fully functional dashboard you need to have the node_exporter running on each of the nodes and configure the prometheus accordingly.
+
+As part of Scylla installation, the `scylla_setup` script will prompt to install node_exporter. If you skipped that step, you could always install node_exporter later with the  `node_exporter_install` script.
+
+
+`node_exporter_install` will download and install the node_exporter as a service.
+
 
 ### Run
 
