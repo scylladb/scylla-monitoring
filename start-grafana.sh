@@ -14,10 +14,11 @@ GRAFANA_ADMIN_PASSWORD="admin"
 GRAFANA_AUTH=false
 GRAFANA_AUTH_ANONYMOUS=true
 AM_ADDRESS=""
+DOCKER_PARAM=""
 
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hlg:n:p:v:a:x:c:j:m:M:' option; do
+while getopts ':hlg:n:p:v:a:x:c:j:m:M:D:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -34,7 +35,9 @@ while getopts ':hlg:n:p:v:a:x:c:j:m:M:' option; do
        ;;
     m) AM_ADDRESS="-m $OPTARG"
        ;;
-    l) LOCAL="--net=host"
+    l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
+       ;;
+    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
     a) GRAFANA_ADMIN_PASSWORD=$OPTARG
        GRAFANA_AUTH=true
@@ -77,7 +80,7 @@ for val in "${GRAFANA_ENV_ARRAY[@]}"; do
         GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e $val"
 done
 
-docker run -d $LOCAL -i -p $GRAFANA_PORT:3000 \
+docker run -d $DOCKER_PARAM -i -p $GRAFANA_PORT:3000 \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \

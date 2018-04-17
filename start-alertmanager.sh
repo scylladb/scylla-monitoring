@@ -8,18 +8,20 @@ fi
 VERSIONS=$DEFAULT_VERSION
 
 ALERT_MANAGER_VERSION="v0.12.0"
-LOCAL=""
+DOCKER_PARAM=""
 
-usage="$(basename "$0") [-h] [-p alertmanager port ] [-l]"
+usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param]"
 
-while getopts ':hlp:' option; do
+while getopts ':hlp:D:' option; do
   case "$option" in
     h) echo "$usage"
        exit
        ;;
     p) ALERTMANAGER_PORT=$OPTARG
        ;;
-    l) LOCAL="--net=host"
+    l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
+       ;;
+    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -31,7 +33,6 @@ while getopts ':hlp:' option; do
        ;;
   esac
 done
-
 if [ -z $ALERTMANAGER_PORT ]; then
     ALERTMANAGER_PORT=9093
     ALERTMANAGER_NAME=aalert
@@ -39,7 +40,7 @@ else
     ALERTMANAGER_NAME=aalert-$ALERTMANAGER_PORT
 fi
 
-sudo docker run -d $LOCAL -i -p $ALERTMANAGER_PORT:9093 \
+docker run -d $DOCKER_PARAM -i -p $ALERTMANAGER_PORT:9093 \
 	-v $PWD/prometheus/rule_config.yml:/etc/alertmanager/config.yml:Z \
      --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION > /dev/null
 
@@ -57,11 +58,11 @@ until $(curl --output /dev/null -f --silent http://localhost:$ALERTMANAGER_PORT)
     sleep 5
 done
 
-if [ ! "$(sudo docker ps -q -f name=$ALERTMANAGER_NAME)" ]
+if [ ! "$(docker ps -q -f name=$ALERTMANAGER_NAME)" ]
 then
     echo "Error: Alertmanager container failed to start"
     exit 1
 fi
 
-AM_ADDRESS="$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $ALERTMANAGER_NAME):$ALERTMANAGER_PORT"
+AM_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $ALERTMANAGER_NAME):$ALERTMANAGER_PORT"
 echo $AM_ADDRESS
