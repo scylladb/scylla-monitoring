@@ -6,7 +6,7 @@ else
 . versions.sh
 fi
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v1.8.2
 
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
@@ -14,8 +14,9 @@ NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
 SCYLLA_MANGER_TARGET_FILE=$PWD/prometheus/scylla_manager_servers.yml
 GRAFANA_ADMIN_PASSWORD=""
 ALERTMANAGER_PORT=""
+DOCKER_PARAM=""
 
-while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:D:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -36,13 +37,15 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:' option; do
        ;;
     n) NODE_TARGET_FILE=$OPTARG
        ;;
-    l) LOCAL="--net=host"
+    l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
     a) GRAFANA_ADMIN_PASSWORD="-a $OPTARG"
        ;;
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
        ;;
     c) GRAFANA_ENV_ARRAY+=("$OPTARG")
+       ;;
+    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
     b) PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=("$OPTARG")
        ;;
@@ -58,7 +61,13 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:' option; do
 done
 
 printf "Wait for alert manager container to start."
-AM_ADDRESS="$(./start-alertmanager.sh $ALERTMANAGER_PORT $GRAFANA_LOCAL)"
+if [ -z "$DOCKER_PARAM" ]; then
+    PASS_PARAM=""
+else
+    PASS_PARAM="-D"
+fi
+
+AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -D "$DOCKER_PARAM"`
 
 if [ -z $PROMETHEUS_PORT ]; then
     PROMETHEUS_PORT=9090
@@ -84,7 +93,7 @@ sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template > $PWD/p
 
 if [ -z $DATA_DIR ]
 then
-    docker run -d $LOCAL \
+    docker run -d $DOCKER_PARAM \
          -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $PWD/prometheus/prometheus.rules:/etc/prometheus/prometheus.rules:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
@@ -93,7 +102,7 @@ then
          -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION -config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
 else
     echo "Loading prometheus data from $DATA_DIR"
-    docker run -d $LOCAL -v $DATA_DIR:/prometheus:Z \
+    docker run -d $DOCKER_PARAM -v $DATA_DIR:/prometheus:Z \
          -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $PWD/prometheus/prometheus.rules:/etc/prometheus/prometheus.rules:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
@@ -112,13 +121,6 @@ else
 	if [ "$VERSIONS" = "all" ]; then
 		VERSIONS=$ALL
 	fi
-fi
-
-if [ -z $LOCAL ]; then
-    GRAFANA_LOCAL=""
-    LOCAL=""
-else
-    GRAFANA_LOCAL="-l"
 fi
 
 # Number of retries waiting for a Docker container to start
@@ -152,4 +154,4 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 done
 
 
-./start-grafana.sh -p $DB_ADDRESS $GRAFANA_PORT -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $GRAFANA_LOCAL
+./start-grafana.sh -p $DB_ADDRESS $PASS_PARAM "$DOCKER_PARAM" $GRAFANA_PORT -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
