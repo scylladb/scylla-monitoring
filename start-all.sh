@@ -143,7 +143,7 @@ fi
 
 # Can't use localhost here, because the monitoring may be running remotely.
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
-DB_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $PROMETHEUS_NAME):9090"
+DB_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME):9090"
 
 for val in "${GRAFANA_ENV_ARRAY[@]}"; do
         GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -c $val"
