@@ -61,11 +61,6 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:D:' option; do
 done
 
 printf "Wait for alert manager container to start."
-if [ -z "$DOCKER_PARAM" ]; then
-    PASS_PARAM=""
-else
-    PASS_PARAM="-D"
-fi
 
 AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -D "$DOCKER_PARAM"`
 
@@ -153,5 +148,4 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 
-
-./start-grafana.sh -p $DB_ADDRESS $PASS_PARAM "$DOCKER_PARAM" $GRAFANA_PORT -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
+./start-grafana.sh -p $DB_ADDRESS -D "$DOCKER_PARAM" $GRAFANA_PORT -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
