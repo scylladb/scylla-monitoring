@@ -45,7 +45,7 @@ fi
 
 mkdir -p grafana/build
 IFS=',' ;for v in $VERSIONS; do
-for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server; do
+for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server scylla-dash-per-machine; do
     if [ -e grafana/$f.$v.template.json ]
     then
         if [ ! -f "grafana/build/$f.$v.json" ] || [ "grafana/build/$f.$v.json" -ot "grafana/$f.$v.template.json" ]; then
