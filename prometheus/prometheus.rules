@@ -2,7 +2,7 @@
 ALERT InstanceDown
   IF up == 0
   FOR 30s
-  LABELS { severity = "1" }
+  LABELS { severity = "2" }
   ANNOTATIONS {
     summary = "Instance {{ $labels.instance }} down",
     description = "{{ $labels.instance }} has been down for more than 30 seconds.",
@@ -12,8 +12,26 @@ ALERT InstanceDown
 ALERT DiskFull
   IF node_filesystem_avail{mountpoint="/var/lib/scylla"}/node_filesystem_size{mountpoint="/var/lib/scylla"}*100 < 25
   FOR 30s
-  LABELS { severity = "1" }
+  LABELS { severity = "2" }
   ANNOTATIONS {
     summary = "Instance {{ $labels.instance }} low disk space",
     description = "{{ $labels.instance }} has less than 25% free disk space.",
+  }
+
+ALERT DiskFull
+  IF node_filesystem_avail{mountpoint="/var/lib/scylla"}/node_filesystem_size{mountpoint="/var/lib/scylla"}*100 < 10
+  FOR 30s
+  LABELS { severity = "3" }
+  ANNOTATIONS {
+    summary = "Instance {{ $labels.instance }} low disk space",
+    description = "{{ $labels.instance }} has less than 10% free disk space.",
+  }
+
+ALERT DiskFull
+  IF node_filesystem_avail{mountpoint="/var/lib/scylla"}/node_filesystem_size{mountpoint="/var/lib/scylla"}*100 < 1
+  FOR 30s
+  LABELS { severity = "4" }
+  ANNOTATIONS {
+    summary = "Instance {{ $labels.instance }} low disk space",
+    description = "{{ $labels.instance }} has less than 1% free disk space.",
   }
