@@ -7,7 +7,7 @@ global:
   external_labels:
     monitor: 'scylla-monitor'
 rule_files:
-  - /etc/prometheus/prometheus.rules
+  - /etc/prometheus/prometheus.rules.yml
     #
 # Alerting specifies settings related to the Alertmanager.
 alerting:
@@ -36,3 +36,10 @@ scrape_configs:
   file_sd_configs:
     - files:
       - /etc/scylla.d/prometheus/scylla_manager_servers.yml
+
+- job_name: 'prometheus'
+  # Override the global default and scrape targets from this job every 5 seconds.
+  scrape_interval: 5s
+  static_configs:
+    - targets: 
+      - localhost:9090

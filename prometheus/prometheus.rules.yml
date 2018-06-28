@@ -1,0 +1,19 @@
+groups:
+- name: scylla.rules
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 30s
+    labels:
+      severity: "1"
+    annotations:
+      description: '{{ $labels.instance }} has been down for more than 30 seconds.'
+      summary: Instance {{ $labels.instance }} down
+  - alert: DiskFull
+    expr: node_filesystem_avail{mountpoint="/var/lib/scylla"} / node_filesystem_size{mountpoint="/var/lib/scylla"} * 100 < 25
+    for: 30s
+    labels:
+      severity: "1"
+    annotations:
+      description: '{{ $labels.instance }} has less than 25% free disk space.'
+      summary: Instance {{ $labels.instance }} low disk space
