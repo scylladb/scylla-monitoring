@@ -1,0 +1,205 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "rows": [
+            {
+                "class": "logo_row",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<img src=\"http://www.scylladb.com/wp-content/uploads/logo-scylla-white-simple.png\" height=\"70\">\n<hr style=\"border-top: 3px solid #5780c1;\">"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "150px",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_transport_requests_served{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_thrift_served{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Requests Served per [[by]]",
+                        "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the connection level, not your data model."
+                    },
+                    {
+                        "class": "percent_panel",
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CPU Utilization per [[by]]",
+                        "description" : "the percentage of the time during which the CPU is utilized by Scylla. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high"
+                    },
+                    {
+                        "class": "dashlist",
+                        "tags": [
+                        	"master"
+		                ]
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "percent_panel",
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "avg(irate(scylla_scheduler_runtime_ms{group=\"main\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])/10 + avg(irate(scylla_scheduler_runtime_ms{group=\"statement\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])/10",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Foreground CPU Utilization by [[by]]",
+                        "description": "Time spent handling foreground requests (like reads, writes, and some system tasks). The remaining time is either idle, or used by background load like compactions and repairs. Background load in Scylla is opportunistic: background requests will try to use all resources available to complete as fast as possible and rely on the schedulers to provide isolation. This graph is better understood in conjunction with the main CPU load graph. For example, if there are spikes in CPU load that are not present in this graph, that indicates that the foreground load itself is stable."
+                    },
+                    {
+                        "class": "ns_panel",
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_scheduler_time_spent_on_task_quota_violations_ns{group=\"main\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Time spent in task quota violations by [[by]]",
+                        "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer. This may cause latency issues"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_transport_cql_connections{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Client CQL connections by [[by]]",
+                        "description": "amount of CQL connections currently established"
+                    }
+                ],
+                "title": "New row"
+            }
+        ],
+        "templating": {
+            "list": [
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Instance",
+                        "value": "instance"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "Instance",
+                            "value": "instance"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Shard",
+                            "value": "shard"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        }
+                    ],
+                    "query": "Instance,Shard,Cluster",
+                    "type": "custom"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "All",
+                        "value": [
+                            "$__all"
+                        ]
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": true,
+                    "label": "node",
+                    "multi": true,
+                    "name": "node",
+                    "options": [],
+                    "query": "scylla_reactor_utilization",
+                    "refresh": 2,
+                    "regex": "/instance=\"([a-zA-Z0-9\\-\\.]*)\".*/",
+                    "sort": 1,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": true,
+                    "label": "shard",
+                    "multi": true,
+                    "name": "shard",
+                    "options": [],
+                    "query": "scylla_reactor_utilization{instance=~\"$node\"}",
+                    "refresh": 2,
+                    "regex": "/shard=\"([0-9]*)\".*/",
+                    "sort": 3,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                }
+            ]
+        },
+		"tags": [
+			"master"
+		],
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Scylla CPU Per Server Metrics master",
+        "version": 5
+    }
+}
