@@ -13,23 +13,7 @@
             },
             {
                 "class": "row",
-                "height": "150px",
                 "panels": [
-                    {
-                        "class": "ops_panel",
-                        "targets": [
-                            {
-                                "expr": "sum(irate(scylla_transport_requests_served{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_thrift_served{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Requests Served per [[by]]",
-                        "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the connection level, not your data model."
-                    },
                     {
                         "class": "percent_panel",
                         "targets": [
@@ -43,6 +27,13 @@
                         ],
                         "title": "CPU Utilization per [[by]]",
                         "description" : "the percentage of the time during which the CPU is utilized by Scylla. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high"
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "##  ",
+                        "mode": "markdown",
+                        "span": 3,
+                        "style": {}
                     },
                     {
                         "class": "dashlist",
@@ -87,22 +78,6 @@
                         ],
                         "title": "Time spent in task quota violations by [[by]]",
                         "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer. This may cause latency issues"
-                    },
-                    {
-                        "class": "graph_panel",
-                        "pointradius": 1,
-                        "targets": [
-                            {
-                                "expr": "sum(scylla_transport_cql_connections{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 30
-                            }
-                        ],
-                        "title": "Client CQL connections by [[by]]",
-                        "description": "amount of CQL connections currently established"
                     }
                 ],
                 "title": "New row"
