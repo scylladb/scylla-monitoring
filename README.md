@@ -1,5 +1,12 @@
 # Scylla monitoring with Grafana and Prometheus
+___
+*** Notice All Users moving to versioned releases ***
+## Monitoring stack Versioning
 
+Starting July 2018, the monitoring stack was changed to use versions and releases.
+
+Users should move to a stable release. Current release is 1.0, if you are using master
+do `git checkout origin/branch-1.0` to switch to 1.0 version and make sure that you are using the latest stable version.
 ___
 **Notice Scylla Users upgrading to 2.1**
 You will need python installed for the solution to work.
