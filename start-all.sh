@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+echo ""
+echo "*****************************************************"
+echo "* WARNING: You are using the unstable master branch *"
+echo "* Check the README.md file for the stable releases  *"
+echo "*****************************************************"
+echo ""
+
 if [ "$1" = "-e" ]; then
 . enterprise_versions.sh
 else		

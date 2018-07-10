@@ -1,14 +1,11 @@
 # Scylla monitoring with Grafana and Prometheus
-
 ___
-**Notice Scylla Users upgrading to 2.1**
-You will need python installed for the solution to work.
+*** Notice to users using git ***
 
-The sudo is removed from the start and kill scripts. Typically, when installing docker you add the current users
-to the docker group and do not use sudo.
+The monitoring stack was changed to use versions and releases.
 
-You can find out more on the [docker installation](https://docs.docker.com/install/linux/linux-postinstall/).
-
+Users should move to a stable release. Current release is 1.0, if you are using master
+do `git checkout origin/branch-1.0` to switch to 1.0 version and make sure that you are using the latest stable version.
 ___
 
 ### Introduction
@@ -56,6 +53,14 @@ sudo pip install pyyaml
 ```
 
 ### Install
+#### Installing archived project
+
+Download the latest version from:
+https://github.com/scylladb/scylla-grafana-monitoring/releases
+
+
+
+#### Installing source from git
 
 ```
 git clone https://github.com/scylladb/scylla-grafana-monitoring.git
