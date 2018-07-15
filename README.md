@@ -5,7 +5,9 @@ ___
 The monitoring stack was changed to use versions and releases.
 
 Users should move to a stable release. Current release is 1.0, if you are using master
-do `git checkout origin/branch-1.0` to switch to 1.0 version and make sure that you are using the latest stable version.
+do `git checkout --recursive origin/branch-1.0` to switch to 1.0 version and make sure that you are using the latest stable version.
+
+Note the '--recursive' flag.
 ___
 
 ### Introduction
