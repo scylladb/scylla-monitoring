@@ -36,3 +36,51 @@ groups:
     annotations:
       description: '{{ $labels.instance }} has less than 1% free disk space.'
       summary: Instance {{ $labels.instance }} low disk space
+  - alert: CpuUtilized
+    expr: max(scylla_reactor_utilization)by (instance) > 90
+    for: 120s
+    labels:
+      severity: "2"
+    annotations:
+      description: '{{ $labels.instance }} has CPU utilization over 90% for more than 120s'
+      summary: Instance {{ $labels.instance }} high CPU utilization
+  - alert: CpuUtilized
+    expr: max(scylla_reactor_utilization)by (instance) > 99
+    for: 120s
+    labels:
+      severity: "3"
+    annotations:
+      description: '{{ $labels.instance }} has CPU utilization over 99% for more than 120s'
+      summary: Instance {{ $labels.instance }} high CPU utilization
+  - alert: ReadLatency
+    expr: sum(rate(scylla_storage_proxy_coordinator_read_latency_sum[30s])) by (instance)/(sum(rate(scylla_storage_proxy_coordinator_read_latency_count[30s])) by (instance) +1)>500
+    for: 60s
+    labels:
+      severity: "3"
+    annotations:
+      description: '{{ $labels.instance }} has average read latency over 500ms'
+      summary: Instance {{ $labels.instance }} high read average latency
+  - alert: Read95Latency
+    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket[5m])) by (le, instance))>500
+    for: 60s
+    labels:
+      severity: "2"
+    annotations:
+      description: '{{ $labels.instance }} has 95th read latency over 500ms'
+      summary: Instance {{ $labels.instance }} 95th read high latency
+  - alert: InsertLatency
+    expr: sum(rate(scylla_storage_proxy_coordinator_write_latency_sum[30s])) by (instance)/(sum(rate(scylla_storage_proxy_coordinator_write_latency_count[30s])) by (instance) +1)>500
+    for: 60s
+    labels:
+      severity: "3"
+    annotations:
+      description: '{{ $labels.instance }} has average write latency over 500ms'
+      summary: Instance {{ $labels.instance }} high average write latency
+  - alert: Insert95Latency
+    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket[5m])) by (le, instance))>500
+    for: 60s
+    labels:
+      severity: "2"
+    annotations:
+      description: '{{ $labels.instance }} has 95th write latency over 500ms'
+      summary: Instance {{ $labels.instance }} 95th write high latency
