@@ -21,7 +21,6 @@ The monitoring infrastructure consists of several components, wrapped in Docker 
 
 ### Prerequisites
 
-* git
 * docker
 * python module pyyaml (for `genconfig.py`)
 * python module json (for `make_dashboards`)
