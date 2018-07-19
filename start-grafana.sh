@@ -80,11 +80,15 @@ for val in "${GRAFANA_ENV_ARRAY[@]}"; do
         GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e $val"
 done
 
+PLUGIN_OWN=`stat -c "%u:%g" grafana/plugins/`
+
 docker run -d $DOCKER_PARAM -i -p $GRAFANA_PORT:3000 \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
-     -e "GF_INSTALL_PLUGINS=grafana-piechart-panel,camptocamp-prometheus-alertmanager-datasource" \
+     -v $PWD/grafana/plugins/:/etc/grafana/custom-plugins:Z \
+     -e "GF_PATHS_PLUGINS=/etc/grafana/custom-plugins" \
+     -e "GF_INSTALL_PLUGINS=grafana-piechart-panel" \
      -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
      $GRAFANA_ENV_COMMAND \
      "${proxy_args[@]}" \
@@ -110,6 +114,9 @@ then
         echo "Error: Grafana container failed to start"
         exit 1
 fi
+
+# Docker is not playing nice and still the directory ownership
+docker exec -t $GRAFANA_NAME chown -R $PLUGIN_OWN /etc/grafana/custom-plugins
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
