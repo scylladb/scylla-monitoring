@@ -39,7 +39,7 @@ curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/
 if [ -n $AM_ADDRESS ]
 then
   curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@localhost:$GRAFANA_PORT/api/datasources \
-       --data-binary '{"orgId":1,"name":"alertmanager", "version": "0.0.6", "type":"camptocamp-prometheus-alertmanager-datasource","typeLogoUrl":"public/img/icn-datasource.svg","access":"proxy","url":"'"http://$AM_ADDRESS"'","password":"","user":"","database":"","basicAuth":false,"isDefault":false,"jsonData":{"severity_critical": "4","severity_high": "3", "severity_warning": "2","severity_info": "1"}}' \
+       --data-binary '{"orgId":1,"name":"alertmanager", "type":"camptocamp-prometheus-alertmanager-datasource","typeLogoUrl":"public/img/icn-datasource.svg","access":"proxy","url":"'"http://$AM_ADDRESS"'","password":"","user":"","database":"","basicAuth":false,"isDefault":false,"jsonData":{"severity_critical": "4","severity_high": "3", "severity_warning": "2","severity_info": "1"}}' \
        -H "Content-Type: application/json"
 fi
 
