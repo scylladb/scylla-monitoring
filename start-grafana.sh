@@ -84,7 +84,7 @@ docker run -d $DOCKER_PARAM -i -p $GRAFANA_PORT:3000 \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
-     -e "GF_INSTALL_PLUGINS=grafana-piechart-panel,camptocamp-prometheus-alertmanager-datasource" \
+     -e "GF_INSTALL_PLUGINS=grafana-piechart-panel,camptocamp-prometheus-alertmanager-datasource 0.0.6" \
      -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
      $GRAFANA_ENV_COMMAND \
      "${proxy_args[@]}" \
