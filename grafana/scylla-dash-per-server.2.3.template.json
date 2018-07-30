@@ -1,0 +1,1140 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "rows": [
+            {
+                "class": "logo_row",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<img src=\"http://www.scylladb.com/wp-content/uploads/logo-scylla-white-simple.png\" height=\"70\">\n<hr style=\"border-top: 3px solid #5780c1;\">"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "single_stat_panel",
+                        "targets": [
+                            {
+                                "expr": "count(up{job=\"scylla\"})",
+                                "intervalFactor": 1,
+                                "legendFormat": "Total Nodes",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Total Nodes"
+                    },
+                    {
+                        "class": "single_stat_panel_fail",
+                        "targets": [
+                            {
+                                "expr": "count(scrape_samples_scraped{job=\"scylla\"}==0) OR vector(0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "Unreachable",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "thresholds": "1,2",
+                        "title": "Unreachable"
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "##  ",
+                        "mode": "markdown",
+                        "span": 3,
+                        "style": {}
+                    },
+                    {
+                        "class": "ops_panel",
+                        "bars": true,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_transport_requests_served{}[30s])) + sum(irate(scylla_thrift_served{}[30s]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "Total Requests",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Total Requests"
+                    },
+                    {
+                        "class": "dashlist",
+                        "tags": [
+                        	"2.3"
+		                ]
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "percent_panel",
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Load per [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_transport_requests_served{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_thrift_served{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the connection level, not your data model.",
+                        "title": "Requests Served per [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "text_header_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Reads and Writes</h1>",
+                        "height": "30"
+                    },
+                    {
+                        "class": "text_header_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Timeouts and Errors</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "200px",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_storage_proxy_coordinator_foreground_writes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Foreground Writes per [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_storage_proxy_coordinator_foreground_reads{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Foreground Reads per [[by]]"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Write Timeouts per Second per [[by]]"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Write Unavailable per Second per [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "200px",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_storage_proxy_coordinator_background_writes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Background Writes per [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_storage_proxy_coordinator_background_reads{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Background Reads per [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Read Timeouts per Second per [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Read Unavailable per Second per [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Replica</h1>",
+                        "height": "30"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_total_reads{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_total_writes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_database_active_reads{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Active sstable reads"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_database_queued_reads{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Queued sstable reads"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_database_requests_blocked_memory_current{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes currently blocked on dirty"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_commitlog_pending_allocations{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes currently blocked on commitlog"
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "",
+                        "mode": "markdown",
+                        "span": 3
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_total_reads_failed{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads failed"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_requests_blocked_memory{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes blocked on dirty"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_commitlog_requests_blocked_memory{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes blocked on commitlog"
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "",
+                        "mode": "markdown",
+                        "span": 3
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "",
+                        "mode": "markdown",
+                        "span": 3
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_total_writes_failed{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes failed"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_total_writes_timedout{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes timed out"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Disk $monitor_disk</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Cache</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_reads{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s]) - irate(scylla_cache_reads_with_misses{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads with no misses"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_reads_with_misses{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads with misses"
+                    }
+                ]
+            },
+            {
+                "class" : "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_row_hits{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Hits"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_partition_hits{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Hits"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_row_misses{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Misses"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_partition_misses{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Misses"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_row_insertions{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Insertions"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_partition_insertions{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Insertions"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_row_evictions{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Evictions"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_partition_evictions{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Evictions"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_rows_merged_from_memtable{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Merges"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_partition_merges{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Merges"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_row_removals{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Removals"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cache_partition_removals{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Removals"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_cache_rows{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Rows"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_cache_partitions{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partitions"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_cache_bytes_used{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Used Bytes"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_cache_bytes_total{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Total Bytes"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Memory</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bytes_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_lsa_total_space_bytes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "LSA total memory"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_lsa_non_lsa_used_space_bytes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Non-LSA used memory"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Network $monitor_network_interface</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "pps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "irate(node_network_receive_packets{device=\"$monitor_network_interface\"}[30s])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Interface Rx Packets",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Rx Packets"
+                    },
+                    {
+                        "class": "pps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "irate(node_network_transmit_packets{device=\"$monitor_network_interface\"}[30s])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Interface Tx Packets",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Tx Packets"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "irate(node_network_receive_bytes{device=\"$monitor_network_interface\"}[30s])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Interface Rx Bps",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Rx Bps"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "irate(node_network_transmit_bytes{device=\"$monitor_network_interface\"}[30s])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Interface Tx Bps",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Tx Bps"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Compaction</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "span": 12,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_compaction_manager_compactions{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Running Compactions"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">CQL</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_inserts{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "CQL Inserts",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CQL Insert"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_reads{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "CQL Reads",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CQL Reads"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_deletes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "CQL Deletes",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CQL Deletes"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_updates{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "CQL Updates",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CQL Updates"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_transport_cql_connections{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Client CQL connections by [[by]]",
+                        "description": "amount of CQL connections currently established"
+                    }
+                ],
+                "title": "New row"
+            }
+        ],
+        "templating": {
+            "list": [
+                {
+                    "allValue": null,
+                    "current": {
+                        "isNone": true,
+                        "text": "None",
+                        "value": ""
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "monitor_disk",
+                    "options": [],
+                    "query": "node_disk_bytes_read",
+                    "refresh": 2,
+                    "regex": "/.*device=\"([^\\\"]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "isNone": true,
+                        "text": "None",
+                        "value": ""
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "monitor_network_interface",
+                    "options": [],
+                    "query": "node_network_receive_packets",
+                    "refresh": 2,
+                    "regex": "/.*device=\"([^\\\"]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Instance",
+                        "value": "instance"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "Instance",
+                            "value": "instance"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Shard",
+                            "value": "shard"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        }
+                    ],
+                    "query": "Instance,Shard,Cluster",
+                    "type": "custom"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "All",
+                        "value": [
+                            "$__all"
+                        ]
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": true,
+                    "label": "node",
+                    "multi": true,
+                    "name": "node",
+                    "options": [],
+                    "query": "label_values(scylla_reactor_utilization, instance)",
+                    "refresh": 2,
+                    "regex": "",
+                    "sort": 1,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": true,
+                    "label": "shard",
+                    "multi": true,
+                    "name": "shard",
+                    "options": [],
+                    "query": "scylla_reactor_utilization{instance=~\"$node\"}",
+                    "refresh": 2,
+                    "regex": "/shard=\"([0-9]*)\".*/",
+                    "sort": 3,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                }
+            ]
+        },
+		"tags": [
+			"2.3"
+		],
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Scylla Per Server Metrics 2.3",
+        "version": 5
+    }
+}
