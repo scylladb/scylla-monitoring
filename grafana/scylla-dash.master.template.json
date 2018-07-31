@@ -452,58 +452,40 @@
                             "selected": false,
                             "text": "Cluster",
                             "value": "cluster"
+                        },
+                        {
+                            "selected": false,
+                            "text": "DC",
+                            "value": "dc"
                         }
                     ],
-                    "query": "Instance,Shard,Cluster",
+                    "query": "Instance,Shard,DC,Cluster",
                     "type": "custom"
                 },
                 {
-                    "allValue": null,
-                    "current": {
-                        "text": "All",
-                        "value": [
-                            "$__all"
-                        ]
-                    },
-                    "datasource": "prometheus",
-                    "hide": 0,
-                    "includeAll": true,
-                    "label": "node",
-                    "multi": true,
-                    "name": "node",
-                    "options": [],
-                    "query": "label_values(scylla_reactor_utilization, instance)",
-                    "refresh": 2,
-                    "regex": "",
-                    "sort": 1,
-                    "tagValuesQuery": "",
-                    "tags": [],
-                    "tagsQuery": "",
-                    "type": "query",
-                    "useTags": false
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
                 },
                 {
-                    "allValue": null,
-                    "current": {
-                        "text": "All",
-                        "value": "$__all"
-                    },
-                    "datasource": "prometheus",
-                    "hide": 0,
-                    "includeAll": true,
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
                     "label": "shard",
-                    "multi": true,
                     "name": "shard",
-                    "options": [],
-                    "query": "scylla_reactor_utilization{instance=~\"$node\"}",
-                    "refresh": 2,
-                    "regex": "/shard=\"([0-9]*)\".*/",
-                    "sort": 3,
-                    "tagValuesQuery": "",
-                    "tags": [],
-                    "tagsQuery": "",
-                    "type": "query",
-                    "useTags": false
+                    "query": "label_values(scylla_reactor_utilization,shard)",
+                    "sort": 3
                 }
             ]
         },
