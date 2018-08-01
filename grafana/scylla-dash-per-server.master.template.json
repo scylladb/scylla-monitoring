@@ -101,6 +101,32 @@
                         ],
                         "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the connection level, not your data model.",
                         "title": "Requests Served per [[by]]"
+                    },
+                    {
+                        "class": "pie_chart_panel",
+                        "combine": {
+                            "label": "Others",
+                            "threshold": 0
+                        },
+                        "targets": [
+                            {
+                                "expr": "sum(node_filesystem_avail{mountpoint=\"/var/lib/scylla\"})",
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "Free",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "(sum(node_filesystem_size{mountpoint=\"/var/lib/scylla\"})-sum(node_filesystem_avail{mountpoint=\"/var/lib/scylla\"}))",
+                                "intervalFactor": 1,
+                                "legendFormat": "Used",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Total Storage"
                     }
                 ],
                 "title": "New row"
@@ -441,6 +467,70 @@
                         "class": "text_panel",
                         "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Disk $monitor_disk</h1>",
                         "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "irate(node_disk_writes_completed{device=\"$monitor_disk\"}[30s])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Disk Writes per Server per Second",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Writes per Server per Second"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "irate(node_disk_reads_completed{device=\"$monitor_disk\"}[30s])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Disk Reads per Server per Second",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Reads per Server per Second"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "irate(node_disk_bytes_written{device=\"$monitor_disk\"}[30s])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Disk Writes Bps per Server",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Writes Bps per Server"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "irate(node_disk_bytes_read{device=\"$monitor_disk\"}[30s])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Disk Read Bps per Server",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Read Bps per Server"
                     }
                 ],
                 "title": "New row"
