@@ -31,6 +31,7 @@ On CentOS, you can do:
 ```bash
 sudo yum install -y git docker python-pip
 sudo pip install --upgrade pip
+sudo yum -y install epel-release
 sudo pip install pyyaml
 ```
 
