@@ -70,12 +70,21 @@ done
 printf "Wait for alert manager container to start."
 
 AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -D "$DOCKER_PARAM"`
-
+if [ $? -ne 0 ]; then
+    echo "$AM_ADDRESS"
+    exit 1
+fi
 if [ -z $PROMETHEUS_PORT ]; then
     PROMETHEUS_PORT=9090
     PROMETHEUS_NAME=aprom
 else
     PROMETHEUS_NAME=aprom-$PROMETHEUS_PORT
+fi
+
+docker container inspect $PROMETHEUS_NAME > /dev/null
+if [ $? -eq 0 ]; then
+    printf "\nSome of the monitoring docker instances ($PROMETHEUS_NAME) are already running. You can kill all of them using kill-all.sh\n"
+    exit 1
 fi
 
 

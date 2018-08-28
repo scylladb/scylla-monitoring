@@ -40,6 +40,12 @@ else
     ALERTMANAGER_NAME=aalert-$ALERTMANAGER_PORT
 fi
 
+docker container inspect $ALERTMANAGER_NAME > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    printf "\nSome of the monitoring docker instances ($ALERTMANAGER_NAME) are already running. You can kill all of them using kill-all.sh\n"
+    exit 1
+fi
+
 docker run -d $DOCKER_PARAM -i -p $ALERTMANAGER_PORT:9093 \
 	-v $PWD/prometheus/rule_config.yml:/etc/alertmanager/config.yml:Z \
      --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION > /dev/null

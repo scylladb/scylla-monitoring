@@ -71,6 +71,12 @@ if [ -z $GRAFANA_NAME ]; then
     GRAFANA_NAME=agraf-$GRAFANA_PORT
 fi
 
+docker container inspect $GRAFANA_NAME > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    printf "\nSome of the monitoring docker instances ($GRAFANA_NAME) are already running. You can kill all of them using kill-all.sh\n"
+    exit 1
+fi
+
 proxy_args=()
 if [[ -n "$HTTP_PROXY" ]]; then
     proxy_args=(-e http_proxy="$HTTP_PROXY")
