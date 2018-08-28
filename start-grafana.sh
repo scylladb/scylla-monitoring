@@ -73,7 +73,7 @@ fi
 
 docker container inspect $GRAFANA_NAME > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    printf "\nSome of the monitoring docker instances ($GRAFANA_NAME) exist. Make sure all containers are stopped and deleted. You can use kill-all.sh for that\n"
+    printf "\nSome of the monitoring docker instances ($GRAFANA_NAME) exist. Make sure all containers are killed and removed. You can use kill-all.sh for that\n"
     exit 1
 fi
 

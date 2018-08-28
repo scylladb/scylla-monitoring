@@ -83,7 +83,7 @@ fi
 
 docker container inspect $PROMETHEUS_NAME > /dev/null
 if [ $? -eq 0 ]; then
-    printf "\nSome of the monitoring docker instances ($PROMETHEUS_NAME) exist. Make sure all containers are stopped and deleted. You can use kill-all.sh for that\n"
+    printf "\nSome of the monitoring docker instances ($PROMETHEUS_NAME) exist. Make sure all containers are killed and removed. You can use kill-all.sh for that\n"
     exit 1
 fi
 
