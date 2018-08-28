@@ -42,7 +42,7 @@ fi
 
 docker container inspect $ALERTMANAGER_NAME > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    printf "\nSome of the monitoring docker instances ($ALERTMANAGER_NAME) are already running. You can kill all of them using kill-all.sh\n"
+    printf "\nSome of the monitoring docker instances ($ALERTMANAGER_NAME) exist. Make sure all containers are stopped and deleted. You can use kill-all.sh for that\n"
     exit 1
 fi
 
