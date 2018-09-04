@@ -19,7 +19,6 @@ The monitoring infrastructure consists of several components, wrapped in Docker 
 
 ### Prerequisites
 
-* git
 * docker
 * python module pyyaml (for `genconfig.py`)
 * python module json (for `make_dashboards`)
@@ -73,6 +72,7 @@ ubuntu $ sudo systemctl restart docker
 centos $ sudo service docker start
 ```
 
+### Configuration
 Update `prometheus/scylla_servers.yml` and `prometheus/node_exporter_servers.yml` with the targets (server you wish to monitor).
 
 For every server, there are two targets, one under `scylla` job which is used for the scylla metrics.
@@ -82,8 +82,11 @@ For example, update targets in `prometheus/scylla_servers.yml` :
 
 ```
 - targets:
-  - 172.17.0.2:9180
-  - 172.17.0.3:9180
+      - 172.17.0.2:9180
+      - 172.17.0.3:9180
+  labels:
+       cluster: cluster1
+       dc: dc1
 ```
 
 Second, for general node information (disk, network, etc.) add the server under `node_exporter` job. Use port 9100.
@@ -91,10 +94,17 @@ For example, update targets in `prometheus/node_exporter_servers.yml` :
 
 ```
 - targets:
-  - 172.17.0.2:9100
-  - 172.17.0.3:9100
+      - 172.17.0.2:9100
+      - 172.17.0.3:9100
+  labels:
+       cluster: cluster1
+       dc: dc1
 ```
+#### Clusters and Data centers
+Note that each targets (there could be more than one) come with its own cluster and dc labels.
+For multiple DC or multiple cluster create multiple targets entries, each with the right cluster or dc.
 
+#### Using your own target files
 You can also use your own target files instead of updating `scylla_servers.yml` and `node_exporter_servers.yml`, using the `-s` for scylla target file and `-n` for node taget file. For example:
 
 ```

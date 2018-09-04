@@ -20,16 +20,26 @@ alerting:
 
 scrape_configs:
 - job_name: scylla
-  honor_labels: true
+  honor_labels: false
   file_sd_configs:
     - files:
       - /etc/scylla.d/prometheus/scylla_servers.yml
+  metric_relabel_configs:
+    - source_labels: [instance]
+      regex:  '(.*):\d+'
+      target_label: instance
+      replacement: '${1}'
 
 - job_name: node_exporter
-  honor_labels: true
+  honor_labels: false
   file_sd_configs:
     - files:
       - /etc/scylla.d/prometheus/node_exporter_servers.yml
+  metric_relabel_configs:
+    - source_labels: [instance]
+      regex:  '(.*):\d+'
+      target_label: instance
+      replacement: '${1}'
 
 - job_name: scylla_manager
   honor_labels: true
