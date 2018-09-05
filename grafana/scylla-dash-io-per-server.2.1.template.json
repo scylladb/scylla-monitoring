@@ -20,7 +20,7 @@
                         "class": "single_stat_panel",
                         "targets": [
                             {
-                                "expr": "count(up{job=\"scylla\"})",
+                                "expr": "count(up{job=\"scylla\", cluster=~\"$cluster|$^\"})",
                                 "intervalFactor": 1,
                                 "legendFormat": "Total Nodes",
                                 "refId": "A",
@@ -33,7 +33,7 @@
                         "class": "single_stat_panel_fail",
                         "targets": [
                             {
-                                "expr": "count(scrape_samples_scraped{job=\"scylla\"}==0) OR vector(0)",
+                                "expr": "count(scrape_samples_scraped{job=\"scylla\", cluster=~\"$cluster|$^\"}==0) OR vector(0)",
                                 "intervalFactor": 1,
                                 "legendFormat": "Unreachable",
                                 "refId": "A",
@@ -63,7 +63,7 @@
                         ],
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_transport_requests_served{}[30s])) + sum(irate(scylla_thrift_served{}[30s]))",
+                                "expr": "sum(irate(scylla_transport_requests_served{cluster=~\"$cluster|$^\"}[30s])) + sum(irate(scylla_thrift_served{cluster=~\"$cluster|$^\"}[30s]))",
                                 "intervalFactor": 1,
                                 "legendFormat": "Total Requests",
                                 "refId": "A",
@@ -93,7 +93,7 @@
                         ],
                         "targets": [
                             {
-                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
@@ -109,7 +109,7 @@
                         "pointradius": 1,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_transport_requests_served{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_thrift_served{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -118,28 +118,6 @@
                             }
                         ],
                         "title": "Requests Served per [[by]]"
-                    },
-                    {
-                        "class": "pie_chart_panel",
-                        "targets": [
-                            {
-                                "expr": "sum(node_filesystem_avail{mountpoint=\"/var/lib/scylla\"})",
-                                "interval": "",
-                                "intervalFactor": 1,
-                                "legendFormat": "Free",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 7200
-                            },
-                            {
-                                "expr": "(sum(node_filesystem_size{mountpoint=\"/var/lib/scylla\"})-sum(node_filesystem_avail{mountpoint=\"/var/lib/scylla\"}))",
-                                "intervalFactor": 1,
-                                "legendFormat": "Used",
-                                "refId": "B",
-                                "step": 7200
-                            }
-                        ],
-                        "title": "Total Storage"
                     }
                 ],
                 "title": "New row"
@@ -163,7 +141,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "irate(node_disk_writes_completed{device=\"$monitor_disk\"}[30s])",
+                                "expr": "irate(node_disk_writes_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s]) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Disk Writes per Server per Second",
                                 "metric": "",
@@ -178,7 +156,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "irate(node_disk_reads_completed{device=\"$monitor_disk\"}[30s])",
+                                "expr": "irate(node_disk_reads_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s]) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Disk Reads per Server per Second",
                                 "refId": "A",
@@ -201,7 +179,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "irate(node_disk_bytes_written{device=\"$monitor_disk\"}[30s])",
+                                "expr": "irate(node_disk_bytes_written{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s]) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Disk Writes Bps per Server",
                                 "metric": "",
@@ -232,7 +210,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "irate(node_disk_bytes_read{device=\"$monitor_disk\"}[30s])",
+                                "expr": "irate(node_disk_bytes_read{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s]) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Disk Read Bps per Server",
                                 "refId": "A",
@@ -281,7 +259,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "1000000*max(scylla_io_queue_compaction_delay{instance=~\"[[node]]\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "expr": "1000000*max(scylla_io_queue_compaction_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -314,7 +292,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_compaction_total_bytes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_compaction_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -347,7 +325,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_compaction_total_operations{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_compaction_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -380,7 +358,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "1000000*max(scylla_io_queue_query_delay{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "expr": "1000000*max(scylla_io_queue_query_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -413,7 +391,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_query_total_bytes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_query_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -446,7 +424,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_query_total_operations{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_query_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -486,7 +464,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "1000000*max(scylla_io_queue_commitlog_delay{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "expr": "1000000*max(scylla_io_queue_commitlog_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -519,7 +497,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_commitlog_total_bytes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_commitlog_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -552,7 +530,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_commitlog_total_operations{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_commitlog_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -585,7 +563,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "1000000*max(scylla_io_queue_memtable_flush_delay{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "expr": "1000000*max(scylla_io_queue_memtable_flush_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -618,7 +596,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_memtable_flush_total_bytes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_memtable_flush_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -651,7 +629,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_memtable_flush_total_operations{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_memtable_flush_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -684,7 +662,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "1000000*max(scylla_io_queue_streaming_read_delay{instance=~\"[[node]]\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "expr": "1000000*max(scylla_io_queue_streaming_read_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -717,7 +695,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_streaming_read_total_bytes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_streaming_read_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -750,7 +728,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_streaming_read_total_operations{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_streaming_read_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -783,7 +761,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "1000000*max(scylla_io_queue_streaming_write_delay{instance=~\"[[node]]\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "expr": "1000000*max(scylla_io_queue_streaming_write_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -816,7 +794,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_streaming_write_total_bytes{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_streaming_write_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -849,7 +827,7 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_io_queue_streaming_write_total_operations{instance=~\"[[node]]\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_io_queue_streaming_write_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "seastar_io_queue_delay",
@@ -911,6 +889,16 @@
                     "name": "by",
                     "options": [
                         {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": false,
+                            "text": "DC",
+                            "value": "dc"
+                        },
+                        {
                             "selected": true,
                             "text": "Instance",
                             "value": "instance"
@@ -919,63 +907,35 @@
                             "selected": false,
                             "text": "Shard",
                             "value": "shard"
-                        },
-                        {
-                            "selected": false,
-                            "text": "Cluster",
-                            "value": "cluster"
                         }
                     ],
-                    "query": "Instance,Shard,Cluster",
+                    "query": "Cluster,DC,Instance,Shard",
                     "type": "custom"
                 },
                 {
-                    "allValue": null,
-                    "current": {
-                        "text": "All",
-                        "value": [
-                            "$__all"
-                        ]
-                    },
-                    "datasource": "prometheus",
-                    "hide": 0,
-                    "includeAll": true,
-                    "label": "node",
-                    "multi": true,
-                    "name": "node",
-                    "options": [],
-                    "query": "label_values(instance)",
-                    "refresh": 2,
-                    "regex": "",
-                    "sort": 0,
-                    "tagValuesQuery": "",
-                    "tags": [],
-                    "tagsQuery": "",
-                    "type": "query",
-                    "useTags": false
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
                 },
                 {
-                    "allValue": null,
-                    "current": {
-                        "text": "All",
-                        "value": "$__all"
-                    },
-                    "datasource": "prometheus",
-                    "hide": 0,
-                    "includeAll": true,
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
                     "label": "shard",
-                    "multi": true,
                     "name": "shard",
-                    "options": [],
-                    "query": "scylla_reactor_utilization{instance=~\"$node\"}",
-                    "refresh": 2,
-                    "regex": "/shard=\"([0-9]*)\".*/",
-                    "sort": 0,
-                    "tagValuesQuery": "",
-                    "tags": [],
-                    "tagsQuery": "",
-                    "type": "query",
-                    "useTags": false
+                    "query": "label_values(scylla_reactor_utilization,shard)",
+                    "sort": 3
                 }
             ]
         },
