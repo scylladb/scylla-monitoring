@@ -74,7 +74,7 @@ else
     PROMETHEUS_NAME=aprom-$PROMETHEUS_PORT
 fi
 
-docker container inspect $PROMETHEUS_NAME > /dev/null
+docker container inspect $PROMETHEUS_NAME > /dev/null 2>&1
 if [ $? -eq 0 ]; then
     printf "\nSome of the monitoring docker instances ($PROMETHEUS_NAME) exist. Make sure all containers are killed and removed. You can use kill-all.sh for that\n"
     exit 1
