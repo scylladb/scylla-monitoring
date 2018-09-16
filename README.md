@@ -73,12 +73,11 @@ centos $ sudo service docker start
 ```
 
 ### Configuration
-Update `prometheus/scylla_servers.yml` and `prometheus/node_exporter_servers.yml` with the targets (server you wish to monitor).
+In standard installations of Scylla, each node in the cluster provides two sources of metrics: Scylla itself (on port 9180), and a "node exporter" process which provides (on port 9100) standard hardware and OS metrics. We need to tell Prometheus the list of nodes which provides each of these two sources of metrics.
 
-For every server, there are two targets, one under `scylla` job which is used for the scylla metrics.
-Use port 9180.
+By default, the `start-all.sh` script (which we will use to run Prometheus and Grafana) gets the configuration of these two sources from the files `prometheus/scylla_servers.yml` and `prometheus/node_exporter_servers.yml`. These files should be edited to list the Scylla nodes, a.k.a. *targets*.
 
-For example, update targets in `prometheus/scylla_servers.yml` :
+For example, if you have two nodes (172.17.0.2 and 172.17.0.3) in a single dc cluster, update `prometheus/scylla_servers.yml` to say they provide Scylla metrics on port 9180:
 
 ```
 - targets:
@@ -89,8 +88,7 @@ For example, update targets in `prometheus/scylla_servers.yml` :
        dc: dc1
 ```
 
-Second, for general node information (disk, network, etc.) add the server under `node_exporter` job. Use port 9100.
-For example, update targets in `prometheus/node_exporter_servers.yml` :
+similarly, update `prometheus/node_exporter_servers.yml` to list the same nodes as additionally providing "node exporter" OS-level metrics on port 9100:
 
 ```
 - targets:
@@ -101,8 +99,8 @@ For example, update targets in `prometheus/node_exporter_servers.yml` :
        dc: dc1
 ```
 #### Clusters and Data centers
-Note that each targets (there could be more than one) come with its own cluster and dc labels.
-For multiple DC or multiple cluster create multiple targets entries, each with the right cluster or dc.
+Note that each "targets" section (there could be more than one) come with its own cluster and dc labels.
+For multiple DC or multiple cluster create multiple "targets" entries, each with the right cluster or dc.
 
 #### Using your own target files
 You can also use your own target files instead of updating `scylla_servers.yml` and `node_exporter_servers.yml`, using the `-s` for scylla target file and `-n` for node taget file. For example:
