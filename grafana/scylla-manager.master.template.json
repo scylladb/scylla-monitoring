@@ -44,7 +44,7 @@
                         "class": "single_stat_panel",
                         "targets": [
                             {
-                                "expr": "sum(scylla_manager_task_active_count) or vector(0)",
+                                "expr": "sum(scylla_manager_task_active_count{cluster=~\"$cluster|$^\"}) or vector(0)",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 40
@@ -65,7 +65,7 @@
                           },
                          "targets": [
                             {
-                              "expr": "scylla_manager_repair_progress{cluster=\"[[cluster]]\", host=\"\"}",
+                              "expr": "min(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", host=~\"$host\"})",
                               "format": "time_series",
                               "intervalFactor": 2,
                               "refId": "A"
@@ -74,7 +74,7 @@
                           "title": "Repair progress"
                     }
                 ],
-                "title": "Statistic Row"
+                "title": "Summary row"
             },
             {
                 "class": "row",
@@ -83,7 +83,7 @@
                         "class": "ops_panel",
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_manager_repair_segments_success{cluster=\"[[cluster]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_manager_repair_segments_success{cluster=~\"[[cluster]]\", host=~\"$host\", shard=~\"$shard\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 4
@@ -95,7 +95,7 @@
                         "class": "ops_panel",
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_manager_repair_segments_error{cluster=\"[[cluster]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_manager_repair_segments_error{cluster=~\"[[cluster]]\", host=~\"$host\", shard=~\"$shard\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 4
@@ -103,7 +103,24 @@
                         ],
                         "title": "Repair Segments Error Rate"
                     }],
-                "title": "Statistic Row"
+                "title": "Repair rate Row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_manager_ssh_open_streams_count{host=~\"$host\"}) by ($by)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "SSH open connections by $by"
+                    }],
+                "title": "SSH connection Row"
             }
         ],
         "templating": {
@@ -134,7 +151,7 @@
                         {
                             "selected": false,
                             "text": "Keyspace",
-                            "value": "unit"
+                            "value": "keyspace"
                         },
                         {
                             "selected": false,
@@ -142,99 +159,33 @@
                             "value": "shard"
                         }
                     ],
-                    "query": "Instance,Shard,Cluster",
+                    "query": "Instance,Shard,Keyspace,Cluster",
                     "type": "custom"
                 },
                 {
-                    "allValue": null,
-                    "current": {},
-                    "datasource": "prometheus",
-                    "hide": 0,
-                    "includeAll": false,
+                    "class": "template_variable_single",
                     "label": "cluster",
-                    "multi": false,
                     "name": "cluster",
-                    "options": [],
-                    "query": "scylla_manager_repair_segments_total",
-                    "refresh": 2,
-                    "regex": "/cluster=\"([a-zA-Z0-9\\-\\.=]*)\".*/",
-                    "sort": 0,
-                    "tagValuesQuery": "",
-                    "tags": [],
-                    "tagsQuery": "",
-                    "type": "query",
-                    "useTags": false
+                    "query": "label_values(scylla_manager_repair_segments_total, cluster)"
                 },
                 {
-                    "allValue": null,
-                    "current": {
-                        "text": "All",
-                        "value": [
-                            "$__all"
-                        ]
-                    },
-                    "datasource": "prometheus",
-                    "hide": 0,
-                    "includeAll": true,
+                    "class": "template_variable_all",
                     "label": "host",
-                    "multi": true,
                     "name": "host",
-                    "options": [],
-                    "query": "scylla_manager_repair_segments_total",
-                    "refresh": 2,
-                    "regex": "/host=\"([a-zA-Z0-9\\-\\.]*)\".*/",
-                    "sort": 0,
-                    "tagValuesQuery": "",
-                    "tags": [],
-                    "tagsQuery": "",
-                    "type": "query",
-                    "useTags": false
+                    "query": "label_values(scylla_manager_repair_segments_total{cluster=~\"$cluster|$^\"}, host)"
                 },
                 {
-                    "allValue": null,
-                    "current": {
-                        "text": "All",
-                        "value": "$__all"
-                    },
-                    "datasource": "prometheus",
-                    "hide": 0,
-                    "includeAll": true,
+                    "class": "template_variable_all",
                     "label": "keyspace",
-                    "multi": true,
                     "name": "keyspace",
-                    "options": [],
-                    "query": "scylla_manager_repair_segments_total{host=~\"$host\"}",
-                    "refresh": 2,
-                    "regex": "/unit=\"(.*)\".*/",
-                    "sort": 1,
-                    "tagValuesQuery": "",
-                    "tags": [],
-                    "tagsQuery": "",
-                    "type": "query",
-                    "useTags": false
+                    "query": "label_values(scylla_manager_repair_segments_total{host=~\"$host\"}, keyspace)"
                 },
                 {
-                    "allValue": null,
-                    "current": {
-                        "text": "All",
-                        "value": "$__all"
-                    },
-                    "datasource": "prometheus",
-                    "hide": 0,
-                    "includeAll": true,
+                    "class": "template_variable_all",
                     "label": "shard",
-                    "multi": true,
                     "name": "shard",
-                    "options": [],
-                    "query": "scylla_manager_repair_segments_total{host=~\"$host\"}",
-                    "refresh": 2,
-                    "regex": "/shard=\"([0-9]*)\".*/",
-                    "sort": 3,
-                    "tagValuesQuery": "",
-                    "tags": [],
-                    "tagsQuery": "",
-                    "type": "query",
-                    "useTags": false
+                    "query": "label_values(scylla_manager_repair_segments_total, shard)",
+                    "sort": 3
                 }
             ]
         },
