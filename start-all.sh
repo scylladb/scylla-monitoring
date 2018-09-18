@@ -60,6 +60,13 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:D:' option; do
   esac
 done
 
+if [ ! -z $ALERTMANAGER_PORT ] || [ ! -z $GRAFANA_PORT ] || [ ! -z $PROMETHEUS_PORT ]; then
+    if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
+        echo "Port mapping is not supported with host network, remove the -l flag from the command line"
+        exit 1
+    fi
+fi
+
 printf "Wait for alert manager container to start."
 
 AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -D "$DOCKER_PARAM"`
