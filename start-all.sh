@@ -60,6 +60,16 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:D:' option; do
   esac
 done
 
+if [ ! -f $SCYLLA_TARGET_FILE ]; then
+    echo "Scylla target file '${SCYLLA_TARGET_FILE}' does not exist"
+    exit 1
+fi
+
+if [ ! -f $NODE_TARGET_FILE ]; then
+    echo "Node target file '${NODE_TARGET_FILE}' does not exist"
+    exit 1
+fi
+
 if [ ! -z $ALERTMANAGER_PORT ] || [ ! -z $GRAFANA_PORT ] || [ ! -z $PROMETHEUS_PORT ]; then
     if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
         echo "Port mapping is not supported with host network, remove the -l flag from the command line"
