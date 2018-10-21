@@ -1,0 +1,162 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "rows": [
+            {
+                "class": "logo_row",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<img src=\"http://www.scylladb.com/wp-content/uploads/logo-scylla-white-simple.png\" height=\"70\">\n<hr style=\"border-top: 3px solid #5780c1;\">"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "percent_panel",
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CPU Utilization per [[by]]",
+                        "description" : "the percentage of the time during which the CPU is utilized by Scylla. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high"
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "##  ",
+                        "mode": "markdown",
+                        "span": 3,
+                        "style": {}
+                    },
+                    {
+                        "class": "dashlist",
+                        "tags": [
+                        	"3.0"
+		                ]
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "percent_panel",
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "avg(irate(scylla_scheduler_runtime_ms{group=\"main\",instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])/10 + avg(irate(scylla_scheduler_runtime_ms{group=\"statement\",instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])/10",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Foreground CPU Utilization by [[by]]",
+                        "description": "Time spent handling foreground requests (like reads, writes, and some system tasks). The remaining time is either idle, or used by background load like compactions and repairs. Background load in Scylla is opportunistic: background requests will try to use all resources available to complete as fast as possible and rely on the schedulers to provide isolation. This graph is better understood in conjunction with the main CPU load graph. For example, if there are spikes in CPU load that are not present in this graph, that indicates that the foreground load itself is stable."
+                    },
+                    {
+                        "class": "ns_panel",
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_scheduler_time_spent_on_task_quota_violations_ns{group=\"main\",instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Time spent in task quota violations by [[by]]",
+                        "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer. This may cause latency issues"
+                    }
+                ],
+                "title": "New row"
+            }
+        ],
+        "templating": {
+            "list": [
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Instance",
+                        "value": "instance"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": false,
+                            "text": "DC",
+                            "value": "dc"
+                        },
+                        {
+                            "selected": true,
+                            "text": "Instance",
+                            "value": "instance"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Shard",
+                            "value": "shard"
+                        }
+                    ],
+                    "query": "Cluster,DC,Instance,Shard",
+                    "type": "custom"
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "shard",
+                    "name": "shard",
+                    "query": "label_values(scylla_reactor_utilization,shard)",
+                    "sort": 3
+                }
+            ]
+        },
+		"tags": [
+			"3.0"
+		],
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Scylla CPU Per Server Metrics 3.0",
+        "version": 5
+    }
+}
