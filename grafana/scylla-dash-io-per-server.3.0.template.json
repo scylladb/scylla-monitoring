@@ -1,0 +1,575 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "rows": [
+            {
+                "class": "small_row",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<img src=\"http://www.scylladb.com/wp-content/uploads/logo-scylla-white-simple.png\" height=\"70\">\n<hr style=\"border-top: 3px solid #5780c1;\">"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "150px",
+                "panels": [
+                    {
+                        "class": "single_stat_panel",
+                        "targets": [
+                            {
+                                "expr": "count(up{job=\"scylla\", cluster=~\"$cluster|$^\"})",
+                                "intervalFactor": 1,
+                                "legendFormat": "Total Nodes",
+                                "refId": "A",
+                                "step": 240
+                            }
+                        ],
+                        "title": "Total Nodes"
+                    },
+                    {
+                        "class": "single_stat_panel_fail",
+                        "targets": [
+                            {
+                                "expr": "count(scrape_samples_scraped{job=\"scylla\", cluster=~\"$cluster|$^\"}==0) OR vector(0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "Unreachable",
+                                "refId": "A",
+                                "step": 120
+                            }
+                        ],
+                        "thresholds": "1,2",
+                        "title": "Unreachable"
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "##  ",
+                        "mode": "markdown",
+                        "span": 3,
+                        "style": {}
+                    },
+                    {
+                        "aliasColors": {
+                            "{}": "#584477"
+                        },
+                        "bars": true,
+                        "class": "graph_panel",
+                        "lines": false,
+                        "seriesOverrides": [
+                            {}
+                        ],
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_transport_requests_served{cluster=~\"$cluster|$^\"}[30s])) + sum(irate(scylla_thrift_served{cluster=~\"$cluster|$^\"}[30s]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "Total Requests",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Total Requests",
+                        "transparent": false
+                    },
+                    {
+                        "class": "dashlist",
+                        "tags": [
+                        	"3.0"
+		                ]
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "seriesOverrides": [
+                            {}
+                        ],
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Load per [[by]]",
+                        "transparent": false
+                    },
+                    {
+                        "class": "graph_panel",
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Requests Served per [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Disk Activity</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_disk_writes_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 20
+                            }
+                        ],
+                        "title": "Disk Writes per Server per Second"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_disk_reads_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 20
+                            }
+                        ],
+                        "title": "Disk Reads per Server per Second"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_disk_bytes_written{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 20
+                            }
+                        ],
+                        "title": "Disk Writes Bps per Server"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_disk_bytes_read{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 20
+                            }
+                        ],
+                        "title": "Disk Read Bps per Server"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">I/O Queue</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ms_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "1000000*max(scylla_io_queue_compaction_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Compactions I/O Queue delay by [[by]]"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_compaction_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Compactions I/O Queue bandwidth by [[by]]"
+                    },
+                    {
+                        "class": "iops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_compaction_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Compactions I/O Queue IOPS by [[by]]"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "1000000*max(scylla_io_queue_query_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Query I/O Queue delay by [[by]]"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_query_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Query I/O Queue bandwidth by [[by]]"
+                    },
+                    {
+                        "class": "iops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_query_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Query I/O Queue IOPS by [[by]]"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "1000000*max(scylla_io_queue_commitlog_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Commitlog I/O Queue delay by [[by]]"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_commitlog_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Commitlog I/O Queue bandwidth by [[by]]"
+                    },
+                    {
+                        "class": "iops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_commitlog_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Commitlog I/O Queue IOPS by [[by]]"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "1000000*max(scylla_io_queue_memtable_flush_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Memtable Flush I/O Queue delay by [[by]]"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_memtable_flush_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Memtable Flush I/O Queue bandwidth by [[by]]"
+                    },
+                    {
+                        "class": "iops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_memtable_flush_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Memtable Flush I/O Queue IOPS by [[by]]"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "1000000*max(scylla_io_queue_streaming_read_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Streaming Reads I/O Queue delay by [[by]]"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_streaming_read_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Streaming Reads I/O Queue bandwidth by [[by]]"
+                    },
+                    {
+                        "class": "iops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_streaming_read_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Streaming Reads I/O Queue IOPS by [[by]]"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "1000000*max(scylla_io_queue_streaming_write_delay{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Streaming Writes I/O Queue delay by [[by]]"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_streaming_write_total_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Streaming Writes I/O Queue bandwidth by [[by]]"
+                    },
+                    {
+                        "class": "iops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_io_queue_streaming_write_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Streaming Writes I/O Queue IOPS by [[by]]"
+                    }
+                ],
+                "title": "New row"
+            }
+        ],
+		"tags": [
+			"3.0"
+		],
+        "templating": {
+            "list": [
+                {
+                    "current": {},
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "multi": false,
+                    "name": "monitor_disk",
+                    "options": [],
+                    "query": "node_disk_bytes_read",
+                    "refresh": 2,
+                    "regex": "/.*device=\"([^\\\"]*)\".*/",
+                    "type": "query"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Instance",
+                        "value": "instance"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": false,
+                            "text": "DC",
+                            "value": "dc"
+                        },
+                        {
+                            "selected": true,
+                            "text": "Instance",
+                            "value": "instance"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Shard",
+                            "value": "shard"
+                        }
+                    ],
+                    "query": "Cluster,DC,Instance,Shard",
+                    "type": "custom"
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "shard",
+                    "name": "shard",
+                    "query": "label_values(scylla_reactor_utilization,shard)",
+                    "sort": 3
+                }
+            ]
+        },
+        "title": "Scylla Per-Server Disk I/O 3.0"
+    }
+}
