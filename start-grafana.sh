@@ -111,6 +111,7 @@ docker run -d $DOCKER_PARAM -i -u $UID -p $GRAFANA_PORT:3000 \
 
 if [ $? -ne 0 ]; then
     echo "Error: Grafana container failed to start"
+    echo "Run \`docker logs $GRAFANA_NAME --details\` for more information"
     exit 1
 fi
 
@@ -127,6 +128,7 @@ done
 if [ ! "$(docker ps -q -f name=$GRAFANA_NAME)" ]
 then
         echo "Error: Grafana container failed to start"
+        echo "Run \`docker logs $GRAFANA_NAME --details\` for more information"
         exit 1
 fi
 
