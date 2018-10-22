@@ -151,6 +151,7 @@ fi
 
 if [ $? -ne 0 ]; then
     echo "Error: Prometheus container failed to start"
+    echo "Run \`docker logs $PROMETHEUS_NAME --details\` for more information"
     exit 1
 fi
 if [ "$VERSIONS" = "latest" ]; then
@@ -176,6 +177,7 @@ done
 if [ ! "$(docker ps -q -f name=$PROMETHEUS_NAME)" ]
 then
         echo "Error: Prometheus container failed to start"
+        echo "Run \`docker logs $PROMETHEUS_NAME --details\` for more information"
         exit 1
 fi
 
