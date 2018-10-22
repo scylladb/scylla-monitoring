@@ -72,5 +72,13 @@ then
 fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
-        curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @$val -H "Content-Type: application/json"
+    if [[ $val == *".template.json" ]]; then
+        val1=${val::-14}
+        val1=${val1:8}
+        if [ ! -f "$val1.json" ] || [ "$val1.json" -ot "$val" ]; then
+           ./make_dashboards.py -t grafana/types.json -d $val
+        fi
+        val="$val1.json"
+    fi
+    curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/build/$val -H "Content-Type: application/json"
 done
