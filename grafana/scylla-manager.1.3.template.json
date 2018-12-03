@@ -65,8 +65,8 @@
                             }
                         ],
                         "thresholds": "1,2",
-                        "description": "The number of nodes that Scylla manager CQL probe failed connecting to",
-                        "title": "No CQL connection"
+                        "description": "The number of nodes that Scylla manager CQL probe failed connecting to. It could indicate a network or a node problem",
+                        "title": "No CQL connectivity"
                     },
                     {
                         "class": "single_stat_panel",
@@ -137,28 +137,30 @@
                 "class": "row",
                 "panels": [
                     {
-                        "class": "ops_panel",
+                        "class": "graph_panel",
                         "targets": [
                             {
-                                "expr": "sum(scylla_manager_ssh_open_streams_count{host=~\"$host\"}) by ($by)",
+                                "expr": "sum(scylla_manager_ssh_open_streams_count{host=~\"$host\", cluster=~\"[[cluster]]\"}) by ($by)",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 4
                             }
                         ],
+                        "description": "The number of SSH connection used by the manager",
                         "title": "SSH open connections by $by"
                     },
                     {
                         "class": "ms_panel",
                         "targets": [
                             {
-                                "expr": "avg(scylla_manager_cluster_cql_rtt_ms{host=~\"$host\"}) by ($by)",
+                                "expr": "avg(scylla_manager_cluster_cql_rtt_ms{host=~\"$host\", cluster=~\"[[cluster]]\"}) by ($by)",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 4
                             }
                         ],
-                        "title": "CQL probe latency by $by"
+                        "description": "Avrage duration time for a CQL ping operation",
+                        "title": "CQL probe duration by $by"
                     }
                     ],
                 "title": "SSH connection Row"
