@@ -44,6 +44,34 @@
                         "class": "single_stat_panel",
                         "targets": [
                             {
+                                "expr": "count(up{job=\"scylla\", cluster=~\"$cluster|$^\"})",
+                                "intervalFactor": 1,
+                                "legendFormat": "Total Nodes",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Total Nodes"
+                    },
+                    {
+                        "class": "single_stat_panel_fail",
+                        "targets": [
+                            {
+                                "expr": "count(cql_status{cluster=~\"$cluster|$^\"}==-1) OR vector(0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "Nodes without CQL connection",
+                                "refId": "A",
+                                "step": 20
+                            }
+                        ],
+                        "thresholds": "1,2",
+                        "description": "The number of nodes that Scylla manager CQL probe failed connecting to",
+                        "title": "No CQL connection"
+                    },
+                    {
+                        "class": "single_stat_panel",
+                        "targets": [
+                            {
                                 "expr": "sum(scylla_manager_task_active_count{cluster=~\"$cluster|$^\"}) or vector(0)",
                                 "intervalFactor": 1,
                                 "refId": "A",
