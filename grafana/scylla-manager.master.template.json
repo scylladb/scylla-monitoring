@@ -93,7 +93,7 @@
                           },
                          "targets": [
                             {
-                              "expr": "sum(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", host=~\"$host\"})/count(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", host=~\"$host\"})",
+                              "expr": "sum(sum(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", host=~\"$host\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\"}) by (task))",
                               "format": "time_series",
                               "intervalFactor": 2,
                               "refId": "A"
