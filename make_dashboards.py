@@ -23,11 +23,13 @@ from __future__ import print_function
 
 import argparse
 import json
+import re
 
 parser = argparse.ArgumentParser(description='Dashboards creating tool', conflict_handler="resolve")
 parser.add_argument('-t', '--type', action='append', help='Types file')
 parser.add_argument('-d', '--dashboards', action='append', help='dashbaords file')
 parser.add_argument('-r', '--reverse', action='store_true', default=False, help='Reverse mode, take a dashboard and try to minimize it')
+parser.add_argument('-G', '--grafana4', action='store_true', default=False, help='Do not Migrate the dashboard to the grafa 5 format, if not set the script will remove and emulate the rows with a single panels')
 parser.add_argument('-h', '--help', action='store_true', default=False, help='Print help information')
 parser.add_argument('-kt', '--key-tips', action='store_true', default=False, help='Add key tips when there are conflict values between the template and the value')
 
@@ -157,14 +159,97 @@ def compact_obj(obj, types, args):
                 else:
                     obj.pop(key)
     return obj
-    
-    
-def get_dashboard(name, types):
+
+def get_space_panel(size):
+    global id
+    id = id + 1
+    return {
+  "class": "text_panel",
+  "content": "##  ",
+  "editable": True,
+  "error": False,
+  "id": id,
+  "links": [],
+  "mode": "markdown",
+  "span": size,
+  "style": {},
+  "title": "",
+  "transparent": True,
+  "type": "text"
+}
+
+def panel_width(gridpos, panel):
+    if "w" in gridpos:
+        return gridpos["w"]
+    if "span" in panel:
+        return panel["span"] * 2
+    return 6
+
+def get_height(value, default):
+    m = re.match(r"(\d+)", value)
+    if m:
+        return int(m.group(1))/30
+    return default
+
+def set_grid_pos(x, y, panel, h, gridpos):
+    if "x" not in gridpos:
+        gridpos["x"] = x
+    if "y" not in gridpos:
+        gridpos["y"] = y
+    if "h" not in gridpos:
+        if "height" in panel:
+            gridpos["h"] = get_height(panel["height"], h)
+        else:
+            gridpos["h"] = h
+    if "w" not in gridpos:
+        gridpos["w"] = panel_width(gridpos, panel)
+    panel["gridPos"] = gridpos
+    return gridpos["h"]
+
+def add_row(y, panels, row, args):
+    total_span = 0
+    h = 6
+    x = 0
+    max_h = 0
+    if "height" in row:
+        if row["height"] != "auto":
+            h = get_height(row["height"], h)
+    if "gridPos" in row:
+        if "h" in row["gridPos"]:
+            h = row["gridPos"]["h"]
+    for p in row["panels"]:
+        gridpos = {}
+        if "gridPos" in p:
+            gridpos = p["gridPos"]
+        w = panel_width(gridpos, p)
+        if  w + x > 24:
+            x = 0
+            y = y + max_h
+            max_h = 0
+        height = set_grid_pos(x, y, p, h, gridpos)
+        x = x + w
+        if height > max_h:
+            max_h = height
+        panels.append(p)
+    return y + max_h
+
+def make_grafna_5(results, args):
+    rows = results["dashboard"]["rows"]
+    panels = [];
+    y = 0
+    for row in rows:
+        y = add_row(y, panels, row, args)
+    del results["dashboard"]["rows"]
+    results["dashboard"]["panels"] = panels
+
+def get_dashboard(name, types, args):
     global id
     id = 1
     new_name = name.replace("grafana/", "grafana/build/").replace(".template.json", ".json")
     result = get_json_file(name)
     update_object(result, types)
+    if not args.grafana4:
+        make_grafna_5(result, args)
     write_json(new_name, result)
     
 def compact_dashboard(name, type, args):
@@ -184,4 +269,4 @@ for d in args.dashboards:
     if args.reverse:
         compact_dashboard(d, types, args)
     else:
-        get_dashboard(d, types)
+        get_dashboard(d, types, args)
