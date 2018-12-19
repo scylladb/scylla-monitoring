@@ -393,7 +393,22 @@
                         "title": "",
                         "transparent": true,
                         "type": "text"
+                    },
+                    {
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Materialized Views</h1>",
+                        "editable": true,
+                        "error": false,
+                        "id": "auto",
+                        "isNew": true,
+                        "links": [],
+                        "mode": "html",
+                        "span": 6,
+                        "style": {},
+                        "title": "",
+                        "transparent": true,
+                        "type": "text"
                     }
+
                 ],
                 "title": "New row"
             },
@@ -429,6 +444,57 @@
                         ],
                         "title": "Cache Misses",
                         "description" : "Number of rows that were not present in the cache, and had to be fetched from storage."
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_database_view_update_backlog{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by ([[by]])
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "View Update Backlog",
+                        "description" : "Size in bytes of the view update backlog at each base replica."
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_dropped_view_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[30s])
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Dropped View Updates",
+                        "description" : "Number of dropped view updates due to an excessive view update backlog."
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "",
+                        "mode": "markdown",
+                        "span": 9
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_storage_proxy_coordinator_current_throttled_base_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Throttled Base Writes",
+                        "description" : "Currently throttled base writes, as a consequence of the respective view update backlog."
                     }
                 ],
                 "title": "New row"
