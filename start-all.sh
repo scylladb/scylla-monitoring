@@ -13,7 +13,7 @@ else
 . versions.sh
 fi
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma seperated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-N manager target file] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.5.0
 
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
@@ -23,7 +23,7 @@ GRAFANA_ADMIN_PASSWORD=""
 ALERTMANAGER_PORT=""
 DOCKER_PARAM=""
 
-while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:D:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:D:N:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -55,6 +55,8 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:D:' option; do
     D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
     b) PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=("$OPTARG")
+       ;;
+    N) SCYLLA_MANGER_TARGET_FILE="$OPTARG"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
