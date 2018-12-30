@@ -34,6 +34,7 @@ while getopts ':hlg:n:p:v:a:x:c:j:m:M:D:' option; do
     p) DB_ADDRESS=$OPTARG
        ;;
     m) AM_ADDRESS="-m $OPTARG"
+       ALERT_MANAGER_ADDRESS=$OPTARG
        ;;
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
@@ -86,11 +87,23 @@ for val in "${GRAFANA_ENV_ARRAY[@]}"; do
         GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e $val"
 done
 
-docker run -d $DOCKER_PARAM -i -p $GRAFANA_PORT:3000 \
+
+for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
+        GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
+done
+
+./generate-dashboards.sh -v $VERSIONS -M $MANAGER_VERSION $GRAFANA_DASHBOARD_COMMAND
+
+sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
+
+docker run -d $DOCKER_PARAM -i -u $UID -p $GRAFANA_PORT:3000 \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
-     -e "GF_INSTALL_PLUGINS=grafana-piechart-panel,camptocamp-prometheus-alertmanager-datasource 0.0.6" \
+     -v $PWD/grafana/build:/var/lib/grafana/dashboards \
+     -v $PWD/grafana/plugins:/var/lib/grafana/plugins \
+     -v $PWD/grafana/provisioning:/var/lib/grafana/provisioning \
+     -e "GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning" \
      -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
      $GRAFANA_ENV_COMMAND \
      "${proxy_args[@]}" \
@@ -116,9 +129,4 @@ then
         echo "Error: Grafana container failed to start"
         exit 1
 fi
-
-for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
-        GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
-done
-./load-grafana.sh -p $DB_ADDRESS $AM_ADDRESS -g $GRAFANA_PORT -v $VERSIONS -M $MANAGER_VERSION -a $GRAFANA_ADMIN_PASSWORD $GRAFANA_DASHBOARD_COMMAND
 
