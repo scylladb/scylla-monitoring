@@ -24,9 +24,9 @@ scrape_configs:
   file_sd_configs:
     - files:
       - /etc/scylla.d/prometheus/scylla_servers.yml
-  metric_relabel_configs:
-    - source_labels: [instance]
-      regex:  '(.*):\d+'
+  relabel_configs:
+    - source_labels: [__address__]
+      regex:  '(.*):.+'
       target_label: instance
       replacement: '${1}'
 
@@ -35,8 +35,8 @@ scrape_configs:
   file_sd_configs:
     - files:
       - /etc/scylla.d/prometheus/node_exporter_servers.yml
-  metric_relabel_configs:
-    - source_labels: [instance]
+  relabel_configs:
+    - source_labels: [__address__]
       regex:  '(.*):\d+'
       target_label: instance
       replacement: '${1}'
