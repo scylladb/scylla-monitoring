@@ -24,6 +24,7 @@ from __future__ import print_function
 import argparse
 import json
 import re
+import os
 
 parser = argparse.ArgumentParser(description='Dashboards creating tool', conflict_handler="resolve")
 parser.add_argument('-t', '--type', action='append', help='Types file')
@@ -32,6 +33,7 @@ parser.add_argument('-r', '--reverse', action='store_true', default=False, help=
 parser.add_argument('-G', '--grafana4', action='store_true', default=False, help='Do not Migrate the dashboard to the grafa 5 format, if not set the script will remove and emulate the rows with a single panels')
 parser.add_argument('-h', '--help', action='store_true', default=False, help='Print help information')
 parser.add_argument('-kt', '--key-tips', action='store_true', default=False, help='Add key tips when there are conflict values between the template and the value')
+parser.add_argument('-af', '--as-file', type=str, default="", help='Make the dashboard ready to be loaded as files and not with http, when not empty, state the directory the file will be written to')
 
 def help(args):
     parser.print_help()
@@ -242,6 +244,10 @@ def make_grafna_5(results, args):
     del results["dashboard"]["rows"]
     results["dashboard"]["panels"] = panels
 
+def write_as_file(name_path, result, dir):
+    name = os.path.basename(name_path)
+    write_json(os.path.join(dir, name), result["dashboard"])
+
 def get_dashboard(name, types, args):
     global id
     id = 1
@@ -250,7 +256,10 @@ def get_dashboard(name, types, args):
     update_object(result, types)
     if not args.grafana4:
         make_grafna_5(result, args)
-    write_json(new_name, result)
+    if args.as_file:
+        write_as_file(new_name, result, args.as_file)
+    else:
+        write_json(new_name, result)
     
 def compact_dashboard(name, type, args):
     new_name = name.replace(".json", ".template.json")
