@@ -19,12 +19,14 @@ while getopts ':hv:j:M:' option; do
   esac
 done
 
+mkdir -p grafana/provisioning/dashboards
+rm -f grafana/provisioning/dashboards/load.*.yaml
 function set_loader {
     sed "s/NAME/$1/" grafana/load.yaml | sed "s/FOLDER/$2/" | sed "s/VERSION/$3/" > "grafana/provisioning/dashboards/load.$1.yaml"
 }
 
 mkdir -p grafana/build
-rm -f grafana/build/load.*.yml
+
 IFS=',' ;for v in $VERSIONS; do
 VERDIR="grafana/build/ver_$v"
 mkdir -p $VERDIR
