@@ -93,7 +93,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 done
 
 ./generate-dashboards.sh -v $VERSIONS -M $MANAGER_VERSION $GRAFANA_DASHBOARD_COMMAND
-
+mkdir -p grafana/provisioning/datasources
 sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
 
 docker run -d $DOCKER_PARAM -i -u $UID -p $GRAFANA_PORT:3000 \
