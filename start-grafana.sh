@@ -115,7 +115,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Wait till Grafana API is available
-printf "Waiting for Grafana container to start."
+printf "Wait for Grafana container to start."
 RETRIES=7
 TRIES=0
 until $(curl --output /dev/null -f --silent http://localhost:$GRAFANA_PORT/api/org) || [ $TRIES -eq $RETRIES ]; do
@@ -130,3 +130,4 @@ then
         exit 1
 fi
 
+printf "\nStart completed successfully, check http://localhost:$GRAFANA_PORT\n"
