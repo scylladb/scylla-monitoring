@@ -51,7 +51,7 @@ then
     VERDIR="grafana/build/manager_$MANAGER_VERSION"
     mkdir -p $VERDIR
     set_loader "manager_$MANAGER_VERSION" "manager_$MANAGER_VERSION" "manager_$MANAGER_VERSION"
-    if [ ! -f "$VERDIR/scylla-manager.$MANAGER_VERSION.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/scylla-manager.$MANAGER_VERSION.template.json" ]; then
+    if [ ! -f "$VERDIR/scylla-manager.$MANAGER_VERSION.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/scylla-manager.$MANAGER_VERSION.template.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/types.json" ]; then
         ./make_dashboards.py -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.$MANAGER_VERSION.template.json
     fi
 fi
