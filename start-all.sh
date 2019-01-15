@@ -7,13 +7,18 @@ echo "* Check the README.md file for the stable releases  *"
 echo "*****************************************************"
 echo ""
 
+if [ "$1" = "--version" ]; then
+    cat CURRENT_VERSION.sh
+    exit
+fi
+
 if [ "$1" = "-e" ]; then
 . enterprise_versions.sh
 else		
 . versions.sh
 fi
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-N manager target file] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-N manager target file] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.5.0
 
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
