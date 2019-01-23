@@ -7,7 +7,7 @@ else
 fi
 VERSIONS=$DEFAULT_VERSION
 
-ALERT_MANAGER_VERSION="v0.12.0"
+ALERT_MANAGER_VERSION="v0.16.0"
 DOCKER_PARAM=""
 
 usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param]"
