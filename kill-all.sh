@@ -4,6 +4,7 @@ usage="$(basename "$0") [-h] [-g grafana port ] [ -p prometheus port ] [-m alert
 GRAFANA_PORT=""
 PROMETHEUS_PORT=""
 ALERTMANAGER_PORT=""
+PROMETHEUS_NAME="aprom"
 while getopts ':hg:p:m:' option; do
   case "$option" in
     h) echo "$usage"
@@ -12,6 +13,7 @@ while getopts ':hg:p:m:' option; do
     g) GRAFANA_PORT="-p $OPTARG"
        ;;
     p) PROMETHEUS_PORT="-p $OPTARG"
+       PROMETHEUS_NAME="aprom-$OPTARG"
        ;;
     m) ALERTMANAGER_PORT="-p $OPTARG"
        ;;
@@ -26,6 +28,23 @@ while getopts ':hg:p:m:' option; do
   esac
 done
 
+docker exec $PROMETHEUS_NAME kill 1
+TRIES=0
+OK=0
+until [ $OK -eq 1 ] || [ $TRIES -eq 10 ]; do
+    if VAL=`docker logs aprom|&tail -1 |grep 'See you next time'`; then
+        if [ -z "$VAL" ]; then
+            printf '.'
+            ((TRIES=TRIES+1))
+            sleep 1
+        else
+           OK=1
+        fi
+    else
+        OK=1
+    fi
+done
+sleep 2
 ./kill-container.sh $PROMETHEUS_PORT -b aprom
 ./kill-container.sh $GRAFANA_PORT -b agraf
 ./kill-container.sh $ALERTMANAGER_PORT -b aalert
