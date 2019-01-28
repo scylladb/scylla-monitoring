@@ -88,7 +88,11 @@ For example, if you have two nodes (172.17.0.2 and 172.17.0.3) in a single dc cl
        dc: dc1
 ```
 
-similarly, update `prometheus/node_exporter_servers.yml` to list the same nodes as additionally providing "node exporter" OS-level metrics on port 9100:
+#### specify node_exporter file
+By default, the same configuration (with different ports) will be used for the node_exporter.
+You can specify a specific node_exporter target file with the `-n` flag.
+
+A typicall node_exporter configuration file would look like:
 
 ```
 - targets:
@@ -103,22 +107,22 @@ Note that each "targets" section (there could be more than one) come with its ow
 For multiple DC or multiple cluster create multiple "targets" entries, each with the right cluster or dc.
 
 #### Using your own target files
-You can also use your own target files instead of updating `scylla_servers.yml` and `node_exporter_servers.yml`, using the `-s` for scylla target file and `-n` for node taget file. For example:
+You can also use your own target files instead of updating `scylla_servers.yml`, using the `-s` for scylla target file.
 
 ```
-./start-all.sh -s my_scylla_servers.yml -n my_node_exporter_servers.yml -d data_dir
+./start-all.sh -s my_scylla_servers.yml -d data_dir
 ```
 
-In many deployments the contents of those files are very similar, with the same servers being listed differing only in the ports scylla and node_exporter listen to. To automatically generate the target files, one can use the `genconfig.py` script, using the `-n` and `-s` flags to control which files get created:
+To automatically generate the target files, one can use the `genconfig.py` script.
 
 ```
-./genconfig.py -ns -d myconf 192.168.0.1 192.168.0.2
+./genconfig.py -n -d myconf 192.168.0.1 192.168.0.2
 ```
 
 After that, the monitoring stack can be started pointing to the servers at `192.168.0.1` and `192.168.0.2` with::
 
 ```
-./start-all.sh -s myconf/scylla_servers.yml -n myconf/node_exporter_servers.yml
+./start-all.sh -s myconf/scylla_servers.yml
 ```
 
 #### node_exporter Installation

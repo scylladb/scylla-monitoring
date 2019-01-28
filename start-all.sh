@@ -22,7 +22,6 @@ usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-s scyll
 PROMETHEUS_VERSION=v2.5.0
 
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
-NODE_TARGET_FILE=$PWD/prometheus/node_exporter_servers.yml
 SCYLLA_MANGER_TARGET_FILE=$PWD/prometheus/scylla_manager_servers.yml
 GRAFANA_ADMIN_PASSWORD=""
 ALERTMANAGER_PORT=""
@@ -73,6 +72,10 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:D:N:' option; do
        ;;
   esac
 done
+
+if [ -z $NODE_TARGET_FILE ]; then
+   NODE_TARGET_FILE=$SCYLLA_TARGET_FILE
+fi
 
 if [ ! -f $SCYLLA_TARGET_FILE ]; then
     echo "Scylla target file '${SCYLLA_TARGET_FILE}' does not exist"
