@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-echo ""
-echo "*****************************************************"
-echo "* WARNING: You are using the unstable master branch *"
-echo "* Check the README.md file for the stable releases  *"
-echo "*****************************************************"
-echo ""
-
 if [ "$1" = "--version" ]; then
     cat CURRENT_VERSION.sh
     exit
