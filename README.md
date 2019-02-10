@@ -27,52 +27,34 @@ The monitoring infrastructure consists of several components, wrapped in Docker 
 
 On CentOS, you can do:
 
-#### Install Docker
+##### Install Docker
 
 Please follow the instructions at: https://docs.docker.com/install/linux/docker-ce/centos/
 Note that Dokcer was rename and it is now docker-ce.
 If you are running older docker version, remove it first by following the instruction.
 
-
-Highlights:
-1. Preqrequistes:
-```
-sudo yum install -y yum-utils \
-  device-mapper-persistent-data \
-  lvm2
-```
-
-2. Setup the stable repository:
-```
-sudo yum-config-manager \
-    --add-repo \
-    https://download.docker.com/linux/centos/docker-ce.repo
-```
-
-3. Install Docker CE
-```
-sudo yum install docker-ce docker-ce-cli containerd.io
-```
+##### Complete Prerequisites Installation
 
 ```bash
+sudo yum install -y git python-pip
 sudo pip install --upgrade pip
 sudo pip install pyyaml
 ```
-
 #### Ubuntu 16.04: Prerequisites Installation
 
 On Ubuntu 16.04, you can do:
 
-You'll need to add the Docker repo to your `/etc/apt/sources.list` (and accept the key, see Docker website for full instructions).
+##### Install Docker
 
-```bash
-deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
-```
+Please follow the instructions at: https://docs.docker.com/install/linux/docker-ce/ubuntu/ Note that Dokcer was rename and it is now docker-ce.
+If you are running older docker version, remove it first by following the instruction.
 
 On Ubuntu, the latest package name is `docker-ce` for "Community Edition". You may want/need to adjust other Docker specific settings to meet your requirements. These instructions will get you a basic working Docker host.
 
+##### Complete Prerequisites Installation
+
 ```bash
-sudo apt-get update && apt-get install -y python-pip docker-ce git
+sudo apt-get update && apt-get install -y python-pip
 sudo pip install --upgrade pip
 sudo pip install pyyaml
 ```
@@ -80,6 +62,8 @@ sudo pip install pyyaml
 ### Docker Post Installation
 
 Docker post installation guide can be found here: https://docs.docker.com/install/linux/linux-postinstall/
+
+**Note: It is recomanded not to run container as root**
 
 To avoid running docker as root, you should add the user you are going to use to start the monitoring to the docker group.
 
@@ -97,6 +81,7 @@ sudo usermod -aG docker $USER
 ```
 sudo systemctl enable docker
 ```
+
 
 ### Install
 #### Installing archived project
