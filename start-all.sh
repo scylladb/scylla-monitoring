@@ -128,7 +128,7 @@ done
 
 mkdir -p $PWD/prometheus/build/
 sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template > $PWD/prometheus/build/prometheus.yml
-
+GROUPID=`id -g`
 if [ -z $DATA_DIR ]
 then
     docker run -d $DOCKER_PARAM \
@@ -140,7 +140,7 @@ then
          -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
 else
     echo "Loading prometheus data from $DATA_DIR"
-    docker run -d $DOCKER_PARAM -v $DATA_DIR:/prometheus/data:Z \
+    docker run -d $DOCKER_PARAM -u $UID:$GROUPID -v $DATA_DIR:/prometheus/data:Z \
          -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $PWD/prometheus/prometheus.rules.yml:/etc/prometheus/prometheus.rules.yml:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
