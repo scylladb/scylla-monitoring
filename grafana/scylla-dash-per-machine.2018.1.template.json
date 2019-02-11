@@ -1,0 +1,310 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "uid": "machine-2018-1",
+        "rows": [
+            {
+                "class": "logo_row"
+            },
+            {
+                "class": "row",
+                "height": "200px",
+                "panels": [
+                    {
+                        "class": "pie_chart_panel",
+                        "repeat": "node",
+                        "height": "250px",
+                        "targets": [
+                            {
+                                "expr": "sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\"})",
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "Free",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 7200
+                            },
+                            {
+                                "expr": "(sum(node_filesystem_size{mountpoint=\"$mount_point\", instance=~\"$node\"})-sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\"}))",
+                                "intervalFactor": 1,
+                                "legendFormat": "Used",
+                                "refId": "B",
+                                "step": 7200
+                            }
+                        ],
+                        "title": "Total Storage $node"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Disk $monitor_disk</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_disk_writes_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Writes per Server"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_disk_reads_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Reads per Server"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_disk_bytes_written{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Writes Bps per Server"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_disk_bytes_read{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Read Bps per Server"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Network $monitor_network_interface</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "pps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_network_receive_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Rx Packets"
+                    },
+                    {
+                        "class": "pps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_network_transmit_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Tx Packets"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_network_receive_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Rx Bps"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_network_transmit_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Tx Bps"
+                    }
+                ],
+                "title": "New row"
+            }
+        ],
+        "templating": {
+            "list": [
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(node_filesystem_avail, cluster)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(node_filesystem_avail{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(node_filesystem_avail{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "isNone": true,
+                        "text": "None",
+                        "value": ""
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "monitor_disk",
+                    "options": [],
+                    "query": "node_disk_bytes_read",
+                    "refresh": 2,
+                    "regex": "/.*device=\"([^\\\"]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "isNone": true,
+                        "text": "None",
+                        "value": ""
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "monitor_network_interface",
+                    "options": [],
+                    "query": "node_network_receive_packets",
+                    "refresh": 2,
+                    "regex": "/.*device=\"([^\\\"]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "/var/lib/scylla",
+                        "value": "/var/lib/scylla"
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "Mounnt path",
+                    "multi": false,
+                    "name": "mount_point",
+                    "options": [],
+                    "query": "node_filesystem_avail",
+                    "refresh": 2,
+                    "regex": "/mountpoint=\"([^\"]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                }
+                
+                
+                
+            ]
+        },
+		"tags": [
+			"2018.1"
+		],
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Scylla Per Machine Metrics",
+        "overwrite": true,
+        "version": 5
+    }
+}
