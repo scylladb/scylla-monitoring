@@ -87,7 +87,7 @@ if [ ! -f $NODE_TARGET_FILE ]; then
     exit 1
 fi
 
-if [ ! -z $ALERTMANAGER_PORT ] || [ ! -z $GRAFANA_PORT ] || [ ! -z $PROMETHEUS_PORT ]; then
+if [ ! -z "$ALERTMANAGER_PORT" ] || [ ! -z "$GRAFANA_PORT" ] || [ ! -z $PROMETHEUS_PORT ]; then
     if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
         echo "Port mapping is not supported with host network, remove the -l flag from the command line"
         exit 1
