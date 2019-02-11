@@ -31,7 +31,7 @@ done
 docker exec $PROMETHEUS_NAME kill 1
 TRIES=0
 OK=0
-until [ $OK -eq 1 ] || [ $TRIES -eq 10 ]; do
+until [ $OK -eq 1 ] || [ $TRIES -eq 120 ]; do
     if VAL=`docker logs aprom|&tail -1 |grep 'See you next time'`; then
         if [ -z "$VAL" ]; then
             printf '.'
