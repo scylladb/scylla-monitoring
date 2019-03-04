@@ -333,7 +333,7 @@
                         "class": "gauge_errors_panel",
                         "repeat": "dc",
                         "span": 2,
-                        "description": "ALLOW FILTERING CQL Reads entail additional processing on server side\n\nSources: CQL Read requests with \"ALLOW FILTERING\"\n\nALLOW FILTERING should be used when large parts of the filtered data is returned - check \n\"ALLOW FILTERING CQL Read Filtered Rows\"\n\nAlternatives:\n- Use a Secondary Index\n- Denormalize your data (use a Materialized View)",
+                        "description": "Cross DC traffic may cause additional latencies and network loads and in most cases, should be avoided.\n\nCross DC Read requests sources:\n- Consistency Level that is not LOCAL_XXX\n- Tables with read_repair_chance > 0\n\nNote:\n- If requests are supposed to be  DC local - verify client is using a DCAware policy and a LOCAL_XX consistency level",
                         "targets": [
                             {
                                 "expr": "100*sum(irate(scylla_storage_proxy_coordinator_reads_remote_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", datacenter=~\"$dc\", shard=~\"[[shard]]\"}[30s]))/sum(irate(scylla_storage_proxy_coordinator_reads_remote_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))",
