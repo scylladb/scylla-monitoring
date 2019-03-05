@@ -237,7 +237,7 @@
                     },
                     {
                         "class": "gauge_errors_panel",
-                        "description": "ALLOW FILTERING CQL Reads entail additional processing on server side\n\nSources: CQL Read requests with \"ALLOW FILTERING\"\n\nALLOW FILTERING should be used when large parts of the filtered data is returned - check \n\"ALLOW FILTERING CQL Read Filtered Rows\"\n\nAlternatives:\n- Use a Secondary Index\n- Denormalize your data (use a Materialized View)",
+                        "description": "ALLOW FILTERING CQL Reads, the percentage of read requests with 'ALLOW FILTERING'\n\nALLOW FILTERING CQL Reads entail additional processing on server side\n\nSources: CQL Read requests with \"ALLOW FILTERING\"\n\nALLOW FILTERING should be used when large parts of the filtered data is returned - check \n\"ALLOW FILTERING CQL Read Filtered Rows to check what percentage of the data is used\"\n\nAlternatives:\n- Use a Secondary Index\n- Denormalize your data (use a Materialized View)",
                         "targets": [
                             {
                                 "expr": "100 * sum(irate(scylla_cql_filtered_read_requests{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) / sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))",
@@ -262,7 +262,7 @@
                     {
                         "class": "rps_panel",
                         "span": 3,
-                        "description": "ALLOW FILTERING CQL Reads entail additional processing on server side and should be avoided",
+                        "description": "Read requests with ALLOW FILTERING\n\nALLOW FILTERING CQL Reads entail additional processing on server side and should be avoided",
                         "targets": [
                             {
                                 "expr": "sum(irate(scylla_cql_filtered_read_requests{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
@@ -276,10 +276,10 @@
                     },
                     {
                         "class": "gauge_errors_panel",
-                        "description": "ALLOW FILTERING CQL Reads entail additional processing on server side\n\nSources: CQL Read requests with \"ALLOW FILTERING\"\n\nALLOW FILTERING should be used when large parts of the filtered data is returned - check \n\"ALLOW FILTERING CQL Read Filtered Rows\"\n\nAlternatives:\n- Use a Secondary Index\n- Denormalize your data (use a Materialized View)",
+                        "description": "ALLOW FILTERING Filtered rows, the percentage of rows that were read and then filtered.\n\nALLOW FILTERING CQL Reads entail additional processing on server side. \nReading a row and then filter it is a waste of resources.\n\nSources: CQL Read requests with \"ALLOW FILTERING\"\n\nALLOW FILTERING should be used when large parts of the filtered data is returned\n\nAlternatives:\n- Use a Secondary Index\n- Denormalize your data (use a Materialized View)",
                         "targets": [
                             {
-                                "expr": "100 * sum(irate(scylla_cql_filtered_rows_matched_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))  /sum(irate(scylla_cql_filtered_rows_read_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))",
+                                "expr": "100 * sum(irate(scylla_cql_filtered_rows_dropped_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))  /sum(irate(scylla_cql_filtered_rows_read_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -289,7 +289,7 @@
                                 "refId": "A"
                             }
                         ],
-                        "title": "ALLOW FILTERING CQL Read Filtered Rows"
+                        "title": "ALLOW FILTERING Filtered Rows"
                     },
                     {
                         "class": "rps_panel",
