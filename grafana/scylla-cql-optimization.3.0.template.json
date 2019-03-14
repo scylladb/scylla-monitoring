@@ -80,7 +80,7 @@
                         "description": "All of the requests should be prepared\n\nPrepared statements remove the overhead of parsing the query every time and allow optimal routing of requests from client to server",
                         "targets": [
                             {
-                                "expr": "floor(100 *(sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) - sum(irate(scylla_query_processor_statements_prepared{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))) /(sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))))",
+                                "expr": "floor(100 *sum(irate(scylla_query_processor_statements_prepared{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) /(sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))))",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -90,7 +90,6 @@
                                 "refId": "A"
                             }
                         ],
-                        "thresholds": "0.1,1",
                         "title": "CQL Non-Prepared Statements"
                     },
                     {
@@ -99,7 +98,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by([[by]])+ sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))by([[by]]) + sum(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by([[by]]) + sum(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))by([[by]]) - sum(irate(scylla_query_processor_statements_prepared{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_query_processor_statements_prepared{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "format": "time_series",
                                 "hide": false,
                                 "intervalFactor": 2,
@@ -154,7 +153,6 @@
                                 "refId": "A"
                             }
                         ],
-                        "thresholds": "99,99.9",
                         "title": "Non-Paged CQL Reads"
                     },
                     {
