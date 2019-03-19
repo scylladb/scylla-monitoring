@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-echo ""
-echo "*****************************************************"
-echo "* WARNING: You are using the unstable master branch *"
-echo "* Check the README.md file for the stable releases  *"
-echo "*****************************************************"
-echo ""
+CURRENT_VERSION=`cat CURRENT_VERSION.sh`
+if [ "$CURRENT_VERSION" = "master" ]; then
+    echo ""
+    echo "*****************************************************"
+    echo "* WARNING: You are using the unstable master branch *"
+    echo "* Check the README.md file for the stable releases  *"
+    echo "*****************************************************"
+    echo ""
+fi
 
 if [ "$1" = "--version" ]; then
     cat CURRENT_VERSION.sh
