@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
-import os
+from pathlib import Path
 import yaml
 import re
 
@@ -36,12 +36,12 @@ def get_servers_from_nodetool_status(filename):
 
 def dump_yaml(directory, filename, servers, cluster):
     try:
-        os.mkdir(directory)
+        Path(directory).mkdir(exist_ok=True)
     except OSError as err:
         if err.errno != 17:
             raise
         pass
-    with open(os.path.join(directory, filename), 'w') as yml_file:
+    with open(Path(directory).joinpath(Path(filename)), 'w') as yml_file:
         yaml.dump([gen_targets(s, cluster) for s in servers], yml_file, default_flow_style=False)
 
 
