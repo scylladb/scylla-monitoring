@@ -35,12 +35,7 @@ def get_servers_from_nodetool_status(filename):
 
 
 def dump_yaml(directory, filename, servers, cluster):
-    try:
-        Path(directory).mkdir(exist_ok=True)
-    except OSError as err:
-        if err.errno != 17:
-            raise
-        pass
+    Path(directory).mkdir(parents=True, exist_ok=True)
     with open(Path(directory).joinpath(Path(filename)), 'w') as yml_file:
         yaml.dump([gen_targets(s, cluster) for s in servers], yml_file, default_flow_style=False)
 
