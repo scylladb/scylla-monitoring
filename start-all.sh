@@ -11,7 +11,7 @@ else
 . versions.sh
 fi
 if [ "`id -u`" -eq 0 ]; then
-    echo "running as root is not advise, please check the documentation for running as non-root"
+    echo "Running as root is not advised, please check the documentation on how to run as non-root user"
 else
     GROUPID=`id -g`
     USER_PERMISSIONS="-u $UID:$GROUPID"
