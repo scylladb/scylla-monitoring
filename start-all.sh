@@ -20,6 +20,13 @@ if [ "$1" = "-e" ]; then
 else		
 . versions.sh
 fi
+if [ "`id -u`" -eq 0 ]; then
+    echo "running as root is not advise, please check the documentation for running as non-root"
+else
+    GROUPID=`id -g`
+    USER_PERMISSIONS="-u $UID:$GROUPID"
+fi
+
 VERSIONS=$DEFAULT_VERSION
 usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-N manager target file] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.5.0
@@ -131,7 +138,7 @@ done
 
 mkdir -p $PWD/prometheus/build/
 sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template > $PWD/prometheus/build/prometheus.yml
-GROUPID=`id -g`
+
 if [ -z $DATA_DIR ]
 then
     docker run -d $DOCKER_PARAM \
@@ -143,7 +150,7 @@ then
          -p $PROMETHEUS_PORT:9090 --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
 else
     echo "Loading prometheus data from $DATA_DIR"
-    docker run -d $DOCKER_PARAM -u $UID:$GROUPID -v $(readlink -m $DATA_DIR):/prometheus/data:Z \
+    docker run -d $DOCKER_PARAM $USER_PERMISSIONS -v $(readlink -m $DATA_DIR):/prometheus/data:Z \
          -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $PWD/prometheus/prometheus.rules.yml:/etc/prometheus/prometheus.rules.yml:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
