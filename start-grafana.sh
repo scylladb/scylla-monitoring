@@ -78,6 +78,11 @@ if [ $? -eq 0 ]; then
     exit 1
 fi
 
+if [ "`id -u`" -ne 0 ]; then
+    GROUPID=`id -g`
+    USER_PERMISSIONS="-u $UID:$GROUPID"
+fi
+
 proxy_args=()
 if [[ -n "$HTTP_PROXY" ]]; then
     proxy_args=(-e http_proxy="$HTTP_PROXY")
@@ -96,7 +101,7 @@ done
 mkdir -p grafana/provisioning/datasources
 sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
 
-docker run -d $DOCKER_PARAM -i -u $UID -p $GRAFANA_PORT:3000 \
+docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS -p $GRAFANA_PORT:3000 \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
