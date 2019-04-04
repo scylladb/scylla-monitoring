@@ -132,7 +132,49 @@
                         ],
                         "title": "CQL Non-Prepared Statements"
                     },
-
+                    {
+                        "class": "gauge_errors_panel",
+                        "description": "All requests should be paged\n\nNon Paged request sources:\n- Client modifying the fetch size\n\nNon Paged requests require reading all the results and returning them in a single request.",
+                        "targets": [
+                            {
+                                "expr": "100 * (sum(irate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))/sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])))",
+                                "format": "time_series",
+                                "hide": false,
+                                "instant": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "aaa",
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "Non-Paged CQL Reads"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "description": "Non-Paged requests require reading all the results and returning them in a single request",
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 2,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "Non-Paged CQL Reads"
+                    },
+                    {
+                      "class":"plain_text",
+                      "content": "<span/>",
+                      "span":4
+                    }
+                    ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
                     {
                         "class": "gauge_errors_panel",
                         "description": "All of the requests should be Token Aware\n\nNon Token Aware requests sources:\n* Non-Prepared Stamements\n* Client not using a Token Aware load balancing policy\n\nTokenAware requests are sent to a Scylla node that is also a replica. Token Un-Aware requests require extra hop and additional processing.",
@@ -165,35 +207,39 @@
                     },
                     {
                         "class": "gauge_errors_panel",
-                        "description": "All requests should be paged\n\nNon Paged request sources:\n- Client modifying the fetch size\n\nNon Paged requests require reading all the results and returning them in a single request.",
+                        "description": "Scylla uses a thread-per-shard architecture, this means that each shard (core) act as independent processing unit, shard-aware-driver would route the queries to the right shard\n\nCross-Shard queries add additional overhead to the system",
                         "targets": [
                             {
-                                "expr": "100 * (sum(irate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))/sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])))",
+                                "expr": "floor(100*sum(irate(scylla_storage_proxy_replica_cross_shard_ops{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])/(sum(irate(scylla_storage_proxy_coordinator_reads_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_storage_proxy_coordinator_total_write_attempts_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])))",
                                 "format": "time_series",
                                 "hide": false,
-                                "instant": false,
-                                "interval": "",
                                 "intervalFactor": 1,
                                 "legendFormat": "aaa",
                                 "refId": "A"
                             }
                         ],
-                        "title": "Non-Paged CQL Reads"
+                        "title": "Cross Shard"
                     },
                     {
                         "class": "ops_panel",
+                        "description": "Requests that are not shard aware",
                         "span": 3,
-                        "description": "Non-Paged requests require reading all the results and returning them in a single request",
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_storage_proxy_replica_cross_shard_ops{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "format": "time_series",
                                 "hide": false,
                                 "intervalFactor": 2,
                                 "refId": "A"
                             }
                         ],
-                        "title": "Non-Paged CQL Reads"
+                        "title": "Cross Shard Queries"
+                    },
+                    
+                    {
+                      "class":"plain_text",
+                      "content": "<span/>",
+                      "span":4
                     }
                     ],
                 "title": "New row"
