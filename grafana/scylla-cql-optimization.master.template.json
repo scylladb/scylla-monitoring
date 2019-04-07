@@ -207,7 +207,7 @@
                     },
                     {
                         "class": "gauge_errors_panel",
-                        "description": "Scylla uses a thread-per-shard architecture, this means that each shard (core) act as independent processing unit, shard-aware-driver would route the queries to the right shard\n\nCross-Shard queries add additional overhead to the system",
+                        "description": "Scylla uses a shared-nothing model that shards all requests onto individual cores.\n\nScylla runs one application thread-per-core, and depends on explicit message passing, not shared memory between threads. This design avoids slow, unscalable lock primitives and cache bounces.\n\nIdeally, each request to a Scylla node reaches the right core (shard), avoiding internal communication between cores. This is not always the case, for example, when using a non-shard-aware Scylla driver (see more here: https://docs.scylladb.com/getting-started/scylla_drivers/)",
                         "targets": [
                             {
                                 "expr": "floor(100*sum(irate(scylla_storage_proxy_replica_cross_shard_ops{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])/(sum(irate(scylla_storage_proxy_coordinator_reads_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_storage_proxy_coordinator_total_write_attempts_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])))",
