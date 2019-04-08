@@ -58,7 +58,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(node_filesystem_size{mountpoint=\"$mount_point\", instance=~\"$node\"}) by (instance)-sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\"}) by (instance)",
+                                "expr": "sum(node_filesystem_size{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])-sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -66,7 +66,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Disk Size"
+                        "title": "Disk Size by $by"
                     },
                     {
                         "class": "wps_panel",
@@ -81,7 +81,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Disk Writes per Server"
+                        "title": "Disk Writes per $by"
                     },
                     {
                         "class": "rps_panel",
@@ -95,7 +95,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Disk Reads per Server"
+                        "title": "Disk Reads per $by"
                     }
                     ],
                 "title": "New row"
@@ -121,7 +121,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Disk Writes Bps per Server"
+                        "title": "Disk Writes Bps per $by"
                     },
                     {
                         "class": "bps_panel",
@@ -135,7 +135,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Disk Read Bps per Server"
+                        "title": "Disk Read Bps per $by"
                     }
                 ],
                 "title": "New row"
@@ -245,6 +245,38 @@
                     "label": "node",
                     "name": "node",
                     "query": "label_values(node_filesystem_avail{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Instance",
+                        "value": "instance"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": false,
+                            "text": "DC",
+                            "value": "dc"
+                        },
+                        {
+                            "selected": true,
+                            "text": "Instance",
+                            "value": "instance"
+                        }
+                    ],
+                    "query": "Cluster,DC,Instance",
+                    "type": "custom"
                 },
                 {
                     "allValue": null,
