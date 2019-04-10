@@ -54,11 +54,11 @@
                 "class": "row",
                 "panels": [
                     {
-                        "class": "wps_panel",
+                        "class": "bytes_panel",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_disk_writes_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "expr": "sum(node_filesystem_size{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])-sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -66,28 +66,54 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Disk Writes per Server"
+                        "title": "Disk Size by $by"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(node_disk_writes_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Writes per $by"
                     },
                     {
                         "class": "rps_panel",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_disk_reads_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_disk_reads_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
-                        "title": "Disk Reads per Server"
+                        "title": "Disk Reads per $by"
+                    }
+                    ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "span": 3,
+                        "content": ""
                     },
                     {
                         "class": "bps_panel",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_disk_bytes_written{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_disk_bytes_written{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -95,21 +121,21 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Disk Writes Bps per Server"
+                        "title": "Disk Writes Bps per $by"
                     },
                     {
                         "class": "bps_panel",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_disk_bytes_read{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_disk_bytes_read{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
-                        "title": "Disk Read Bps per Server"
+                        "title": "Disk Read Bps per $by"
                     }
                 ],
                 "title": "New row"
@@ -135,7 +161,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_network_receive_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_network_receive_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -150,7 +176,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_network_transmit_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_network_transmit_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -171,7 +197,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_network_receive_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_network_receive_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -186,7 +212,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_network_transmit_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_network_transmit_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -219,6 +245,38 @@
                     "label": "node",
                     "name": "node",
                     "query": "label_values(node_filesystem_avail{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Instance",
+                        "value": "instance"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": false,
+                            "text": "DC",
+                            "value": "dc"
+                        },
+                        {
+                            "selected": true,
+                            "text": "Instance",
+                            "value": "instance"
+                        }
+                    ],
+                    "query": "Cluster,DC,Instance",
+                    "type": "custom"
                 },
                 {
                     "allValue": null,
