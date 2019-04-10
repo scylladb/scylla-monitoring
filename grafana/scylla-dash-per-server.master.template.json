@@ -848,23 +848,20 @@
                             }
                         ],
                         "description": "Percentage of CPU time used by compaction",
-                        "title": "Compactions Runtime"
+                        "title": "Compactions CPU Runtime"
                     },
                     {
-                        "class": "single_stat_panel",
-                        "format": "percentunit",
-                        "valueFontSize": "200%",
-                        "decimals": 0,
-                        "span": 1,
+                        "class": "graph_panel",
+                        "span": 3,
                         "targets": [
                             {
                                 "refId": "A",
-                                "expr": "sum(scylla_scheduler_shares{group=\"compaction\"})/sum(scylla_scheduler_shares{})",
+                                "expr": "sum(scylla_scheduler_shares{group=\"compaction\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"})",
                                 "intervalFactor": 1,
                                 "format": "time_series"
                             }
                         ],
-                        "description": "Percentage of Shares assigned to the compaction",
+                        "description": "Shares assigned to the compaction",
                         "title": "Compactions Shares"
                     }
 
