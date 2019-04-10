@@ -26,9 +26,9 @@ else
     GROUPID=`id -g`
     USER_PERMISSIONS="-u $UID:$GROUPID"
 fi
-
+PROMETHEUS_RULES="$PWD/prometheus/prometheus.rules.yml"
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-N manager target file] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.7.2
 
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
@@ -37,7 +37,7 @@ GRAFANA_ADMIN_PASSWORD=""
 ALERTMANAGER_PORT=""
 DOCKER_PARAM=""
 
-while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:D:N:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:D:N:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -47,6 +47,10 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:M:D:N:' option; do
     M) MANAGER_VERSION=$OPTARG
        ;;
     d) DATA_DIR=$OPTARG
+       ;;
+    r) ALERT_MANAGER_RULE_CONFIG="-r $OPTARG"
+       ;;
+    R) PROMETHEUS_RULES=`readlink -m $OPTARG`
        ;;
     g) GRAFANA_PORT="-g $OPTARG"
        ;;
@@ -106,7 +110,7 @@ fi
 
 printf "Wait for alert manager container to start."
 
-AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -D "$DOCKER_PARAM"`
+AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -D "$DOCKER_PARAM" $ALERT_MANAGER_RULE_CONFIG`
 if [ $? -ne 0 ]; then
     echo "$AM_ADDRESS"
     exit 1
@@ -143,7 +147,7 @@ if [ -z $DATA_DIR ]
 then
     docker run -d $DOCKER_PARAM \
          -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-         -v $PWD/prometheus/prometheus.rules.yml:/etc/prometheus/prometheus.rules.yml:Z \
+         -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $SCYLLA_MANGER_TARGET_FILE):/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
@@ -152,7 +156,7 @@ else
     echo "Loading prometheus data from $DATA_DIR"
     docker run -d $DOCKER_PARAM $USER_PERMISSIONS -v $(readlink -m $DATA_DIR):/prometheus/data:Z \
          -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-         -v $PWD/prometheus/prometheus.rules.yml:/etc/prometheus/prometheus.rules.yml:Z \
+         -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $SCYLLA_MANGER_TARGET_FILE):/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
