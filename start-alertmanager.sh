@@ -6,19 +6,22 @@ else
 . versions.sh
 fi
 VERSIONS=$DEFAULT_VERSION
-
+RULE_FILE=$PWD/prometheus/rule_config.yml
 ALERT_MANAGER_VERSION="v0.16.0"
 DOCKER_PARAM=""
 
-usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param]"
+usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param] [-r rule-file]"
 
-while getopts ':hlp:D:' option; do
+while getopts ':hlp:r:D:' option; do
   case "$option" in
     h) echo "$usage"
        exit
        ;;
     p) ALERTMANAGER_PORT=$OPTARG
        ;;
+    r) RULE_FILE=`readlink -m $OPTARG`
+       ;;
+
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
     D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
@@ -47,8 +50,8 @@ if [ $? -eq 0 ]; then
 fi
 
 docker run -d $DOCKER_PARAM -i -p $ALERTMANAGER_PORT:9093 \
-	-v $PWD/prometheus/rule_config.yml:/etc/alertmanager/config.yml:Z \
-     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION > /dev/null
+	 -v $RULE_FILE:/etc/alertmanager/config.yml:z \
+     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION --config.file=/etc/alertmanager/config.yml > /dev/null
 
 
 if [ $? -ne 0 ]; then
