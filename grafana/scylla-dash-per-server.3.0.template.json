@@ -791,7 +791,7 @@
                 "panels": [
                     {
                         "class": "graph_panel",
-                        "span": 12,
+                        "span": 3,
                         "targets": [
                             {
                                 "expr": "sum(scylla_compaction_manager_compactions{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
@@ -803,7 +803,38 @@
                             }
                         ],
                         "title": "Running Compactions"
+                    },
+                    {
+                        "class": "percent_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "(sum(rate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", group=\"compaction\"}[30s])) by ([[by]]))/1000",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Percentage of CPU time used by compaction",
+                        "title": "Compactions CPU Runtime"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "refId": "A",
+                                "expr": "sum(scylla_scheduler_shares{group=\"compaction\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"})",
+                                "intervalFactor": 1,
+                                "format": "time_series"
+                            }
+                        ],
+                        "description": "Shares assigned to the compaction",
+                        "title": "Compactions Shares"
                     }
+
                 ],
                 "title": "New row"
             },
