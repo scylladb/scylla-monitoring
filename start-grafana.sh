@@ -97,7 +97,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 
-./generate-dashboards.sh -v $VERSIONS -M $MANAGER_VERSION $GRAFANA_DASHBOARD_COMMAND
+./generate-dashboards.sh -t -v $VERSIONS -M $MANAGER_VERSION $GRAFANA_DASHBOARD_COMMAND
 mkdir -p grafana/provisioning/datasources
 sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
 
