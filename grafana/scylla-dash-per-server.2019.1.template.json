@@ -774,7 +774,7 @@
                 "panels": [
                     {
                         "class": "bytes_panel",
-                        "span": 6,
+                        "span": 4,
                         "targets": [
                             {
                                 "expr": "sum(scylla_lsa_total_space_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
@@ -788,7 +788,7 @@
                     },
                     {
                         "class": "bytes_panel",
-                        "span": 6,
+                        "span": 4,
                         "targets": [
                             {
                                 "expr": "sum(scylla_lsa_non_lsa_used_space_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
@@ -799,6 +799,21 @@
                             }
                         ],
                         "title": "Non-LSA used memory"
+                    },
+                    {
+                        "class": "percent_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_in_memory_store_used_memory{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}/scylla_in_memory_store_total_memory{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "This panel indicates how full the in memory is. Check the documentation to learn more about in memory storage",
+                        "title": "In-memory storage usage"
                     }
                 ],
                 "title": "New row"
