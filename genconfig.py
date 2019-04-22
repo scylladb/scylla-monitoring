@@ -60,7 +60,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--scylla', help="Deprecated: Generate scylla_servers.yml file", action='store_true')
     parser.add_argument('-n', '--node', help="Deprecated: Generate node_exporter_servers.yml file", action='store_true')
     parser.add_argument('-c', '--cluster', help="The cluster name", type=str, default="my-cluster")
-    parser.add_argument('-ns', '--nodetool-status', help="A file containing nodetool status", type=str)
+    parser.add_argument('-NS', '--nodetool-status', help="A file containing nodetool status", type=str)
     parser.add_argument('servers', help="list of nodes to configure, separated by space", nargs='*', type=str, metavar='node_ip')
     parser.add_argument('-dc', '--datacenters', action='append', help="list of dc and nodes to configure separated by space. Each dc/node entry is a combination of {dc}:ip1,ip2..ipn")
     arguments = parser.parse_args()
