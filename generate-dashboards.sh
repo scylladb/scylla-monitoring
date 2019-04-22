@@ -24,10 +24,11 @@ while getopts ':htv:j:M:' option; do
   esac
 done
 if [[ -z "$TEST_ONLY" ]]; then
-    mkdir -p grafana/provisioning/dashboards
-    rm -f grafana/provisioning/dashboards/load.*.yaml
     mkdir -p grafana/build
 fi
+
+mkdir -p grafana/provisioning/dashboards
+rm -f grafana/provisioning/dashboards/load.*.yaml
 
 function set_loader {
     sed "s/NAME/$1/" grafana/load.yaml | sed "s/FOLDER/$2/" | sed "s/VERSION/$3/" > "grafana/provisioning/dashboards/load.$1.yaml"
