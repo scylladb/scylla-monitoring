@@ -1,0 +1,296 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "uid": "view-master",
+        "rows": [
+            {
+                "class": "logo_row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span":4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_total_view_updates_pushed_local{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Local View Update by [[by]]",
+                        "description": "Number of view updates generated for tables and applied locally"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span":4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_total_view_updates_pushed_remote{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Remote View Update by [[by]]",
+                        "description": "Number of view updates generated for tables and sent to remote replicas"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span":4,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_database_view_update_backlog{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "View Backlog by [[by]]",
+                        "description": "The current size in bytes of the pending view updates for all tables"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span":4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_total_view_updates_failed_local{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Local View Update Failure by [[by]]",
+                        "description": "Number of view updates generated for tables and failed to be applied locally"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span":4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_total_view_updates_failed_remote{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Remote View Update Failure by [[by]]",
+                        "description": "Number of view updates generated for tables and failed to be sent to remote replicas"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span":4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_database_view_building_paused{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "View Building Paused by [[by]]",
+                        "description": "The number of times view building process was paused (e.g. due to node unavailability)"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Hints For Views</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span":4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_hints_for_views_manager_sent{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Hints for View Sent by [[by]]",
+                        "description": "Number of hints for view sent"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span":4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_hints_for_views_manager_written{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Hints for view Written by [[by]]",
+                        "description": "Number of successfully written hints"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span":4,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_hints_for_views_manager_size_of_hints_in_progress{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Hints for view in progress by [[by]]",
+                        "description": "Size of hinted mutations that are scheduled to be written"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span":4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_hints_for_views_manager_errors{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Hints for View Error by [[by]]",
+                        "description": "Number of errors during hints writes"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span":4,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_hints_for_views_manager_dropped{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Hints for view Dropped by [[by]]",
+                        "description": "Number of dropped hints"
+                    }
+                ]
+            }
+        ],
+        "templating": {
+            "list": [
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Instance",
+                        "value": "instance"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": false,
+                            "text": "DC",
+                            "value": "dc"
+                        },
+                        {
+                            "selected": true,
+                            "text": "Instance",
+                            "value": "instance"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Shard",
+                            "value": "instance,shard"
+                        }
+                    ],
+                    "query": "Cluster,DC,Instance,Shard",
+                    "type": "custom"
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "shard",
+                    "name": "shard",
+                    "query": "label_values(scylla_reactor_utilization,shard)",
+                    "sort": 3
+                }
+            ]
+        },
+		"tags": [
+			"master"
+		],
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Scylla View",
+        "overwrite": true,
+        "version": 5
+    }
+}
