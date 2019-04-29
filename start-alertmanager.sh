@@ -73,5 +73,5 @@ then
     exit 1
 fi
 
-AM_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $ALERTMANAGER_NAME):$ALERTMANAGER_PORT"
+AM_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $ALERTMANAGER_NAME):9093"
 echo $AM_ADDRESS
