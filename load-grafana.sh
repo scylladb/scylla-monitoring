@@ -5,10 +5,11 @@ VERSIONS=$DEFAULT_VERSION
 GRAFANA_HOST="localhost"
 GRAFANA_PORT=3000
 DB_ADDRESS="127.0.0.1:9090"
+KUBERNETES_OPERATOR_BUILD=false
 
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-H grafana hostname] [-m alert_manager ip:port] [-p ip:port address of prometheus ] [-a admin password] [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-H grafana hostname] [-m alert_manager ip:port] [-p ip:port address of prometheus ] [-a admin password] [-j additional dashboard to load to Grafana, multiple params are supported] [-k build dashboards for kubernetes operator] [-M scylla-manager version ] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hg:H:p:v:a:j:m:M:' option; do
+while getopts ':hkg:H:p:v:a:j:M:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -22,6 +23,8 @@ while getopts ':hg:H:p:v:a:j:m:M:' option; do
     H) GRAFANA_HOST=$OPTARG
        ;;
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
+       ;;
+    k) KUBERNETES_OPERATOR_BUILD=true
        ;;
     p) DB_ADDRESS=$OPTARG
        ;;
@@ -49,7 +52,11 @@ for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server scylla-das
     if [ -e grafana/$f.$v.template.json ]
     then
         if [ ! -f "grafana/build/$f.$v.json" ] || [ "grafana/build/$f.$v.json" -ot "grafana/$f.$v.template.json" ]; then
-            ./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json
+	    if [ "$KUBERNETES_OPERATOR_BUILD" = true ]; then
+                ./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json --kubernetes-operator
+	    else
+                ./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json
+	    fi
         fi
         curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/build/$f.$v.json -H "Content-Type: application/json"
     else
@@ -66,7 +73,11 @@ done
 if [ -e grafana/scylla-manager.$MANAGER_VERSION.template.json ]
 then
     if [ ! -f "grafana/build/scylla-manager.$MANAGER_VERSION.json" ] || [ "grafana/build/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/scylla-manager.$MANAGER_VERSION.template.json" ]; then
-        ./make_dashboards.py -t grafana/types.json -d grafana/scylla-manager.$MANAGER_VERSION.template.json
+        if [ "$KUBERNETES_OPERATOR_BUILD" = true ]; then
+            ./make_dashboards.py -t grafana/types.json -d grafana/scylla-manager.$MANAGER_VERSION.template.json --kubernetes-operator
+        else
+            ./make_dashboards.py -t grafana/types.json -d grafana/scylla-manager.$MANAGER_VERSION.template.json
+        fi
     fi
     curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/build/scylla-manager.$MANAGER_VERSION.json -H "Content-Type: application/json"
 fi
@@ -76,7 +87,11 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         val1=${val::-14}
         val1=${val1:8}
         if [ ! -f "$val1.json" ] || [ "$val1.json" -ot "$val" ]; then
-           ./make_dashboards.py -t grafana/types.json -d $val
+	    if [ "$KUBERNETES_OPERATOR_BUILD" = true ]; then
+                ./make_dashboards.py -t grafana/types.json -d $val --kubernetes-operator
+	    else
+                ./make_dashboards.py -t grafana/types.json -d $val
+	    fi
         fi
         val="$val1.json"
     fi
