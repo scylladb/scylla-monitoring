@@ -15,10 +15,11 @@ GRAFANA_AUTH=false
 GRAFANA_AUTH_ANONYMOUS=true
 AM_ADDRESS=""
 DOCKER_PARAM=""
+EXTERNAL_VOLUME=""
 
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hlg:n:p:v:a:x:c:j:m:M:D:' option; do
+while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -28,6 +29,8 @@ while getopts ':hlg:n:p:v:a:x:c:j:m:M:D:' option; do
     M) MANAGER_VERSION=$OPTARG
        ;;
     g) GRAFANA_PORT=$OPTARG
+       ;;
+    G) EXTERNAL_VOLUME="-v "`readlink -m $OPTARG`":/var/lib/grafana"
        ;;
     n) GRAFANA_NAME=$OPTARG
        ;;
@@ -107,7 +110,7 @@ docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS -p $GRAFANA_PORT:3000 \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
      -v $PWD/grafana/build:/var/lib/grafana/dashboards:z \
      -v $PWD/grafana/plugins:/var/lib/grafana/plugins:z \
-     -v $PWD/grafana/provisioning:/var/lib/grafana/provisioning:z \
+     -v $PWD/grafana/provisioning:/var/lib/grafana/provisioning:z $EXTERNAL_VOLUME \
      -e "GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning" \
      -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
      $GRAFANA_ENV_COMMAND \
