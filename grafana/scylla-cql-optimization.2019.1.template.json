@@ -105,7 +105,7 @@
                         "description": "All of the requests should be prepared\n\nPrepared statements remove the overhead of parsing the query every time and allow optimal routing of requests from client to server",
                         "targets": [
                             {
-                                "expr": "floor(100 *sum(irate(scylla_query_processor_statements_prepared{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) /(sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))))",
+                                "expr": "floor(100 *sum(irate(scylla_query_processor_statements_prepared{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) /(sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])))) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -137,7 +137,7 @@
                         "description": "All requests should be paged\n\nNon Paged request sources:\n- Client modifying the fetch size\n\nNon Paged requests require reading all the results and returning them in a single request.",
                         "targets": [
                             {
-                                "expr": "100 * (sum(irate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))/sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])))",
+                                "expr": "100 * (sum(irate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))/sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -180,7 +180,7 @@
                         "description": "All of the requests should be Token Aware\n\nNon Token Aware requests sources:\n* Non-Prepared Stamements\n* Client not using a Token Aware load balancing policy\n\nTokenAware requests are sent to a Scylla node that is also a replica. Token Un-Aware requests require extra hop and additional processing.",
                         "targets": [
                             {
-                                "expr": "100 - floor(100*(sum(irate(scylla_storage_proxy_coordinator_reads_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) +sum(irate(scylla_storage_proxy_coordinator_total_write_attempts_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])))/(sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]) + irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]) + irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]) + irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))))",
+                                "expr": "100 - floor(100*(sum(irate(scylla_storage_proxy_coordinator_reads_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) +sum(irate(scylla_storage_proxy_coordinator_total_write_attempts_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])))/(sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]) + irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]) + irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]) + irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])))) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "intervalFactor": 1,
@@ -210,7 +210,7 @@
                         "description": "Scylla uses a shared-nothing model that shards all requests onto individual cores.\n\nScylla runs one application thread-per-core, and depends on explicit message passing, not shared memory between threads. This design avoids slow, unscalable lock primitives and cache bounces.\n\nIdeally, each request to a Scylla node reaches the right core (shard), avoiding internal communication between cores. This is not always the case, for example, when using a non-shard-aware Scylla driver (see more here: https://docs.scylladb.com/getting-started/scylla_drivers/)",
                         "targets": [
                             {
-                                "expr": "floor(100*sum(irate(scylla_storage_proxy_replica_cross_shard_ops{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))/(sum(irate(scylla_storage_proxy_coordinator_reads_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_storage_proxy_coordinator_total_write_attempts_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))))",
+                                "expr": "floor(100*sum(irate(scylla_storage_proxy_replica_cross_shard_ops{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))/(sum(irate(scylla_storage_proxy_coordinator_reads_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_storage_proxy_coordinator_total_write_attempts_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])))) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "intervalFactor": 1,
@@ -251,7 +251,7 @@
                         "description": "Reversed CQL Reads entail additional processing on server side\n\nSources: CQL Read requests with ORDER BY that is different from the \"CLUSTERING ORDER BY\" of the table\nAlternatives:\n\n* Denormalize your data (use a Materialized View)",
                         "targets": [
                             {
-                                "expr": "100 * sum(irate(scylla_cql_reverse_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) / sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))",
+                                "expr": "100 * sum(irate(scylla_cql_reverse_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) / sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -283,7 +283,7 @@
                         "description": "ALLOW FILTERING CQL Reads, the percentage of read requests with 'ALLOW FILTERING'\n\nALLOW FILTERING CQL Reads entail additional processing on server side\n\nSources: CQL Read requests with \"ALLOW FILTERING\"\n\nALLOW FILTERING should be used when large parts of the filtered data is returned - check \n\"ALLOW FILTERING CQL Read Filtered Rows to check what percentage of the data is used\"\n\nAlternatives:\n- Use a Secondary Index\n- Denormalize your data (use a Materialized View)",
                         "targets": [
                             {
-                                "expr": "100 * sum(irate(scylla_cql_filtered_read_requests{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) / sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))",
+                                "expr": "100 * sum(irate(scylla_cql_filtered_read_requests{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) / sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) OR vector(0)",
                                 "format": "time_series",
                                 "hide": true,
                                 "instant": false,
@@ -291,13 +291,6 @@
                                 "intervalFactor": 1,
                                 "legendFormat": "aaa",
                                 "refId": "A"
-                            },
-                            {
-                                "expr": "100 * sum(irate(scylla_cql_filtered_read_requests{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))/sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))",
-                                "format": "time_series",
-                                "hide": false,
-                                "intervalFactor": 2,
-                                "refId": "B"
                             }
                         ],
                         "title": "ALLOW FILTERING CQL Reads"
@@ -322,7 +315,7 @@
                         "description": "ALLOW FILTERING Filtered rows, the percentage of rows that were read and then filtered.\n\nALLOW FILTERING CQL Reads entail additional processing on server side. \nReading a row and then filter it is a waste of resources.\n\nSources: CQL Read requests with \"ALLOW FILTERING\"\n\nALLOW FILTERING should be used when large parts of the filtered data is returned\n\nAlternatives:\n- Use a Secondary Index\n- Denormalize your data (use a Materialized View)",
                         "targets": [
                             {
-                                "expr": "100 * sum(irate(scylla_cql_filtered_rows_dropped_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))  /sum(irate(scylla_cql_filtered_rows_read_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))",
+                                "expr": "100 * sum(irate(scylla_cql_filtered_rows_dropped_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))  /sum(irate(scylla_cql_filtered_rows_read_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -379,7 +372,7 @@
                         "description": "Cross DC traffic may cause additional latencies and network loads and in most cases, should be avoided.\n\nCross DC Read requests sources:\n- Consistency Level that is not LOCAL_XXX\n- Tables with read_repair_chance > 0\n\nNote:\n- If requests are supposed to be  DC local - verify client is using a DCAware policy and a LOCAL_XX consistency level",
                         "targets": [
                             {
-                                "expr": "100*(sum(irate(scylla_storage_proxy_coordinator_reads_remote_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) - sum(irate(scylla_storage_proxy_coordinator_reads_remote_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", datacenter=~\"$dc\", shard=~\"[[shard]]\"}[30s])))/sum(irate(scylla_storage_proxy_coordinator_reads_remote_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))",
+                                "expr": "100*(sum(irate(scylla_storage_proxy_coordinator_reads_remote_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) - sum(irate(scylla_storage_proxy_coordinator_reads_remote_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", datacenter=~\"$dc\", shard=~\"[[shard]]\"}[30s])))/sum(irate(scylla_storage_proxy_coordinator_reads_remote_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) OR vector(0)",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "refId": "A"
