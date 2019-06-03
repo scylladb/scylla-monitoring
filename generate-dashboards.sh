@@ -40,7 +40,7 @@ if [[ -z "$TEST_ONLY" ]]; then
    mkdir -p $VERDIR
 fi
 set_loader $v $v "ver_$v"
-for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server scylla-dash-cpu-per-server scylla-dash-per-machine scylla-cql-optimization; do
+for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server scylla-dash-cpu-per-server scylla-dash-per-machine scylla-cql-optimization scylla-errors; do
     if [ -e grafana/$f.$v.template.json ]
     then
         if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.$v.template.json" ]; then
