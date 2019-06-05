@@ -72,18 +72,83 @@
                         "class": "text_panel",
                         "content": "##  ",
                         "mode": "markdown",
-                        "span": 1,
+                        "span": 2,
                         "style": {}
-                    },
-                    {
-                        "class": "alert_table",
-                        "title": "Active Alerts"
                     },
                     {
                         "class": "dashlist",
                         "tags": [
-                        	"2019.1"
-		                ]
+                            "2019.1"
+                        ]
+                    },
+                    {
+                        "class": "alert_table",
+                        "span":4,
+                        "styles": [
+                            {
+                                "alias": "Time",
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "pattern": "Time",
+                                "link": true,
+                                "linkTooltip": "Jump to the see the node",
+                                "linkUrl": "/d/detail-[[dash_version]]/scylla-per-server-metrics-[[dash_version]]?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_4}&from=${__cell_0}",
+                                "type": "date"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "severity"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "alertname"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "cluster"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "monitor"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "summary"
+                            },
+                            {
+                              "alias": "Instance",
+                              "colorMode": null,
+                              "colors": [
+                                "rgba(245, 54, 54, 0.9)",
+                                "rgba(237, 129, 40, 0.89)",
+                                "rgba(50, 172, 45, 0.97)"
+                              ],
+                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                              "decimals": 2,
+                              "link": true,
+                              "linkTooltip": "Jump to the see the node",
+                              "linkUrl": "/d/detail-[[dash_version]]/scylla-per-server-metrics-[[dash_version]]?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_4}",
+                              "mappingType": 1,
+                              "pattern": "instance",
+                              "thresholds": [],
+                              "type": "string",
+                              "unit": "short"
+                            },
+                            {
+                                "alias": "",
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "decimals": 2,
+                                "pattern": "/.*/",
+                                "thresholds": [],
+                                "type": "number",
+                                "unit": "short"
+                            }
+                        ],
+                        "title": "Active Alerts"
                     }
                 ],
                 "title": "New row"
@@ -93,6 +158,7 @@
                 "panels": [
                     {
                         "class": "percent_panel",
+                        "span": 4,
                         "targets": [
                             {
                                 "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
@@ -107,6 +173,7 @@
                     },
                     {
                         "class": "ops_panel",
+                        "span": 4,
                         "targets": [
                             {
                                 "expr": "$func(irate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + $func(irate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
@@ -119,6 +186,70 @@
                         ],
                         "title": "Requests Served",
                         "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the client-side level or connection balancing level, not your data model."
+                    },
+                    {
+                        "class": "single_value_table",
+                        "span": 4,
+                        "description": "Nodes Information table",
+                        "targets": [
+                            {
+                              "refId": "A",
+                              "expr": "scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"}",
+                              "intervalFactor": 1,
+                              "format": "table",
+                              "instant": true
+                            }
+                        ],
+                        "styles": [
+                            {
+                              "unit": "short",
+                              "type": "string",
+                              "alias": "",
+                              "decimals": 2,
+                              "colors": [
+                                "rgba(245, 54, 54, 0.9)",
+                                "rgba(237, 129, 40, 0.89)",
+                                "rgba(50, 172, 45, 0.97)"
+                              ],
+                              "colorMode": null,
+                              "pattern": "instance",
+                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                              "thresholds": [],
+                              "mappingType": 1,
+                              "link": true,
+                              "linkUrl": "/d/detail-[[dash_version]]/scylla-per-server-metrics-[[dash_version]]?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_6}",
+                              "linkTooltip": "Jump to the detailed node information"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "Time"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "__name__"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "exported_instance"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "job"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "type"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "Value"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "cluster"
+                            }
+                        ],
+                        "title": "Nodes"
                     }
                 ],
                 "title": "New row"
