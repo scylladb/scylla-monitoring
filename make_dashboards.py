@@ -29,6 +29,7 @@ import os
 parser = argparse.ArgumentParser(description='Dashboards creating tool', conflict_handler="resolve")
 parser.add_argument('-t', '--type', action='append', help='Types file')
 parser.add_argument('-d', '--dashboards', action='append', help='dashbaords file')
+parser.add_argument('-ar', '--add-row', action='append', help='merge a templated row, format number:file', default=[])
 parser.add_argument('-r', '--reverse', action='store_true', default=False, help='Reverse mode, take a dashboard and try to minimize it')
 parser.add_argument('-G', '--grafana4', action='store_true', default=False, help='Do not Migrate the dashboard to the grafa 5 format, if not set the script will remove and emulate the rows with a single panels')
 parser.add_argument('-h', '--help', action='store_true', default=False, help='Print help information')
@@ -253,6 +254,10 @@ def get_dashboard(name, types, args):
     id = 1
     new_name = name.replace("grafana/", "grafana/build/").replace(".template.json", ".json")
     result = get_json_file(name)
+    for r in args.add_row:
+        [row_number, row_name] = r.split(",")
+        row = get_json_file(row_name)
+        result["dashboard"]["rows"].insert(int(row_number), row)
     update_object(result, types)
     if not args.grafana4:
         make_grafna_5(result, args)
