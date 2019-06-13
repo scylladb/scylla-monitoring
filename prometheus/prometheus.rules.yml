@@ -9,6 +9,14 @@ groups:
     annotations:
       description: '{{ $labels.instance }} has been down for more than 30 seconds.'
       summary: Instance {{ $labels.instance }} down
+  - alert: InstanceDown
+    expr: absent(scylla_transport_requests_served{job="scylla", shard="0"})
+    for: 1m
+    labels:
+      severity: "2"
+    annotations:
+      description: '{{ $labels.instance }} instance is shutting down.'
+      summary: Instance {{ $labels.instance }} down
   - alert: DiskFull
     expr: node_filesystem_avail{mountpoint="/var/lib/scylla"} / node_filesystem_size{mountpoint="/var/lib/scylla"}
       * 100 < 25
