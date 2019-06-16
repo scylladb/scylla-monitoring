@@ -44,6 +44,15 @@ groups:
     annotations:
       description: '{{ $labels.instance }} has less than 1% free disk space.'
       summary: Instance {{ $labels.instance }} low disk space
+  - alert: DiskFull
+    expr: node_filesystem_avail{mountpoint="/"} / node_filesystem_size{mountpoint="/"}
+      * 100 < 20
+    for: 30s
+    labels:
+      severity: "3"
+    annotations:
+      description: '{{ $labels.instance }} has less than 20% free disk space on the root patition.'
+      summary: Instance {{ $labels.instance }} low disk space
   - alert: NoCql
     expr: scylla_manager_healthcheck_cql_status == -1
     for: 30s
