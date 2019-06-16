@@ -831,9 +831,52 @@
                     "type": "hidden"
                 },
                 {
-                    "class": "hidden_column",
+                    "alias": "Status",
+                    "mappingType": 2,
                     "pattern": "Value",
-                    "type": "hidden"
+                    "rangeMaps": [
+                        {
+                            "from": "1",
+                            "text": "Starting",
+                            "to": "1"
+                        },
+                        {
+                            "from": "2",
+                            "text": "Joining",
+                            "to": "2"
+                        },
+                        {
+                            "from": "3",
+                            "text": "Normal",
+                            "to": "3"
+                        },
+                        {
+                            "from": "4",
+                            "text": "Leaving",
+                            "to": "4"
+                        },
+                        {
+                            "from": "5",
+                            "text": "Decommissioned",
+                            "to": "5"
+                        },
+                        {
+                            "from": "6",
+                            "text": "Draining",
+                            "to": "6"
+                        },
+                        {
+                            "from": "7",
+                            "text": "Drained",
+                            "to": "7"
+                        },
+                        {
+                            "from": "8",
+                            "text": "Moving",
+                            "to": "8"
+                        }
+                    ],
+                    "type": "string"
                 },
                 {
                     "class": "hidden_column",
@@ -843,7 +886,7 @@
             ],
             "targets": [
                 {
-                    "expr": "scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"}",
+                    "expr": "0*scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode",
                     "format": "table",
                     "instant": true,
                     "intervalFactor": 1,
