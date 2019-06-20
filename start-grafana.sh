@@ -108,6 +108,7 @@ docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS -p $GRAFANA_PORT:3000 \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
+     -e "GF_PANELS_DISABLE_SANITIZE_HTML=true" \
      -v $PWD/grafana/build:/var/lib/grafana/dashboards:z \
      -v $PWD/grafana/plugins:/var/lib/grafana/plugins:z \
      -v $PWD/grafana/provisioning:/var/lib/grafana/provisioning:z $EXTERNAL_VOLUME \
