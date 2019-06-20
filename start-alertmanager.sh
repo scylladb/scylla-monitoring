@@ -49,7 +49,12 @@ if [ $? -eq 0 ]; then
     exit 1
 fi
 
-docker run -d $DOCKER_PARAM -i -p $ALERTMANAGER_PORT:9093 \
+if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
+    PORT_MAPPING="-p $ALERTMANAGER_PORT:9093"
+fi
+
+
+docker run -d $DOCKER_PARAM -i $PORT_MAPPING \
 	 -v $RULE_FILE:/etc/alertmanager/config.yml:z \
      --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION --config.file=/etc/alertmanager/config.yml > /dev/null
 
