@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import argparse
 import os
@@ -36,7 +36,7 @@ def get_servers_from_nodetool_status():
 def dump_yaml_no_dc(directory, filename, servers):
     try:
         os.mkdir(directory)
-    except OSError, err:
+    except OSError as err:
         if err.errno != 17:
             raise
         pass
@@ -46,7 +46,7 @@ def dump_yaml_no_dc(directory, filename, servers):
 def dump_yaml(directory, filename, servers, cluster):
     try:
         os.mkdir(directory)
-    except OSError, err:
+    except OSError as err:
         if err.errno != 17:
             raise
         pass
