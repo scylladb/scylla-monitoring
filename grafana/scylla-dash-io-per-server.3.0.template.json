@@ -120,88 +120,6 @@
                 "panels": [
                     {
                         "class": "plain_text",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Disk Activity</h1>"
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "panels": [
-                    {
-                        "class": "graph_panel",
-                        "span": 6,
-                        "targets": [
-                            {
-                                "expr": "sum(irate(node_disk_writes_completed_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 20
-                            }
-                        ],
-                        "title": "Disk Writes per Server"
-                    },
-                    {
-                        "class": "graph_panel",
-                        "span": 6,
-                        "targets": [
-                            {
-                                "expr": "sum(irate(node_disk_reads_completed_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 20
-                            }
-                        ],
-                        "title": "Disk Reads per Server"
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "panels": [
-                    {
-                        "class": "bps_panel",
-                        "span": 6,
-                        "targets": [
-                            {
-                                "expr": "sum(irate(node_disk_written_bytes_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 20
-                            }
-                        ],
-                        "title": "Disk Writes Bps per Server"
-                    },
-                    {
-                        "class": "bps_panel",
-                        "span": 6,
-                        "targets": [
-                            {
-                                "expr": "sum(irate(node_disk_read_bytes_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 20
-                            }
-                        ],
-                        "title": "Disk Read Bps per Server"
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "height": "25px",
-                "gridPos": {"h": 2},
-                "panels": [
-                    {
-                        "class": "plain_text",
                         "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">I/O Queue</h1>"
                     }
                 ],
@@ -490,31 +408,7 @@
         "templating": {
             "list": [
                 {
-                    "current": {},
-                    "datasource": "prometheus",
-                    "hide": 0,
-                    "includeAll": false,
-                    "multi": false,
-                    "name": "monitor_disk",
-                    "options": [],
-                    "query": "node_disk_read_bytes_total",
-                    "refresh": 2,
-                    "regex": "/.*device=\"([^\\\"]*)\".*/",
-                    "type": "query"
-                },
-		{
                     "class":"by_template_var"
-                },
-                {
-                    "class": "template_variable_single",
-                    "current": {
-                        "text": "/var/lib/scylla",
-                        "value": "/var/lib/scylla"
-                    },
-                    "datasource": "prometheus",
-                    "label": "Mounnt path",
-                    "name": "mount_point",
-                    "query": "label_values(scylla_io_queue_delay,mountpoint)"
                 },
                 {
                     "class": "template_variable_single",
@@ -544,7 +438,7 @@
             ]
         },
         "overwrite": true,
-        "title": "Scylla Per-Server Disk I/O"
+        "title": "Scylla Per-Server I/O"
     }
 }
 
