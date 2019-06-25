@@ -111,7 +111,7 @@ if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
     HOST_NETWORK=1
 fi
 
-printf "Wait for alert manager container to start."
+echo "Wait for alert manager container to start"
 
 AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -D "$DOCKER_PARAM" $ALERT_MANAGER_RULE_CONFIG`
 if [ $? -ne 0 ]; then
@@ -158,7 +158,7 @@ then
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $SCYLLA_MANGER_TARGET_FILE):/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
-         $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
+         $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS >& /dev/null
 else
     echo "Loading prometheus data from $DATA_DIR"
     docker run -d $DOCKER_PARAM $USER_PERMISSIONS -v $(readlink -m $DATA_DIR):/prometheus/data:Z \
@@ -167,11 +167,12 @@ else
          -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
          -v $(readlink -m $SCYLLA_MANGER_TARGET_FILE):/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z \
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
-         $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION  --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
+         $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION  --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS >& /dev/null
 fi
 
 if [ $? -ne 0 ]; then
     echo "Error: Prometheus container failed to start"
+    echo "For more information use: docker logs $PROMETHEUS_NAME"
     exit 1
 fi
 if [ "$VERSIONS" = "latest" ]; then
@@ -193,10 +194,12 @@ until $(curl --output /dev/null -f --silent http://localhost:$PROMETHEUS_PORT) |
     ((TRIES=TRIES+1))
     sleep 5
 done
+echo
 
 if [ ! "$(docker ps -q -f name=$PROMETHEUS_NAME)" ]
 then
         echo "Error: Prometheus container failed to start"
+        echo "For more information use: docker logs $PROMETHEUS_NAME"
         exit 1
 fi
 
