@@ -104,7 +104,12 @@ done
 mkdir -p grafana/provisioning/datasources
 sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
 
-docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS -p $GRAFANA_PORT:3000 \
+if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
+    PORT_MAPPING="-p $GRAFANA_PORT:3000"
+fi
+
+
+docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
