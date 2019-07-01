@@ -707,27 +707,6 @@
             ]
         },
         {
-            "class": "plain_text",
-            "content": "<span/>",
-            "editable": true,
-            "error": false,
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 16,
-                "y": 10
-            },
-            "id": 12,
-            "isNew": true,
-            "links": [],
-            "mode": "html",
-            "span": 4,
-            "style": {},
-            "title": "",
-            "transparent": true,
-            "type": "text"
-        },
-        {
             "cacheTimeout": null,
             "class": "gauge_errors_panel",
             "colorBackground": false,
@@ -738,7 +717,7 @@
                 "#d44a3a"
             ],
             "datasource": "prometheus",
-            "description": "All of the requests should be Token Aware\n\nNon Token Aware requests sources:\n* Non-Prepared Stamements\n* Client not using a Token Aware load balancing policy\n\nTokenAware requests are sent to a Scylla node that is also a replica. Token Un-Aware requests require extra hop and additional processing.",
+            "description": "All of the requests should be Token Aware\n\nNon Token Aware requests sources:\n* Non-Prepared Stamements\n* Client not using a Token Aware load balancing policy\n\nTokenAware requests are sent to a Scylla node that is also a replica. Token Un-Aware requests require extra hop and additional processing.\n\nNote that the metric shows incorrect values when batches are used.",
             "editable": true,
             "error": false,
             "format": "percent",
@@ -752,10 +731,10 @@
             "gridPos": {
                 "h": 6,
                 "w": 2,
-                "x": 0,
-                "y": 16
+                "x": 16,
+                "y": 10
             },
-            "id": 13,
+            "id": 12,
             "interval": null,
             "isNew": true,
             "links": [],
@@ -820,7 +799,7 @@
             "bars": false,
             "class": "ops_panel",
             "datasource": "prometheus",
-            "description": "Requests that are not token aware indicates that requests are not routed to the right node, which require extra hop and additional processing",
+            "description": "Requests that are not token aware indicates that requests are not routed to the right node, which require extra hop and additional processing.\n\nNote that the metric shows incorrect values when batches are used.",
             "editable": true,
             "error": false,
             "fill": 0,
@@ -833,10 +812,10 @@
             "gridPos": {
                 "h": 6,
                 "w": 6,
-                "x": 2,
-                "y": 16
+                "x": 18,
+                "y": 10
             },
-            "id": 14,
+            "id": 13,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -911,200 +890,6 @@
                 "#d44a3a"
             ],
             "datasource": "prometheus",
-            "description": "Scylla uses a shared-nothing model that shards all requests onto individual cores.\n\nScylla runs one application thread-per-core, and depends on explicit message passing, not shared memory between threads. This design avoids slow, unscalable lock primitives and cache bounces.\n\nIdeally, each request to a Scylla node reaches the right core (shard), avoiding internal communication between cores. This is not always the case, for example, when using a non-shard-aware Scylla driver (see more here: https://docs.scylladb.com/getting-started/scylla_drivers/)",
-            "editable": true,
-            "error": false,
-            "format": "percent",
-            "gauge": {
-                "maxValue": 100,
-                "minValue": 0,
-                "show": true,
-                "thresholdLabels": false,
-                "thresholdMarkers": true
-            },
-            "gridPos": {
-                "h": 6,
-                "w": 2,
-                "x": 8,
-                "y": 16
-            },
-            "id": 15,
-            "interval": null,
-            "isNew": true,
-            "links": [],
-            "mappingType": 1,
-            "mappingTypes": [
-                {
-                    "name": "value to text",
-                    "value": 1
-                },
-                {
-                    "name": "range to text",
-                    "value": 2
-                }
-            ],
-            "maxDataPoints": 100,
-            "nullPointMode": "connected",
-            "nullText": null,
-            "postfix": "",
-            "postfixFontSize": "50%",
-            "prefix": "",
-            "prefixFontSize": "50%",
-            "rangeMaps": [
-                {
-                    "from": "null",
-                    "text": "N/A",
-                    "to": "null"
-                }
-            ],
-            "span": 1,
-            "sparkline": {
-                "fillColor": "rgba(31, 118, 189, 0.18)",
-                "full": false,
-                "lineColor": "rgb(31, 120, 193)",
-                "show": false
-            },
-            "targets": [
-                {
-                    "expr": "floor(100*sum(irate(scylla_storage_proxy_replica_cross_shard_ops{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))/(sum(irate(scylla_storage_proxy_coordinator_reads_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) + sum(irate(scylla_storage_proxy_coordinator_total_write_attempts_local_node{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])))) OR vector(0)",
-                    "format": "time_series",
-                    "hide": false,
-                    "intervalFactor": 1,
-                    "legendFormat": "aaa",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": "4,10",
-            "title": "Cross Shard",
-            "transparent": true,
-            "type": "singlestat",
-            "valueFontSize": "110%",
-            "valueMaps": [
-                {
-                    "op": "=",
-                    "text": "N/A",
-                    "value": "null"
-                }
-            ],
-            "valueName": "current"
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "ops_panel",
-            "datasource": "prometheus",
-            "description": "Requests that are not shard aware",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "grid": {
-                "threshold1": null,
-                "threshold1Color": "rgba(216, 200, 27, 0.27)",
-                "threshold2": null,
-                "threshold2Color": "rgba(234, 112, 112, 0.22)"
-            },
-            "gridPos": {
-                "h": 6,
-                "w": 6,
-                "x": 10,
-                "y": 16
-            },
-            "id": 16,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [
-                {}
-            ],
-            "span": 3,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "sum(irate(scylla_storage_proxy_replica_cross_shard_ops{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
-                    "format": "time_series",
-                    "hide": false,
-                    "intervalFactor": 2,
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Cross Shard Queries",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "value_type": "cumulative"
-            },
-            "transparent": false,
-            "type": "graph",
-            "xaxis": {
-                "show": true
-            },
-            "yaxes": [
-                {
-                    "format": "ops",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ]
-        },
-        {
-            "class": "plain_text",
-            "content": "<span/>",
-            "editable": true,
-            "error": false,
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 16,
-                "y": 16
-            },
-            "id": 17,
-            "isNew": true,
-            "links": [],
-            "mode": "html",
-            "span": 4,
-            "style": {},
-            "title": "",
-            "transparent": true,
-            "type": "text"
-        },
-        {
-            "cacheTimeout": null,
-            "class": "gauge_errors_panel",
-            "colorBackground": false,
-            "colorValue": true,
-            "colors": [
-                "#299c46",
-                "rgba(237, 129, 40, 0.89)",
-                "#d44a3a"
-            ],
-            "datasource": "prometheus",
             "description": "Reversed CQL Reads entail additional processing on server side\n\nSources: CQL Read requests with ORDER BY that is different from the \"CLUSTERING ORDER BY\" of the table\nAlternatives:\n\n* Denormalize your data (use a Materialized View)",
             "editable": true,
             "error": false,
@@ -1120,9 +905,9 @@
                 "h": 6,
                 "w": 2,
                 "x": 0,
-                "y": 22
+                "y": 16
             },
-            "id": 18,
+            "id": 14,
             "interval": null,
             "isNew": true,
             "links": [],
@@ -1203,9 +988,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 2,
-                "y": 22
+                "y": 16
             },
-            "id": 19,
+            "id": 15,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1295,9 +1080,9 @@
                 "h": 6,
                 "w": 2,
                 "x": 8,
-                "y": 22
+                "y": 16
             },
-            "id": 20,
+            "id": 16,
             "interval": null,
             "isNew": true,
             "links": [],
@@ -1376,9 +1161,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 10,
-                "y": 22
+                "y": 16
             },
-            "id": 21,
+            "id": 17,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1466,9 +1251,9 @@
                 "h": 6,
                 "w": 2,
                 "x": 16,
-                "y": 22
+                "y": 16
             },
-            "id": 22,
+            "id": 18,
             "interval": null,
             "isNew": true,
             "links": [],
@@ -1549,9 +1334,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 22
+                "y": 16
             },
-            "id": 23,
+            "id": 19,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1656,9 +1441,9 @@
                 "h": 6,
                 "w": 4,
                 "x": 0,
-                "y": 28
+                "y": 22
             },
-            "id": 24,
+            "id": 20,
             "interval": null,
             "isNew": true,
             "links": [],
