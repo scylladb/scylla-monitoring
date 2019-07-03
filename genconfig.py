@@ -40,8 +40,8 @@ def dump_yaml_no_dc(directory, filename, servers):
         if err.errno != 17:
             raise
         pass
-    stream = file(os.path.join(directory, filename), 'w')
-    yaml.dump([{"targets": servers}], stream, default_flow_style=False)
+    with open(os.path.join(directory, filename), 'w') as stream:
+        yaml.dump([{"targets": servers}], stream, default_flow_style=False)
 
 def dump_yaml(directory, filename, servers, cluster):
     try:
