@@ -56,11 +56,12 @@ fi
 
 docker run -d $DOCKER_PARAM -i $PORT_MAPPING \
 	 -v $RULE_FILE:/etc/alertmanager/config.yml:z \
-     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION --config.file=/etc/alertmanager/config.yml > /dev/null
+     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION --config.file=/etc/alertmanager/config.yml >& /dev/null
 
 
 if [ $? -ne 0 ]; then
     echo "Error: Alertmanager container failed to start"
+    echo "For more information use: docker logs $ALERTMANAGER_NAME"
     exit 1
 fi
 

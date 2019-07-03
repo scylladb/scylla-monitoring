@@ -120,10 +120,11 @@ docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
      -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
      $GRAFANA_ENV_COMMAND \
      "${proxy_args[@]}" \
-     --name $GRAFANA_NAME grafana/grafana:$GRAFANA_VERSION
+     --name $GRAFANA_NAME grafana/grafana:$GRAFANA_VERSION >& /dev/null
 
 if [ $? -ne 0 ]; then
     echo "Error: Grafana container failed to start"
+    echo "For more information use: docker logs $GRAFANA_NAME"
     exit 1
 fi
 
@@ -136,11 +137,12 @@ until $(curl --output /dev/null -f --silent http://localhost:$GRAFANA_PORT/api/o
     ((TRIES=TRIES+1))
     sleep 5
 done
-
+echo
 if [ ! "$(docker ps -q -f name=$GRAFANA_NAME)" ]
 then
         echo "Error: Grafana container failed to start"
+        echo "For more information use: docker logs $GRAFANA_NAME"
         exit 1
 fi
 
-printf "\nStart completed successfully, check http://localhost:$GRAFANA_PORT\n"
+printf "Start completed successfully, check http://localhost:$GRAFANA_PORT\n"
