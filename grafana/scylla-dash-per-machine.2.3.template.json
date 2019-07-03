@@ -22,7 +22,7 @@
                         "height": "250px",
                         "targets": [
                             {
-                                "expr": "sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\"})",
+                                "expr": "sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"})",
                                 "interval": "",
                                 "intervalFactor": 1,
                                 "legendFormat": "Free",
@@ -31,7 +31,7 @@
                                 "step": 7200
                             },
                             {
-                                "expr": "(sum(node_filesystem_size{mountpoint=\"$mount_point\", instance=~\"$node\"})-sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\"}))",
+                                "expr": "(sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"})-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}))",
                                 "intervalFactor": 1,
                                 "legendFormat": "Used",
                                 "refId": "B",
@@ -64,7 +64,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_disk_writes_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_disk_writes_completed_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -79,7 +79,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_disk_reads_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_disk_reads_completed_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
@@ -93,7 +93,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_disk_bytes_written{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_disk_written_bytes_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -108,7 +108,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_disk_bytes_read{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_disk_read_bytes_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
@@ -141,7 +141,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_network_receive_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_network_receive_packets_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -156,7 +156,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_network_transmit_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_network_transmit_packets_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -177,7 +177,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_network_receive_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_network_receive_bytes_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -192,7 +192,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(irate(node_network_transmit_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "expr": "sum(irate(node_network_transmit_bytes_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -212,19 +212,19 @@
                     "class": "template_variable_single",
                     "label": "cluster",
                     "name": "cluster",
-                    "query": "label_values(node_filesystem_avail, cluster)"
+                    "query": "label_values(node_filesystem_avail_bytes, cluster)"
                 },
                 {
                     "class": "template_variable_all",
                     "label": "dc",
                     "name": "dc",
-                    "query": "label_values(node_filesystem_avail{cluster=~\"$cluster\"}, dc)"
+                    "query": "label_values(node_filesystem_avail_bytes{cluster=~\"$cluster\"}, dc)"
                 },
                 {
                     "class": "template_variable_all",
                     "label": "node",
                     "name": "node",
-                    "query": "label_values(node_filesystem_avail{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                    "query": "label_values(node_filesystem_avail_bytes{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
                 },
                 {
                     "allValue": null,
@@ -240,7 +240,7 @@
                     "multi": false,
                     "name": "monitor_disk",
                     "options": [],
-                    "query": "node_disk_bytes_read",
+                    "query": "node_disk_read_bytes_total",
                     "refresh": 2,
                     "regex": "/.*device=\"([^\\\"]*)\".*/",
                     "sort": 0,
@@ -264,7 +264,7 @@
                     "multi": false,
                     "name": "monitor_network_interface",
                     "options": [],
-                    "query": "node_network_receive_packets",
+                    "query": "node_network_receive_packets_total",
                     "refresh": 2,
                     "regex": "/.*device=\"([^\\\"]*)\".*/",
                     "sort": 0,
@@ -287,7 +287,7 @@
                     "multi": false,
                     "name": "mount_point",
                     "options": [],
-                    "query": "node_filesystem_avail",
+                    "query": "node_filesystem_avail_bytes",
                     "refresh": 2,
                     "regex": "/mountpoint=\"([^\"]*)\".*/",
                     "sort": 0,
