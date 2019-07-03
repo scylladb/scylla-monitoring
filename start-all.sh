@@ -160,7 +160,12 @@ then
          -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
          $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS >& /dev/null
 else
-    echo "Loading prometheus data from $DATA_DIR"
+    if [ -d $DATA_DIR ]; then
+        echo "Loading prometheus data from $DATA_DIR"
+    else
+        echo "Creating data directory $DATA_DIR"
+        mkdir -p $DATA_DIR
+    fi
     docker run -d $DOCKER_PARAM $USER_PERMISSIONS -v $(readlink -m $DATA_DIR):/prometheus/data:Z \
          -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
          -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \

@@ -108,6 +108,10 @@ if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
     PORT_MAPPING="-p $GRAFANA_PORT:3000"
 fi
 
+if [ ! -d $EXTERNAL_VOLUME ]; then
+    echo "Creating grafana directory directory $EXTERNAL_VOLUME"
+    mkdir -p $EXTERNAL_VOLUME
+fi
 
 docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
