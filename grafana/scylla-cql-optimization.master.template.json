@@ -68,30 +68,37 @@
                         "title": "Leaving"
                     },
                     {
-                        "class": "ops_panel",
-                        "description": "Total requests graph is the baseline for comparison",
-                        "span": 4,
-                        "targets": [
-                            {
-                                "expr": "sum(irate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "Total Requests",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Total Requests"
-                    },
-                    {
                       "class":"plain_text",
                       "content": "<span/>",
                       "span":2
                     },
                     {
-                        "class": "dashlist",
-                        "tags": [
-                            "master"
-                        ]
+                        "class": "ops_panel",
+                        "description": "Total requests served by a coordinator",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Total Requests - Coordinator"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Total CQL Commands",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]]) + sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]]) + sum(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]]) + sum(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Total CQL Commands"
                     }
                 ],
                 "title": "Node status"
@@ -99,7 +106,84 @@
             {
                 "class": "row",
                 "panels": [
-
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CQL Insert"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CQL Reads"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CQL Deletes"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CQL Updates"
+                    }
+                ],
+                "title": "Node status"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Potential Issues</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
                     {
                         "class": "gauge_errors_panel",
                         "description": "All of the requests should be prepared\n\nPrepared statements remove the overhead of parsing the query every time and allow optimal routing of requests from client to server",
