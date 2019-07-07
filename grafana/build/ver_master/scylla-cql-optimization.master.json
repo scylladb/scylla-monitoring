@@ -378,11 +378,32 @@
             "valueName": "current"
         },
         {
+            "class": "plain_text",
+            "content": "<span/>",
+            "editable": true,
+            "error": false,
+            "gridPos": {
+                "h": 6,
+                "w": 4,
+                "x": 8,
+                "y": 4
+            },
+            "id": 6,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "span": 2,
+            "style": {},
+            "title": "",
+            "transparent": true,
+            "type": "text"
+        },
+        {
             "aliasColors": {},
             "bars": false,
             "class": "ops_panel",
             "datasource": "prometheus",
-            "description": "Total requests graph is the baseline for comparison",
+            "description": "Total requests served by a coordinator",
             "editable": true,
             "error": false,
             "fill": 0,
@@ -394,11 +415,11 @@
             },
             "gridPos": {
                 "h": 6,
-                "w": 8,
-                "x": 8,
+                "w": 6,
+                "x": 12,
                 "y": 4
             },
-            "id": 6,
+            "id": 7,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -420,21 +441,444 @@
             "seriesOverrides": [
                 {}
             ],
-            "span": 4,
+            "span": 3,
             "stack": false,
             "steppedLine": false,
             "targets": [
                 {
                     "expr": "sum(irate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                     "intervalFactor": 1,
-                    "legendFormat": "Total Requests",
                     "refId": "A",
                     "step": 1
                 }
             ],
             "timeFrom": null,
             "timeShift": null,
-            "title": "Total Requests",
+            "title": "Total Requests - Coordinator",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "value_type": "cumulative"
+            },
+            "transparent": false,
+            "type": "graph",
+            "xaxis": {
+                "show": true
+            },
+            "yaxes": [
+                {
+                    "format": "ops",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ]
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "ops_panel",
+            "datasource": "prometheus",
+            "description": "Total CQL Commands",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "grid": {
+                "threshold1": null,
+                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                "threshold2": null,
+                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 18,
+                "y": 4
+            },
+            "id": 8,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]]) + sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]]) + sum(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]]) + sum(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Total CQL Commands",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "value_type": "cumulative"
+            },
+            "transparent": false,
+            "type": "graph",
+            "xaxis": {
+                "show": true
+            },
+            "yaxes": [
+                {
+                    "format": "ops",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ]
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "ops_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "grid": {
+                "threshold1": null,
+                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                "threshold2": null,
+                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 10
+            },
+            "id": 9,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "CQL Insert",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "value_type": "cumulative"
+            },
+            "transparent": false,
+            "type": "graph",
+            "xaxis": {
+                "show": true
+            },
+            "yaxes": [
+                {
+                    "format": "ops",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ]
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "ops_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "grid": {
+                "threshold1": null,
+                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                "threshold2": null,
+                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 6,
+                "y": 10
+            },
+            "id": 10,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "CQL Reads",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "value_type": "cumulative"
+            },
+            "transparent": false,
+            "type": "graph",
+            "xaxis": {
+                "show": true
+            },
+            "yaxes": [
+                {
+                    "format": "ops",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ]
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "ops_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "grid": {
+                "threshold1": null,
+                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                "threshold2": null,
+                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 12,
+                "y": 10
+            },
+            "id": 11,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "CQL Deletes",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "value_type": "cumulative"
+            },
+            "transparent": false,
+            "type": "graph",
+            "xaxis": {
+                "show": true
+            },
+            "yaxes": [
+                {
+                    "format": "ops",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ]
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "ops_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "grid": {
+                "threshold1": null,
+                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                "threshold2": null,
+                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 18,
+                "y": 10
+            },
+            "id": 12,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "CQL Updates",
             "tooltip": {
                 "msResolution": false,
                 "shared": true,
@@ -464,50 +908,24 @@
         },
         {
             "class": "plain_text",
-            "content": "<span/>",
+            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Potential Issues</h1>",
             "editable": true,
             "error": false,
             "gridPos": {
-                "h": 6,
-                "w": 4,
-                "x": 16,
-                "y": 4
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 16
             },
-            "id": 7,
+            "id": 13,
             "isNew": true,
             "links": [],
             "mode": "html",
-            "span": 2,
+            "span": 12,
             "style": {},
             "title": "",
             "transparent": true,
             "type": "text"
-        },
-        {
-            "class": "dashlist",
-            "editable": true,
-            "error": false,
-            "gridPos": {
-                "h": 6,
-                "w": 4,
-                "x": 20,
-                "y": 4
-            },
-            "headings": false,
-            "id": 8,
-            "isNew": true,
-            "limit": 10,
-            "links": [],
-            "query": "",
-            "recent": false,
-            "search": true,
-            "span": 2,
-            "starred": false,
-            "tags": [
-                "master"
-            ],
-            "title": "Dashboards",
-            "type": "dashlist"
         },
         {
             "cacheTimeout": null,
@@ -535,9 +953,9 @@
                 "h": 6,
                 "w": 2,
                 "x": 0,
-                "y": 10
+                "y": 18
             },
-            "id": 9,
+            "id": 14,
             "interval": null,
             "isNew": true,
             "links": [],
@@ -618,9 +1036,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 2,
-                "y": 10
+                "y": 18
             },
-            "id": 10,
+            "id": 15,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -710,9 +1128,9 @@
                 "h": 6,
                 "w": 2,
                 "x": 8,
-                "y": 10
+                "y": 18
             },
-            "id": 11,
+            "id": 16,
             "interval": null,
             "isNew": true,
             "links": [],
@@ -793,9 +1211,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 10,
-                "y": 10
+                "y": 18
             },
-            "id": 12,
+            "id": 17,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -885,9 +1303,9 @@
                 "h": 6,
                 "w": 2,
                 "x": 16,
-                "y": 10
+                "y": 18
             },
-            "id": 13,
+            "id": 18,
             "interval": null,
             "isNew": true,
             "links": [],
@@ -966,9 +1384,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 10
+                "y": 18
             },
-            "id": 14,
+            "id": 19,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1058,9 +1476,9 @@
                 "h": 6,
                 "w": 2,
                 "x": 0,
-                "y": 16
+                "y": 24
             },
-            "id": 15,
+            "id": 20,
             "interval": null,
             "isNew": true,
             "links": [],
@@ -1141,9 +1559,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 2,
-                "y": 16
+                "y": 24
             },
-            "id": 16,
+            "id": 21,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1233,9 +1651,9 @@
                 "h": 6,
                 "w": 2,
                 "x": 8,
-                "y": 16
+                "y": 24
             },
-            "id": 17,
+            "id": 22,
             "interval": null,
             "isNew": true,
             "links": [],
@@ -1314,9 +1732,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 10,
-                "y": 16
+                "y": 24
             },
-            "id": 18,
+            "id": 23,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1404,9 +1822,9 @@
                 "h": 6,
                 "w": 2,
                 "x": 16,
-                "y": 16
+                "y": 24
             },
-            "id": 19,
+            "id": 24,
             "interval": null,
             "isNew": true,
             "links": [],
@@ -1487,9 +1905,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 16
+                "y": 24
             },
-            "id": 20,
+            "id": 25,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1594,9 +2012,9 @@
                 "h": 6,
                 "w": 4,
                 "x": 0,
-                "y": 22
+                "y": 30
             },
-            "id": 21,
+            "id": 26,
             "interval": null,
             "isNew": true,
             "links": [],
