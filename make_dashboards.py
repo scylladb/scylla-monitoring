@@ -191,7 +191,7 @@ def panel_width(gridpos, panel):
 def get_height(value, default):
     m = re.match(r"(\d+)", value)
     if m:
-        return int(m.group(1))/30
+        return int(int(m.group(1))/30)
     return default
 
 def set_grid_pos(x, y, panel, h, gridpos):
