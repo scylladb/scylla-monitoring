@@ -1,6 +1,6 @@
 # Scylla monitoring with Grafana and Prometheus
 ___
-*** Notice to users ***
+** Notice to users **
 
 The repository name was changed to `scylla-monitoring` make sure you are using the right path.
 ___
