@@ -94,12 +94,17 @@ if [ -z $NODE_TARGET_FILE ]; then
 fi
 
 if [ ! -f $SCYLLA_TARGET_FILE ]; then
-    echo "Scylla target file '${SCYLLA_TARGET_FILE}' does not exist"
+    echo "Scylla target file '${SCYLLA_TARGET_FILE}' does not exist, you can use prometheus/scylla_servers.example.yml as an example."
     exit 1
 fi
 
 if [ ! -f $NODE_TARGET_FILE ]; then
     echo "Node target file '${NODE_TARGET_FILE}' does not exist"
+    exit 1
+fi
+
+if [ ! -f $SCYLLA_MANGER_TARGET_FILE ]; then
+    echo "Scylla-Manager target file '${SCYLLA_MANGER_TARGET_FILE}' does not exist, you can use prometheus/scylla_manager_servers.example.yml as an example."
     exit 1
 fi
 
