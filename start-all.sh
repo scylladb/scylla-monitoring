@@ -36,6 +36,7 @@ SCYLLA_MANGER_TARGET_FILE=$PWD/prometheus/scylla_manager_servers.yml
 GRAFANA_ADMIN_PASSWORD=""
 ALERTMANAGER_PORT=""
 DOCKER_PARAM=""
+DATA_DIR=""
 
 while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:N:' option; do
   case "$option" in
@@ -108,6 +109,10 @@ if [ ! -f $SCYLLA_MANGER_TARGET_FILE ]; then
     exit 1
 fi
 
+SCYLLA_TARGET_FILE="-v "$(readlink -m $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_servers.yml:Z"
+SCYLLA_MANGER_TARGET_FILE="-v "$(readlink -m $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z"
+NODE_TARGET_FILE="-v "$(readlink -m $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/node_exporter_servers.yml:Z"
+
 if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
     if [ ! -z "$ALERTMANAGER_PORT" ] || [ ! -z "$GRAFANA_PORT" ] || [ ! -z $PROMETHEUS_PORT ]; then
         echo "Port mapping is not supported with host network, remove the -l flag from the command line"
@@ -157,13 +162,7 @@ fi
 
 if [ -z $DATA_DIR ]
 then
-    docker run -d $DOCKER_PARAM \
-         -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-         -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
-         -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
-         -v $(readlink -m $SCYLLA_MANGER_TARGET_FILE):/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z \
-         -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
-         $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS >& /dev/null
+    USER_PERMISSIONS=""
 else
     if [ -d $DATA_DIR ]; then
         echo "Loading prometheus data from $DATA_DIR"
@@ -171,14 +170,17 @@ else
         echo "Creating data directory $DATA_DIR"
         mkdir -p $DATA_DIR
     fi
-    docker run -d $DOCKER_PARAM $USER_PERMISSIONS -v $(readlink -m $DATA_DIR):/prometheus/data:Z \
-         -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-         -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
-         -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
-         -v $(readlink -m $SCYLLA_MANGER_TARGET_FILE):/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z \
-         -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
-         $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION  --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS >& /dev/null
+    DATA_DIR="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
 fi
+
+docker run -d $DOCKER_PARAM $USER_PERMISSIONS \
+     $DATA_DIR \
+     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+     -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
+     $SCYLLA_TARGET_FILE \
+     $SCYLLA_MANGER_TARGET_FILE \
+     $NODE_TARGET_FILE \
+     $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION  --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS >& /dev/null
 
 if [ $? -ne 0 ]; then
     echo "Error: Prometheus container failed to start"
