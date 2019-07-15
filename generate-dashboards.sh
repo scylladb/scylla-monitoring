@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
 . versions.sh
+. dashboards.sh
 VERSIONS=$DEFAULT_VERSION
+if [ -f setenv.sh ]; then
+    . setenv.sh
+fi
+
 FORMAT_COMAND=""
 usage="$(basename "$0") [-h] [-v comma separated versions ]  [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] -- Generates the grafana dashboards and their load files"
 
@@ -40,7 +45,7 @@ if [[ -z "$TEST_ONLY" ]]; then
    mkdir -p $VERDIR
 fi
 set_loader $v $v "ver_$v"
-for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server scylla-dash-cpu-per-server scylla-dash-per-machine scylla-cql-optimization scylla-errors; do
+for f in "${DASHBOARDS[@]}"; do
     if [ -e grafana/$f.$v.template.json ]
     then
         if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.$v.template.json" ]; then
