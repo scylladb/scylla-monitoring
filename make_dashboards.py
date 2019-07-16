@@ -28,6 +28,7 @@ import os
 
 parser = argparse.ArgumentParser(description='Dashboards creating tool', conflict_handler="resolve")
 parser.add_argument('-t', '--type', action='append', help='Types file')
+parser.add_argument('-R', '--Replace', action='append', help='Search and replace a value, it should be in a format of old_value=new_value')
 parser.add_argument('-d', '--dashboards', action='append', help='dashbaords file')
 parser.add_argument('-ar', '--add-row', action='append', help='merge a templated row, format number:file', default=[])
 parser.add_argument('-r', '--reverse', action='store_true', default=False, help='Reverse mode, take a dashboard and try to minimize it')
@@ -113,14 +114,24 @@ def get_json_file(name):
         print("Failed opening file:", name, inst)
         exit(0)
 
-def write_json(name, obj):
+def write_json(name, obj, replace_strings=[]):
+    y = json.dumps(obj, sort_keys = True, separators=(',', ': '), indent = 4)
+    for r in replace_strings:
+        y = y.replace(r[0], r[1])
     with open(name, 'w') as outfile:
-        json.dump(obj, outfile, sort_keys = True, separators=(',', ': '), indent = 4)
+        outfile.write(y)
     
 def merge_json_files(files):
     results = {}
     for name in files:
         results.update(get_json_file(name))
+    return results
+
+def make_replace_strings(replace):
+    results = []
+    if (replace):
+        for v in replace:
+            results.append(v.split('=', 1))
     return results
 
 def update_object(obj, types):
@@ -245,11 +256,11 @@ def make_grafna_5(results, args):
     del results["dashboard"]["rows"]
     results["dashboard"]["panels"] = panels
 
-def write_as_file(name_path, result, dir):
+def write_as_file(name_path, result, dir, replace_strings):
     name = os.path.basename(name_path)
-    write_json(os.path.join(dir, name), result["dashboard"])
+    write_json(os.path.join(dir, name), result["dashboard"], replace_strings)
 
-def get_dashboard(name, types, args):
+def get_dashboard(name, types, args, replace_strings):
     global id
     id = 1
     new_name = name.replace("grafana/", "grafana/build/").replace(".template.json", ".json")
@@ -262,9 +273,9 @@ def get_dashboard(name, types, args):
     if not args.grafana4:
         make_grafna_5(result, args)
     if args.as_file:
-        write_as_file(new_name, result, args.as_file)
+        write_as_file(new_name, result, args.as_file, replace_strings)
     else:
-        write_json(new_name, result)
+        write_json(new_name, result, replace_strings)
     
 def compact_dashboard(name, type, args):
     new_name = name.replace(".json", ".template.json")
@@ -278,9 +289,9 @@ if args.help:
     exit(0)
 
 types = merge_json_files(args.type)
-
+replace_strings = make_replace_strings(args.Replace)
 for d in args.dashboards:
     if args.reverse:
         compact_dashboard(d, types, args)
     else:
-        get_dashboard(d, types, args)
+        get_dashboard(d, types, args, replace_strings)
