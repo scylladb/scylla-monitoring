@@ -24,25 +24,6 @@
                         "description" : "the percentage of the time during which the CPU is utilized by Scylla. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high"
                     },
                     {
-                        "class": "text_panel",
-                        "content": "##  ",
-                        "mode": "markdown",
-                        "span": 3,
-                        "style": {}
-                    },
-                    {
-                        "class": "dashlist",
-                        "tags": [
-                        	"3.1"
-		                ]
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "panels": [
-                    {
                         "class": "percent_panel",
                         "pointradius": 1,
                         "targets": [
@@ -57,13 +38,32 @@
                         ],
                         "title": "Foreground CPU Utilization by [[by]]",
                         "description": "Time spent handling foreground requests (like reads, writes, and some system tasks). The remaining time is either idle, or used by background load like compactions and repairs. Background load in Scylla is opportunistic: background requests will try to use all resources available to complete as fast as possible and rely on the schedulers to provide isolation. This graph is better understood in conjunction with the main CPU load graph. For example, if there are spikes in CPU load that are not present in this graph, that indicates that the foreground load itself is stable."
-                    },
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Task Quota Violation</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
                     {
                         "class": "ms_panel",
+                        "repeat": "group",
+                        "span":3,
                         "pointradius": 1,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_scheduler_time_spent_on_task_quota_violations_ms{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_scheduler_time_spent_on_task_quota_violations_ms{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -71,7 +71,7 @@
                                 "step": 30
                             }
                         ],
-                        "title": "Time spent in task quota violations by [[by]]",
+                        "title": "Time spent in task quota violations by [[by]] - $group",
                         "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer. This may cause latency issues"
                     }
                 ],
@@ -108,6 +108,15 @@
                     "query": "label_values(scylla_reactor_utilization,shard)",
                     "sort": 3
                 }
+                ,
+                {
+                    "class": "template_variable_all",
+                    "label": "group",
+                    "name": "group",
+                    "hide": 2,
+                    "query": "label_values(scylla_scheduler_time_spent_on_task_quota_violations_ms,group)",
+                    "sort": 3
+                }
             ]
         },
 		"tags": [
@@ -117,7 +126,7 @@
             "from": "now-30m",
             "to": "now"
         },
-        "title": "Scylla CPU Per Server Metrics",
+        "title": "CPU Metrics",
         "overwrite": true,
         "version": 5
     }

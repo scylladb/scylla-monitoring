@@ -42,14 +42,246 @@
                         "class": "text_panel",
                         "content": "##  ",
                         "mode": "markdown",
-                        "span": 4,
+                        "span": 2,
                         "style": {}
                     },
                     {
-                        "class": "dashlist",
-                        "tags": [
-                            "3.0"
-                        ]
+                        "class": "percent_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Load",
+                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high."
+                    },
+                    {
+                        "class": "single_value_table",
+                        "span": 4,
+                        "description": "Nodes Information table",
+                        "targets": [
+                            {
+                              "refId": "A",
+                              "expr": "scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"}",
+                              "intervalFactor": 1,
+                              "format": "table",
+                              "instant": true
+                            }
+                        ],
+                        "styles": [
+                            {
+                              "unit": "short",
+                              "type": "string",
+                              "alias": "",
+                              "decimals": 2,
+                              "colors": [
+                                "rgba(245, 54, 54, 0.9)",
+                                "rgba(237, 129, 40, 0.89)",
+                                "rgba(50, 172, 45, 0.97)"
+                              ],
+                              "colorMode": null,
+                              "pattern": "instance",
+                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                              "thresholds": [],
+                              "mappingType": 1,
+                              "link": true,
+                              "linkUrl": "/d/detailed-[[dash_version]]/Detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell}",
+                              "linkTooltip": "Jump to the detailed node information"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "Time"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "__name__"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "exported_instance"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "job"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "type"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "Value"
+                            },
+                            {
+                                "class":"hidden_column",
+                                "pattern": "cluster"
+                            },
+                            {
+                              "alias": "OS",
+                              "unit": "short",
+                              "type": "string",
+                              "decimals": 2,
+                              "colors": [
+                                "rgba(245, 54, 54, 0.9)",
+                                "rgba(237, 129, 40, 0.89)",
+                                "rgba(50, 172, 45, 0.97)"
+                              ],
+                              "colorMode": null,
+                              "pattern": "OS",
+                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                              "thresholds": [],
+                              "mappingType": 1,
+                              "link": true,
+                              "linkUrl": "/d/OS-[[dash_version]]/OS-metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_9}",
+                              "linkTooltip": "Jump to the OS node information",
+                              "valueMaps": [
+                                    {
+                                      "value": "os",
+                                      "text": "OS"
+                                    }
+                                ]
+                            },
+                            {
+                              "unit": "short",
+                              "type": "string",
+                              "decimals": 2,
+                              "colors": [
+                                "rgba(245, 54, 54, 0.9)",
+                                "rgba(237, 129, 40, 0.89)",
+                                "rgba(50, 172, 45, 0.97)"
+                              ],
+                              "colorMode": null,
+                              "pattern": "CQL",
+                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                              "thresholds": [],
+                              "mappingType": 1,
+                              "link": true,
+                              "linkUrl": "/d/cql-[[dash_version]]/scylla-cql?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_9}",
+                              "linkTooltip": "Jump to the CQL information",
+                              "valueMaps": [
+                                    {
+                                      "value": "cql",
+                                      "text": "CQL"
+                                    }
+                                ]
+                            },
+                            {
+                              "unit": "short",
+                              "type": "string",
+                              "decimals": 2,
+                              "colors": [
+                                "rgba(245, 54, 54, 0.9)",
+                                "rgba(237, 129, 40, 0.89)",
+                                "rgba(50, 172, 45, 0.97)"
+                              ],
+                              "colorMode": null,
+                              "pattern": "Errors",
+                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                              "thresholds": [],
+                              "mappingType": 1,
+                              "link": true,
+                              "linkUrl": "/d/error-[[dash_version]]/scylla-errors?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_9}",
+                              "linkTooltip": "Jump to the Errors metrics information",
+                              "valueMaps": [
+                                    {
+                                      "value": "errors",
+                                      "text": "Errors"
+                                    }
+                                ]
+                            },
+                            {
+                              "unit": "short",
+                              "type": "string",
+                              "decimals": 2,
+                              "colors": [
+                                "rgba(245, 54, 54, 0.9)",
+                                "rgba(237, 129, 40, 0.89)",
+                                "rgba(50, 172, 45, 0.97)"
+                              ],
+                              "colorMode": null,
+                              "pattern": "IO",
+                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                              "thresholds": [],
+                              "mappingType": 1,
+                              "link": true,
+                              "linkUrl": "/d/io-[[dash_version]]/i-o?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_9}",
+                              "linkTooltip": "Jump to the Errors metrics information",
+                              "valueMaps": [
+                                    {
+                                      "value": "io",
+                                      "text": "IO"
+                                    }
+                                ]
+                            },
+                            {
+                              "alias": "CPU",
+                              "unit": "short",
+                              "type": "string",
+                              "decimals": 2,
+                              "colors": [
+                                "rgba(245, 54, 54, 0.9)",
+                                "rgba(237, 129, 40, 0.89)",
+                                "rgba(50, 172, 45, 0.97)"
+                              ],
+                              "colorMode": null,
+                              "pattern": "CPU",
+                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                              "thresholds": [],
+                              "mappingType": 1,
+                              "link": true,
+                              "linkUrl": "/d/cpu-[[dash_version]]/CPU-Metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_9}",
+                              "linkTooltip": "Jump to the node CPU information",
+                              "valueMaps": [
+                                    {
+                                      "value": "cpu",
+                                      "text": "CPU"
+                                    }
+                                ]
+                            }
+                        ],
+                        "title": "Nodes"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                  {
+                        "class": "bytes_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Size by $by"
+                    },
+                  {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(irate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + $func(irate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Requests Served - Coordinator",
+                        "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the client-side level or connection balancing level, not your data model."
                     },
                     {
                         "class": "alert_table",
@@ -124,105 +356,13 @@
                 "title": "New row"
             },
             {
-                "class": "row",
+                "class":"header_row",
                 "panels": [
                     {
-                        "class": "percent_panel",
-                        "span": 4,
-                        "targets": [
-                            {
-                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "title": "Load",
-                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high."
-                    },
-                    {
-                        "class": "ops_panel",
-                        "span": 4,
-                        "targets": [
-                            {
-                                "expr": "$func(irate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + $func(irate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "title": "Requests Served - Coordinator",
-                        "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the client-side level or connection balancing level, not your data model."
-                    },
-                    {
-                        "class": "single_value_table",
-                        "span": 4,
-                        "description": "Nodes Information table",
-                        "targets": [
-                            {
-                              "refId": "A",
-                              "expr": "scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"}",
-                              "intervalFactor": 1,
-                              "format": "table",
-                              "instant": true
-                            }
-                        ],
-                        "styles": [
-                            {
-                              "unit": "short",
-                              "type": "string",
-                              "alias": "",
-                              "decimals": 2,
-                              "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                              ],
-                              "colorMode": null,
-                              "pattern": "instance",
-                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                              "thresholds": [],
-                              "mappingType": 1,
-                              "link": true,
-                              "linkUrl": "/d/detail-[[dash_version]]/scylla-per-server-metrics-[[dash_version]]?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_6}",
-                              "linkTooltip": "Jump to the detailed node information"
-                            },
-                            {
-                                "class":"hidden_column",
-                                "pattern": "Time"
-                            },
-                            {
-                                "class":"hidden_column",
-                                "pattern": "__name__"
-                            },
-                            {
-                                "class":"hidden_column",
-                                "pattern": "exported_instance"
-                            },
-                            {
-                                "class":"hidden_column",
-                                "pattern": "job"
-                            },
-                            {
-                                "class":"hidden_column",
-                                "pattern": "type"
-                            },
-                            {
-                                "class":"hidden_column",
-                                "pattern": "Value"
-                            },
-                            {
-                                "class":"hidden_column",
-                                "pattern": "cluster"
-                            }
-                        ],
-                        "title": "Nodes"
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Latencies - Coordinator</h1>"
                     }
-                ],
-                "title": "New row"
+                ]
             },
             {
                 "class": "row",
@@ -273,15 +413,6 @@
                     }
                 ],
                 "title": "New row"
-            },
-            {
-                "class":"header_row",
-                "panels": [
-                    {
-                        "class": "plain_text",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Latencies - Coordinator</h1>"
-                    }
-                ]
             },
             {
                 "class": "row",
@@ -505,7 +636,7 @@
                         "type": "text"
                     },
                     {
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Materialized Views - Replica</h1>",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Timeouts</h1>",
                         "editable": true,
                         "error": false,
                         "id": "auto",
@@ -555,56 +686,35 @@
                         "title": "Cache Misses",
                         "description" : "Number of rows that were not present in the cache, and had to be fetched from storage."
                     },
-                    {
-                        "class": "bytes_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(scylla_database_view_update_backlog{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 10
-                            }
-                        ],
-                        "title": "View Update Backlog",
-                        "description" : "Size in bytes of the view update backlog at each base replica."
-                    },
-                    {
-                        "class": "ops_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(irate(scylla_database_dropped_view_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 10
-                            }
-                        ],
-                        "title": "Dropped View Updates",
-                        "description" : "Number of dropped view updates due to an excessive view update backlog."
-                    },
-                    {
-                        "class": "text_panel",
-                        "content": "",
-                        "mode": "markdown",
-                        "span": 9
-                    },
-                    {
+                     {
                         "class": "wps_panel",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(scylla_storage_proxy_coordinator_current_throttled_base_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                                "expr": "$func(irate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[30s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 10
                             }
                         ],
-                        "title": "Throttled Base Writes",
-                        "description" : "Currently throttled base writes, as a consequence of the respective view update backlog."
+                        "title": "Write Timeouts",
+                        "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas."
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(irate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Read Timeouts",
+                        "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas."
                     }
                 ],
                 "title": "New row"
@@ -647,6 +757,52 @@
                     "sort": 3
                 },
                 {
+                    "allValue": null,
+                    "current": {
+                        "text": "/var/lib/scylla",
+                        "value": "/var/lib/scylla"
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "Mounnt path",
+                    "multi": false,
+                    "name": "mount_point",
+                    "options": [],
+                    "query": "node_filesystem_avail_bytes",
+                    "refresh": 2,
+                    "regex": "/mountpoint=\"([^\"]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "/var/lib/scylla",
+                        "value": "/var/lib/scylla"
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "Mounnt path",
+                    "multi": false,
+                    "name": "mount_point",
+                    "options": [],
+                    "query": "node_filesystem_avail_bytes",
+                    "refresh": 2,
+                    "regex": "/mountpoint=\"([^\"]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
                     "class": "aggregation_function"
                 },
                 {
@@ -674,7 +830,7 @@
             "from": "now-30m",
             "to": "now"
         },
-        "title": "Scylla Overview Metrics",
+        "title": "Overview",
         "overwrite": true,
         "version": 3
     }

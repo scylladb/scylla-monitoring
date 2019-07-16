@@ -1,7 +1,7 @@
 {
     "dashboard": {
         "class": "dashboard",
-        "uid": "detail-2019-1",
+        "uid": "detailed-2019-1",
         "rows": [
             {
                 "class": "logo_row"
@@ -10,110 +10,8 @@
                 "class": "row",
                 "panels": [
                     {
-                        "class": "single_stat_panel",
-                        "targets": [
-                            {
-                                "expr": "count(up{job=\"scylla\", cluster=~\"$cluster|$^\"})",
-                                "intervalFactor": 1,
-                                "legendFormat": "Total Nodes",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Total Nodes"
-                    },
-                    {
-                        "class": "single_stat_panel_fail",
-                        "targets": [
-                            {
-                                "expr": "count(scrape_samples_scraped{job=\"scylla\", cluster=~\"$cluster|$^\"}==0) OR vector(0)",
-                                "intervalFactor": 1,
-                                "legendFormat": "Unreachable",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "thresholds": "1,2",
-                        "title": "Unreachable"
-                    },
-                    {
-                        "class": "single_stat_panel_fail",
-                        "description": "Number of nodes that reported their status as Starting or Joining",
-                        "targets": [
-                            {
-                                "expr": "count(scylla_node_operation_mode==1) +  count(scylla_node_operation_mode==2)OR vector(0)",
-                                "intervalFactor": 1,
-                                "legendFormat": "Joining",
-                                "refId": "A",
-                                "step": 20
-                            }
-                        ],
-                        "thresholds": "1,2",
-                        "title": "Joining"
-                    },
-                    {
-                        "class": "single_stat_panel_fail",
-                        "description": "Number of nodes that reported their status as  Leaving, Decommissioned, Draining or Drained",
-                        "targets": [
-                            {
-                                "expr": "count(scylla_node_operation_mode>3)OR vector(0)",
-                                "intervalFactor": 1,
-                                "legendFormat": "Leaving",
-                                "refId": "A",
-                                "step": 20
-                            }
-                        ],
-                        "thresholds": "1,2",
-                        "title": "Leaving"
-                    },
-                    {
-                        "class": "text_panel",
-                        "content": "##  ",
-                        "mode": "markdown",
-                        "span": 1,
-                        "style": {}
-                    },
-                    {
                         "class": "ops_panel",
-                        "bars": true,
-                        "targets": [
-                            {
-                                "expr": "$func(irate(scylla_transport_requests_served{cluster=~\"$cluster|$^\"}[30s])) + $func(irate(scylla_thrift_served{cluster=~\"$cluster|$^\"}[30s]))",
-                                "intervalFactor": 1,
-                                "legendFormat": "Total Requests",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Total Requests - Coordinator"
-                    },
-                    {
-                        "class": "dashlist",
-                        "tags": [
-                        	"2019.1"
-		                ]
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "panels": [
-                    {
-                        "class": "percent_panel",
-                        "targets": [
-                            {
-                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Load per [[by]]"
-                    },
-                    {
-                        "class": "ops_panel",
+                        "span": 4,
                         "targets": [
                             {
                                 "expr": "$func(irate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + $func(irate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
@@ -126,6 +24,35 @@
                         ],
                         "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the connection level, not your data model.",
                         "title": "Requests Served per [[by]] - Coordinator"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(irate(scylla_database_total_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads per [[by]] - Replica"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(irate(scylla_database_total_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes per [[by]] - Replica"
                     }
                 ],
                 "title": "New row"
@@ -288,35 +215,6 @@
                 "class": "row",
                 "height": "auto",
                 "panels": [
-                    {
-                        "class": "rps_panel",
-                        "span": 6,
-                        "targets": [
-                            {
-                                "expr": "$func(irate(scylla_database_total_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Reads"
-                    },
-                    {
-                        "class": "wps_panel",
-                        "span": 6,
-                        "targets": [
-                            {
-                                "expr": "$func(irate(scylla_database_total_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Writes"
-                    },
                     {
                         "class": "graph_panel",
                         "span": 3,
@@ -763,7 +661,7 @@
                 "panels": [
                     {
                         "class": "text_panel",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Memory - Replica</h1>",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Materialized Views - Replica</h1>",
                         "style": {}
                     }
                 ],
@@ -814,6 +712,53 @@
                         ],
                         "description": "This panel indicates how full the in memory is. Check the documentation to learn more about in memory storage",
                         "title": "In-memory storage usage"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Memory - Replica</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bytes_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_lsa_total_space_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "LSA total memory"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_lsa_non_lsa_used_space_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Non-LSA used memory"
                     }
                 ],
                 "title": "New row"
@@ -884,102 +829,6 @@
                 "title": "New row"
             },
             {
-                "class": "row",
-                "height": "25px",
-                "gridPos": {"h": 2},
-                "panels": [
-                    {
-                        "class": "text_panel",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">CQL - Coordinator</h1>",
-                        "style": {}
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "panels": [
-                    {
-                        "class": "ops_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "CQL Insert"
-                    },
-                    {
-                        "class": "ops_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "CQL Reads"
-                    },
-                    {
-                        "class": "ops_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "CQL Deletes"
-                    },
-                    {
-                        "class": "ops_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "CQL Updates"
-                    },
-                    {
-                        "class": "graph_panel",
-                        "span": 3,
-                        "pointradius": 1,
-                        "targets": [
-                            {
-                                "expr": "$func(scylla_transport_current_connections{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 30
-                            }
-                        ],
-                        "title": "Client CQL connections by [[by]]",
-                        "description": "amount of CQL connections currently established"
-                    }
-                ],
-                "title": "New row"
-            },
-            {
                 "class": "user_panel_row_header"
             },
             {
@@ -1028,7 +877,7 @@
             "from": "now-30m",
             "to": "now"
         },
-        "title": "Scylla Per Server Metrics",
+        "title": "Detailed",
         "overwrite": true,
         "version": 5
     }
