@@ -1,76 +1,161 @@
 {
     "dashboard": {
         "class": "dashboard",
-        "uid": "cqlopt-3-0",
-        "originalTitle": "Scylla CQL Optimization",
+        "uid": "cql-3-0",
+        "originalTitle": "CQL",
         "rows": [
             {
                 "class": "logo_row"
             },
             {
                 "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
                 "panels": [
                     {
-                        "class": "single_stat_panel",
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">CQL - Coordinator</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
                         "targets": [
                             {
-                                "expr": "count(up{job=\"scylla\", cluster=~\"$cluster|$^\"})",
+                                "expr": "sum(irate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "Total Nodes",
+                                "legendFormat": "",
+                                "metric": "",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
-                        "title": "Total Nodes"
-                    },
-                    {
-                        "class": "single_stat_panel_fail",
-                        "targets": [
-                            {
-                                "expr": "count(scrape_samples_scraped{job=\"scylla\", cluster=~\"$cluster|$^\"}==0) OR vector(0)",
-                                "intervalFactor": 1,
-                                "legendFormat": "Unreachable",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "thresholds": "1,2",
-                        "title": "Unreachable"
-                    },
-                    {
-                      "class":"plain_text",
-                      "content": "<span/>",
-                      "span":2
+                        "title": "CQL Insert"
                     },
                     {
                         "class": "ops_panel",
-                        "description": "Total requests graph is the baseline for comparison",
-                        "span": 4,
+                        "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + sum(irate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "Total Requests",
+                                "legendFormat": "",
+                                "metric": "",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
-                        "title": "Total Requests"
+                        "title": "CQL Reads"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CQL Deletes"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CQL Updates"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_transport_current_connections{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Client CQL connections by [[by]]",
+                        "description": "amount of CQL connections currently established"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_batches{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "CQL Batches by [[by]]",
+                        "description": "Number of CQL batches command, each batched command is counted once"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_cql_statements_in_batches{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[300s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "CQL Coomand In Batches by [[by]]",
+                        "description": "Number of CQL command batched. Each batch would add the number of commands inside the batch"
                     },
                     {
                       "class":"plain_text",
                       "content": "<span/>",
-                      "span":2
-                    },
-                    {
-                        "class": "dashlist",
-                        "tags": [
-                            "3.0"
-                        ]
+                      "span":3
                     }
                 ],
-                "title": "Node status"
+                "title": "New row"
             },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Optimization</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+
             {
                 "class": "row",
                 "panels": [
@@ -342,22 +427,6 @@
                     "name": "shard",
                     "query": "label_values(scylla_reactor_utilization,shard)",
                     "sort": 3
-                },
-                {
-                    "class": "template_variable_custom",
-                    "current": {
-                        "text": "3.0",
-                        "value": "3.0"
-                    },
-                    "name": "dash_version",
-                    "options": [
-                        {
-                            "selected": true,
-                            "text": "3.0",
-                            "value": "3.0"
-                        }
-                    ],
-                    "query": "master"
                 }
             ]
         },
@@ -366,6 +435,6 @@
             "to": "now"
         },
         "overwrite": true,
-        "title": "Scylla CQL Optimization"
+        "title": "Scylla CQL"
     }
 }
