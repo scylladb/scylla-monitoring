@@ -28,7 +28,7 @@ else
 fi
 PROMETHEUS_RULES="$PWD/prometheus/prometheus.rules.yml"
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.10.0
 
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
@@ -36,8 +36,10 @@ SCYLLA_MANGER_TARGET_FILE=$PWD/prometheus/scylla_manager_servers.yml
 GRAFANA_ADMIN_PASSWORD=""
 ALERTMANAGER_PORT=""
 DOCKER_PARAM=""
+DATA_DIR=""
+CONSUL_ADDRESS=""
 
-while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:N:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -66,6 +68,8 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:N:' option; do
        ;;
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
+    L) CONSUL_ADDRESS="$OPTARG"
+       ;;
     a) GRAFANA_ADMIN_PASSWORD="-a $OPTARG"
        ;;
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
@@ -89,23 +93,36 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:N:' option; do
   esac
 done
 
-if [ -z $NODE_TARGET_FILE ]; then
-   NODE_TARGET_FILE=$SCYLLA_TARGET_FILE
-fi
+if [ -z $CONSUL_ADDRESS ]; then
+    if [ -z $NODE_TARGET_FILE ]; then
+       NODE_TARGET_FILE=$SCYLLA_TARGET_FILE
+    fi
 
-if [ ! -f $SCYLLA_TARGET_FILE ]; then
-    echo "Scylla target file '${SCYLLA_TARGET_FILE}' does not exist, you can use prometheus/scylla_servers.example.yml as an example."
-    exit 1
-fi
+    if [ ! -f $SCYLLA_TARGET_FILE ]; then
+        echo "Scylla target file '${SCYLLA_TARGET_FILE}' does not exist, you can use prometheus/scylla_servers.example.yml as an example."
+        exit 1
+    fi
 
-if [ ! -f $NODE_TARGET_FILE ]; then
-    echo "Node target file '${NODE_TARGET_FILE}' does not exist"
-    exit 1
-fi
+    if [ ! -f $NODE_TARGET_FILE ]; then
+        echo "Node target file '${NODE_TARGET_FILE}' does not exist"
+        exit 1
+    fi
 
-if [ ! -f $SCYLLA_MANGER_TARGET_FILE ]; then
-    echo "Scylla-Manager target file '${SCYLLA_MANGER_TARGET_FILE}' does not exist, you can use prometheus/scylla_manager_servers.example.yml as an example."
-    exit 1
+    if [ ! -f $SCYLLA_MANGER_TARGET_FILE ]; then
+        echo "Scylla-Manager target file '${SCYLLA_MANGER_TARGET_FILE}' does not exist, you can use prometheus/scylla_manager_servers.example.yml as an example."
+        exit 1
+    fi
+
+    SCYLLA_TARGET_FILE="-v "$(readlink -m $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_servers.yml:Z"
+    SCYLLA_MANGER_TARGET_FILE="-v "$(readlink -m $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z"
+    NODE_TARGET_FILE="-v "$(readlink -m $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/node_exporter_servers.yml:Z"
+else
+    if [[ ! $CONSUL_ADDRESS = *":"* ]]; then
+        CONSUL_ADDRESS="$CONSUL_ADDRESS:56090"
+    fi
+    SCYLLA_TARGET_FILE=""
+    SCYLLA_MANGER_TARGET_FILE=""
+    NODE_TARGET_FILE=""
 fi
 
 if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
@@ -149,7 +166,11 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
 done
 
 mkdir -p $PWD/prometheus/build/
-sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template > $PWD/prometheus/build/prometheus.yml
+if [ -z $CONSUL_ADDRESS ]; then
+    sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template > $PWD/prometheus/build/prometheus.yml
+else
+    sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template| sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" > $PWD/prometheus/build/prometheus.yml
+fi
 
 if [ -z $HOST_NETWORK ]; then
     PORT_MAPPING="-p $PROMETHEUS_PORT:9090"
@@ -157,13 +178,7 @@ fi
 
 if [ -z $DATA_DIR ]
 then
-    docker run -d $DOCKER_PARAM \
-         -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-         -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
-         -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
-         -v $(readlink -m $SCYLLA_MANGER_TARGET_FILE):/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z \
-         -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
-         $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS >& /dev/null
+    USER_PERMISSIONS=""
 else
     if [ -d $DATA_DIR ]; then
         echo "Loading prometheus data from $DATA_DIR"
@@ -171,14 +186,17 @@ else
         echo "Creating data directory $DATA_DIR"
         mkdir -p $DATA_DIR
     fi
-    docker run -d $DOCKER_PARAM $USER_PERMISSIONS -v $(readlink -m $DATA_DIR):/prometheus/data:Z \
-         -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-         -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
-         -v $(readlink -m $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/scylla_servers.yml:Z \
-         -v $(readlink -m $SCYLLA_MANGER_TARGET_FILE):/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z \
-         -v $(readlink -m $NODE_TARGET_FILE):/etc/scylla.d/prometheus/node_exporter_servers.yml:Z \
-         $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION  --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS >& /dev/null
+    DATA_DIR="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
 fi
+
+docker run -d $DOCKER_PARAM $USER_PERMISSIONS \
+     $DATA_DIR \
+     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+     -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
+     $SCYLLA_TARGET_FILE \
+     $SCYLLA_MANGER_TARGET_FILE \
+     $NODE_TARGET_FILE \
+     $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION  --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS >& /dev/null
 
 if [ $? -ne 0 ]; then
     echo "Error: Prometheus container failed to start"
