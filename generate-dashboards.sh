@@ -48,13 +48,15 @@ if [[ -z "$TEST_ONLY" ]]; then
    mkdir -p $VERDIR
 fi
 set_loader $v $v "ver_$v"
+CURRENT_VERSION=`cat CURRENT_VERSION.sh`
+
 for f in "${DASHBOARDS[@]}"; do
     if [ -e grafana/$f.$v.template.json ]
     then
         if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.$v.template.json" ] || [ ! -z "$FORCEUPDATE" ]; then
             if [[ -z "$TEST_ONLY" ]]; then
                 echo "updating dashboard grafana/$f.$v.template.json"
-               ./make_dashboards.py -af $VERDIR -t grafana/types.json -d grafana/$f.$v.template.json
+               ./make_dashboards.py -af $VERDIR -t grafana/types.json -d grafana/$f.$v.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"
            fi
         fi
     else
@@ -74,7 +76,9 @@ then
     if [ ! -f "$VERDIR/scylla-manager.$MANAGER_VERSION.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/scylla-manager.$MANAGER_VERSION.template.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
         if [[ -z "$TEST_ONLY" ]]; then
            echo "updating grafana/scylla-manager.$MANAGER_VERSION.template.json"
-           ./make_dashboards.py -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.$MANAGER_VERSION.template.json
+           ./make_dashboards.py -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.$MANAGER_VERSION.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"
+        else
+           echo "notice: grafana/scylla-manager.$MANAGER_VERSION.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
         fi
     fi
 fi
@@ -89,7 +93,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         if [ ! -f $VERDIR/$val1.json ] || [ $VERDIR/$val1.json -ot $val ] || [ ! -z "$FORCEUPDATE" ]; then
             if [[ -z "$TEST_ONLY" ]]; then
                 echo "updating $val"
-               ./make_dashboards.py -af $VERDIR -t grafana/types.json -d $val
+               ./make_dashboards.py -af $VERDIR -t grafana/types.json -d $val -R "__MONITOR_VERSION__=$CURRENT_VERSION"
             fi
         fi
     else
