@@ -1,1 +1,1 @@
-DASHBOARDS=(scylla-dash scylla-dash-per-server scylla-dash-io-per-server scylla-dash-cpu-per-server scylla-dash-per-machine scylla-cql-optimization scylla-errors)
+DASHBOARDS=(scylla-overview scylla-detailed scylla-io scylla-cpu scylla-os scylla-cql scylla-errros)
