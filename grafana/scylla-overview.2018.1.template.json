@@ -1,7 +1,6 @@
 {
     "dashboard": {
         "class": "dashboard",
-        "uid": "overview-2018-1",
         "originalTitle": "Scylla Cluster Metrics",
         "rows": [
             {
@@ -52,8 +51,8 @@
                     {
                         "class": "dashlist",
                         "tags": [
-                        	"2018.1"
-		                ]
+                            "2018.1"
+                        ]
                     }
                 ],
                 "title": "New row"
@@ -63,6 +62,7 @@
                 "panels": [
                     {
                         "class": "percent_panel",
+                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
                         "targets": [
                             {
                                 "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
@@ -72,8 +72,7 @@
                                 "step": 4
                             }
                         ],
-                        "title": "Load",
-                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high."
+                        "title": "Load"
                     },
                     {
                         "class": "ops_panel",
@@ -106,6 +105,15 @@
                                 "expr": "(sum(node_filesystem_size_bytes{mountpoint=\"/var/lib/scylla\"})-sum(node_filesystem_avail_bytes{mountpoint=\"/var/lib/scylla\"}))",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
+                                "refId": "B",
+                                "step": 1200
+                            },
+                            {
+                                "expr": "sum(node_filesystem_avail{mountpoint=\"/var/lib/scylla\"})",
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
                                 "refId": "B",
                                 "step": 1200
                             }
@@ -215,11 +223,12 @@
                 ],
                 "title": "New row"
             },
-
             {
                 "class": "row",
+                "gridPos": {
+                    "h": 2
+                },
                 "height": "25px",
-                "gridPos": {"h": 2},
                 "panels": [
                     {
                         "class": "text_header_panel",
@@ -238,6 +247,7 @@
                 "panels": [
                     {
                         "class": "queue_lenght_panel",
+                        "description": "Foreground writes are writes that weren't acknowledged yet to the application. For instance, if a single replica responded and two are needed due to the consistency level. This metric represents a queue size, not a rate. High values here correlate with increased write latencies.",
                         "span": 3,
                         "targets": [
                             {
@@ -248,11 +258,11 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Foreground Writes",
-                        "description": "Foreground writes are writes that weren't acknowledged yet to the application. For instance, if a single replica responded and two are needed due to the consistency level. This metric represents a queue size, not a rate. High values here correlate with increased write latencies."
+                        "title": "Foreground Writes"
                     },
                     {
                         "class": "queue_lenght_panel",
+                        "description": "Foreground reads are reads that weren't acknowledged yet to the application. For instance, if a single replica responded and two are needed due to the consistency level. This metric represents a queue size, not a rate. High values here correlate with increased read latencies.",
                         "span": 3,
                         "targets": [
                             {
@@ -264,11 +274,11 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Foreground Reads",
-                        "description": "Foreground reads are reads that weren't acknowledged yet to the application. For instance, if a single replica responded and two are needed due to the consistency level. This metric represents a queue size, not a rate. High values here correlate with increased read latencies."
+                        "title": "Foreground Reads"
                     },
                     {
                         "class": "wps_panel",
+                        "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
                         "span": 3,
                         "targets": [
                             {
@@ -279,11 +289,11 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Write Timeouts",
-                        "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas."
+                        "title": "Write Timeouts"
                     },
                     {
                         "class": "wps_panel",
+                        "description": "Requests that Scylla did not even try to write because replicas that were needed to execute this write were unavailable. Unavailable writes are counted in the node that received the request (the coordinator), not at the replicas.",
                         "span": 3,
                         "targets": [
                             {
@@ -294,8 +304,7 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Write Unavailable",
-                        "description": "Requests that Scylla did not even try to write because replicas that were needed to execute this write were unavailable. Unavailable writes are counted in the node that received the request (the coordinator), not at the replicas."
+                        "title": "Write Unavailable"
                     }
                 ],
                 "title": "New row"
@@ -306,6 +315,7 @@
                 "panels": [
                     {
                         "class": "queue_lenght_panel",
+                        "description": "Background writes are writes that are already acknowledged to the application but have additional work to be done. For instance, if a replica responded and only one is needed, this request is still listed as a background request until all replicas respond. This metric represents a queue size, not a rate. High values here correlate with increased write latencies.",
                         "span": 3,
                         "targets": [
                             {
@@ -316,11 +326,11 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Background Writes",
-                        "description": "Background writes are writes that are already acknowledged to the application but have additional work to be done. For instance, if a replica responded and only one is needed, this request is still listed as a background request until all replicas respond. This metric represents a queue size, not a rate. High values here correlate with increased write latencies."
+                        "title": "Background Writes"
                     },
                     {
                         "class": "queue_lenght_panel",
+                        "description": "Background reads are reads that are already acknowledged to the application but have additional work to be done. For instance, if a replica responded and only one is needed, this request is still listed as a background request until all replicas respond. This metric represents a queue size, not a rate. High values here correlate with increased read latencies.",
                         "span": 3,
                         "targets": [
                             {
@@ -331,11 +341,11 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Background Reads",
-                        "description": "Background reads are reads that are already acknowledged to the application but have additional work to be done. For instance, if a replica responded and only one is needed, this request is still listed as a background request until all replicas respond. This metric represents a queue size, not a rate. High values here correlate with increased read latencies."
+                        "title": "Background Reads"
                     },
                     {
                         "class": "rps_panel",
+                        "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
                         "span": 3,
                         "targets": [
                             {
@@ -346,11 +356,11 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Read Timeouts",
-                        "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas."
+                        "title": "Read Timeouts"
                     },
                     {
                         "class": "rps_panel",
+                        "description": "Requests that Scylla did not even try to read because replicas that were needed to execute this write were unavailable. Unavailable reads are counted in the node that received the request (the coordinator), not at the replicas.",
                         "span": 3,
                         "targets": [
                             {
@@ -361,16 +371,17 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Read Unavailable",
-                        "description": "Requests that Scylla did not even try to read because replicas that were needed to execute this write were unavailable. Unavailable reads are counted in the node that received the request (the coordinator), not at the replicas."
+                        "title": "Read Unavailable"
                     }
                 ],
                 "title": "New row"
             },
             {
                 "class": "row",
+                "gridPos": {
+                    "h": 2
+                },
                 "height": "25px",
-                "gridPos": {"h": 2},
                 "panels": [
                     {
                         "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Cache</h1>",
@@ -394,6 +405,7 @@
                 "panels": [
                     {
                         "class": "ops_panel",
+                        "description": "Number of rows that were read from the cache, without needing to be fetched from storage.",
                         "span": 3,
                         "targets": [
                             {
@@ -404,8 +416,7 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Cache Hits",
-                        "description" : "Number of rows that were read from the cache, without needing to be fetched from storage."
+                        "title": "Cache Hits"
                     },
                     {
                         "class": "ops_panel",
@@ -429,6 +440,9 @@
                 "panels": [],
                 "title": "New row"
             }
+        ],
+        "tags": [
+            "2018.1"
         ],
         "templating": {
             "list": [
@@ -496,30 +510,28 @@
                 },
                 {
                     "class": "template_variable_custom",
-                    "name": "dash_version",
-                    "options": [
-                      {
-                         "selected": true,
-                         "text": "2018-1",
-                         "value": "2018-1"
-                      }
-                    ],
-                    "query": "2018-1",
                     "current": {
                         "text": "2018-1",
                         "value": "2018-1"
-                    }
+                    },
+                    "name": "dash_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "2018-1",
+                            "value": "2018-1"
+                        }
+                    ],
+                    "query": "2018-1"
                 }
             ]
         },
-		"tags": [
-			"2018.1"
-		],
         "time": {
             "from": "now-30m",
             "to": "now"
         },
         "title": "Scylla Overview Metrics",
+        "uid": "overview-2018-1",
         "version": 3
     }
 }
