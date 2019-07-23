@@ -1,8 +1,8 @@
 {
     "dashboard": {
         "class": "dashboard",
-        "uid": "overview-2019-1",
         "originalTitle": "Scylla Cluster Metrics",
+        "overwrite": true,
         "rows": [
             {
                 "class": "logo_row"
@@ -70,6 +70,7 @@
                     },
                     {
                         "class": "percent_panel",
+                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
                         "span": 4,
                         "targets": [
                             {
@@ -80,258 +81,257 @@
                                 "step": 4
                             }
                         ],
-                        "title": "Load",
-                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high."
+                        "title": "Load"
                     },
                     {
                         "class": "single_value_table",
-                        "span": 4,
                         "description": "Nodes Information table",
-                        "targets": [
-                            {
-                              "refId": "A",
-                              "expr": "0*scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode",
-                              "intervalFactor": 1,
-                              "format": "table",
-                              "instant": true
-                            }
-                        ],
+                        "span": 4,
                         "styles": [
                             {
-                              "unit": "short",
-                              "type": "string",
-                              "alias": "",
-                              "decimals": 2,
-                              "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                              ],
-                              "colorMode": null,
-                              "pattern": "instance",
-                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                              "thresholds": [],
-                              "mappingType": 1,
-                              "link": true,
-                              "linkUrl": "/d/detailed-[[dash_version]]/Detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell}",
-                              "linkTooltip": "Jump to the detailed node information"
+                                "alias": "",
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "Jump to the detailed node information",
+                                "linkUrl": "/d/detailed-[[dash_version]]/Detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell}",
+                                "mappingType": 1,
+                                "pattern": "instance",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "Time"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "__name__"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "exported_instance"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "job"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "version"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "type"
                             },
                             {
-                              "unit": "short",
-                              "alias": "Version",
-                              "type": "string",
-                              "decimals": 2,
-                              "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                              ],
-                              "colorMode": null,
-                              "pattern": "svr",
-                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                              "thresholds": [],
-                              "mappingType": 1,
-                              "link": true,
-                              "linkUrl": "/d/OS-[[dash_version]]/OS-metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
-                              "linkTooltip": "${__cell_11}"
-                            },
-                            {
-                              "alias": "OS",
-                              "unit": "short",
-                              "type": "string",
-                              "decimals": 2,
-                              "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                              ],
-                              "colorMode": null,
-                              "pattern": "OS",
-                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                              "thresholds": [],
-                              "mappingType": 1,
-                              "link": true,
-                              "linkUrl": "/d/OS-[[dash_version]]/OS-metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
-                              "linkTooltip": "Jump to the OS node information",
-                              "valueMaps": [
-                                    {
-                                      "value": "os",
-                                      "text": "OS"
-                                    }
-                                ]
-                            },
-                            {
-                              "unit": "short",
-                              "type": "string",
-                              "decimals": 2,
-                              "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                              ],
-                              "colorMode": null,
-                              "pattern": "CQL",
-                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                              "thresholds": [],
-                              "mappingType": 1,
-                              "link": true,
-                              "linkUrl": "/d/cql-[[dash_version]]/scylla-cql?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
-                              "linkTooltip": "Jump to the CQL information",
-                              "valueMaps": [
-                                    {
-                                      "value": "cql",
-                                      "text": "CQL"
-                                    }
-                                ]
-                            },
-                            {
-                              "unit": "short",
-                              "type": "string",
-                              "decimals": 2,
-                              "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                              ],
-                              "colorMode": null,
-                              "pattern": "Errors",
-                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                              "thresholds": [],
-                              "mappingType": 1,
-                              "link": true,
-                              "linkUrl": "/d/error-[[dash_version]]/scylla-errors?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
-                              "linkTooltip": "Jump to the Errors metrics information",
-                              "valueMaps": [
-                                    {
-                                      "value": "errors",
-                                      "text": "Errors"
-                                    }
-                                ]
-                            },
-                            {
-                              "unit": "short",
-                              "type": "string",
-                              "decimals": 2,
-                              "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                              ],
-                              "colorMode": null,
-                              "pattern": "IO",
-                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                              "thresholds": [],
-                              "mappingType": 1,
-                              "link": true,
-                              "linkUrl": "/d/io-[[dash_version]]/i-o?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
-                              "linkTooltip": "Jump to the Errors metrics information",
-                              "valueMaps": [
-                                    {
-                                      "value": "io",
-                                      "text": "IO"
-                                    }
-                                ]
-                            },
-                            {
-                              "alias": "CPU",
-                              "unit": "short",
-                              "type": "string",
-                              "decimals": 2,
-                              "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                              ],
-                              "colorMode": null,
-                              "pattern": "CPU",
-                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                              "thresholds": [],
-                              "mappingType": 1,
-                              "link": true,
-                              "linkUrl": "/d/cpu-[[dash_version]]/CPU-Metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
-                              "linkTooltip": "Jump to the node CPU information",
-                              "valueMaps": [
-                                    {
-                                      "value": "cpu",
-                                      "text": "CPU"
-                                    }
-                                ]
-                            },
-                            {
-                                "pattern": "Value",
+                                "alias": "Version",
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "${__cell_11}",
+                                "linkUrl": "/d/OS-[[dash_version]]/OS-metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
+                                "mappingType": 1,
+                                "pattern": "svr",
+                                "thresholds": [],
                                 "type": "string",
+                                "unit": "short"
+                            },
+                            {
+                                "alias": "OS",
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "Jump to the OS node information",
+                                "linkUrl": "/d/OS-[[dash_version]]/OS-metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
+                                "mappingType": 1,
+                                "pattern": "OS",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short",
+                                "valueMaps": [
+                                    {
+                                        "text": "OS",
+                                        "value": "os"
+                                    }
+                                ]
+                            },
+                            {
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "Jump to the CQL information",
+                                "linkUrl": "/d/cql-[[dash_version]]/scylla-cql?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
+                                "mappingType": 1,
+                                "pattern": "CQL",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short",
+                                "valueMaps": [
+                                    {
+                                        "text": "CQL",
+                                        "value": "cql"
+                                    }
+                                ]
+                            },
+                            {
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "Jump to the Errors metrics information",
+                                "linkUrl": "/d/error-[[dash_version]]/scylla-errors?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
+                                "mappingType": 1,
+                                "pattern": "Errors",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short",
+                                "valueMaps": [
+                                    {
+                                        "text": "Errors",
+                                        "value": "errors"
+                                    }
+                                ]
+                            },
+                            {
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "Jump to the Errors metrics information",
+                                "linkUrl": "/d/io-[[dash_version]]/i-o?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
+                                "mappingType": 1,
+                                "pattern": "IO",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short",
+                                "valueMaps": [
+                                    {
+                                        "text": "IO",
+                                        "value": "io"
+                                    }
+                                ]
+                            },
+                            {
+                                "alias": "CPU",
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "Jump to the node CPU information",
+                                "linkUrl": "/d/cpu-[[dash_version]]/CPU-Metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
+                                "mappingType": 1,
+                                "pattern": "CPU",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short",
+                                "valueMaps": [
+                                    {
+                                        "text": "CPU",
+                                        "value": "cpu"
+                                    }
+                                ]
+                            },
+                            {
                                 "alias": "Status",
                                 "mappingType": 2,
+                                "pattern": "Value",
                                 "rangeMaps": [
                                     {
-                                      "from": "1",
-                                      "to": "1",
-                                      "text": "Starting"
+                                        "from": "1",
+                                        "text": "Starting",
+                                        "to": "1"
                                     },
                                     {
-                                      "from": "2",
-                                      "to": "2",
-                                      "text": "Joining"
+                                        "from": "2",
+                                        "text": "Joining",
+                                        "to": "2"
                                     },
                                     {
-                                      "from": "3",
-                                      "to": "3",
-                                      "text": "Normal"
+                                        "from": "3",
+                                        "text": "Normal",
+                                        "to": "3"
                                     },
                                     {
-                                      "from": "4",
-                                      "to": "4",
-                                      "text": "Leaving"
+                                        "from": "4",
+                                        "text": "Leaving",
+                                        "to": "4"
                                     },
                                     {
-                                      "from": "5",
-                                      "to": "5",
-                                      "text": "Decommissioned"
+                                        "from": "5",
+                                        "text": "Decommissioned",
+                                        "to": "5"
                                     },
                                     {
-                                      "from": "6",
-                                      "to": "6",
-                                      "text": "Draining"
+                                        "from": "6",
+                                        "text": "Draining",
+                                        "to": "6"
                                     },
                                     {
-                                      "from": "7",
-                                      "to": "7",
-                                      "text": "Drained"
+                                        "from": "7",
+                                        "text": "Drained",
+                                        "to": "7"
                                     },
                                     {
-                                      "from": "8",
-                                      "to": "8",
-                                      "text": "Moving"
+                                        "from": "8",
+                                        "text": "Moving",
+                                        "to": "8"
                                     }
-                                 ]
+                                ],
+                                "type": "string"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "cluster"
+                            }
+                        ],
+                        "targets": [
+                            {
+                                "expr": "0*scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode",
+                                "format": "table",
+                                "instant": true,
+                                "intervalFactor": 1,
+                                "refId": "A"
                             }
                         ],
                         "title": "Nodes"
@@ -353,12 +353,21 @@
                                 "metric": "",
                                 "refId": "A",
                                 "step": 1
+                            },
+                            {
+                                "expr": "sum(node_filesystem_size{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])-sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
                             }
                         ],
                         "title": "Disk Size by $by"
                     },
                     {
                         "class": "ops_panel",
+                        "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the client-side level or connection balancing level, not your data model.",
                         "span": 4,
                         "targets": [
                             {
@@ -370,60 +379,59 @@
                                 "step": 4
                             }
                         ],
-                        "title": "Requests Served - Coordinator",
-                        "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the client-side level or connection balancing level, not your data model."
+                        "title": "Requests Served - Coordinator"
                     },
                     {
                         "class": "alert_table",
-                        "span":4,
+                        "span": 4,
                         "styles": [
                             {
                                 "alias": "Time",
                                 "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                                "pattern": "Time",
                                 "link": true,
                                 "linkTooltip": "Jump to the see the node",
                                 "linkUrl": "/d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_4}&from=${__cell_0}",
+                                "pattern": "Time",
                                 "type": "date"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "severity"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "alertname"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "cluster"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "monitor"
                             },
                             {
-                                "class":"hidden_column",
+                                "class": "hidden_column",
                                 "pattern": "summary"
                             },
                             {
-                              "alias": "Instance",
-                              "colorMode": null,
-                              "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                              ],
-                              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                              "decimals": 2,
-                              "link": true,
-                              "linkTooltip": "Jump to the see the node",
-                              "linkUrl": "/d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell}",
-                              "mappingType": 1,
-                              "pattern": "instance",
-                              "thresholds": [],
-                              "type": "string",
-                              "unit": "short"
+                                "alias": "Instance",
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "Jump to the see the node",
+                                "linkUrl": "/d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell}",
+                                "mappingType": 1,
+                                "pattern": "instance",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short"
                             },
                             {
                                 "alias": "",
@@ -446,7 +454,7 @@
                 "title": "New row"
             },
             {
-                "class":"header_row",
+                "class": "header_row",
                 "panels": [
                     {
                         "class": "plain_text",
@@ -520,7 +528,6 @@
             },
             {
                 "class": "row",
-
                 "panels": [
                     {
                         "class": "ops_panel",
@@ -585,8 +592,10 @@
             },
             {
                 "class": "row",
+                "gridPos": {
+                    "h": 2
+                },
                 "height": "25px",
-                "gridPos": {"h": 2},
                 "panels": [
                     {
                         "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Cache - Replica</h1>",
@@ -616,7 +625,6 @@
                         "transparent": true,
                         "type": "text"
                     }
-
                 ],
                 "title": "New row"
             },
@@ -625,6 +633,7 @@
                 "panels": [
                     {
                         "class": "ops_panel",
+                        "description": "Number of rows that were read from the cache, without needing to be fetched from storage.",
                         "span": 3,
                         "targets": [
                             {
@@ -635,11 +644,11 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Cache Hits",
-                        "description" : "Number of rows that were read from the cache, without needing to be fetched from storage."
+                        "title": "Cache Hits"
                     },
                     {
                         "class": "ops_panel",
+                        "description": "Number of rows that were not present in the cache, and had to be fetched from storage.",
                         "span": 3,
                         "targets": [
                             {
@@ -650,12 +659,11 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Cache Misses",
-                        "description" : "Number of rows that were not present in the cache, and had to be fetched from storage."
+                        "title": "Cache Misses"
                     },
-
-                     {
+                    {
                         "class": "wps_panel",
+                        "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
                         "span": 3,
                         "targets": [
                             {
@@ -666,11 +674,11 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Write Timeouts",
-                        "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas."
+                        "title": "Write Timeouts"
                     },
                     {
                         "class": "rps_panel",
+                        "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
                         "span": 3,
                         "targets": [
                             {
@@ -681,8 +689,7 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Read Timeouts",
-                        "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas."
+                        "title": "Read Timeouts"
                     }
                 ],
                 "title": "New row"
@@ -694,10 +701,13 @@
                 "class": "user_panels_row"
             }
         ],
+        "tags": [
+            "2019.1"
+        ],
         "templating": {
             "list": [
                 {
-                    "class":"by_template_var"
+                    "class": "by_template_var"
                 },
                 {
                     "class": "template_variable_single",
@@ -752,31 +762,28 @@
                 },
                 {
                     "class": "template_variable_custom",
-                    "name": "dash_version",
-                    "options": [
-                      {
-                         "selected": true,
-                         "text": "2019-1",
-                         "value": "2019-1"
-                      }
-                    ],
-                    "query": "2019-1",
                     "current": {
                         "text": "2019-1",
                         "value": "2019-1"
-                    }
+                    },
+                    "name": "dash_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "2019-1",
+                            "value": "2019-1"
+                        }
+                    ],
+                    "query": "2019-1"
                 }
             ]
         },
-		"tags": [
-			"2019.1"
-		],
         "time": {
             "from": "now-30m",
             "to": "now"
         },
         "title": "Overview",
-        "overwrite": true,
+        "uid": "overview-2019-1",
         "version": 3
     }
 }
