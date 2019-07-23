@@ -1,7 +1,6 @@
 {
     "dashboard": {
         "class": "dashboard",
-        "uid": "machine-2-3",
         "rows": [
             {
                 "class": "logo_row",
@@ -18,8 +17,8 @@
                 "panels": [
                     {
                         "class": "pie_chart_panel",
-                        "repeat": "node",
                         "height": "250px",
+                        "repeat": "node",
                         "targets": [
                             {
                                 "expr": "sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"})",
@@ -45,8 +44,10 @@
             },
             {
                 "class": "row",
+                "gridPos": {
+                    "h": 2
+                },
                 "height": "25px",
-                "gridPos": {"h": 2},
                 "panels": [
                     {
                         "class": "text_panel",
@@ -70,6 +71,14 @@
                                 "metric": "",
                                 "refId": "A",
                                 "step": 1
+                            },
+                            {
+                                "expr": "sum(irate(node_disk_writes_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
                             }
                         ],
                         "title": "Disk Writes per Server"
@@ -83,6 +92,13 @@
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(irate(node_disk_reads_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -99,6 +115,14 @@
                                 "metric": "",
                                 "refId": "A",
                                 "step": 1
+                            },
+                            {
+                                "expr": "sum(irate(node_disk_bytes_written{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
                             }
                         ],
                         "title": "Disk Writes Bps per Server"
@@ -113,6 +137,13 @@
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 1
+                            },
+                            {
+                                "expr": "sum(irate(node_disk_bytes_read{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "B",
+                                "step": 1
                             }
                         ],
                         "title": "Disk Read Bps per Server"
@@ -122,8 +153,10 @@
             },
             {
                 "class": "row",
+                "gridPos": {
+                    "h": 2
+                },
                 "height": "25px",
-                "gridPos": {"h": 2},
                 "panels": [
                     {
                         "class": "text_panel",
@@ -147,6 +180,14 @@
                                 "metric": "",
                                 "refId": "A",
                                 "step": 1
+                            },
+                            {
+                                "expr": "sum(irate(node_network_receive_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
                             }
                         ],
                         "title": "Interface Rx Packets"
@@ -161,6 +202,14 @@
                                 "legendFormat": "",
                                 "metric": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(irate(node_network_transmit_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -183,6 +232,14 @@
                                 "metric": "",
                                 "refId": "A",
                                 "step": 1
+                            },
+                            {
+                                "expr": "sum(irate(node_network_receive_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
                             }
                         ],
                         "title": "Interface Rx Bps"
@@ -198,6 +255,14 @@
                                 "metric": "",
                                 "refId": "A",
                                 "step": 1
+                            },
+                            {
+                                "expr": "sum(irate(node_network_transmit_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[30s])) by (instance)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
                             }
                         ],
                         "title": "Interface Tx Bps"
@@ -205,6 +270,9 @@
                 ],
                 "title": "New row"
             }
+        ],
+        "tags": [
+            "2.3"
         ],
         "templating": {
             "list": [
@@ -297,19 +365,14 @@
                     "type": "query",
                     "useTags": false
                 }
-                
-                
-                
             ]
         },
-		"tags": [
-			"2.3"
-		],
         "time": {
             "from": "now-30m",
             "to": "now"
         },
         "title": "Scylla Per Machine Metrics",
+        "uid": "machine-2-3",
         "version": 5
     }
 }
