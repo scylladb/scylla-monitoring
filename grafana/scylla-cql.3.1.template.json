@@ -137,7 +137,7 @@
                     {
                       "class":"plain_text",
                       "content": "<span/>",
-                      "span":5
+                      "span":3
                     }
                 ],
                 "title": "New row"
@@ -373,6 +373,159 @@
                     }
                 ],
                 "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "gauge_errors_panel",
+                        "description": "Using consistency level ANY in a query may hurt persistency, if the node receiving the request will fail the data may be lost",
+                        "targets": [
+                            {
+                                "expr": "floor(100 *sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"ANY\"}[30s]))/sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))) OR vector(0)",
+                                "format": "time_series",
+                                "hide": false,
+                                "instant": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "aaa",
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "CQL ANY Queries"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Using consistency level ANY in a query may hurt persistency, if the node receiving the request will fail the data may be lost",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\",  consistency_level=\"ANY\"}[1m])) by ([[by]])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 2,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "CQL ANY CL Queries"
+                    },
+                    {
+                        "class": "gauge_errors_panel",
+                        "description": "Using consistency level ALL in a query may hurt availability, if a node is unavailable operations will fail",
+                        "targets": [
+                            {
+                                "expr": "floor(100 *sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"ALL\"}[30s]))/sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))) OR vector(0)",
+                                "format": "time_series",
+                                "hide": false,
+                                "instant": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "aaa",
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "CQL ALL CL Queries"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Using consistency level ALL in a query may hurt availability, if a node is unavailable operations will fail",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\",  consistency_level=\"ALL\"}[1m])) by ([[by]])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 2,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "CQL ALL CL Queries"
+                    }
+
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Cross DC Information</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "gauge_errors_panel",
+                        "description": "Using consistency level ONE in a query when there is more than one DC may hurt performance, queries may end in the non-local DC. Use LOCAL_ONE instead",
+                        "targets": [
+                            {
+                                "expr": "floor(100 *sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"ONE\"}[30s]))/sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))) OR vector(0)",
+                                "format": "time_series",
+                                "hide": false,
+                                "instant": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "aaa",
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "CQL ONE Queries"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Using consistency level ONE in a query when there is more than one DC may hurt performance, queries may end in the non-local DC. Use LOCAL_ONE instead",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\",  consistency_level=\"ONE\"}[1m])) by ([[by]])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 2,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "CQL ONE CL Queries"
+                    },
+                    {
+                        "class": "gauge_errors_panel",
+                        "description": "Using consistency level QUORUM in a query when there is more than one DC may hurt performance, queries may end in the non-local DC. Use LOCAL_QUORUM instead",
+                        "targets": [
+                            {
+                                "expr": "floor(100 *sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"QUORUM\"}[30s]))/sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s]))) OR vector(0)",
+                                "format": "time_series",
+                                "hide": false,
+                                "instant": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "aaa",
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "CQL QUORUM CL Queries"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Using consistency level QUORUM in a query when there is more than one DC may hurt performance, queries may end in the non-local DC. Use LOCAL_QUORUM instead",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(delta(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\",  consistency_level=\"QUORUM\"}[1m])) by ([[by]])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 2,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "CQL QUORUM CL Queries"
+                    }
+
+                ]
             },
             {
                 "class": "row",
