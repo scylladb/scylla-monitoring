@@ -644,34 +644,34 @@
                         "title": "Cache Misses"
                     },
                     {
-                        "class": "wps_panel",
+                        "class": "wpm_panel",
                         "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(irate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[30s])) by ([[by]])",
+                                "expr": "$func(delta(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 10
                             }
                         ],
-                        "title": "Write Timeouts"
+                        "title": "Write Timeouts/Minutes by [[by]]"
                     },
                     {
-                        "class": "rps_panel",
+                        "class": "rpm_panel",
                         "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(irate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
+                                "expr": "$func(delta(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 10
                             }
                         ],
-                        "title": "Read Timeouts"
+                        "title": "Read Timeouts/Minutes by [[by]]"
                     }
                 ],
                 "title": "New row"
