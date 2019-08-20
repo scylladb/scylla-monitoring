@@ -1,3 +1,7 @@
+[![CircleCI](https://circleci.com/gh/grafana/piechart-panel.svg?style=svg)](https://circleci.com/gh/grafana/piechart-panel)
+[![David Dependancy Status](https://david-dm.org/grafana/piechart-panel.svg)](https://david-dm.org/grafana/piechart-panel)
+[![David Dev Dependency Status](https://david-dm.org/grafana/piechart-panel/dev-status.svg)](https://david-dm.org/grafana/piechart-panel/?type=dev)
+
 Use the new grafana-cli tool to install piechart-panel from the commandline:
 
 ```
@@ -34,41 +38,3 @@ path = /home/your/clone/dir/piechart-panel
 Note that if you clone it into the grafana plugins directory you do not need to add the above config option. That is only
 if you want to place the plugin in a directory outside the standard plugins directory. Be aware that grafana-server
 needs read access to the directory.
-
-# Changelog
-
-## 1.3.3
-
-* Fix legend sorting: [#145](https://github.com/grafana/piechart-panel/issues/145)
-
-## 1.3.2
-
-* Automatically set legend width if Internet Explorer 11 and positioned to the right: [#148](https://github.com/grafana/piechart-panel/issues/148)
-
-## 1.3.1
-
-* Fix scrolling and legend issues in Internet Explorer 11: [#143](https://github.com/grafana/piechart-panel/issues/143)
-
-## 1.3.0
-
-* Fixes for legend and piechart rendering and sorting: [#138](https://github.com/grafana/piechart-panel/pull/138), [#136](https://github.com/grafana/piechart-panel/pull/136)
-* Fix for decimal field for percentages [#108](https://github.com/grafana/piechart-panel/pull/108)
-
-## 1.1.5
-
-* Fix for color picker in legend
-* Fix for - [Values in legend are displayed raw, not with the correct unit](https://github.com/grafana/piechart-panel/issues/51). Thanks, [@conet](https://github.com/conet)
-* Fix for - [Legend overlaps with graphs](https://github.com/grafana/piechart-panel/issues/34). Thanks, [@smalik03](https://github.com/smalik03)
-
-## 1.1.4
-* Add support for combining small slices (https://github.com/grafana/piechart-panel/pull/43)
-* Add option to show percentage in legend https://github.com/grafana/piechart-panel/pull/41
-
-## 1.0.2
-
-* Add piechart piece divider setting
-* Remove Unused code
-* Adds fontsize option for labels on graph
-* Only show the displaied piechart value in legend
-* Add possibility to pick stat to use for piechart
-

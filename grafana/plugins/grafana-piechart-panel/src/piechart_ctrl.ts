@@ -1,22 +1,30 @@
-import {MetricsPanelCtrl} from 'app/plugins/sdk';
+import { MetricsPanelCtrl } from 'grafana/app/plugins/sdk';
 import _ from 'lodash';
-import kbn from 'app/core/utils/kbn';
-import TimeSeries from 'app/core/time_series';
+import kbn from 'grafana/app/core/utils/kbn';
+// @ts-ignore
+import TimeSeries from 'grafana/app/core/time_series';
 import rendering from './rendering';
-import legend from './legend';
+import './legend';
 
-export class PieChartCtrl extends MetricsPanelCtrl {
+class PieChartCtrl extends MetricsPanelCtrl {
+  static templateUrl = 'module.html';
+  $rootScope: any;
+  hiddenSeries: any;
+  unitFormats: any;
+  series: any;
+  data: any;
 
-  constructor($scope, $injector, $rootScope) {
+  /** @ngInject */
+  constructor($scope: any, $injector: any, $rootScope: any) {
     super($scope, $injector);
     this.$rootScope = $rootScope;
     this.hiddenSeries = {};
 
-    var panelDefaults = {
+    const panelDefaults = {
       pieType: 'pie',
       legend: {
         show: true, // disable/enable legend
-        values: true
+        values: true,
       },
       links: [],
       datasource: null,
@@ -34,8 +42,8 @@ export class PieChartCtrl extends MetricsPanelCtrl {
       fontSize: '80%',
       combine: {
         threshold: 0.0,
-        label: 'Others'
-      }
+        label: 'Others',
+      },
     };
 
     _.defaults(this.panel, panelDefaults);
@@ -55,7 +63,7 @@ export class PieChartCtrl extends MetricsPanelCtrl {
     this.unitFormats = kbn.getUnitFormats();
   }
 
-  setUnitFormat(subItem) {
+  setUnitFormat(subItem: any) {
     this.panel.format = subItem.value;
     this.render();
   }
@@ -65,7 +73,7 @@ export class PieChartCtrl extends MetricsPanelCtrl {
     this.render();
   }
 
-  changeSeriesColor(series, color) {
+  changeSeriesColor(series: any, color: any) {
     series.color = color;
     this.panel.aliasColors[series.alias] = series.color;
     this.render();
@@ -75,7 +83,7 @@ export class PieChartCtrl extends MetricsPanelCtrl {
     this.data = this.parseSeries(this.series);
   }
 
-  parseSeries(series) {
+  parseSeries(series: any) {
     return _.map(this.series, (serie, i) => {
       return {
         label: serie.alias,
@@ -86,33 +94,33 @@ export class PieChartCtrl extends MetricsPanelCtrl {
     });
   }
 
-  onDataReceived(dataList) {
+  onDataReceived(dataList: any) {
     this.series = dataList.map(this.seriesHandler.bind(this));
     this.data = this.parseSeries(this.series);
     this.render(this.data);
   }
 
-  seriesHandler(seriesData) {
-    var series = new TimeSeries({
+  seriesHandler(seriesData: any) {
+    const series = new TimeSeries({
       datapoints: seriesData.datapoints,
-      alias: seriesData.target
+      alias: seriesData.target,
     });
 
     series.flotpairs = series.getFlotPairs(this.panel.nullPointMode);
     return series;
   }
 
-  getDecimalsForValue(value) {
+  getDecimalsForValue(value: any) {
     if (_.isNumber(this.panel.decimals)) {
       return { decimals: this.panel.decimals, scaledDecimals: null };
     }
 
-    var delta = value / 2;
-    var dec = -Math.floor(Math.log(delta) / Math.LN10);
+    const delta = value / 2;
+    let dec = -Math.floor(Math.log(delta) / Math.LN10);
 
-    var magn = Math.pow(10, -dec);
-    var norm = delta / magn; // norm is between 1.0 and 10.0
-    var size;
+    const magn = Math.pow(10, -dec);
+    const norm = delta / magn; // norm is between 1.0 and 10.0
+    let size;
 
     if (norm < 1.5) {
       size = 1;
@@ -132,29 +140,34 @@ export class PieChartCtrl extends MetricsPanelCtrl {
     size *= magn;
 
     // reduce starting decimals if not needed
-    if (Math.floor(value) === value) { dec = 0; }
+    if (Math.floor(value) === value) {
+      dec = 0;
+    }
 
-    var result = {};
+    const result = {
+      decimals: 0,
+      scaledDecimals: 0,
+    };
     result.decimals = Math.max(0, dec);
     result.scaledDecimals = result.decimals - Math.floor(Math.log(size) / Math.LN10) + 2;
 
     return result;
   }
 
-  formatValue(value) {
-    var decimalInfo = this.getDecimalsForValue(value);
-    var formatFunc = kbn.valueFormats[this.panel.format];
+  formatValue(value: any) {
+    const decimalInfo = this.getDecimalsForValue(value);
+    const formatFunc = kbn.valueFormats[this.panel.format];
     if (formatFunc) {
       return formatFunc(value, decimalInfo.decimals, decimalInfo.scaledDecimals);
     }
     return value;
   }
 
-  link(scope, elem, attrs, ctrl) {
+  link(scope: any, elem: any, attrs: any, ctrl: any) {
     rendering(scope, elem, attrs, ctrl);
   }
 
-  toggleSeries(serie) {
+  toggleSeries(serie: any) {
     if (this.hiddenSeries[serie.label]) {
       delete this.hiddenSeries[serie.label];
     } else {
@@ -169,11 +182,12 @@ export class PieChartCtrl extends MetricsPanelCtrl {
   }
 
   setLegendWidthForLegacyBrowser() {
-    var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
+    // @ts-ignore
+    const isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
     if (isIE11 && this.panel.legendType === 'Right side' && !this.panel.legend.sideWidth) {
       this.panel.legend.sideWidth = 150;
     }
   }
 }
 
-PieChartCtrl.templateUrl = 'module.html';
+export { PieChartCtrl, PieChartCtrl as MetricsPanelCtrl };
