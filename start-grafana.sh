@@ -16,10 +16,11 @@ GRAFANA_AUTH_ANONYMOUS=true
 AM_ADDRESS=""
 DOCKER_PARAM=""
 EXTERNAL_VOLUME=""
+BIND_ADDRESS=""
 
 usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:' option; do
+while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -52,6 +53,8 @@ while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:' option; do
     c) GRAFANA_ENV_ARRAY+=("$OPTARG")
        ;;
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
+       ;;
+    A) BIND_ADDRESS="$OPTARG:"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -105,7 +108,7 @@ mkdir -p grafana/provisioning/datasources
 sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
 
 if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
-    PORT_MAPPING="-p $GRAFANA_PORT:3000"
+    PORT_MAPPING="-p $BIND_ADDRESS$GRAFANA_PORT:3000"
 fi
 
 if [ ! -d $EXTERNAL_VOLUME ]; then
@@ -149,5 +152,7 @@ then
         echo "For more information use: docker logs $GRAFANA_NAME"
         exit 1
 fi
-
-printf "Start completed successfully, check http://localhost:$GRAFANA_PORT\n"
+if [ -z "$BIND_ADDRESS" ]; then
+    BIND_ADDRESS="localhost:"
+fi
+printf "Start completed successfully, check http://$BIND_ADDRESS$GRAFANA_PORT\n"

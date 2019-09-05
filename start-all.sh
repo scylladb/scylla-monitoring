@@ -28,7 +28,7 @@ else
 fi
 PROMETHEUS_RULES="$PWD/prometheus/prometheus.rules.yml"
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.10.0
 
 SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
@@ -38,8 +38,10 @@ ALERTMANAGER_PORT=""
 DOCKER_PARAM=""
 DATA_DIR=""
 CONSUL_ADDRESS=""
+BIND_ADDRESS=""
+BIND_ADDRESS_CONFIG=""
 
-while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:A:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -51,6 +53,9 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:' option; do
     d) DATA_DIR=$OPTARG
        ;;
     G) EXTERNAL_VOLUME="-G $OPTARG"
+       ;;
+    A) BIND_ADDRESS="$OPTARG:"
+       BIND_ADDRESS_CONFIG="-A $OPTARG"
        ;;
     r) ALERT_MANAGER_RULE_CONFIG="-r $OPTARG"
        ;;
@@ -135,7 +140,7 @@ fi
 
 echo "Wait for alert manager container to start"
 
-AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -D "$DOCKER_PARAM" $ALERT_MANAGER_RULE_CONFIG`
+AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
 if [ $? -ne 0 ]; then
     echo "$AM_ADDRESS"
     exit 1
@@ -173,7 +178,7 @@ else
 fi
 
 if [ -z $HOST_NETWORK ]; then
-    PORT_MAPPING="-p $PROMETHEUS_PORT:9090"
+    PORT_MAPPING="-p $BIND_ADDRESS$PROMETHEUS_PORT:9090"
 fi
 
 if [ -z $DATA_DIR ]
@@ -243,4 +248,4 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 
-./start-grafana.sh -p $DB_ADDRESS -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
+./start-grafana.sh $BIND_ADDRESS_CONFIG -p $DB_ADDRESS -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD

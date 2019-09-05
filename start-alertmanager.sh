@@ -9,10 +9,11 @@ VERSIONS=$DEFAULT_VERSION
 RULE_FILE=$PWD/prometheus/rule_config.yml
 ALERT_MANAGER_VERSION="v0.16.0"
 DOCKER_PARAM=""
+BIND_ADDRESS=""
 
 usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param] [-r rule-file]"
 
-while getopts ':hlp:r:D:' option; do
+while getopts ':hlp:r:D:A:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -25,6 +26,8 @@ while getopts ':hlp:r:D:' option; do
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
     D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+       ;;
+    A) BIND_ADDRESS="$OPTARG:"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -50,7 +53,7 @@ if [ $? -eq 0 ]; then
 fi
 
 if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
-    PORT_MAPPING="-p $ALERTMANAGER_PORT:9093"
+    PORT_MAPPING="-p $BIND_ADDRESS$ALERTMANAGER_PORT:9093"
 fi
 
 
