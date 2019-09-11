@@ -1,1 +1,1 @@
-DASHBOARDS=(scylla-overview scylla-detailed scylla-io scylla-cpu scylla-os scylla-cql scylla-errros)
+DASHBOARDS=(scylla-overview scylla-detailed scylla-io scylla-cpu scylla-os scylla-cql scylla-errros alternator)
