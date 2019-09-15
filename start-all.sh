@@ -31,8 +31,8 @@ VERSIONS=$DEFAULT_VERSION
 usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.12.0
 
-SCYLLA_TARGET_FILE=$PWD/prometheus/scylla_servers.yml
-SCYLLA_MANGER_TARGET_FILE=$PWD/prometheus/scylla_manager_servers.yml
+SCYLLA_TARGET_FILES=($PWD/prometheus/scylla_servers.yml $PWD/scylla_servers.yml)
+SCYLLA_MANGER_TARGET_FILES=($PWD/prometheus/scylla_manager_servers.yml $PWD/scylla_manager_servers.yml $PWD/prometheus/scylla_manager_servers.example.yml)
 GRAFANA_ADMIN_PASSWORD=""
 ALERTMANAGER_PORT=""
 DOCKER_PARAM=""
@@ -67,7 +67,7 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:A:' option; do
        ;;
     p) PROMETHEUS_PORT=$OPTARG
        ;;
-    s) SCYLLA_TARGET_FILE=$OPTARG
+    s) SCYLLA_TARGET_FILES=("$OPTARG")
        ;;
     n) NODE_TARGET_FILE=$OPTARG
        ;;
@@ -99,22 +99,37 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:A:' option; do
 done
 
 if [ -z $CONSUL_ADDRESS ]; then
+
+    for f in ${SCYLLA_TARGET_FILES[@]}; do
+        if [ -f $f ]; then
+            SCYLLA_TARGET_FILE=$f
+            break
+        fi
+    done
+
+    if [ -z $SCYLLA_TARGET_FILE ]; then
+        echo "Scylla target file '${SCYLLA_TARGET_FILES}' does not exist, you can use prometheus/scylla_servers.example.yml as an example."
+        exit 1
+    fi
+
     if [ -z $NODE_TARGET_FILE ]; then
        NODE_TARGET_FILE=$SCYLLA_TARGET_FILE
     fi
 
-    if [ ! -f $SCYLLA_TARGET_FILE ]; then
-        echo "Scylla target file '${SCYLLA_TARGET_FILE}' does not exist, you can use prometheus/scylla_servers.example.yml as an example."
-        exit 1
-    fi
 
     if [ ! -f $NODE_TARGET_FILE ]; then
         echo "Node target file '${NODE_TARGET_FILE}' does not exist"
         exit 1
     fi
 
-    if [ ! -f $SCYLLA_MANGER_TARGET_FILE ]; then
-        echo "Scylla-Manager target file '${SCYLLA_MANGER_TARGET_FILE}' does not exist, you can use prometheus/scylla_manager_servers.example.yml as an example."
+    for f in ${SCYLLA_MANGER_TARGET_FILES[@]}; do
+        if [ -f $f ]; then
+            SCYLLA_MANGER_TARGET_FILE=$f
+            break
+        fi
+    done
+    if [ -z $SCYLLA_MANGER_TARGET_FILE ]; then
+        echo "Scylla-Manager target file '${SCYLLA_MANGER_TARGET_FILES}' does not exist, you can use prometheus/scylla_manager_servers.example.yml as an example."
         exit 1
     fi
 
