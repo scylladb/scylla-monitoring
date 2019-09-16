@@ -10,8 +10,23 @@
                 "class": "row",
                 "panels": [
                     {
+                        "class": "percent_panel",
+                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Load"
+                    },
+                    {
                         "class": "ops_panel",
-                        "span": 4,
+                        "span": 3,
                         "targets": [
                             {
                                 "expr": "$func(irate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]]) + $func(irate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
@@ -27,7 +42,7 @@
                     },
                     {
                         "class": "rps_panel",
-                        "span": 4,
+                        "span": 3,
                         "targets": [
                             {
                                 "expr": "$func(irate(scylla_database_total_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",
@@ -41,7 +56,7 @@
                     },
                     {
                         "class": "wps_panel",
-                        "span": 4,
+                        "span": 3,
                         "targets": [
                             {
                                 "expr": "$func(irate(scylla_database_total_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[30s])) by ([[by]])",

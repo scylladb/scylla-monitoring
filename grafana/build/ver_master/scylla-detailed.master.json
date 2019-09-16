@@ -45,11 +45,11 @@
         {
             "aliasColors": {},
             "bars": false,
-            "class": "ops_panel",
+            "class": "percent_panel",
             "dashLength": 10,
             "dashes": false,
             "datasource": "prometheus",
-            "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the connection level, not your data model.",
+            "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
             "editable": true,
             "error": false,
             "fill": 0,
@@ -57,7 +57,7 @@
             "grid": {},
             "gridPos": {
                 "h": 6,
-                "w": 8,
+                "w": 6,
                 "x": 0,
                 "y": 4
             },
@@ -87,7 +87,104 @@
                 {}
             ],
             "spaceLength": 10,
-            "span": 4,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 4
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Load",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 0,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "percent",
+                    "logBase": 1,
+                    "max": 101,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "ops_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the connection level, not your data model.",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 6,
+                "y": 4
+            },
+            "id": 3,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "spaceLength": 10,
+            "span": 3,
             "stack": false,
             "steppedLine": false,
             "targets": [
@@ -154,11 +251,11 @@
             "grid": {},
             "gridPos": {
                 "h": 6,
-                "w": 8,
-                "x": 8,
+                "w": 6,
+                "x": 12,
                 "y": 4
             },
-            "id": 3,
+            "id": 4,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -182,7 +279,7 @@
             "renderer": "flot",
             "seriesOverrides": [],
             "spaceLength": 10,
-            "span": 4,
+            "span": 3,
             "stack": false,
             "steppedLine": false,
             "targets": [
@@ -248,11 +345,11 @@
             "grid": {},
             "gridPos": {
                 "h": 6,
-                "w": 8,
-                "x": 16,
+                "w": 6,
+                "x": 18,
                 "y": 4
             },
-            "id": 4,
+            "id": 5,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -276,7 +373,7 @@
             "renderer": "flot",
             "seriesOverrides": [],
             "spaceLength": 10,
-            "span": 4,
+            "span": 3,
             "stack": false,
             "steppedLine": false,
             "targets": [
@@ -340,7 +437,7 @@
                 "x": 0,
                 "y": 10
             },
-            "id": 5,
+            "id": 6,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -362,7 +459,7 @@
                 "x": 12,
                 "y": 10
             },
-            "id": 6,
+            "id": 7,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -391,7 +488,7 @@
                 "x": 0,
                 "y": 12
             },
-            "id": 7,
+            "id": 8,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -485,7 +582,7 @@
                 "x": 6,
                 "y": 12
             },
-            "id": 8,
+            "id": 9,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -580,7 +677,7 @@
                 "x": 12,
                 "y": 12
             },
-            "id": 9,
+            "id": 10,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -675,7 +772,7 @@
                 "x": 18,
                 "y": 12
             },
-            "id": 10,
+            "id": 11,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -770,7 +867,7 @@
                 "x": 0,
                 "y": 18
             },
-            "id": 11,
+            "id": 12,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -864,7 +961,7 @@
                 "x": 6,
                 "y": 18
             },
-            "id": 12,
+            "id": 13,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -958,7 +1055,7 @@
                 "x": 12,
                 "y": 18
             },
-            "id": 13,
+            "id": 14,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1053,7 +1150,7 @@
                 "x": 18,
                 "y": 18
             },
-            "id": 14,
+            "id": 15,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1142,7 +1239,7 @@
                 "x": 0,
                 "y": 24
             },
-            "id": 15,
+            "id": 16,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -1171,7 +1268,7 @@
                 "x": 0,
                 "y": 26
             },
-            "id": 16,
+            "id": 17,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1265,7 +1362,7 @@
                 "x": 6,
                 "y": 26
             },
-            "id": 17,
+            "id": 18,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1359,7 +1456,7 @@
                 "x": 12,
                 "y": 26
             },
-            "id": 18,
+            "id": 19,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1453,7 +1550,7 @@
                 "x": 18,
                 "y": 26
             },
-            "id": 19,
+            "id": 20,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1540,7 +1637,7 @@
                 "x": 0,
                 "y": 32
             },
-            "id": 20,
+            "id": 21,
             "isNew": true,
             "links": [],
             "mode": "markdown",
@@ -1568,7 +1665,7 @@
                 "x": 6,
                 "y": 32
             },
-            "id": 21,
+            "id": 22,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1662,7 +1759,7 @@
                 "x": 12,
                 "y": 32
             },
-            "id": 22,
+            "id": 23,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1756,7 +1853,7 @@
                 "x": 18,
                 "y": 32
             },
-            "id": 23,
+            "id": 24,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1843,7 +1940,7 @@
                 "x": 0,
                 "y": 38
             },
-            "id": 24,
+            "id": 25,
             "isNew": true,
             "links": [],
             "mode": "markdown",
@@ -1864,7 +1961,7 @@
                 "x": 6,
                 "y": 38
             },
-            "id": 25,
+            "id": 26,
             "isNew": true,
             "links": [],
             "mode": "markdown",
@@ -1892,7 +1989,7 @@
                 "x": 12,
                 "y": 38
             },
-            "id": 26,
+            "id": 27,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1986,7 +2083,7 @@
                 "x": 18,
                 "y": 38
             },
-            "id": 27,
+            "id": 28,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2073,7 +2170,7 @@
                 "x": 0,
                 "y": 44
             },
-            "id": 28,
+            "id": 29,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -2102,7 +2199,7 @@
                 "x": 0,
                 "y": 46
             },
-            "id": 29,
+            "id": 30,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2196,7 +2293,7 @@
                 "x": 12,
                 "y": 46
             },
-            "id": 30,
+            "id": 31,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2290,7 +2387,7 @@
                 "x": 0,
                 "y": 52
             },
-            "id": 31,
+            "id": 32,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2384,7 +2481,7 @@
                 "x": 6,
                 "y": 52
             },
-            "id": 32,
+            "id": 33,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2478,7 +2575,7 @@
                 "x": 12,
                 "y": 52
             },
-            "id": 33,
+            "id": 34,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2572,7 +2669,7 @@
                 "x": 18,
                 "y": 52
             },
-            "id": 34,
+            "id": 35,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2666,7 +2763,7 @@
                 "x": 0,
                 "y": 58
             },
-            "id": 35,
+            "id": 36,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2760,7 +2857,7 @@
                 "x": 6,
                 "y": 58
             },
-            "id": 36,
+            "id": 37,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2854,7 +2951,7 @@
                 "x": 12,
                 "y": 58
             },
-            "id": 37,
+            "id": 38,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2950,7 +3047,7 @@
                 "x": 18,
                 "y": 58
             },
-            "id": 38,
+            "id": 39,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3046,7 +3143,7 @@
                 "x": 0,
                 "y": 64
             },
-            "id": 39,
+            "id": 40,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3142,7 +3239,7 @@
                 "x": 6,
                 "y": 64
             },
-            "id": 40,
+            "id": 41,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3238,7 +3335,7 @@
                 "x": 12,
                 "y": 64
             },
-            "id": 41,
+            "id": 42,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3334,7 +3431,7 @@
                 "x": 18,
                 "y": 64
             },
-            "id": 42,
+            "id": 43,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3430,7 +3527,7 @@
                 "x": 0,
                 "y": 70
             },
-            "id": 43,
+            "id": 44,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3524,7 +3621,7 @@
                 "x": 6,
                 "y": 70
             },
-            "id": 44,
+            "id": 45,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3618,7 +3715,7 @@
                 "x": 12,
                 "y": 70
             },
-            "id": 45,
+            "id": 46,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3712,7 +3809,7 @@
                 "x": 18,
                 "y": 70
             },
-            "id": 46,
+            "id": 47,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3799,7 +3896,7 @@
                 "x": 0,
                 "y": 76
             },
-            "id": 47,
+            "id": 48,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -3829,7 +3926,7 @@
                 "x": 0,
                 "y": 78
             },
-            "id": 48,
+            "id": 49,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3924,7 +4021,7 @@
                 "x": 6,
                 "y": 78
             },
-            "id": 49,
+            "id": 50,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4021,7 +4118,7 @@
                 "x": 12,
                 "y": 78
             },
-            "id": 50,
+            "id": 51,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4108,7 +4205,7 @@
                 "x": 0,
                 "y": 84
             },
-            "id": 51,
+            "id": 52,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -4137,7 +4234,7 @@
                 "x": 0,
                 "y": 86
             },
-            "id": 52,
+            "id": 53,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4231,7 +4328,7 @@
                 "x": 12,
                 "y": 86
             },
-            "id": 53,
+            "id": 54,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4318,7 +4415,7 @@
                 "x": 0,
                 "y": 92
             },
-            "id": 54,
+            "id": 55,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -4347,7 +4444,7 @@
                 "x": 0,
                 "y": 94
             },
-            "id": 55,
+            "id": 56,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4443,7 +4540,7 @@
                 "x": 8,
                 "y": 94
             },
-            "id": 56,
+            "id": 57,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4541,7 +4638,7 @@
                 "x": 16,
                 "y": 94
             },
-            "id": 57,
+            "id": 58,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4627,7 +4724,7 @@
                 "x": 0,
                 "y": 100
             },
-            "id": 58,
+            "id": 59,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -4657,7 +4754,7 @@
                 "x": 0,
                 "y": 102
             },
-            "id": 59,
+            "id": 60,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4745,7 +4842,7 @@
                 "x": 12,
                 "y": 102
             },
-            "id": 60,
+            "id": 61,
             "isNew": true,
             "legend": {
                 "avg": false,
