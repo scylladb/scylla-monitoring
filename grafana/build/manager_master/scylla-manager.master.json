@@ -1,10 +1,36 @@
 {
     "annotations": {
-        "list": []
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": "-- Grafana --",
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            },
+            {
+                "class": "annotation_restart",
+                "datasource": "prometheus",
+                "enable": true,
+                "expr": "resets(scylla_gossip_heart_beat[1m])>0",
+                "hide": false,
+                "iconColor": "rgba(255, 96, 96, 1)",
+                "limit": 100,
+                "name": "node_restart",
+                "showIn": 0,
+                "tagKeys": "instance,dc,cluster",
+                "tags": [],
+                "titleFormat": "restart",
+                "type": "tags"
+            }
+        ]
     },
     "class": "dashboard",
     "editable": true,
     "gnetId": null,
+    "graphTooltip": 1,
     "hideControls": true,
     "id": null,
     "links": [],
@@ -26,6 +52,7 @@
             "isNew": true,
             "links": [],
             "mode": "html",
+            "options": {},
             "span": 12,
             "title": "",
             "transparent": true,
@@ -76,6 +103,7 @@
             "maxDataPoints": 100,
             "nullPointMode": "connected",
             "nullText": null,
+            "options": {},
             "postfix": "",
             "postfixFontSize": "50%",
             "prefix": "",
@@ -94,6 +122,7 @@
                 "lineColor": "rgb(31, 120, 193)",
                 "show": false
             },
+            "tableColumn": "",
             "targets": [
                 {
                     "expr": "count(scrape_samples_scraped{job=\"scylla_manager\"}==0) OR vector(0)",
@@ -165,6 +194,7 @@
             "maxDataPoints": 100,
             "nullPointMode": "connected",
             "nullText": null,
+            "options": {},
             "postfix": "",
             "postfixFontSize": "50%",
             "prefix": "",
@@ -183,6 +213,7 @@
                 "lineColor": "rgb(31, 120, 193)",
                 "show": false
             },
+            "tableColumn": "",
             "targets": [
                 {
                     "expr": "count(scylla_manager_healthcheck_cql_rtt_ms{cluster=~\"$cluster|$^\"})",
@@ -252,6 +283,7 @@
             "maxDataPoints": 100,
             "nullPointMode": "connected",
             "nullText": null,
+            "options": {},
             "postfix": "",
             "postfixFontSize": "50%",
             "prefix": "",
@@ -270,6 +302,7 @@
                 "lineColor": "rgb(31, 120, 193)",
                 "show": false
             },
+            "tableColumn": "",
             "targets": [
                 {
                     "expr": "count(scylla_manager_healthcheck_cql_status{cluster=~\"$cluster|$^\"}==-1) OR vector(0)",
@@ -338,6 +371,7 @@
             "maxDataPoints": 100,
             "nullPointMode": "connected",
             "nullText": null,
+            "options": {},
             "postfix": "",
             "postfixFontSize": "50%",
             "prefix": "",
@@ -356,6 +390,7 @@
                 "lineColor": "rgb(31, 120, 193)",
                 "show": false
             },
+            "tableColumn": "",
             "targets": [
                 {
                     "expr": "sum(scylla_manager_task_active_count{cluster=~\"$cluster|$^\", type=\"repair\"}) or vector(0)",
@@ -423,6 +458,7 @@
             "maxDataPoints": 100,
             "nullPointMode": "connected",
             "nullText": null,
+            "options": {},
             "postfix": "",
             "postfixFontSize": "50%",
             "prefix": "",
@@ -441,6 +477,7 @@
                 "lineColor": "rgb(31, 120, 193)",
                 "show": false
             },
+            "tableColumn": "",
             "targets": [
                 {
                     "expr": "sum(avg(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", host=~\"$host\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\"}) by (task))",
@@ -478,6 +515,7 @@
             "isNew": true,
             "links": [],
             "mode": "markdown",
+            "options": {},
             "span": 3,
             "style": {},
             "title": "",
@@ -488,16 +526,14 @@
             "aliasColors": {},
             "bars": false,
             "class": "ops_panel",
+            "dashLength": 10,
+            "dashes": false,
             "datasource": "prometheus",
             "editable": true,
             "error": false,
             "fill": 0,
-            "grid": {
-                "threshold1": null,
-                "threshold1Color": "rgba(216, 200, 27, 0.27)",
-                "threshold2": null,
-                "threshold2Color": "rgba(234, 112, 112, 0.22)"
-            },
+            "fillGradient": 0,
+            "grid": {},
             "gridPos": {
                 "h": 6,
                 "w": 10,
@@ -519,6 +555,9 @@
             "linewidth": 2,
             "links": [],
             "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
             "percentage": false,
             "pointradius": 5,
             "points": false,
@@ -526,6 +565,7 @@
             "seriesOverrides": [
                 {}
             ],
+            "spaceLength": 10,
             "span": 5,
             "stack": false,
             "steppedLine": false,
@@ -537,18 +577,24 @@
                     "step": 4
                 }
             ],
+            "thresholds": [],
             "timeFrom": null,
+            "timeRegions": [],
             "timeShift": null,
             "title": "Repair Segments Rate",
             "tooltip": {
                 "msResolution": false,
                 "shared": true,
+                "sort": 0,
                 "value_type": "cumulative"
             },
-            "transparent": false,
             "type": "graph",
             "xaxis": {
-                "show": true
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
             },
             "yaxes": [
                 {
@@ -565,22 +611,24 @@
                     "min": null,
                     "show": true
                 }
-            ]
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
         },
         {
             "aliasColors": {},
             "bars": false,
             "class": "ops_panel",
+            "dashLength": 10,
+            "dashes": false,
             "datasource": "prometheus",
             "editable": true,
             "error": false,
             "fill": 0,
-            "grid": {
-                "threshold1": null,
-                "threshold1Color": "rgba(216, 200, 27, 0.27)",
-                "threshold2": null,
-                "threshold2Color": "rgba(234, 112, 112, 0.22)"
-            },
+            "fillGradient": 0,
+            "grid": {},
             "gridPos": {
                 "h": 6,
                 "w": 10,
@@ -602,6 +650,9 @@
             "linewidth": 2,
             "links": [],
             "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
             "percentage": false,
             "pointradius": 5,
             "points": false,
@@ -609,6 +660,7 @@
             "seriesOverrides": [
                 {}
             ],
+            "spaceLength": 10,
             "span": 5,
             "stack": false,
             "steppedLine": false,
@@ -620,18 +672,24 @@
                     "step": 4
                 }
             ],
+            "thresholds": [],
             "timeFrom": null,
+            "timeRegions": [],
             "timeShift": null,
             "title": "Repair Segments Error Rate",
             "tooltip": {
                 "msResolution": false,
                 "shared": true,
+                "sort": 0,
                 "value_type": "cumulative"
             },
-            "transparent": false,
             "type": "graph",
             "xaxis": {
-                "show": true
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
             },
             "yaxes": [
                 {
@@ -648,23 +706,25 @@
                     "min": null,
                     "show": true
                 }
-            ]
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
         },
         {
             "aliasColors": {},
             "bars": false,
             "class": "graph_panel",
+            "dashLength": 10,
+            "dashes": false,
             "datasource": "prometheus",
             "description": "The number of SSH connection used by the manager",
             "editable": true,
             "error": false,
             "fill": 0,
-            "grid": {
-                "threshold1": null,
-                "threshold1Color": "rgba(216, 200, 27, 0.27)",
-                "threshold2": null,
-                "threshold2Color": "rgba(234, 112, 112, 0.22)"
-            },
+            "fillGradient": 0,
+            "grid": {},
             "gridPos": {
                 "h": 6,
                 "w": 10,
@@ -686,11 +746,15 @@
             "linewidth": 2,
             "links": [],
             "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
             "percentage": false,
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
             "seriesOverrides": [],
+            "spaceLength": 10,
             "span": 5,
             "stack": false,
             "steppedLine": false,
@@ -702,7 +766,9 @@
                     "step": 4
                 }
             ],
+            "thresholds": [],
             "timeFrom": null,
+            "timeRegions": [],
             "timeShift": null,
             "title": "SSH open connections by $by",
             "tooltip": {
@@ -713,7 +779,11 @@
             },
             "type": "graph",
             "xaxis": {
-                "show": true
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
             },
             "yaxes": [
                 {
@@ -730,23 +800,25 @@
                     "min": null,
                     "show": true
                 }
-            ]
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
         },
         {
             "aliasColors": {},
             "bars": false,
             "class": "ms_panel",
+            "dashLength": 10,
+            "dashes": false,
             "datasource": "prometheus",
             "description": "Avrage duration time for a CQL ping operation",
             "editable": true,
             "error": false,
             "fill": 0,
-            "grid": {
-                "threshold1": null,
-                "threshold1Color": "rgba(216, 200, 27, 0.27)",
-                "threshold2": null,
-                "threshold2Color": "rgba(234, 112, 112, 0.22)"
-            },
+            "fillGradient": 0,
+            "grid": {},
             "gridPos": {
                 "h": 6,
                 "w": 10,
@@ -768,11 +840,15 @@
             "linewidth": 2,
             "links": [],
             "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
             "percentage": false,
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
             "seriesOverrides": [],
+            "spaceLength": 10,
             "span": 5,
             "stack": false,
             "steppedLine": false,
@@ -784,7 +860,9 @@
                     "step": 4
                 }
             ],
+            "thresholds": [],
             "timeFrom": null,
+            "timeRegions": [],
             "timeShift": null,
             "title": "CQL probe duration by $by",
             "tooltip": {
@@ -795,7 +873,11 @@
             },
             "type": "graph",
             "xaxis": {
-                "show": true
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
             },
             "yaxes": [
                 {
@@ -812,12 +894,15 @@
                     "min": null,
                     "show": true
                 }
-            ]
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
         }
     ],
     "refresh": "30s",
     "schemaVersion": 12,
-    "sharedCrosshair": true,
     "style": "dark",
     "tags": [
         "master"
@@ -866,6 +951,7 @@
                 "class": "template_variable_single",
                 "current": {},
                 "datasource": "prometheus",
+                "definition": "",
                 "hide": 0,
                 "includeAll": false,
                 "label": "cluster",
@@ -875,6 +961,7 @@
                 "query": "label_values(scylla_manager_healthcheck_cql_rtt_ms, cluster)",
                 "refresh": 2,
                 "regex": "",
+                "skipUrlSync": false,
                 "sort": 1,
                 "tagValuesQuery": "",
                 "tags": [],
@@ -892,6 +979,7 @@
                     ]
                 },
                 "datasource": "prometheus",
+                "definition": "",
                 "hide": 0,
                 "includeAll": true,
                 "label": "host",
@@ -901,6 +989,7 @@
                 "query": "label_values(scylla_manager_healthcheck_cql_rtt_ms{cluster=~\"$cluster|$^\"}, host)",
                 "refresh": 2,
                 "regex": "",
+                "skipUrlSync": false,
                 "sort": 1,
                 "tagValuesQuery": "",
                 "tags": [],
@@ -918,6 +1007,7 @@
                     ]
                 },
                 "datasource": "prometheus",
+                "definition": "",
                 "hide": 0,
                 "includeAll": true,
                 "label": "keyspace",
@@ -927,6 +1017,7 @@
                 "query": "label_values(scylla_manager_repair_segments_total{host=~\"$host\"}, keyspace)",
                 "refresh": 2,
                 "regex": "",
+                "skipUrlSync": false,
                 "sort": 1,
                 "tagValuesQuery": "",
                 "tags": [],
@@ -944,6 +1035,7 @@
                     ]
                 },
                 "datasource": "prometheus",
+                "definition": "",
                 "hide": 0,
                 "includeAll": true,
                 "label": "shard",
@@ -953,12 +1045,39 @@
                 "query": "label_values(scylla_manager_repair_segments_total, shard)",
                 "refresh": 2,
                 "regex": "",
+                "skipUrlSync": false,
                 "sort": 3,
                 "tagValuesQuery": "",
                 "tags": [],
                 "tagsQuery": "",
                 "type": "query",
                 "useTags": false
+            },
+            {
+                "allValue": null,
+                "class": "template_variable_custom",
+                "current": {
+                    "text": "master",
+                    "value": "master"
+                },
+                "hide": 2,
+                "includeAll": false,
+                "label": null,
+                "multi": false,
+                "name": "scylla_dash_version",
+                "options": [
+                    {
+                        "selected": true,
+                        "text": "master",
+                        "value": "master"
+                    }
+                ],
+                "query": "master",
+                "skipUrlSync": false,
+                "type": "custom"
+            },
+            {
+                "class": "monitor_version_var"
             }
         ]
     },
