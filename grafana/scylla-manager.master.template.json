@@ -77,6 +77,18 @@
                     },
                     {
                         "class": "single_stat_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_manager_task_active_count{cluster=~\"$cluster|$^\", type=\"backup\"}) or vector(0)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Active Backup Tasks"
+                    },
+                    {
+                        "class": "single_stat_panel",
                         "span": 1,
                         "thresholds": "0,0",
                         "gauge": {
@@ -88,7 +100,7 @@
                           },
                          "targets": [
                             {
-                              "expr": "sum(avg(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", host=~\"$host\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\"}) by (task))",
+                              "expr": "sum(avg(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", host=~\"$host\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"repair\"}) by (task))",
                               "format": "time_series",
                               "intervalFactor": 2,
                               "refId": "A"
@@ -97,10 +109,31 @@
                           "title": "Repair progress"
                     },
                     {
+                        "class": "single_stat_panel",
+                        "span": 1,
+                        "thresholds": "0,0",
+                        "gauge": {
+                            "maxValue": 100,
+                            "minValue": 0,
+                            "show": true,
+                            "thresholdLabels": false,
+                            "thresholdMarkers": false
+                          },
+                         "targets": [
+                            {
+                              "expr": "sum(avg(scylla_manager_backup_percent_progress{cluster=~\"[[cluster]]\", host=~\"$host\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"backup\"}) by (task))",
+                              "format": "time_series",
+                              "intervalFactor": 2,
+                              "refId": "A"
+                            }
+                          ],
+                          "title": "Backup progress"
+                    },
+                    {
                         "class": "text_panel",
                         "content": "##  ",
                         "mode": "markdown",
-                        "span": 3,
+                        "span": 1,
                         "style": {}
                     }
                 ],
