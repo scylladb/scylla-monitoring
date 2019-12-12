@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 . versions.sh
+. dashboards.sh
+
 VERSIONS=$DEFAULT_VERSION
 GRAFANA_HOST="localhost"
 GRAFANA_PORT=3000
@@ -45,11 +47,11 @@ fi
 
 mkdir -p grafana/build
 IFS=',' ;for v in $VERSIONS; do
-for f in scylla-dash scylla-dash-per-server scylla-dash-io-per-server scylla-dash-cpu-per-server scylla-dash-per-machine; do
+for f in "${DASHBOARDS[@]}"; do
     if [ -e grafana/$f.$v.template.json ]
     then
         if [ ! -f "grafana/build/$f.$v.json" ] || [ "grafana/build/$f.$v.json" -ot "grafana/$f.$v.template.json" ]; then
-            ./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json
+            ./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"
         fi
         curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/build/$f.$v.json -H "Content-Type: application/json"
     else
