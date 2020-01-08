@@ -7,13 +7,13 @@ else
 fi
 VERSIONS=$DEFAULT_VERSION
 RULE_FILE=$PWD/prometheus/rule_config.yml
-ALERT_MANAGER_VERSION="v0.16.0"
+ALERT_MANAGER_VERSION="v0.20.0"
 DOCKER_PARAM=""
 BIND_ADDRESS=""
+ALERTMANAGER_COMMANDS=""
+usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param] [-C alertmanager commands] [-r rule-file]"
 
-usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param] [-r rule-file]"
-
-while getopts ':hlp:r:D:A:' option; do
+while getopts ':hlp:r:D:C:A:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -26,6 +26,8 @@ while getopts ':hlp:r:D:A:' option; do
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
     D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+       ;;
+    C) ALERTMANAGER_COMMANDS="$ALERTMANAGER_COMMANDS $OPTARG"
        ;;
     A) BIND_ADDRESS="$OPTARG:"
        ;;
@@ -59,7 +61,7 @@ fi
 
 docker run -d $DOCKER_PARAM -i $PORT_MAPPING \
 	 -v $RULE_FILE:/etc/alertmanager/config.yml:z \
-     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION --config.file=/etc/alertmanager/config.yml >& /dev/null
+     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION $ALERTMANAGER_COMMANDS --log.level=debug --config.file=/etc/alertmanager/config.yml >& /dev/null
 
 
 if [ $? -ne 0 ]; then
