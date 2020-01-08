@@ -61,7 +61,7 @@ fi
 
 docker run -d $DOCKER_PARAM -i $PORT_MAPPING \
 	 -v $RULE_FILE:/etc/alertmanager/config.yml:z \
-     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION $ALERTMANAGER_COMMANDS --config.file=/etc/alertmanager/config.yml >& /dev/null
+     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION $ALERTMANAGER_COMMANDS --log.level=debug --config.file=/etc/alertmanager/config.yml >& /dev/null
 
 
 if [ $? -ne 0 ]; then
