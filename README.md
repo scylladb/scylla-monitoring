@@ -27,7 +27,7 @@ On CentOS, you can do:
 ##### Install Docker
 
 Please follow the instructions at: https://docs.docker.com/install/linux/docker-ce/centos/
-Note that Dokcer was rename and it is now docker-ce.
+Note that Docker was renamed and it is now docker-ce.
 If you are running older docker version, remove it first by following the instruction.
 
 ##### Complete Prerequisites Installation
