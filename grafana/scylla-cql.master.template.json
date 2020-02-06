@@ -135,9 +135,19 @@
                         "description": "Number of CQL command batched. Each batch would add the number of commands inside the batch"
                     },
                     {
-                      "class":"plain_text",
-                      "content": "<span/>",
-                      "span":3
+                        "class": "ops_panel",
+                        "description": "Counts the number of SELECT statements with BYPASS CACHE option",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(delta(scylla_cql_select_bypass_caches{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 2,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "BYPASS CACHE"
                     }
                 ],
                 "title": "New row"
