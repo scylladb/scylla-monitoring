@@ -5,13 +5,15 @@ if [ "$1" = "-e" ]; then
 else
 . versions.sh
 fi
+. .include.sh
+
 VERSIONS=$DEFAULT_VERSION
 RULE_FILE=$PWD/prometheus/rule_config.yml
 ALERT_MANAGER_VERSION="v0.20.0"
 DOCKER_PARAM=""
 BIND_ADDRESS=""
 ALERTMANAGER_COMMANDS=""
-usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param] [-C alertmanager commands] [-r rule-file]"
+usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param] [-C alertmanager commands] [-r rule-file] [-k docker volume mappings]"
 
 while getopts ':hlp:r:D:C:A:' option; do
   case "$option" in
@@ -22,7 +24,8 @@ while getopts ':hlp:r:D:C:A:' option; do
        ;;
     r) RULE_FILE=`readlink -m $OPTARG`
        ;;
-
+    k) DOCKER_DIR_MAPPING="$OPTARG"
+       ;;
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
     D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
@@ -60,8 +63,8 @@ fi
 
 
 docker run -d $DOCKER_PARAM -i $PORT_MAPPING \
-	 -v $RULE_FILE:/etc/alertmanager/config.yml:z \
-     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION $ALERTMANAGER_COMMANDS --log.level=debug --config.file=/etc/alertmanager/config.yml >& /dev/null
+ -v `convert_docker_mapping "${DOCKER_DIR_MAPPING}" "$RULE_FILE"`:/etc/alertmanager/config.yml:z \
+ --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION $ALERTMANAGER_COMMANDS --log.level=debug --config.file=/etc/alertmanager/config.yml >& /dev/null
 
 
 if [ $? -ne 0 ]; then

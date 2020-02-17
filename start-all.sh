@@ -20,6 +20,7 @@ if [ "$1" = "-e" ]; then
 else		
 . versions.sh
 fi
+. .include.sh
 if [ "`id -u`" -eq 0 ]; then
     echo "Running as root is not advised, please check the documentation on how to run as non-root user"
 else
@@ -28,7 +29,7 @@ else
 fi
 PROMETHEUS_RULES="$PWD/prometheus/prometheus.rules.yml"
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-k docker volume mappings] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.14.0
 
 SCYLLA_TARGET_FILES=($PWD/prometheus/scylla_servers.yml $PWD/scylla_servers.yml)
@@ -41,7 +42,7 @@ CONSUL_ADDRESS=""
 BIND_ADDRESS=""
 BIND_ADDRESS_CONFIG=""
 
-while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:A:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:k:R:M:G:D:L:N:C:A:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -74,6 +75,8 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:A:' option; do
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
     L) CONSUL_ADDRESS="$OPTARG"
+       ;;
+    k) DOCKER_DIR_MAPPING="$OPTARG"
        ;;
     a) GRAFANA_ADMIN_PASSWORD="-a $OPTARG"
        ;;
@@ -161,7 +164,7 @@ done
 
 echo "Wait for alert manager container to start"
 
-AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -D "$DOCKER_PARAM" $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
+AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -k "$DOCKER_DIR_MAPPING" -D "$DOCKER_PARAM" $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
 if [ $? -ne 0 ]; then
     echo "$AM_ADDRESS"
     exit 1
@@ -217,8 +220,8 @@ fi
 
 docker run -d $DOCKER_PARAM $USER_PERMISSIONS \
      $DATA_DIR \
-     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-     -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
+     -v `convert_docker_mapping "${DOCKER_DIR_MAPPING}" "$PWD/prometheus/build/prometheus.yml"`:/etc/prometheus/prometheus.yml:Z \
+     -v `convert_docker_mapping "${DOCKER_DIR_MAPPING}" "$PROMETHEUS_RULES"`:/etc/prometheus/prometheus.rules.yml:Z \
      $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
      $NODE_TARGET_FILE \
@@ -269,4 +272,4 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 
-./start-grafana.sh $BIND_ADDRESS_CONFIG -p $DB_ADDRESS -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
+./start-grafana.sh $BIND_ADDRESS_CONFIG -k "${DOCKER_DIR_MAPPING}" -p "$DB_ADDRESS" -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m "$AM_ADDRESS" -M "$MANAGER_VERSION" -v "$VERSIONS" $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
