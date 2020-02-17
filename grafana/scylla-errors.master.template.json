@@ -125,11 +125,20 @@
                         "description": "Number of AIO Errors"
                     },
                     {
-                        "class": "text_panel",
-                        "content": "##  ",
-                        "mode": "markdown",
+                        "class": "ops_panel",
                         "span": 4,
-                        "style": {}
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_reactor_abandoned_failed_futures{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Ignored Future By [[by]]",
+                        "description": "Total number of abandoned failed futures, futures destroyed while still containing an exception."
                     },
                     {
                         "class": "ops_panel",
@@ -147,6 +156,7 @@
                         "title": "C++ Exceptions [[by]]",
                         "description": "Number of C++ exceptions thrown.\n\n A peak in the number of exceptions is an indication of a potential problem."
                     }
+                    
                 ],
                 "title": "New row"
             }
