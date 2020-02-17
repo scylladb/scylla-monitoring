@@ -69,3 +69,35 @@ groups:
     annotations:
       description: '{{ $labels.host }} has denied cql connection for more than 30 seconds.'
       summary: Instance {{ $labels.host }} no cql connection
+  - alert: HighLatencies
+    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket[300s])) by (instance, le)) > 100000
+    for: 5m
+    labels:
+      severity: "1"
+    annotations:
+      description: '{{ $labels.instance }} has 95% high latency for more than 5 minutes.'
+      summary: Instance {{ $labels.instance }} Hight Write Latency
+  - alert: HighLatencies
+    expr: sum(rate(scylla_storage_proxy_coordinator_write_latency_sum[60s]))by (instance)/sum(rate(scylla_storage_proxy_coordinator_write_latency_count[60s]))by (instance) >10000
+    for: 5m
+    labels:
+      severity: "1"
+    annotations:
+      description: '{{ $labels.instance }} has average high latency for more than 5 minutes.'
+      summary: Instance {{ $labels.instance }} Hight Write  Latency
+  - alert: HighLatencies
+    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket[300s])) by (instance, le)) > 100000
+    for: 5m
+    labels:
+      severity: "1"
+    annotations:
+      description: '{{ $labels.instance }} has 95% high latency for more than 5 minutes.'
+      summary: Instance {{ $labels.instance }} Hight Read Latency
+  - alert: HighLatencies
+    expr: sum(rate(scylla_storage_proxy_coordinator_read_latency_sum[60s]))by (instance)/sum(rate(scylla_storage_proxy_coordinator_read_latency_count[60s]))by (instance) >10000
+    for: 5m
+    labels:
+      severity: "1"
+    annotations:
+      description: '{{ $labels.instance }} has average high latency for more than 5 minutes.'
+      summary: Instance {{ $labels.instance }} Hight Read  Latency
