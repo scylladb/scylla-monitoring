@@ -17,10 +17,11 @@ AM_ADDRESS=""
 DOCKER_PARAM=""
 EXTERNAL_VOLUME=""
 BIND_ADDRESS=""
+ANONYMOUS_ROLE="Admin"
 
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:' option; do
+while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:Q:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -43,6 +44,8 @@ while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:' option; do
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
     D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+       ;;
+    Q) ANONYMOUS_ROLE=$OPTARG
        ;;
     a) GRAFANA_ADMIN_PASSWORD=$OPTARG
        GRAFANA_AUTH=true
@@ -119,7 +122,7 @@ fi
 docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
-     -e "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin" \
+     -e "GF_AUTH_ANONYMOUS_ORG_ROLE=$ANONYMOUS_ROLE" \
      -e "GF_PANELS_DISABLE_SANITIZE_HTML=true" \
      -v $PWD/grafana/build:/var/lib/grafana/dashboards:z \
      -v $PWD/grafana/plugins:/var/lib/grafana/plugins:z \
