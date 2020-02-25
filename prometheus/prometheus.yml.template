@@ -80,6 +80,24 @@ scrape_configs:
       regex:  '(.*)'
       target_label: __address__
       replacement: '${1}:9100'
+- job_name: manager_agent
+  honor_labels: false
+  file_sd_configs:
+    - files:
+      - /etc/scylla.d/prometheus/node_exporter_servers.yml
+  relabel_configs:
+    - source_labels: [__address__]
+      regex:  '(.*):\d+'
+      target_label: instance
+      replacement: '${1}'
+    - source_labels: [__address__]
+      regex:  '([^:]+)'
+      target_label: instance
+      replacement: '${1}'
+    - source_labels: [instance]
+      regex:  '(.*)'
+      target_label: __address__
+      replacement: '${1}:56090'
 
 - job_name: scylla_manager
   honor_labels: false
