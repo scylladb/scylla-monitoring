@@ -739,6 +739,149 @@
                 "panels": [
                     {
                         "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">LWT - Coordinator</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_cas_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Reads",
+                        "description" : "LWT read rate."
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_cas_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Avrage Read latency",
+                        "description" : "LWT Avrage Read latency."
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "95% latency",
+                        "description" : "LWT 95% Read latency."
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Read Timeouts",
+                        "description" : "LWT Read Timeouts"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_cas_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Writes",
+                        "description" : "LWT write rate."
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_cas_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Avrage Write latency",
+                        "description" : "LWT Avrage Write latency."
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "95% latency",
+                        "description" : "LWT 95% write latency."
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_cas_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Write Timeouts",
+                        "description" : "LWT Write Timeouts"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
                         "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Memory - Replica</h1>",
                         "style": {}
                     }
