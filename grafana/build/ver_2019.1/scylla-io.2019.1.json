@@ -60,7 +60,7 @@
         },
         {
             "class": "plain_text",
-            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">I/O Queue</h1>",
+            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">I/O Queue delay</h1>",
             "datasource": null,
             "editable": true,
             "error": false,
@@ -122,6 +122,7 @@
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
+            "repeat": "classes",
             "seriesOverrides": [
                 {}
             ],
@@ -131,7 +132,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "1000000*max(scylla_io_queue_delay{class=\"compaction\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                    "expr": "1000000*max(scylla_io_queue_delay{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "metric": "seastar_io_queue_delay",
@@ -143,7 +144,7 @@
             "timeFrom": null,
             "timeRegions": [],
             "timeShift": null,
-            "title": "Compactions I/O Queue delay by [[by]]",
+            "title": "$classes I/O Queue delay by [[by]]",
             "tooltip": {
                 "msResolution": false,
                 "shared": true,
@@ -180,6 +181,29 @@
             }
         },
         {
+            "class": "plain_text",
+            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">I/O Queue total bytes</h1>",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 12
+            },
+            "id": 4,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {},
+            "span": 12,
+            "style": {},
+            "title": "",
+            "transparent": true,
+            "type": "text"
+        },
+        {
             "aliasColors": {},
             "bars": false,
             "class": "bps_panel",
@@ -194,104 +218,8 @@
             "gridPos": {
                 "h": 6,
                 "w": 8,
-                "x": 8,
-                "y": 6
-            },
-            "hiddenSeries": false,
-            "id": 4,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "sum(irate(scylla_io_queue_total_bytes{class=\"compaction\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Compactions I/O Queue bandwidth by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "Bps",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "iops_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 16,
-                "y": 6
+                "x": 0,
+                "y": 14
             },
             "hiddenSeries": false,
             "id": 5,
@@ -316,6 +244,7 @@
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
+            "repeat": "classes",
             "seriesOverrides": [],
             "spaceLength": 10,
             "span": 4,
@@ -323,7 +252,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(irate(scylla_io_queue_total_operations{class=\"compaction\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                    "expr": "sum(irate(scylla_io_queue_total_bytes{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "metric": "seastar_io_queue_delay",
@@ -335,7 +264,7 @@
             "timeFrom": null,
             "timeRegions": [],
             "timeShift": null,
-            "title": "Compactions I/O Queue IOPS by [[by]]",
+            "title": "$classes I/O Queue bandwidth by [[by]]",
             "tooltip": {
                 "msResolution": false,
                 "shared": true,
@@ -352,7 +281,7 @@
             },
             "yaxes": [
                 {
-                    "format": "iops",
+                    "format": "Bps",
                     "logBase": 1,
                     "max": null,
                     "min": 0,
@@ -372,9 +301,32 @@
             }
         },
         {
+            "class": "plain_text",
+            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">I/O Queue total operations</h1>",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 20
+            },
+            "id": 6,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {},
+            "span": 12,
+            "style": {},
+            "title": "",
+            "transparent": true,
+            "type": "text"
+        },
+        {
             "aliasColors": {},
             "bars": false,
-            "class": "us_panel",
+            "class": "iops_panel",
             "dashLength": 10,
             "dashes": false,
             "datasource": "prometheus",
@@ -387,105 +339,7 @@
                 "h": 6,
                 "w": 8,
                 "x": 0,
-                "y": 12
-            },
-            "hiddenSeries": false,
-            "id": 6,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [
-                {}
-            ],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "1000000*max(scylla_io_queue_delay{class=\"query\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Query I/O Queue delay by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "\u00b5s",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "bps_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 8,
-                "y": 12
+                "y": 22
             },
             "hiddenSeries": false,
             "id": 7,
@@ -510,6 +364,7 @@
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
+            "repeat": "classes",
             "seriesOverrides": [],
             "spaceLength": 10,
             "span": 4,
@@ -517,7 +372,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(irate(scylla_io_queue_total_bytes{class=\"query\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                    "expr": "sum(irate(scylla_io_queue_total_operations{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "metric": "seastar_io_queue_delay",
@@ -529,1263 +384,7 @@
             "timeFrom": null,
             "timeRegions": [],
             "timeShift": null,
-            "title": "Query I/O Queue bandwidth by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "Bps",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "iops_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 16,
-                "y": 12
-            },
-            "hiddenSeries": false,
-            "id": 8,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "sum(irate(scylla_io_queue_total_operations{class=\"query\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Query I/O Queue IOPS by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "iops",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "us_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 0,
-                "y": 18
-            },
-            "hiddenSeries": false,
-            "id": 9,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [
-                {}
-            ],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "1000000*max(scylla_io_queue_delay{class=\"commitlog\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Commitlog I/O Queue delay by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "\u00b5s",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "bps_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 8,
-                "y": 18
-            },
-            "hiddenSeries": false,
-            "id": 10,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "sum(irate(scylla_io_queue_total_bytes{class=\"commitlog\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Commitlog I/O Queue bandwidth by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "Bps",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "iops_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 16,
-                "y": 18
-            },
-            "hiddenSeries": false,
-            "id": 11,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "sum(irate(scylla_io_queue_total_operations{class=\"commitlog\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Commitlog I/O Queue IOPS by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "iops",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "us_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 0,
-                "y": 24
-            },
-            "hiddenSeries": false,
-            "id": 12,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [
-                {}
-            ],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "1000000*max(scylla_io_queue_delay{class=\"memtable_flush\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Memtable Flush I/O Queue delay by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "\u00b5s",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "bps_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 8,
-                "y": 24
-            },
-            "hiddenSeries": false,
-            "id": 13,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "sum(irate(scylla_io_queue_total_bytes{class=\"memtable_flush\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Memtable Flush I/O Queue bandwidth by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "Bps",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "iops_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 16,
-                "y": 24
-            },
-            "hiddenSeries": false,
-            "id": 14,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "sum(irate(scylla_io_queue_total_operations{class=\"memtable_flush\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Memtable Flush I/O Queue IOPS by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "iops",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "us_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 0,
-                "y": 30
-            },
-            "hiddenSeries": false,
-            "id": 15,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [
-                {}
-            ],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "1000000*max(scylla_io_queue_delay{class=\"streaming_read\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Streaming Reads I/O Queue delay by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "\u00b5s",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "bps_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 8,
-                "y": 30
-            },
-            "hiddenSeries": false,
-            "id": 16,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "sum(irate(scylla_io_queue_total_bytes{class=\"streaming_read\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Streaming Reads I/O Queue bandwidth by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "Bps",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "iops_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 16,
-                "y": 30
-            },
-            "hiddenSeries": false,
-            "id": 17,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "sum(irate(scylla_io_queue_total_operations{class=\"streaming_read\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Streaming Reads I/O Queue IOPS by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "iops",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "us_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 0,
-                "y": 36
-            },
-            "hiddenSeries": false,
-            "id": 18,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [
-                {}
-            ],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "1000000*max(scylla_io_queue_delay{class=\"streaming_write\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Streaming Writes I/O Queue delay by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "\u00b5s",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "bps_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 8,
-                "y": 36
-            },
-            "hiddenSeries": false,
-            "id": 19,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "sum(irate(scylla_io_queue_total_bytes{class=\"streaming_write\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Streaming Writes I/O Queue bandwidth by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "Bps",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "iops_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 16,
-                "y": 36
-            },
-            "hiddenSeries": false,
-            "id": 20,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 4,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "sum(irate(scylla_io_queue_total_operations{class=\"streaming_write\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "seastar_io_queue_delay",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Streaming Writes I/O Queue IOPS by [[by]]",
+            "title": "$classes I/O Queue IOPS by [[by]]",
             "tooltip": {
                 "msResolution": false,
                 "shared": true,
@@ -1971,6 +570,34 @@
                 "name": "shard",
                 "options": [],
                 "query": "label_values(scylla_reactor_utilization,shard)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 3,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+            },
+            {
+                "allValue": null,
+                "class": "template_variable_all",
+                "current": {
+                    "text": "All",
+                    "value": [
+                        "$__all"
+                    ]
+                },
+                "datasource": "prometheus",
+                "definition": "",
+                "hide": 2,
+                "includeAll": true,
+                "label": "classes",
+                "multi": true,
+                "name": "classes",
+                "options": [],
+                "query": "label_values(scylla_io_queue_delay,class)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,
