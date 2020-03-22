@@ -33,9 +33,8 @@ If you are running older docker version, remove it first by following the instru
 ##### Complete Prerequisites Installation
 
 ```bash
-sudo yum install -y git python-pip
-sudo pip install --upgrade pip
-sudo pip install pyyaml
+sudo yum install -y epel-release
+sudo yum install -y git python36 python36-PyYAML
 ```
 #### Ubuntu 16.04: Prerequisites Installation
 
@@ -51,9 +50,8 @@ On Ubuntu, the latest package name is `docker-ce` for "Community Edition". You m
 ##### Complete Prerequisites Installation
 
 ```bash
-sudo apt-get update && apt-get install -y python-pip
-sudo pip install --upgrade pip
-sudo pip install pyyaml
+sudo apt-get update 
+sudo apt-get install -y python3 python3-yaml
 ```
 
 ### Docker Post Installation
