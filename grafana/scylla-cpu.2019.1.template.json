@@ -48,7 +48,7 @@
                 "panels": [
                     {
                         "class": "plain_text",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Task Quota Violation</h1>"
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Information by Task Group</h1>"
                     }
                 ],
                 "title": "New row"
@@ -58,9 +58,43 @@
                 "panels": [
 
                     {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "group",
+                      "title": "$group",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
                         "class": "ms_panel",
-                        "repeat": "group",
-                        "span":3,
+                        "span":4,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(irate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Time used by [[by]] - $group",
+                        "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. This graph shows how much time was spent in $group group"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span":4,
                         "pointradius": 1,
                         "targets": [
                             {
@@ -74,6 +108,23 @@
                         ],
                         "title": "Time spent in task quota violations by [[by]] - $group",
                         "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer. This may cause latency issues"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span":4,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_scheduler_shares{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Scheduler shares [[by]] - $group",
+                        "description": "Shares assigned to the $group. Shares determine how Scylla reactor distributes the task quotas between groups (Higher share gets more quotas)"
                     }
                 ],
                 "title": "New row"

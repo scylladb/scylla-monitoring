@@ -287,7 +287,7 @@
         },
         {
             "class": "plain_text",
-            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Task Quota Violation</h1>",
+            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Information by Task Group</h1>",
             "datasource": null,
             "editable": true,
             "error": false,
@@ -309,13 +309,28 @@
             "type": "text"
         },
         {
+            "collapsed": false,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 12
+            },
+            "id": 5,
+            "panels": [],
+            "repeat": "group",
+            "title": "$group",
+            "type": "row"
+        },
+        {
             "aliasColors": {},
             "bars": false,
             "class": "ms_panel",
             "dashLength": 10,
             "dashes": false,
             "datasource": "prometheus",
-            "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer. This may cause latency issues",
+            "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. This graph shows how much time was spent in $group group",
             "editable": true,
             "error": false,
             "fill": 0,
@@ -323,12 +338,12 @@
             "grid": {},
             "gridPos": {
                 "h": 6,
-                "w": 6,
+                "w": 8,
                 "x": 0,
-                "y": 12
+                "y": 13
             },
             "hiddenSeries": false,
-            "id": 5,
+            "id": 6,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -350,10 +365,106 @@
             "pointradius": 1,
             "points": false,
             "renderer": "flot",
-            "repeat": "group",
             "seriesOverrides": [],
             "spaceLength": 10,
-            "span": 3,
+            "span": 4,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "sum(irate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 30
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Time used by [[by]] - $group",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "ms",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "ms_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer. This may cause latency issues",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 8,
+                "x": 8,
+                "y": 13
+            },
+            "hiddenSeries": false,
+            "id": 7,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 1,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 4,
             "stack": false,
             "steppedLine": false,
             "targets": [
@@ -388,6 +499,103 @@
             "yaxes": [
                 {
                     "format": "ms",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "graph_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Shares assigned to the $group. Shares determine how Scylla reactor distributes the task quotas between groups (Higher share gets more quotas)",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 8,
+                "x": 16,
+                "y": 13
+            },
+            "hiddenSeries": false,
+            "id": 8,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 1,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 4,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "avg(scylla_scheduler_shares{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 30
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Scheduler shares [[by]] - $group",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
                     "logBase": 1,
                     "max": null,
                     "min": 0,
