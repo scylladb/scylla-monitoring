@@ -5569,7 +5569,7 @@
         },
         {
             "class": "text_panel",
-            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Memory - Replica</h1>",
+            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">CDC - Replica</h1>",
             "datasource": null,
             "editable": true,
             "error": false,
@@ -5580,6 +5580,225 @@
                 "y": 110
             },
             "id": 66,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {},
+            "span": 12,
+            "style": {},
+            "title": "",
+            "transparent": true,
+            "type": "text"
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "ops_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "The rate of CDC operations.",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 8,
+                "x": 0,
+                "y": 112
+            },
+            "hiddenSeries": false,
+            "id": 67,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "spaceLength": 10,
+            "span": 4,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(irate(scylla_cdc_operations_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "CDC Operations",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "ops",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "ops_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "The rate of failed CDC operations.",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 8,
+                "x": 8,
+                "y": 112
+            },
+            "hiddenSeries": false,
+            "id": 68,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "spaceLength": 10,
+            "span": 4,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(irate(scylla_cdc_operations_failed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_cas_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1)",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Failed CDC operations",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "ops",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "class": "text_panel",
+            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Memory - Replica</h1>",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 118
+            },
+            "id": 69,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -5606,10 +5825,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 0,
-                "y": 112
+                "y": 120
             },
             "hiddenSeries": false,
-            "id": 67,
+            "id": 70,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5701,10 +5920,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 12,
-                "y": 112
+                "y": 120
             },
             "hiddenSeries": false,
-            "id": 68,
+            "id": 71,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5790,9 +6009,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 118
+                "y": 126
             },
-            "id": 69,
+            "id": 72,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -5819,10 +6038,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 0,
-                "y": 120
+                "y": 128
             },
             "hiddenSeries": false,
-            "id": 70,
+            "id": 73,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5917,10 +6136,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 8,
-                "y": 120
+                "y": 128
             },
             "hiddenSeries": false,
-            "id": 71,
+            "id": 74,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6017,10 +6236,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 16,
-                "y": 120
+                "y": 128
             },
             "hiddenSeries": false,
-            "id": 72,
+            "id": 75,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6105,9 +6324,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 126
+                "y": 134
             },
-            "id": 73,
+            "id": 76,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -6135,10 +6354,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 0,
-                "y": 128
+                "y": 136
             },
             "hiddenSeries": false,
-            "id": 74,
+            "id": 77,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6224,10 +6443,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 12,
-                "y": 128
+                "y": 136
             },
             "hiddenSeries": false,
-            "id": 75,
+            "id": 78,
             "isNew": true,
             "legend": {
                 "avg": false,
