@@ -89,203 +89,6 @@
             "type": "text"
         },
         {
-            "aliasColors": {},
-            "bars": false,
-            "class": "percent_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "description": "the percentage of the time during which the CPU is utilized by Scylla. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 10,
-                "x": 0,
-                "y": 4
-            },
-            "hiddenSeries": false,
-            "id": 2,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [
-                {}
-            ],
-            "spaceLength": 10,
-            "span": 5,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "refId": "A",
-                    "step": 1
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "CPU Utilization per [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 2,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "percent",
-                    "logBase": 1,
-                    "max": 101,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "percent_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "description": "Time spent handling foreground requests (like reads, writes, and some system tasks). The remaining time is either idle, or used by background load like compactions and repairs. Background load in Scylla is opportunistic: background requests will try to use all resources available to complete as fast as possible and rely on the schedulers to provide isolation. This graph is better understood in conjunction with the main CPU load graph. For example, if there are spikes in CPU load that are not present in this graph, that indicates that the foreground load itself is stable.",
-            "editable": true,
-            "error": false,
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 10,
-                "x": 10,
-                "y": 4
-            },
-            "hiddenSeries": false,
-            "id": 3,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 1,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [
-                {}
-            ],
-            "spaceLength": 10,
-            "span": 5,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "avg(irate(scylla_scheduler_runtime_ms{group=\"main\",instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])/10 + avg(irate(scylla_scheduler_runtime_ms{group=\"statement\",instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])/10",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "",
-                    "refId": "A",
-                    "step": 30
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Foreground CPU Utilization by [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 2,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "percent",
-                    "logBase": 1,
-                    "max": 101,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
             "class": "plain_text",
             "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Information by Task Group</h1>",
             "datasource": null,
@@ -295,9 +98,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 10
+                "y": 4
             },
-            "id": 4,
+            "id": 2,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -315,9 +118,9 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 12
+                "y": 6
             },
-            "id": 5,
+            "id": 3,
             "panels": [],
             "repeat": "group",
             "title": "$group",
@@ -340,10 +143,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 0,
-                "y": 13
+                "y": 7
             },
             "hiddenSeries": false,
-            "id": 6,
+            "id": 4,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -437,10 +240,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 8,
-                "y": 13
+                "y": 7
             },
             "hiddenSeries": false,
-            "id": 7,
+            "id": 5,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -534,10 +337,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 16,
-                "y": 13
+                "y": 7
             },
             "hiddenSeries": false,
-            "id": 8,
+            "id": 6,
             "isNew": true,
             "legend": {
                 "avg": false,
