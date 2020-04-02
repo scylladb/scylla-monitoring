@@ -13,7 +13,7 @@
                 "panels": [
                     {
                         "class": "plain_text",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">I/O Queue delay</h1>"
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">I/O Queue Information</h1>"
                     }
                 ],
                 "title": "New row"
@@ -22,9 +22,26 @@
                 "class": "row",
                 "panels": [
                     {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "classes",
+                      "title": "$classes",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
                         "class": "us_panel",
                         "span": 4,
-                        "repeat": "classes",
                         "targets": [
                             {
                                 "expr": "1000000*max(scylla_io_queue_delay{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
@@ -36,28 +53,10 @@
                             }
                         ],
                         "title": "$classes I/O Queue delay by [[by]]"
-                    }
-                 ]
-             },
-            {
-                "class": "row",
-                "height": "25px",
-                "gridPos": {"h": 2},
-                "panels": [
-                    {
-                        "class": "plain_text",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">I/O Queue total bytes</h1>"
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "panels": [
+                    },
                     {
                         "class": "bps_panel",
                         "span": 4,
-                        "repeat": "classes",
                         "targets": [
                             {
                                 "expr": "sum(irate(scylla_io_queue_total_bytes{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
@@ -69,28 +68,10 @@
                             }
                         ],
                         "title": "$classes I/O Queue bandwidth by [[by]]"
-                    }
-                    ]
-             },
-            {
-                "class": "row",
-                "height": "25px",
-                "gridPos": {"h": 2},
-                "panels": [
-                    {
-                        "class": "plain_text",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">I/O Queue total operations</h1>"
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "panels": [
+                    },
                     {
                         "class": "iops_panel",
                         "span": 4,
-                        "repeat": "classes",
                         "targets": [
                             {
                                 "expr": "sum(irate(scylla_io_queue_total_operations{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
