@@ -644,34 +644,34 @@
                         "title": "Cache Misses"
                     },
                     {
-                        "class": "wpm_panel",
+                        "class": "wps_panel",
                         "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(delta(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by ([[by]])",
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 10
                             }
                         ],
-                        "title": "Write Timeouts/Minutes by [[by]]"
+                        "title": "Write Timeouts/Seconds by [[by]]"
                     },
                     {
-                        "class": "rpm_panel",
+                        "class": "rps_panel",
                         "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(delta(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])+rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])+rate(scylla_storage_proxy_coordinator_range_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 10
                             }
                         ],
-                        "title": "Read Timeouts/Minutes by [[by]]"
+                        "title": "Read Timeouts/Seconds by [[by]]"
                     }
                 ],
                 "title": "New row"
