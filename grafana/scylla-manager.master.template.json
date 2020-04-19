@@ -199,6 +199,51 @@
                     }
                     ],
                 "title": "SSH connection Row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Manager Agent</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(go_memstats_heap_inuse_bytes{job=\"manager_agent\", instance=~\"$instance\"}) by ($by)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "description": "An increase in memory can indicate an issue with the Manager agent",
+                        "title": "Agent Memory Heap usage"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "targets": [
+                            {
+                                "expr": "avg(go_threads{job=\"manager_agent\", instance=~\"$instance\"}) by ($by)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "description": "An increase in the number of threads can indicate an issue with the Manager agent",
+                        "title": "Agent Threads"
+                    }
+                    ],
+                "title": "SSH connection Row"
             }
         ],
         "annotations": {
