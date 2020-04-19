@@ -100,7 +100,7 @@
                           },
                          "targets": [
                             {
-                              "expr": "sum(avg(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", host=~\"$host\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"repair\"}) by (task))",
+                              "expr": "sum(avg(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", instance=~\"$instance\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"repair\"}) by (task))",
                               "format": "time_series",
                               "intervalFactor": 2,
                               "refId": "A"
@@ -121,7 +121,7 @@
                           },
                          "targets": [
                             {
-                              "expr": "sum(avg(scylla_manager_backup_percent_progress{cluster=~\"[[cluster]]\", host=~\"$host\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"backup\"}) by (task))",
+                              "expr": "sum(avg(scylla_manager_backup_percent_progress{cluster=~\"[[cluster]]\", instance=~\"$instance\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"backup\"}) by (task))",
                               "format": "time_series",
                               "intervalFactor": 2,
                               "refId": "A"
@@ -146,7 +146,7 @@
                         "class": "ops_panel",
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_manager_repair_segments_success{cluster=~\"[[cluster]]\", keyspace=~\"$keyspace\", host=~\"$host\", shard=~\"$shard\"}[60s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_manager_repair_segments_success{cluster=~\"[[cluster]]\", keyspace=~\"$keyspace\", instance=~\"$instance\", shard=~\"$shard\"}[60s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 4
@@ -158,7 +158,7 @@
                         "class": "ops_panel",
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_manager_repair_segments_error{cluster=~\"[[cluster]]\", host=~\"$host\", keyspace=~\"$keyspace\", shard=~\"$shard\"}[60s])) by ([[by]])",
+                                "expr": "sum(irate(scylla_manager_repair_segments_error{cluster=~\"[[cluster]]\", instance=~\"$instance\", keyspace=~\"$keyspace\", shard=~\"$shard\"}[60s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 4
@@ -175,7 +175,7 @@
                         "class": "graph_panel",
                         "targets": [
                             {
-                                "expr": "sum(scylla_manager_ssh_open_streams_count{host=~\"$host\"}) by ($by)",
+                                "expr": "sum(scylla_manager_ssh_open_streams_count{instance=~\"$instance\"}) by ($by)",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 4
@@ -188,7 +188,7 @@
                         "class": "ms_panel",
                         "targets": [
                             {
-                                "expr": "avg(scylla_manager_healthcheck_cql_rtt_ms{host=~\"$host\", cluster=~\"[[cluster]]\"}) by ($by)",
+                                "expr": "avg(scylla_manager_healthcheck_cql_rtt_ms{instance=~\"$instance\", cluster=~\"[[cluster]]\"}) by ($by)",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 4
@@ -245,8 +245,8 @@
                         },
                         {
                             "selected": false,
-                            "text": "Host",
-                            "value": "host"
+                            "text": "Instance",
+                            "value": "instance"
                         },
                         {
                             "selected": false,
@@ -259,7 +259,7 @@
                             "value": "shard"
                         }
                     ],
-                    "query": "Host,Shard,Keyspace,Cluster",
+                    "query": "Instance,Shard,Keyspace,Cluster",
                     "type": "custom"
                 },
                 {
@@ -270,15 +270,15 @@
                 },
                 {
                     "class": "template_variable_all",
-                    "label": "host",
-                    "name": "host",
-                    "query": "label_values(scylla_manager_healthcheck_cql_rtt_ms{cluster=~\"$cluster|$^\"}, host)"
+                    "label": "instance",
+                    "name": "instance",
+                    "query": "label_values(scylla_manager_healthcheck_cql_rtt_ms{cluster=~\"$cluster|$^\"}, instance)"
                 },
                 {
                     "class": "template_variable_all",
                     "label": "keyspace",
                     "name": "keyspace",
-                    "query": "label_values(scylla_manager_repair_segments_total{host=~\"$host\"}, keyspace)"
+                    "query": "label_values(scylla_manager_repair_segments_total{instance=~\"$instance\"}, keyspace)"
                 },
                 {
                     "class": "template_variable_all",
