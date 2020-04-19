@@ -95,6 +95,32 @@ scrape_configs:
     - regex: 'help|exported_instance|type'
       action: labeldrop
 
+- job_name: manager_agent
+  honor_labels: false
+  consul_sd_configs:
+  - server: 'MANAGER_ADDRESS'
+    services:
+      - 'scylla'
+  relabel_configs:
+    - source_labels: [__meta_consul_tags]
+      separator: ','
+      regex: '([^=]+)=([^,]+)'
+      target_label: ${1}
+      replacement: ${2}
+    - source_labels: [__address__]
+      regex:  '(.*):\d+'
+      target_label: instance
+      replacement: '${1}'
+    - source_labels: [__meta_consul_service_metadata_dc]
+      target_label: dc
+    - source_labels: [instance]
+      regex:  '(.*)'
+      target_label: __address__
+      replacement: '${1}:56090'
+  metric_relabel_configs:
+    - regex: 'help|exported_instance|type'
+      action: labeldrop
+
 - job_name: scylla_manager
   honor_labels: false
   static_configs:
