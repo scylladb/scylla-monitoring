@@ -5134,7 +5134,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "$func(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A",
@@ -5230,7 +5230,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "$func(scylla_storage_proxy_coordinator_cas_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A",
@@ -5518,7 +5518,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "$func(scylla_storage_proxy_coordinator_cas_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A",
@@ -5566,6 +5566,1066 @@
             }
         },
         {
+            "aliasColors": {},
+            "bars": false,
+            "class": "wps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "An LWT INSERT, UPDATE or DELETE command that involves a condition will be rejected if the condition is not met.\n\nWhile it is ok, a high value may indicate that there is a potential problem with data distribution",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 110
+            },
+            "hiddenSeries": false,
+            "id": 66,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_condition_not_met{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "LWT Condition-Not-Met",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "wps",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "wps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Number of times some INSERT, UPDATE or DELETE request with conditions had to retry because there was a concurrent conditional statement against the same key. Each retry is performed after a randomized sleep interval, so it can lead to statement timing out completely.\n\nIt can indicates contention over a hot row or key",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 6,
+                "y": 110
+            },
+            "hiddenSeries": false,
+            "id": 67,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_contention_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "LWT Write Contention",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "wps",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "rps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Number of times some SELECT with SERIAL consistency had to retry because there was a concurrent conditional statement against the same key. Each retry is performed after a randomized sleep interval, so it can lead to statement timing out completely.\n\nIt can indicates contention over a hot row or key",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 12,
+                "y": 110
+            },
+            "hiddenSeries": false,
+            "id": 68,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_read_contention_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]]) - $func(rate(scylla_storage_proxy_coordinator_cas_read_contention_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", le=\"1.000000\"}[1m]))  by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "LWT Read Contention",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "rps",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "wps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Number of partially succeeded conditional statements. These statements were not committed by the coordinator, due to some replicas responding with errors or timing out. The coordinator had to propagate the error to the client. However, the statement succeeded on a minority of replicas, so may later be propagated to the rest during repair.",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 18,
+                "y": 110
+            },
+            "hiddenSeries": false,
+            "id": 69,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_timeout_due_to_uncertainty{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "LWT Write Timeout Due to Uncertainty",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "wps",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "wps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Number of times a INSERT, UPDATE, or DELETE with conditions failed after being unable to contact enough replicas to match the consistency level",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 116
+            },
+            "hiddenSeries": false,
+            "id": 70,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "LWT Write Unavailable",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "wps",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "rps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Number of times a SELECT with SERIAL consistency failed after being unable to contact enough replicas to match the consistency level",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 6,
+                "y": 116
+            },
+            "hiddenSeries": false,
+            "id": 71,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_read_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "LWT Read Unavailable",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "rps",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "wps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Number of Paxos-repairs of INSERT, UPDATE, or DELETE with conditions.\n\nA repair is necessary when a previous Paxos statement was partialy successful. A subsequent statement then may not proceed before completing the work of its predecessor. A repair is not guaranteed to succeed, the metric indicates the number of repair attempts made",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 12,
+                "y": 116
+            },
+            "hiddenSeries": false,
+            "id": 72,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_unfinished_commit{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "LWT Write Unfinished - Repair Attempts",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "wps",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "rps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Number of Paxos-repairs of SELECT statement with SERIAL consistency.\n\nA repair is necessary when a previous Paxos statement was partialy successful. A subsequent statement then may not proceed before completing the work of its predecessor. A repair is not guaranteed to succeed, the metric indicates the number of repair attempts made",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 18,
+                "y": 116
+            },
+            "hiddenSeries": false,
+            "id": 73,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_read_unfinished_commit{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "LWT Read Unfinished - Repair Attempts",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "rps",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "rps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Normally, a PREPARE Paxos-round piggy-backs the previous value along with the PREPARE response. When the coordinator is unable to obtain the previous value (or its digest) from some of the participants, or when the digests did not match, a separate repair round has to be performed.\n\nThis indicates that some Paxos queries did not run successfully to completion, e.g. because some node is overloaded, down, or there was contention around a key.",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 122
+            },
+            "hiddenSeries": false,
+            "id": 74,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_failed_read_round_optimization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Failed Read-Round Optimization",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "rps",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "ops_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Number of pruning requests.\n\nA successful conditional statement deletes the intermediate state from system.paxos table using PRUNE command.",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 6,
+                "y": 122
+            },
+            "hiddenSeries": false,
+            "id": 75,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_prune{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "LWT Prune",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "ops",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "ops_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Number of Dropped pruning requests.\n\nA successful conditional statement deletes the intermediate state from system.paxos table using PRUNE command. If the system is busy it may not keep up with the PRUNE requests, so such requests are dropped.\n\nHigh value suggests the system is overloaded and also that system.paxos table is taking up space. If a prune is dropped, system.paxos table key and value for respective LWT transaction  will stay around until next transaction against the same key or until the gc_grace_period, when it's removed by compaction.",
+            "editable": true,
+            "error": false,
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 12,
+                "y": 122
+            },
+            "hiddenSeries": false,
+            "id": 76,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_dropped_prune{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))  by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 10
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "LWT Dropped Prune",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "ops",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
             "class": "text_panel",
             "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">CDC - Replica</h1>",
             "datasource": null,
@@ -5575,9 +6635,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 110
+                "y": 128
             },
-            "id": 66,
+            "id": 77,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -5605,10 +6665,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 0,
-                "y": 112
+                "y": 130
             },
             "hiddenSeries": false,
-            "id": 67,
+            "id": 78,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5703,10 +6763,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 8,
-                "y": 112
+                "y": 130
             },
             "hiddenSeries": false,
-            "id": 68,
+            "id": 79,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5794,9 +6854,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 118
+                "y": 136
             },
-            "id": 69,
+            "id": 80,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -5823,10 +6883,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 0,
-                "y": 120
+                "y": 138
             },
             "hiddenSeries": false,
-            "id": 70,
+            "id": 81,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5918,10 +6978,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 12,
-                "y": 120
+                "y": 138
             },
             "hiddenSeries": false,
-            "id": 71,
+            "id": 82,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6007,9 +7067,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 126
+                "y": 144
             },
-            "id": 72,
+            "id": 83,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -6036,10 +7096,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 0,
-                "y": 128
+                "y": 146
             },
             "hiddenSeries": false,
-            "id": 73,
+            "id": 84,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6134,10 +7194,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 8,
-                "y": 128
+                "y": 146
             },
             "hiddenSeries": false,
-            "id": 74,
+            "id": 85,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6234,10 +7294,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 16,
-                "y": 128
+                "y": 146
             },
             "hiddenSeries": false,
-            "id": 75,
+            "id": 86,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6322,9 +7382,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 134
+                "y": 152
             },
-            "id": 76,
+            "id": 87,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -6352,10 +7412,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 0,
-                "y": 136
+                "y": 154
             },
             "hiddenSeries": false,
-            "id": 77,
+            "id": 88,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6441,10 +7501,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 12,
-                "y": 136
+                "y": 154
             },
             "hiddenSeries": false,
-            "id": 78,
+            "id": 89,
             "isNew": true,
             "legend": {
                 "avg": false,
