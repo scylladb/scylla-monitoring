@@ -9,9 +9,11 @@ fi
 
 FORMAT_COMAND=""
 FORCEUPDATE=""
-usage="$(basename "$0") [-h] [-v comma separated versions ]  [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] [-F force update]-- Generates the grafana dashboards and their load files"
+SPECIFIC_SOLUTION=""
 
-while getopts ':htv:j:M:F' option; do
+usage="$(basename "$0") [-h] [-v comma separated versions ]  [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] [-F force update] [-S start with a system specific dashboard set] -- Generates the grafana dashboards and their load files"
+
+while getopts ':htv:j:M:S:F' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -25,6 +27,8 @@ while getopts ':htv:j:M:F' option; do
        FORMAT_COMAND="$FORMAT_COMAND -M $OPTARG"
        ;;
     F) FORCEUPDATE="1"
+       ;;
+    S) SPECIFIC_SOLUTION="$OPTARG"
        ;;
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
        FORMAT_COMAND="$FORMAT_COMAND -j $OPTARG"
@@ -43,11 +47,20 @@ function set_loader {
 }
 
 IFS=',' ;for v in $VERSIONS; do
-VERDIR="grafana/build/ver_$v"
+
+if [[ -z "$SPECIFIC_SOLUTION" ]]; then
+    VERDIR_NAME="ver_$v"
+else
+    VERDIR_NAME=$SPECIFIC_SOLUTION"_$v"
+fi
+
+VERDIR="grafana/build/$VERDIR_NAME"
 if [[ -z "$TEST_ONLY" ]]; then
    mkdir -p $VERDIR
 fi
-set_loader $v $v "ver_$v"
+
+set_loader $v $v "$VERDIR_NAME"
+
 CURRENT_VERSION=`cat CURRENT_VERSION.sh`
 
 for f in "${DASHBOARDS[@]}"; do

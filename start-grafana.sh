@@ -18,10 +18,11 @@ DOCKER_PARAM=""
 EXTERNAL_VOLUME=""
 BIND_ADDRESS=""
 ANONYMOUS_ROLE="Admin"
+SPECIFIC_SOLUTION=""
 
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:Q:' option; do
+while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:S:Q:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -58,6 +59,8 @@ while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:Q:' option; do
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
        ;;
     A) BIND_ADDRESS="$OPTARG:"
+       ;;
+    S) SPECIFIC_SOLUTION="-S $OPTARG"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -106,7 +109,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 
-./generate-dashboards.sh -t -v $VERSIONS -M $MANAGER_VERSION $GRAFANA_DASHBOARD_COMMAND
+./generate-dashboards.sh -t $SPECIFIC_SOLUTION -v $VERSIONS -M $MANAGER_VERSION $GRAFANA_DASHBOARD_COMMAND
 mkdir -p grafana/provisioning/datasources
 sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
 
