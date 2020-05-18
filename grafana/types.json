@@ -1055,7 +1055,7 @@
       "annotation_manager_task": {
         "datasource": "prometheus",
         "enable": true,
-        "expr": "changes(scylla_manager_task_active_count[1m])",
+        "expr": "scylla_manager_task_active_count{type=~\"repair|backup\",cluster=~\"$cluster|$^\"}>0",
         "hide": false,
         "iconColor": "#73BF69",
         "limit": 100,
@@ -1063,21 +1063,21 @@
         "showIn": 0,
         "tagKeys": "type",
         "tags": [],
-        "titleFormat": "Started",
+        "titleFormat": "Running",
         "type": "tags"
       },
-      "annotation_manager_task_completed": {
+      "annotation_manager_task_failed": {
         "datasource": "prometheus",
         "enable": true,
-        "expr": "changes(scylla_manager_task_run_total{}[1m])>0",
+        "expr": "sum(changes(scylla_manager_task_run_total{status=\"ERROR\", cluster=~\"$cluster|$^\"}[1m])) by(type)>0",
         "hide": false,
         "iconColor": "#73BF69",
         "limit": 100,
-        "name": "Done",
+        "name": "Failed",
         "showIn": 0,
-        "tagKeys": "type,status",
+        "tagKeys": "type",
         "tags": [],
-        "titleFormat": "Task Completed",
+        "titleFormat": "Task Failed",
         "type": "tags"
       },
       "adhoc_filter" : {
