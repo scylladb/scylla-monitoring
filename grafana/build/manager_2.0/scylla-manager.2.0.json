@@ -29,7 +29,7 @@
                 "class": "annotation_manager_task",
                 "datasource": "prometheus",
                 "enable": true,
-                "expr": "changes(scylla_manager_task_active_count[1m])",
+                "expr": "scylla_manager_task_active_count{type=~\"repair|backup\",cluster=~\"$cluster|$^\"}>0",
                 "hide": false,
                 "iconColor": "#73BF69",
                 "limit": 100,
@@ -37,23 +37,11 @@
                 "showIn": 0,
                 "tagKeys": "type",
                 "tags": [],
-                "titleFormat": "Started",
+                "titleFormat": "Running",
                 "type": "tags"
             },
             {
-                "class": "annotation_manager_task_completed",
-                "datasource": "prometheus",
-                "enable": true,
-                "expr": "changes(scylla_manager_task_run_total{}[1m])>0",
-                "hide": false,
-                "iconColor": "#73BF69",
-                "limit": 100,
-                "name": "Done",
-                "showIn": 0,
-                "tagKeys": "type,status",
-                "tags": [],
-                "titleFormat": "Task Completed",
-                "type": "tags"
+                "class": "annotation_manager_task_completed"
             }
         ]
     },
