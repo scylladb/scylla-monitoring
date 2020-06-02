@@ -1,4 +1,4 @@
 LATEST="4.0"
-ALL="3.2,3.3,4.0,master"
+ALL="3.2,3.3,4.0,4.1,master"
 DEFAULT_VERSION="4.0,3.3"
 MANAGER_VERSION="2.0"
