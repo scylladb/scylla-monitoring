@@ -45,7 +45,7 @@
                         "pointradius": 1,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                                "expr": "$func(irate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -62,7 +62,7 @@
                         "pointradius": 1,
                         "targets": [
                             {
-                                "expr": "sum(irate(scylla_scheduler_time_spent_on_task_quota_violations_ms{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                                "expr": "$func(irate(scylla_scheduler_time_spent_on_task_quota_violations_ms{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -79,7 +79,7 @@
                         "pointradius": 1,
                         "targets": [
                             {
-                                "expr": "avg(scylla_scheduler_shares{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "expr": "$func(scylla_scheduler_shares{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -135,6 +135,14 @@
                 },
                 {
                     "class": "adhoc_filter"
+                },
+                {
+                    "class": "aggregation_function",
+                    "current": {
+                      "tags": [],
+                      "text": "avg",
+                      "value": "avg"
+                    }
                 },
                 {
                     "class": "template_variable_custom",
