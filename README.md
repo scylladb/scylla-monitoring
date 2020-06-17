@@ -1,9 +1,6 @@
 # Scylla monitoring with Grafana and Prometheus
-___
-** Notice to users **
 
-The repository name was changed to `scylla-monitoring` make sure you are using the right path.
-___
+Scylla-Monitoring configuration can be found: https://docs.scylladb.com/operating-scylla/monitoring/
 
 ### Introduction
 
@@ -239,17 +236,12 @@ Additional parameters:
 Full commandline:
 
 ```
-./start-all.sh -d data_dir
+./start-all.sh -d path/to/data_dir
 ```
-Comment:
-  `data_dir` is the local path to original data directory
-
-Data source for Prometheus data:
-* Download from Docker Prometheus server, reference: https://github.com/scylladb/scylla/wiki/How-to-report-a-Scylla-problem#prometheus
-* Get from Scylla-Cluster-Test log.
-* Others
 
 ### Using your own Grafana installation
+
+``` ./load-grafana``` is not currently  beeing supported, please follow the instuction in the documentation.
 
 Some users who already have grafana installed can just upload the Scylla dashboards into your existing grafana environment.
 This is possible using the `load-grafana.sh` script.
@@ -258,66 +250,6 @@ For example, if you have prometheus running at `192.168.0.1:9090`, and grafana a
 
 ```
 ./load-grafana.sh -p 192.168.0.1:9090 -g 3000
-```
-
-### Using your own Prometheus server
-
-#### node_exporter specifc configuration
-
-Scylla dashboard are using the metrics from node_exporter 0.14 version. To use version 0.16 and higher an additional configuration is needed.
-Under the node_exporter job you should configure a mapping between the new names and the old:
-
-
-Under
-```
-- job_name: node_exporter
-  metric_relabel_configs:
-```
-
-Add the following part that would rename the metrics to be backward compatible.
-
-```
-    - source_labels: [__name__]
-      regex:  'node_disk_read_bytes_total'
-      target_label: __name__
-      replacement: 'node_disk_bytes_read'
-    - source_labels: [__name__]
-      regex:  'node_disk_written_bytes_total'
-      target_label: __name__
-      replacement: 'node_disk_bytes_written'
-    - source_labels: [__name__]
-      regex:  'node_disk_reads_completed_total'
-      target_label: __name__
-      replacement: 'node_disk_reads_completed'
-    - source_labels: [__name__]
-      regex:  'node_disk_writes_completed_total'
-      target_label: __name__
-      replacement: 'node_disk_writes_completed'
-    - source_labels: [__name__]
-      regex:  'node_filesystem_avail_bytes'
-      target_label: __name__
-      replacement: 'node_filesystem_avail'
-    - source_labels: [__name__]
-      regex:  'node_network_receive_bytes_total'
-      target_label: __name__
-      replacement: 'node_network_receive_bytes'
-    - source_labels: [__name__]
-      regex:  'node_network_receive_packets_total'
-      target_label: __name__
-      replacement: 'node_network_receive_packets'
-    - source_labels: [__name__]
-      regex:  'node_network_transmit_bytes_total'
-      target_label: __name__
-      replacement: 'node_network_transmit_bytes'
-    - source_labels: [__name__]
-      regex:  'node_network_transmit_packets_total'
-      target_label: __name__
-      replacement: 'node_network_transmit_packets'
-    - source_labels: [__name__]
-      regex:  'node_filesystem_size_bytes'
-      target_label: __name__
-      replacement: 'node_filesystem_size'
-
 ```
 
 ### Alertmanager
