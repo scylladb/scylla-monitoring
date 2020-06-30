@@ -1,0 +1,367 @@
+
+
+
+<!doctype html>
+<html class="no-js" lang="en">
+  
+<head><!-- begin head.html -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>
+    Upgrade Guide - Scylla Monitoring 1.x to Scylla Monitoring 2.x | Scylla Docs
+    </title>
+    <meta name="description" content="Scylla is an Apache Cassandra-compatible NoSQL data store that can handle 1 million transactions per second on a single server." />
+
+    <link rel="icon" href="../../../_static/img/favicon.ico" type="image/x-icon"/>
+    <link rel="canonical" href="https://docs.scylladb.com/">
+
+    <link rel="author" href="mailto:info@scylladb.com">
+    <link rel="stylesheet" href="../../../_static/" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/css/doc/main.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/expertrec.js"></script>
+
+    <script src="../../../_static/js/vendor/modernizr.js"></script>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-T8P2JP');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Marketo -->
+    <script type="text/javascript"> (function() { var didInit = false; function initMunchkin() { if(didInit === false) { didInit = true; Munchkin.init('791-QBF-350'); } } var s = document.createElement('script'); s.type = 'text/javascript'; s.async = true; s.src = '//munchkin.marketo.net/munchkin.js'; s.onreadystatechange = function() { if (this.readyState == 'complete' || this.readyState == 'loaded') { initMunchkin(); } }; s.onload = initMunchkin; document.getElementsByTagName('head')[0].appendChild(s); })(); </script>
+    <!-- End Marketo -->
+
+<!-- end head.html -->
+</head>
+
+<body>
+<header id="header" class="animated">
+    <div class="topbar_continer contain-to-grid clearfix">
+        <nav class="top-bar" id="top-bar" data-topbar role="navigation">
+            <ul class="title-area">
+                <li class="name">
+                    <div class="logo">
+                        <a href="https://docs.scylladb.com/"><img src="../../../_static/img/logo-scylla-docs.svg" alt="" width="151"></a>
+                    </div>
+                </li>
+                <li class="toggle-topbar"><a href="#"><span class="icon-manu"></span></a></li>
+            </ul>
+            <section class="top-bar-section clearfix">
+                <ul class="right">
+                    
+                    <li>
+                        <a href="/getting-started/">Getting Started</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/operating-scylla/">Administrators</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/using-scylla/">Developers</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/scylla-cloud/">Scylla Cloud</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/using-scylla/alternator/">Scylla Alternator</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://university.scylladb.com/">Scylla University</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://www.scylladb.com/">ScyllaDB Home</a>
+                    </li>
+                    
+                    <li class="search_continer show-for-medium-up">	
+                        <ci-search></ci-search>	
+                    </li>	
+                </ul>
+            </section>
+        </nav>
+    </div>
+</header>
+<section id="content">
+    <div class="row">
+	
+	<div class="large-6 large-push-3 columns">
+            
+
+            <div class="section" id="upgrade-guide-scylla-monitoring-1-x-to-scylla-monitoring-2-x">
+<h1>Upgrade Guide - Scylla Monitoring 1.x to Scylla Monitoring 2.x<a class="headerlink" href="#upgrade-guide-scylla-monitoring-1-x-to-scylla-monitoring-2-x" title="Permalink to this headline">¶</a></h1>
+<p>This document is a step by step procedure for upgrading <a class="reference external" href="/operating-scylla/monitoring/3.3//monitoring_stack/">Scylla Monitoring Stack</a> from version 1.x to 2.x</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#upgrade-procedure" id="id1">Upgrade Procedure</a></p>
+<ul>
+<li><p><a class="reference internal" href="#upgrade-to-the-latest-1-x-version" id="id2">1. Upgrade to the latest 1.x version</a></p></li>
+<li><p><a class="reference internal" href="#install-the-new-monitoring-stack" id="id3">2. Install the new monitoring stack</a></p>
+<ul>
+<li><p><a class="reference internal" href="#validation" id="id4">Validation</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#alerting-rules" id="id5">3. Alerting Rules</a></p></li>
+<li><p><a class="reference internal" href="#moving-to-prometheus-2-x" id="id6">4. Moving to Prometheus 2.x</a></p>
+<ul>
+<li><p><a class="reference internal" href="#a-set-the-old-system" id="id7">a. Set the old system</a></p></li>
+<li><p><a class="reference internal" href="#b-set-the-new-system" id="id8">b. Set the new system</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#validate-the-upgrade" id="id9">Validate the upgrade</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#rollback" id="id10">Rollback</a></p></li>
+<li><p><a class="reference internal" href="#related-links" id="id11">Related Links</a></p></li>
+</ul>
+</div>
+<p>Scylla monitoring stack uses <a class="reference external" href="https://prometheus.io">Prometheus</a> as its metrics database. The main differences between Scylla Monitoring 1.x and 2.x is moving from Prometheus version 1.x to Prometheus 2.x.
+Since Prometheus is not backward compatible between these two versions, the upgrade procedure consists of running the two monitoring stack, old and new, in <strong>parallel</strong>, allowing the new stack to read metrics from the old one. This procedure will allow you to migrate your Scylla monitoring stack without losing historical metric data in the process.
+Once the Prometheus retention time has passed, you can safely remove the old stack.</p>
+<div class="section" id="upgrade-procedure">
+<h2><a class="toc-backref" href="#id1">Upgrade Procedure</a><a class="headerlink" href="#upgrade-procedure" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="upgrade-to-the-latest-1-x-version">
+<h3><a class="toc-backref" href="#id2">1. Upgrade to the latest 1.x version</a><a class="headerlink" href="#upgrade-to-the-latest-1-x-version" title="Permalink to this headline">¶</a></h3>
+<p>Before starting the upgrade procedure, make sure you are running the <a class="reference external" href="https://github.com/scylladb/scylla-monitoring/releases/">latest 1.x version</a></p>
+</div>
+<div class="section" id="install-the-new-monitoring-stack">
+<h3><a class="toc-backref" href="#id3">2. Install the new monitoring stack</a><a class="headerlink" href="#install-the-new-monitoring-stack" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Download the 2.x version from the <a class="reference external" href="https://github.com/scylladb/scylla-monitoring/releases">release</a> page.</p></li>
+<li><p>Unzip it into a <strong>different</strong> directory. This is important, as Prometheus is not backward compatible and would not be able to use the old data.</p></li>
+<li><p>You can use the server definitions from the old monitoring stack, by copying the target files from the old stack to the new one, located on the <code class="docutils literal notranslate"><span class="pre">prometheus/</span></code> directory:</p>
+<ul class="simple">
+<li><p>scylla_servers.yml</p></li>
+<li><p>scylla_manager_servers.yml</p></li>
+<li><p>node_exporter_servers.yml</p></li>
+</ul>
+</li>
+<li><p>Start the new monitoring stack. If you are using Docker, make sure you are using <code class="docutils literal notranslate"><span class="pre">-g</span></code> <code class="docutils literal notranslate"><span class="pre">-p</span></code> and <code class="docutils literal notranslate"><span class="pre">-m</span></code> to specify different ports than the old monitoring stack. For example:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./start-all.sh -g <span class="m">3001</span> -p <span class="m">9091</span> -m <span class="m">9094</span> -d /new-prometheus-data-path
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Make sure to use the <code class="docutils literal notranslate"><span class="pre">-d</span></code> option, letting Prometheus keep its data <strong>outside</strong> the Docker container. Fail to do so, will result in loss of historical data in case you restart the monitoring stack.</p>
+</div>
+<p>While the <strong>old</strong> monitoring stack keeps working, you can take the <strong>new</strong> stack up and down to make sure everything works correctly. Note that if you are using non-default ports setting, you should use the same for stopping the stack:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./kill-all.sh -g <span class="m">3001</span> -p <span class="m">9091</span> -m <span class="m">9094</span>
+</pre></div>
+</div>
+<div class="section" id="validation">
+<h4><a class="toc-backref" href="#id4">Validation</a><a class="headerlink" href="#validation" title="Permalink to this headline">¶</a></h4>
+<p>Make sure the new monitoring stack is working before moving to 2.x as your main system. See that the graphs return data and nodes are reachable.</p>
+</div>
+</div>
+<div class="section" id="alerting-rules">
+<h3><a class="toc-backref" href="#id5">3. Alerting Rules</a><a class="headerlink" href="#alerting-rules" title="Permalink to this headline">¶</a></h3>
+<p>Note that alerting rules moved to a yml file format, make sure that all defined rules are taken.</p>
+</div>
+<div class="section" id="moving-to-prometheus-2-x">
+<h3><a class="toc-backref" href="#id6">4. Moving to Prometheus 2.x</a><a class="headerlink" href="#moving-to-prometheus-2-x" title="Permalink to this headline">¶</a></h3>
+<p>Monitoring stack Version 2.0 upgrade the Prometheus version from 1.8 to 2.3. This upgrade is not backward compatible.
+Prometheus Migration is cover <a class="reference external" href="https://Prometheus.io/docs/Prometheus/latest/migration/">here</a>.
+Note that when using the docker containers, besides the data migration, the docker permissions were changed. This means that the permissions of the data directory will no longer work.</p>
+<p>Do the following to allow the Prometheus in the new monitoring stack to read historical metrics from the old Prometheus:</p>
+<div class="section" id="a-set-the-old-system">
+<h4><a class="toc-backref" href="#id7">a. Set the old system</a><a class="headerlink" href="#a-set-the-old-system" title="Permalink to this headline">¶</a></h4>
+<p>The following steps will stop the <strong>old</strong> monitoring stack from reading new metrics while exposing an API for the <strong>new</strong> monitoring stack to read historical metric from.</p>
+<ul class="simple">
+<li><p>In the <strong>old</strong> Prometheus <cite>prometheus.yml.template</cite> file, remove the <code class="docutils literal notranslate"><span class="pre">alerting</span></code>, <code class="docutils literal notranslate"><span class="pre">scrape_configs</span></code>, and <code class="docutils literal notranslate"><span class="pre">rule_files</span></code> sections, keeping only the <code class="docutils literal notranslate"><span class="pre">external_labels</span></code> section.</p></li>
+<li><p>Restart the <strong>old</strong> montioring stack with, <code class="docutils literal notranslate"><span class="pre">kill-all.sh</span></code> followed by <code class="docutils literal notranslate"><span class="pre">start-all.sh</span></code> with command line flag <code class="docutils literal notranslate"><span class="pre">-b</span> <span class="pre">&quot;-web.listen-address=:9111&quot;</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>After this phase, the <strong>old</strong> monitoring stack will not be updated with new metrics. It will only serve as a data source of historical data for the <strong>new</strong> stack</p>
+</div>
+</div>
+<div class="section" id="b-set-the-new-system">
+<h4><a class="toc-backref" href="#id8">b. Set the new system</a><a class="headerlink" href="#b-set-the-new-system" title="Permalink to this headline">¶</a></h4>
+<p>The following step will allow the <strong>new</strong> monitoring system to read historical metrics from the old system.</p>
+<ul class="simple">
+<li><p>In the Prometheus <cite>prometheus.yml.template</cite> file add the following at the end:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>remote_read:
+  - url: <span class="s2">&quot;http://{ip}:9111/api/v1/read&quot;</span>
+</pre></div>
+</div>
+<p>Where {ip} is the ip of the old system.</p>
+<ul class="simple">
+<li><p>restart the <strong>new</strong> stack</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="validate-the-upgrade">
+<h3><a class="toc-backref" href="#id9">Validate the upgrade</a><a class="headerlink" href="#validate-the-upgrade" title="Permalink to this headline">¶</a></h3>
+<p>You should be able to see the graphs on the new stack, make sure you see the graphs history.
+By default, Prometheus retention period is 15 days, so after that period, it is safe to take down the old system and remove the <cite>remote_read</cite> from the new Prometheus configuration.</p>
+</div>
+</div>
+<div class="section" id="rollback">
+<h2><a class="toc-backref" href="#id10">Rollback</a><a class="headerlink" href="#rollback" title="Permalink to this headline">¶</a></h2>
+<p>In the upgrade procedure, you set up a second monitoring stack. The old monitoring stack continues to work in parallel. To rollback, simply add back the Prometheus targets in the old system, and take down the new system.</p>
+</div>
+<div class="section" id="related-links">
+<h2><a class="toc-backref" href="#id11">Related Links</a><a class="headerlink" href="#related-links" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="/operating-scylla/monitoring/3.3//monitoring_stack/">Scylla Monitoring Stack</a></p></li>
+<li><p><span class="xref std std-doc">Upgrade</span></p></li>
+<li><p><a class="reference external" href="https://Prometheus.io/docs/Prometheus/latest/migration/">Prometheus Migration</a></p></li>
+</ul>
+</div>
+</div>
+
+        </div>
+
+        <div id="sidebar" class="large-3 large-pull-6 columns"><div class="side-nav">
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../3.4/">Scylla Monitoring 3.4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../3.3/">Scylla Monitoring 3.3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../3.2/">Scylla Monitoring 3.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../3.2/">Scylla Monitoring 3.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../3.1/">Scylla Monitoring 3.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../3.0/">Scylla Monitoring 3.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../2.4/">Scylla Monitoring 2.4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../2.3/">Scylla Monitoring 2.3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../2.2/">Scylla Monitoring 2.2</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../">Upgrade Scylla Monitoring</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../upgrade-guide-from-monitoring-3.x-to-monitoring-3.y/">Monitoring 3.x to 3.y</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade-guide-from-monitoring-2.x-to-monitoring-3.y/">Monitoring 2.x to 3.y</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade-guide-from-monitoring-2.x-to-monitoring-2.y/">Monitoring 2.x to 2.y</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Monitoring 1.x to 2.x</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../matrix/">Monitoring Support Matrix</a></li>
+</ul>
+
+</div>
+        </div>
+
+        <div class="large-3 columns">
+            
+        </div>
+
+    </div>
+</section>
+
+<!-- newsleter modal -->
+
+<div id="newsletter_signup" class="reveal-modal tiny radius dark_modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+    <a class="close-reveal-modal" aria-label="Close">×</a>
+    <h2 id="modalTitle">Sign up for the Scylla newsletter</h2>
+    <div id="mc_embed_signup">
+        <form action="//cloudius-systems.us10.list-manage.com/subscribe/post?u=df8bb543c68230d5f7b4dcf78&amp;id=9a4589f144" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate="">
+            <div id="mc_embed_signup_scroll">
+
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-EMAIL">Email</label></div>
+                        <div class="small-9 columns"><input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-FNAME">First Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="FNAME" class="" id="mce-FNAME"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-LNAME">Last Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="LNAME" class="" id="mce-LNAME"></div>
+                    </div>
+                </div>
+                <div id="mce-responses" class="clear">
+                    <div class="response" id="mce-error-response" style="display:none"></div>
+                    <div class="response" id="mce-success-response" style="display:none"></div>
+                </div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+                <div style="position: absolute; left: -5000px;"><input type="text" name="b_df8bb543c68230d5f7b4dcf78_9a4589f144" tabindex="-1" value=""></div>
+                <div class="clear"><input type="submit" class="button" value="Sign up" name="subscribe" id="mc-embedded-subscribe"></div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- end newsleter modal -->
+
+
+
+<!-- footer.html -->
+<footer id="footer">
+    <div class="footer-top">
+        <a class="logo" href="https://www.scylladb.com"><img src="../../../_static/img/logo-scylla-horizontal-RGB.svg" alt=""></a>
+        <div class="footer-links">
+            <a class="link" href="https://docs.scylladb.com">Docs</a>
+            <a class="link" href="https://www.scylladb.com/company/contact-us/">Contact Us</a>
+            <a class="link" href="https://www.scylladb.com/company/">About Us</a>
+            <a class="link button" href="https://github.com/scylladb/scylla-doc-issues/issues/new?title=Issue in page Upgrade Guide - Scylla Monitoring 1.x to Scylla Monitoring 2.x&&body=I%20would%20like%20to%20report%20an%20issue%20in%20page%20http://docs.scylladb.com/upgrade/upgrade-monitor/upgrade-guide-from-monitoring-1.x-to-monitoring-2.x%0A%0A%23%23%23%20Problem%0A%0A%23%23%23%20%20Suggest%20a%20fix" target="_blank">
+                Report an issue on this page</a>
+        </div>
+        <div class="footer-actions">
+            <a class="link-icon" href="https://github.com/ScyllaDB" target="_blank">
+                <span class="icon-github2"></span></a>
+            <a class="link-icon" href="https://twitter.com/ScyllaDB" target="_blank">
+                <span class="icon-twitter"></span></a>
+            <a class="link-icon" href="https://www.linkedin.com/company/scylladb"  target="_blank">
+                <span class="icon-linkedin2"></span></a>
+            <a class="link-icon" href="https://www.facebook.com/scylladb/" target="_blank">
+                <span class="icon-facebook"></span></a>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-info">
+            <div class="footer-copyright">
+                &#169; 2020, ScyllaDB. All rights reserved.
+            </div>
+            <div class="footer-last-updated">
+                Last updated on 30 June 2020.
+            </div>
+        </div>
+        <div class="footer-links">
+        </div>
+    </div>
+</footer>
+<!-- end footer.html -->
+
+<!-- bodyscripts.html -->
+<!-- at the end of the BODY --> 
+<script src="../../../_static/js/vendor/jquery.js"></script>
+<script src="../../../_static/expertrec.js"></script>
+<script src="../../../_static/js/foundation/foundation.js"></script>
+<script src="../../../_static/js/foundation/foundation.topbar.js"></script>
+<script src="../../../_static/app.js"></script>
+<script>
+    $(document).foundation();
+</script>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8P2JP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <!-- end bodyscripts.html -->
+</body>
+</html>

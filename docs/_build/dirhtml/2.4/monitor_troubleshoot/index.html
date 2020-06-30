@@ -1,0 +1,410 @@
+
+
+
+<!doctype html>
+<html class="no-js" lang="en">
+  
+<head><!-- begin head.html -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>
+    Troubleshoot Monitoring | Scylla Docs
+    </title>
+    <meta name="description" content="Scylla is an Apache Cassandra-compatible NoSQL data store that can handle 1 million transactions per second on a single server." />
+
+    <link rel="icon" href="../../_static/img/favicon.ico" type="image/x-icon"/>
+    <link rel="canonical" href="https://docs.scylladb.com/">
+
+    <link rel="author" href="mailto:info@scylladb.com">
+    <link rel="stylesheet" href="../../_static/" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/css/doc/main.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/expertrec.js"></script>
+
+    <script src="../../_static/js/vendor/modernizr.js"></script>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-T8P2JP');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Marketo -->
+    <script type="text/javascript"> (function() { var didInit = false; function initMunchkin() { if(didInit === false) { didInit = true; Munchkin.init('791-QBF-350'); } } var s = document.createElement('script'); s.type = 'text/javascript'; s.async = true; s.src = '//munchkin.marketo.net/munchkin.js'; s.onreadystatechange = function() { if (this.readyState == 'complete' || this.readyState == 'loaded') { initMunchkin(); } }; s.onload = initMunchkin; document.getElementsByTagName('head')[0].appendChild(s); })(); </script>
+    <!-- End Marketo -->
+
+<!-- end head.html -->
+</head>
+
+<body>
+<header id="header" class="animated">
+    <div class="topbar_continer contain-to-grid clearfix">
+        <nav class="top-bar" id="top-bar" data-topbar role="navigation">
+            <ul class="title-area">
+                <li class="name">
+                    <div class="logo">
+                        <a href="https://docs.scylladb.com/"><img src="../../_static/img/logo-scylla-docs.svg" alt="" width="151"></a>
+                    </div>
+                </li>
+                <li class="toggle-topbar"><a href="#"><span class="icon-manu"></span></a></li>
+            </ul>
+            <section class="top-bar-section clearfix">
+                <ul class="right">
+                    
+                    <li>
+                        <a href="/getting-started/">Getting Started</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/operating-scylla/">Administrators</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/using-scylla/">Developers</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/scylla-cloud/">Scylla Cloud</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/using-scylla/alternator/">Scylla Alternator</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://university.scylladb.com/">Scylla University</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://www.scylladb.com/">ScyllaDB Home</a>
+                    </li>
+                    
+                    <li class="search_continer show-for-medium-up">	
+                        <ci-search></ci-search>	
+                    </li>	
+                </ul>
+            </section>
+        </nav>
+    </div>
+</header>
+<section id="content">
+    <div class="row">
+	
+	<div class="large-6 large-push-3 columns">
+            
+
+            <div class="section" id="troubleshoot-monitoring">
+<h1>Troubleshoot Monitoring<a class="headerlink" href="#troubleshoot-monitoring" title="Permalink to this headline">¶</a></h1>
+<p>This document describes steps that needed to be done to troubleshoot monitoring problems when using <a class="reference external" href="/monitoring_apis/">Grafana/Prometheus</a> monitoring tool.</p>
+<div class="section" id="problem">
+<h2>Problem<a class="headerlink" href="#problem" title="Permalink to this headline">¶</a></h2>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#a-container-failed-to-start" id="id4">A Container Failed To Start</a></p></li>
+<li><p><a class="reference internal" href="#files-and-directory-permissions" id="id5">Files And Directory Permissions</a></p></li>
+<li><p><a class="reference internal" href="#no-data-points" id="id6">No Data Points</a></p></li>
+<li><p><a class="reference internal" href="#grafana-chart-shows-error-sign" id="id7">Grafana Chart Shows Error (!) Sign</a></p></li>
+<li><p><a class="reference internal" href="#grafana-shows-server-level-metrics-but-not-scylla-metrics" id="id8">Grafana Shows Server Level Metrics, but not Scylla Metrics</a></p></li>
+<li><p><a class="reference internal" href="#grafana-shows-scylla-metrics-but-not-server-level-metrics" id="id9">Grafana Shows Scylla Metrics, but not Server Level Metrics</a></p></li>
+<li><p><a class="reference internal" href="#working-with-wire-shark" id="id10">Working with wire-shark</a></p></li>
+</ul>
+</div>
+<div class="section" id="a-container-failed-to-start">
+<h3><a class="toc-backref" href="#id4">A Container Failed To Start</a><a class="headerlink" href="#a-container-failed-to-start" title="Permalink to this headline">¶</a></h3>
+<p>When running <code class="docutils literal notranslate"><span class="pre">./start-all.sh</span></code> a container can fail to start. for example you can see something like:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>Wait <span class="k">for</span> Prometheus container to start........Error: Prometheus container failed to start
+</pre></div>
+</div>
+<p>Check the docker logs for more information.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker logs aprom
+</pre></div>
+</div>
+<p>Usually the reason for the failure will be in the logs.</p>
+</div>
+<div class="section" id="files-and-directory-permissions">
+<h3><a class="toc-backref" href="#id5">Files And Directory Permissions</a><a class="headerlink" href="#files-and-directory-permissions" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Avoid running container as root.</p>
+</div>
+<p>The preferred way of running the container is using a non root user.
+see the <a class="reference external" href="/monitoring_stack/#docker-post-installation">monitoring</a> docker post installation section.</p>
+<p>If a container failed to start because of a permission problem make sure
+the external directory you are using is owned by the current user and have enough permissions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you started the container in the past as root you may need to change the directory and files ownership and permissions.</p>
+</div>
+<p>For example if your Prometheus data directory is <code class="docutils literal notranslate"><span class="pre">/prom-data</span></code> and you are using <code class="docutils literal notranslate"><span class="pre">centos</span></code> user</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ls -la /<span class="p">|</span>grep prom-data
+
+drwxr-xr-x    <span class="m">2</span> root root  <span class="m">4096</span> Jun <span class="m">25</span> <span class="m">17</span>:51 prom-data
+
+sudo chown -R centos:centos /prom-data
+
+ls -la /<span class="p">|</span>grep prom-data
+
+drwxr-xr-x    <span class="m">2</span> centos centos  <span class="m">4096</span> Jun <span class="m">25</span> <span class="m">17</span>:51 prom-data
+</pre></div>
+</div>
+</div>
+<div class="section" id="no-data-points">
+<h3><a class="toc-backref" href="#id6">No Data Points</a><a class="headerlink" href="#no-data-points" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">No</span> <span class="pre">data</span> <span class="pre">points</span></code> on all data charts.</p>
+<div class="section" id="solution">
+<h4>Solution<a class="headerlink" href="#solution" title="Permalink to this headline">¶</a></h4>
+<p>If there are no data points, or if a node appears to be unreachable when you know it is, the immediate suspect is the Prometheus connectivity.</p>
+<p>Start by login to the Prometheus console:</p>
+<p>point your browser to <code class="docutils literal notranslate"><span class="pre">http://{ip}:9090</span></code> ({ip} is the Prometheus ip address).</p>
+<p>Go to the target tabs: <code class="docutils literal notranslate"><span class="pre">http://{ip}:9090/targets</span></code> and see if any of the targets is down and if there is an error message.</p>
+<ul class="simple">
+<li><p>Not using the local network for local ip range</p></li>
+</ul>
+<p>When using Docker containers, by default, the local ip range (127.0.0.X) is inside the Docker container and not the host local address,
+if you are trying to connect to a target via the local ip range from inside a Docker container, you need to use the <code class="docutils literal notranslate"><span class="pre">-l</span></code> flag to enable local network stack.</p>
+<ul class="simple">
+<li><p>Prometheus may be pointing to the wrong target. Check your <code class="docutils literal notranslate"><span class="pre">prometheus/scylla_servers.yml</span></code>. Make sure Prometheus is pulling data from the Scylla server.</p></li>
+</ul>
+<p>Or</p>
+<ul class="simple">
+<li><p>Your dashboard and Scylla version may not be aligned. If you are running Scylla 3.1.x, you can specify a specific version with <code class="docutils literal notranslate"><span class="pre">-v</span></code> flag.</p></li>
+</ul>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./start-all.sh -v <span class="m">3</span>.1
+</pre></div>
+</div>
+<p>More on start-all.sh <a class="reference external" href="/monitoring_stack/">options</a>.</p>
+</div>
+</div>
+<div class="section" id="grafana-chart-shows-error-sign">
+<h3><a class="toc-backref" href="#id7">Grafana Chart Shows Error (!) Sign</a><a class="headerlink" href="#grafana-chart-shows-error-sign" title="Permalink to this headline">¶</a></h3>
+<p>Run this procedure on the Monitoring server.</p>
+<p>All of Grafana chart shows error (!) sign.
+There is a problem with the connection between Grafana and Prometheus. On the monitoring server:</p>
+<div class="section" id="id1">
+<h4>Solution<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>1. Check Prometheus is running using <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">ps</span></code>.
+If it is not running check the <code class="docutils literal notranslate"><span class="pre">prometheus.yml</span></code> for errors.</p>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>CONTAINER ID  IMAGE    COMMAND                  CREATED         STATUS         PORTS                                                    NAMES
+41bd3db26240  monitor  <span class="s2">&quot;/docker-entrypoin...&quot;</span>   <span class="m">25</span> seconds ago  Up <span class="m">23</span> seconds  <span class="m">7000</span>-7001/tcp, <span class="m">9042</span>/tcp, <span class="m">9160</span>/tcp, <span class="m">9180</span>/tcp, <span class="m">10000</span>/tcp   monitor
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>If it is running, go to “Data Source” in the Grafana GUI, choose Prometheus and click Test Connection.</p></li>
+</ol>
+</div>
+</div>
+<div class="section" id="grafana-shows-server-level-metrics-but-not-scylla-metrics">
+<h3><a class="toc-backref" href="#id8">Grafana Shows Server Level Metrics, but not Scylla Metrics</a><a class="headerlink" href="#grafana-shows-server-level-metrics-but-not-scylla-metrics" title="Permalink to this headline">¶</a></h3>
+<p>Grafana shows server level metrics like disk usage, but not Scylla metrics.
+Prometheus fails to fetch metrics from Scylla servers.</p>
+<div class="section" id="id2">
+<h4>Solution<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p>use <code class="docutils literal notranslate"><span class="pre">curl</span> <span class="pre">&lt;scylla_node&gt;:9180/metrics</span></code> to fetch binary metric data from Scylla.  If curl does not return data, the problem is the connectivity between the monitoring and Scylla server. Please check your IPs and firewalls.</p></li>
+</ul>
+<p>For example</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>curl <span class="m">172</span>.17.0.2:9180/metrics
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="grafana-shows-scylla-metrics-but-not-server-level-metrics">
+<h3><a class="toc-backref" href="#id9">Grafana Shows Scylla Metrics, but not Server Level Metrics</a><a class="headerlink" href="#grafana-shows-scylla-metrics-but-not-server-level-metrics" title="Permalink to this headline">¶</a></h3>
+<p>Grafana dashboard shows Scylla metrics, such as load, but not server metrics like disk usage.
+Prometheus fail to fetch metrics from <code class="docutils literal notranslate"><span class="pre">node_exporter</span></code>.</p>
+<div class="section" id="id3">
+<h4>Solution<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<p>1. Make sure <code class="docutils literal notranslate"><span class="pre">node_exporter</span></code> is running on each Scylla server. <code class="docutils literal notranslate"><span class="pre">node_exporter</span></code> is installed by <code class="docutils literal notranslate"><span class="pre">scylla_setup</span></code>.
+If it does not, make sure to install and run it.</p>
+<ol class="arabic simple" start="2">
+<li><p>If it is running, use <code class="docutils literal notranslate"><span class="pre">curl</span> <span class="pre">&lt;scylla_node&gt;:9100/metrics</span></code> (where 172.17.0.2 is a Scylla server IP) to fetch binary metric data from Scylla.  If curl does not return data, the problem is the connectivity between the monitoring and Scylla server. Please check your IPs and firewalls.</p></li>
+</ol>
+</div>
+<div class="section" id="notice-to-users-upgrading-to-scylla-open-source-3-0-or-scylla-enterprise-2019-1">
+<h4>Notice to users upgrading to Scylla Open Source 3.0 or Scylla Enterprise 2019.1<a class="headerlink" href="#notice-to-users-upgrading-to-scylla-open-source-3-0-or-scylla-enterprise-2019-1" title="Permalink to this headline">¶</a></h4>
+<p>While upgrading you need to upgrade the <code class="docutils literal notranslate"><span class="pre">node_exporter</span></code> from 0.14 to 0.17 version.</p>
+<p>If the node_exporter service is not starting it may be that it needs to be updated manually.</p>
+<p>Check the node_exporter version <code class="docutils literal notranslate"><span class="pre">node_exporter</span> <span class="pre">--version</span></code> if it shows 0.14 check the node_exporter section
+in the <a class="reference external" href="/upgrade/upgrade-opensource/upgrade-guide-from-2.3-to-3.0/">upgrade guide</a>.</p>
+</div>
+</div>
+<div class="section" id="working-with-wire-shark">
+<h3><a class="toc-backref" href="#id10">Working with wire-shark</a><a class="headerlink" href="#working-with-wire-shark" title="Permalink to this headline">¶</a></h3>
+<p>No metrics shown in Scylla monitor.</p>
+<ol class="arabic simple">
+<li><p>Install <a class="reference external" href="https://www.wireshark.org/#download">wire-shark</a></p></li>
+</ol>
+<p>2. Capture the traffic between Scylla monitor and Scylla node using the <code class="docutils literal notranslate"><span class="pre">tshark</span></code> command.
+<code class="docutils literal notranslate"><span class="pre">tshark</span> <span class="pre">-i</span> <span class="pre">&lt;network</span> <span class="pre">interface</span> <span class="pre">name&gt;</span> <span class="pre">-f</span> <span class="pre">&quot;dst</span> <span class="pre">port</span> <span class="pre">9180&quot;</span></code></p>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>tshark -i eth0 -f <span class="s2">&quot;dst port 9180&quot;</span>
+</pre></div>
+</div>
+<p>Capture from Scylla node towards Scylla monitor server.</p>
+<p>Scylla is running.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>Monitor ip        Scylla node ip
+<span class="m">199</span>.203.229.89 -&gt; <span class="m">172</span>.16.12.142 TCP <span class="m">66</span> <span class="m">59212</span> &gt; <span class="m">9180</span> <span class="o">[</span>ACK<span class="o">]</span> <span class="nv">Seq</span><span class="o">=</span><span class="m">317</span> <span class="nv">Ack</span><span class="o">=</span><span class="m">78193</span> <span class="nv">Win</span><span class="o">=</span><span class="m">158080</span> <span class="nv">Len</span><span class="o">=</span><span class="m">0</span> <span class="nv">TSval</span><span class="o">=</span><span class="m">79869679</span> <span class="nv">TSecr</span><span class="o">=</span><span class="m">3347447210</span>
+</pre></div>
+</div>
+<p>Scylla is not running</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>Monitor ip        Scylla node ip
+<span class="m">199</span>.203.229.89 -&gt; <span class="m">172</span>.16.12.142 TCP <span class="m">74</span> <span class="m">60440</span> &gt; <span class="m">9180</span> <span class="o">[</span>SYN<span class="o">]</span> <span class="nv">Seq</span><span class="o">=</span><span class="m">0</span> <span class="nv">Win</span><span class="o">=</span><span class="m">29200</span> <span class="nv">Len</span><span class="o">=</span><span class="m">0</span> <span class="nv">MSS</span><span class="o">=</span><span class="m">1460</span> <span class="nv">SACK_PERM</span><span class="o">=</span><span class="m">1</span> <span class="nv">TSval</span><span class="o">=</span><span class="m">79988291</span> <span class="nv">TSecr</span><span class="o">=</span><span class="m">0</span> <span class="nv">WS</span><span class="o">=</span><span class="m">128</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+        </div>
+
+        <div id="sidebar" class="large-3 large-pull-6 columns"><div class="side-nav">
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../3.4/">Scylla Monitoring 3.4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../3.3/">Scylla Monitoring 3.3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../3.2/">Scylla Monitoring 3.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../3.2/">Scylla Monitoring 3.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../3.1/">Scylla Monitoring 3.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../3.0/">Scylla Monitoring 3.0</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../">Scylla Monitoring 2.4</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../monitoring_stack/">Scylla Monitoring Stack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../monitoring_apis/">Scylla Monitoring Interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../monitor_without_docker.2.1/">Deploy Scylla Monitoring Without Docker</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Troubleshoot Monitoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../upgrade/upgrade-monitor/">Upgrade Monitoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cql_optimization/">CQL Optimization Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../updating_dashboard/">Adding and Modifying Dashboards</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../2.3/">Scylla Monitoring 2.3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../2.2/">Scylla Monitoring 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../upgrade/upgrade-monitor/">Upgrade Scylla Monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../matrix/">Monitoring Support Matrix</a></li>
+</ul>
+
+</div>
+        </div>
+
+        <div class="large-3 columns">
+            
+        </div>
+
+    </div>
+</section>
+
+<!-- newsleter modal -->
+
+<div id="newsletter_signup" class="reveal-modal tiny radius dark_modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+    <a class="close-reveal-modal" aria-label="Close">×</a>
+    <h2 id="modalTitle">Sign up for the Scylla newsletter</h2>
+    <div id="mc_embed_signup">
+        <form action="//cloudius-systems.us10.list-manage.com/subscribe/post?u=df8bb543c68230d5f7b4dcf78&amp;id=9a4589f144" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate="">
+            <div id="mc_embed_signup_scroll">
+
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-EMAIL">Email</label></div>
+                        <div class="small-9 columns"><input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-FNAME">First Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="FNAME" class="" id="mce-FNAME"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-LNAME">Last Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="LNAME" class="" id="mce-LNAME"></div>
+                    </div>
+                </div>
+                <div id="mce-responses" class="clear">
+                    <div class="response" id="mce-error-response" style="display:none"></div>
+                    <div class="response" id="mce-success-response" style="display:none"></div>
+                </div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+                <div style="position: absolute; left: -5000px;"><input type="text" name="b_df8bb543c68230d5f7b4dcf78_9a4589f144" tabindex="-1" value=""></div>
+                <div class="clear"><input type="submit" class="button" value="Sign up" name="subscribe" id="mc-embedded-subscribe"></div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- end newsleter modal -->
+
+
+
+<!-- footer.html -->
+<footer id="footer">
+    <div class="footer-top">
+        <a class="logo" href="https://www.scylladb.com"><img src="../../_static/img/logo-scylla-horizontal-RGB.svg" alt=""></a>
+        <div class="footer-links">
+            <a class="link" href="https://docs.scylladb.com">Docs</a>
+            <a class="link" href="https://www.scylladb.com/company/contact-us/">Contact Us</a>
+            <a class="link" href="https://www.scylladb.com/company/">About Us</a>
+            <a class="link button" href="https://github.com/scylladb/scylla-doc-issues/issues/new?title=Issue in page Troubleshoot Monitoring&&body=I%20would%20like%20to%20report%20an%20issue%20in%20page%20http://docs.scylladb.com/2.4/monitor_troubleshoot%0A%0A%23%23%23%20Problem%0A%0A%23%23%23%20%20Suggest%20a%20fix" target="_blank">
+                Report an issue on this page</a>
+        </div>
+        <div class="footer-actions">
+            <a class="link-icon" href="https://github.com/ScyllaDB" target="_blank">
+                <span class="icon-github2"></span></a>
+            <a class="link-icon" href="https://twitter.com/ScyllaDB" target="_blank">
+                <span class="icon-twitter"></span></a>
+            <a class="link-icon" href="https://www.linkedin.com/company/scylladb"  target="_blank">
+                <span class="icon-linkedin2"></span></a>
+            <a class="link-icon" href="https://www.facebook.com/scylladb/" target="_blank">
+                <span class="icon-facebook"></span></a>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-info">
+            <div class="footer-copyright">
+                &#169; 2020, ScyllaDB. All rights reserved.
+            </div>
+            <div class="footer-last-updated">
+                Last updated on 30 June 2020.
+            </div>
+        </div>
+        <div class="footer-links">
+        </div>
+    </div>
+</footer>
+<!-- end footer.html -->
+
+<!-- bodyscripts.html -->
+<!-- at the end of the BODY --> 
+<script src="../../_static/js/vendor/jquery.js"></script>
+<script src="../../_static/expertrec.js"></script>
+<script src="../../_static/js/foundation/foundation.js"></script>
+<script src="../../_static/js/foundation/foundation.topbar.js"></script>
+<script src="../../_static/app.js"></script>
+<script>
+    $(document).foundation();
+</script>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8P2JP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <!-- end bodyscripts.html -->
+</body>
+</html>

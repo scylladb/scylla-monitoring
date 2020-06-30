@@ -1,0 +1,572 @@
+
+
+
+<!doctype html>
+<html class="no-js" lang="en">
+  
+<head><!-- begin head.html -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>
+    Deploying Scylla Monitoring Without Docker | Scylla Docs
+    </title>
+    <meta name="description" content="Scylla is an Apache Cassandra-compatible NoSQL data store that can handle 1 million transactions per second on a single server." />
+
+    <link rel="icon" href="../../_static/img/favicon.ico" type="image/x-icon"/>
+    <link rel="canonical" href="https://docs.scylladb.com/">
+
+    <link rel="author" href="mailto:info@scylladb.com">
+    <link rel="stylesheet" href="../../_static/" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/css/doc/main.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/expertrec.js"></script>
+
+    <script src="../../_static/js/vendor/modernizr.js"></script>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-T8P2JP');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Marketo -->
+    <script type="text/javascript"> (function() { var didInit = false; function initMunchkin() { if(didInit === false) { didInit = true; Munchkin.init('791-QBF-350'); } } var s = document.createElement('script'); s.type = 'text/javascript'; s.async = true; s.src = '//munchkin.marketo.net/munchkin.js'; s.onreadystatechange = function() { if (this.readyState == 'complete' || this.readyState == 'loaded') { initMunchkin(); } }; s.onload = initMunchkin; document.getElementsByTagName('head')[0].appendChild(s); })(); </script>
+    <!-- End Marketo -->
+
+<!-- end head.html -->
+</head>
+
+<body>
+<header id="header" class="animated">
+    <div class="topbar_continer contain-to-grid clearfix">
+        <nav class="top-bar" id="top-bar" data-topbar role="navigation">
+            <ul class="title-area">
+                <li class="name">
+                    <div class="logo">
+                        <a href="https://docs.scylladb.com/"><img src="../../_static/img/logo-scylla-docs.svg" alt="" width="151"></a>
+                    </div>
+                </li>
+                <li class="toggle-topbar"><a href="#"><span class="icon-manu"></span></a></li>
+            </ul>
+            <section class="top-bar-section clearfix">
+                <ul class="right">
+                    
+                    <li>
+                        <a href="/getting-started/">Getting Started</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/operating-scylla/">Administrators</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/using-scylla/">Developers</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/scylla-cloud/">Scylla Cloud</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/using-scylla/alternator/">Scylla Alternator</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://university.scylladb.com/">Scylla University</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://www.scylladb.com/">ScyllaDB Home</a>
+                    </li>
+                    
+                    <li class="search_continer show-for-medium-up">	
+                        <ci-search></ci-search>	
+                    </li>	
+                </ul>
+            </section>
+        </nav>
+    </div>
+</header>
+<section id="content">
+    <div class="row">
+	
+	<div class="large-6 large-push-3 columns">
+            
+
+            <div class="section" id="deploying-scylla-monitoring-without-docker">
+<h1>Deploying Scylla Monitoring Without Docker<a class="headerlink" href="#deploying-scylla-monitoring-without-docker" title="Permalink to this headline">¶</a></h1>
+<p>The following instructions will help to deploy <a class="reference external" href="../monitoring_stack">Scylla Monitoring Stack</a> in cases where you can not use the recommended Docker version.</p>
+<p>Please note, Scylla recommends you use the Docker version as it will provide you with most updated, current Scylla Monitoring system.</p>
+<div class="section" id="minimal-production-system-recommendations">
+<h2>Minimal Production System Recommendations<a class="headerlink" href="#minimal-production-system-recommendations" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><strong>CPU</strong> - at least 2 physical cores/ 4vCPUs</p></li>
+<li><p><strong>Memory</strong> - 15GB+ DRAM</p></li>
+<li><p><strong>Disk</strong> - persistent disk storage is proportional to the number of cores and Prometheus retention period (see the following section)</p></li>
+<li><p><strong>Network</strong> - 1GbE/10GbE preferred</p></li>
+</ul>
+<div class="section" id="calculating-prometheus-minimal-disk-space-requirement">
+<h3>Calculating Prometheus Minimal Disk Space requirement<a class="headerlink" href="#calculating-prometheus-minimal-disk-space-requirement" title="Permalink to this headline">¶</a></h3>
+<p>Prometheus storage disk performance requirements: persistent block volume, for example an EC2 EBS volume</p>
+<p>Prometheus storage disk volume requirement:  proportional to the number of metrics it holds. The default retention period is 15 days, and the disk requirement is around 200MB per core, assuming the default scraping interval of 15s.</p>
+<p>For example, when monitoring a 6 node Scylla cluster, each with 16 CPU cores, and using the default 15 days retention time, you will need <strong>minimal</strong> disk space of</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">6</span> <span class="o">*</span> <span class="mi">16</span> <span class="o">*</span> <span class="mi">200</span><span class="n">MB</span> <span class="o">~</span> <span class="mi">20</span><span class="n">GB</span>
+</pre></div>
+</div>
+<p>To account for unexpected events, like replacing or adding nodes, we recommend allocating at least x4-5 space, in this case, ~100GB.
+Prometheus Storage disk does not have to be as fast as Scylla disk, and EC2 EBS, for example, is fast enough and provide HA out of the box.</p>
+<p>The main item to set an alert on is the available disk space in the monitoring system. Data is indefinitely accrued on the Prometheus data directory. The current monitoring solution does not churn data.</p>
+</div>
+</div>
+<div class="section" id="install-scylla-monitor">
+<h2>Install Scylla Monitor<a class="headerlink" href="#install-scylla-monitor" title="Permalink to this headline">¶</a></h2>
+<p>The following procedure uses a <code class="docutils literal notranslate"><span class="pre">CentOS</span> <span class="pre">7</span></code> based instance</p>
+<ol class="arabic simple">
+<li><p>Download the latest Scylla Monitoring release. Currently it is 3.4.</p></li>
+</ol>
+<p><code class="docutils literal notranslate"><span class="pre">wget</span> <span class="pre">https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-3.2.tar.gz</span></code></p>
+<ol class="arabic simple" start="2">
+<li><p>Open the tar</p></li>
+</ol>
+<p><code class="docutils literal notranslate"><span class="pre">tar</span> <span class="pre">-xvf</span> <span class="pre">scylla-monitoring-3.2.tar.gz</span></code></p>
+</div>
+<div class="section" id="install-alertmanager">
+<h2>Install Alertmanager<a class="headerlink" href="#install-alertmanager" title="Permalink to this headline">¶</a></h2>
+<p>Tested with alertmanager 0.16.0 version</p>
+<ol class="arabic simple">
+<li><p>Install <a class="reference external" href="https://prometheus.io/download/">alertmanager</a></p></li>
+</ol>
+<ol class="arabic simple" start="2">
+<li><p>Copy the following file: <code class="docutils literal notranslate"><span class="pre">rule_config.yml</span></code> from <code class="docutils literal notranslate"><span class="pre">scylla-monitoring-scylla-monitoring-3.2/prometheus</span></code> directory to <code class="docutils literal notranslate"><span class="pre">alertmanager.yml</span></code> in the alertmanager installation directory.</p></li>
+</ol>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cp -p /home/centos/scylla-monitoring-scylla-monitoring-3.2/prometheus/rule_config.yml /home/centos/alertmanager-0.16.0.linux-amd64/alertmanager.yml
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Start the Alertmanager</p></li>
+</ol>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./alertmanager
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>Verify that Alertmanager is up and running, point your browser to the Alertmanager IP:Port</p></li>
+</ol>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>http://192.168.135.166:9093/
+</pre></div>
+</div>
+<img alt="../../_images/alertmanager5.png" src="../../_images/alertmanager5.png" />
+</div>
+<div class="section" id="install-prometheus">
+<h2>Install Prometheus<a class="headerlink" href="#install-prometheus" title="Permalink to this headline">¶</a></h2>
+<p>Tested with Prometheus version 2.14.0</p>
+<ol class="arabic simple">
+<li><p>Install <a class="reference external" href="https://prometheus.io/download/">Prometheus</a></p></li>
+</ol>
+<ol class="arabic simple" start="2">
+<li><p>Copy the following files: <code class="docutils literal notranslate"><span class="pre">scylla_servers.yml</span></code>, <code class="docutils literal notranslate"><span class="pre">node_exporter_servers.yml</span></code>, <code class="docutils literal notranslate"><span class="pre">prometheus.rules.yml</span></code> from <code class="docutils literal notranslate"><span class="pre">scylla-monitoring-scylla-monitoring-3.2/prometheus</span></code> directory to Prometheus installation directory.</p></li>
+</ol>
+<p>Copy <code class="docutils literal notranslate"><span class="pre">prometheus/prometheus.yml.template</span></code> to <code class="docutils literal notranslate"><span class="pre">prometheus.yml</span></code></p>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cp -p /home/centos/scylla-monitoring-scylla-monitoring-3.2/prometheus/*.yml /home/centos/prometheus-2.14.0.linux-amd64
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Edit the <code class="docutils literal notranslate"><span class="pre">prometheus.yml</span></code> file to point to the correct static data sources.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Make sure to include the <code class="docutils literal notranslate"><span class="pre">honor_labels:</span> <span class="pre">false</span></code> parameter in the prometheus.yml file.</p>
+</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo vi /&lt;prometheus_installation_location&gt;/prometheus-2.14.0.linux-amd64/prometheus.yml
+</pre></div>
+</div>
+<p>Set the alertmanger address and port by replacing <code class="docutils literal notranslate"><span class="pre">AM_ADDRESS</span></code> in the file.</p>
+<p>For example if the alertmanager will run on the same host:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>alerting:
+   alertmanagers:
+   - static_configs:
+       - targets:
+           - <span class="m">127</span>.0.0.1:9093
+</pre></div>
+</div>
+<p>For example the scrape config for Scylla:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>global:
+  scrape_interval: 5s <span class="c1"># By default, scrape targets every 5 second.</span>
+  scrape_timeout: 4s <span class="c1"># Timeout before trying to scape a target again</span>
+
+  <span class="c1"># Attach these labels to any time series or alerts when communicating with</span>
+  <span class="c1"># external systems (federation, remote storage, Alertmanager).</span>
+  external_labels:
+    monitor: <span class="s1">&#39;scylla-monitor&#39;</span>
+
+scrape_configs:
+- job_name: scylla
+  honor_labels: <span class="nb">false</span>
+  file_sd_configs:
+    - files:
+      - /home/centos/prometheus-2.14.0.linux-amd64/scylla_servers.yml
+  relabel_configs:
+    - source_labels: <span class="o">[</span>__address__<span class="o">]</span>
+      regex:  <span class="s1">&#39;([^:]+)&#39;</span>
+      target_label: __address__
+      replacement: <span class="s1">&#39;${1}:9180&#39;</span>
+
+    - source_labels: <span class="o">[</span>__address__<span class="o">]</span>
+      regex:  <span class="s1">&#39;(.*):.+&#39;</span>
+      target_label: instance
+      replacement: <span class="s1">&#39;${1}&#39;</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>Create and set <code class="docutils literal notranslate"><span class="pre">scylla_servers.yml</span></code>, <code class="docutils literal notranslate"><span class="pre">scylla_manager_server.yml</span></code> files to point to your Scylla nodes.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There is no need to configure <code class="docutils literal notranslate"><span class="pre">node_exporter_server</span></code>. Instead, in the Prometheus scrape config of the node_exporter
+you can use the same file you used for Scylla and Prometheus will assume you have a <code class="docutils literal notranslate"><span class="pre">node_exporter</span></code> running on each Scylla server.</p>
+</div>
+<p>An example for those files can be found under the Prometheus directory: <code class="docutils literal notranslate"><span class="pre">prometheus/scylla_servers.example.yml</span></code> and <code class="docutils literal notranslate"><span class="pre">prometheus/scylla_manager_servers.example.yml</span></code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You must have both files even if you are not using Scylla Manager</p>
+</div>
+<p>Add the labels for the cluster and data-center</p>
+<p><code class="docutils literal notranslate"><span class="pre">scylla_servers.yml</span></code>:</p>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cat scylla_servers.yml
+<span class="c1"># List Scylla end points</span>
+
+- targets:
+  - <span class="m">192</span>.168.66.6
+  - <span class="m">192</span>.168.66.244
+  labels:
+    cluster: cluster1
+    dc: dc1
+- targets:
+    - <span class="m">172</span>.17.0.3
+  labels:
+    cluster: cluster1
+    dc: dc2
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See the previous note about deprecating the <code class="docutils literal notranslate"><span class="pre">node_exporter_servers.yml</span></code> file.</p>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">scylla_manager_server.yml</span></code></p>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>- targets:
+  - <span class="m">127</span>.0.0.1:56090
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
+<li><p>Create a data directory for Prometheus to store the metrics data</p></li>
+</ol>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo mkdir /home/centos/prometheus-2.14.0.linux-amd64/mydata
+</pre></div>
+</div>
+<ol class="arabic simple" start="6">
+<li><p>Start Prometheus server:</p></li>
+</ol>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo ./prometheus --config.file<span class="o">=</span>prometheus.yml --storage.tsdb.path /home/centos/prometheus-2.14.0.linux-amd64/mydata
+</pre></div>
+</div>
+<p>Data should start accumulate on: /home/centos/prometheus-2.14.0.linux-amd64/mydata</p>
+<ol class="arabic simple" start="7">
+<li><p>Verify that Prometheus is up and running, point your browser to the Prometheus IP:Port</p></li>
+</ol>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>http://192.168.135.166:9090/
+</pre></div>
+</div>
+<img alt="../../_images/15.png" src="../../_images/15.png" />
+<p>Prometheus console should be visible</p>
+<ol class="arabic simple" start="8">
+<li><p>Verify that the node_exporter and scylla metrics accumulating in the server by executing a query through the console</p></li>
+</ol>
+<p>For example:</p>
+<p><code class="docutils literal notranslate"><span class="pre">node_memory_MemFree</span></code></p>
+<img alt="../../_images/25.png" src="../../_images/25.png" />
+<p>And</p>
+<p><code class="docutils literal notranslate"><span class="pre">scylla_reactor_utilization</span></code></p>
+<img alt="../../_images/35.png" src="../../_images/35.png" />
+<p>At this point Scylla is emitting the metrics and Prometheus is able to store them.</p>
+</div>
+<div class="section" id="install-grafana">
+<h2>Install Grafana<a class="headerlink" href="#install-grafana" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Install Grafana based on the instructions <a class="reference external" href="http://docs.grafana.org/installation/">here</a> make sure to use version 6.0.0 or higher</p></li>
+</ol>
+<p>Depends if you installed Grafana from a repository (yum install), or if you downloaded the zip version, the directory structure will be
+different in the rest of the steps.</p>
+<ol class="arabic simple" start="2">
+<li><p>Access Scylla-Grafana-monitoring directory</p></li>
+</ol>
+<p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">/home/centos/scylla-monitoring-scylla-monitoring-3.2/</span></code></p>
+<ol class="arabic simple" start="3">
+<li><p>Copy the plugins to the grafana plugins directory (by default <code class="docutils literal notranslate"><span class="pre">/var/lib/grafana/</span></code>)</p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo cp -r grafana/plugins /var/lib/grafana/
+</pre></div>
+</div>
+<p>If you installed Grafana from packages, instead of <code class="docutils literal notranslate"><span class="pre">/var/lib/grafana/</span></code> you should copy it to <code class="docutils literal notranslate"><span class="pre">public/app</span></code> inside the directory you
+opened Grafana in.</p>
+<p>For example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cp -r grafana/plugins /home/centos/grafana-6.5.1/public/app
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>Generate the dashboards you would like to load and provision them</p></li>
+</ol>
+<p>For example Scylla version 3.1 and Scylla manager version 2.0</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./generate-dashboards.sh -v <span class="m">3</span>.1 -M <span class="m">2</span>.0
+</pre></div>
+</div>
+<p>For Grafana installed with <code class="docutils literal notranslate"><span class="pre">yum</span> <span class="pre">install</span></code></p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo cp grafana/provisioning/dashboards/load.* /etc/grafana/provisioning/dashboards/
+sudo mkdir -p /var/lib/grafana/dashboards
+sudo cp -r grafana/build/* /var/lib/grafana/dashboards
+</pre></div>
+</div>
+<p>For Grafana installed from packages</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cp -p -r grafana/build/* /home/centos/grafana-6.5.1/public/build/
+cp -p grafana/provisioning/dashboards/load.* /home/centos/grafana-6.5.1/conf/provisioning/dashboards/
+</pre></div>
+</div>
+<p>Edit the <code class="docutils literal notranslate"><span class="pre">load.*</span></code>  files in <code class="docutils literal notranslate"><span class="pre">/home/centos/grafana-6.5.1/conf/provisioning/dashboards/</span></code> for the correct path,
+for example <code class="docutils literal notranslate"><span class="pre">load.3.1.yaml</span></code> would point to: <code class="docutils literal notranslate"><span class="pre">/home/centos/grafana-6.5.1/public/build/ver_3.1</span></code></p>
+<ol class="arabic simple" start="5">
+<li><p>Set the data source by copy <code class="docutils literal notranslate"><span class="pre">datasource.yml</span></code> and edit it</p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo cp grafana/datasource.yml /etc/grafana/provisioning/datasources/
+</pre></div>
+</div>
+<p>For Grafana installed from packages</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cp -p grafana/datasource.yml /home/centos/grafana-6.5.1/conf/provisioning/datasources/
+</pre></div>
+</div>
+<p>You should set the Prometheus and the alertmanager IP and port.</p>
+<p>For example</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo cat /etc/grafana/provisioning/datasources/datasource.yml
+apiVersion: <span class="m">1</span>
+datasources:
+ - name: prometheus
+   type: prometheus
+   url: http://192.168.135.167:9090
+   access: proxy
+   basicAuth: <span class="nb">false</span>
+
+ - name: alertmanager
+   type: camptocamp-prometheus-alertmanager-datasource
+   orgId: <span class="m">1</span>
+   typeLogoUrl: public/img/icn-datasource.svg
+   access: proxy
+   url: http://192.168.135.166:9093
+   password:
+   user:
+   database:
+   basicAuth:
+   isDefault:
+   jsonData:
+     severity_critical: <span class="s1">&#39;4&#39;</span>
+     severity_high: <span class="s1">&#39;3&#39;</span>
+     severity_warning: <span class="s1">&#39;2&#39;</span>
+     severity_info: <span class="s1">&#39;1&#39;</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="6">
+<li><p>Start the Grafana service</p></li>
+</ol>
+<p>For Grafana installed with <cite>yum install</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">service</span> <span class="pre">grafana-server</span> <span class="pre">start</span></code></p>
+<p>For Grafana installed from packages:</p>
+<p><code class="docutils literal notranslate"><span class="pre">cp</span> <span class="pre">-p</span> <span class="pre">/home/centos/grafana-6.5.1/conf/sample.ini</span> <span class="pre">/home/centos/grafana-6.5.1/conf/scylla.ini</span></code></p>
+<p>Edit scylla.ini to reflect the right paths in the paths section of the file.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nv">plugins</span> <span class="o">=</span> /home/centos/grafana-6.5.1/data/plugins
+<span class="nv">provisioning</span> <span class="o">=</span> /home/centos/grafana-6.5.1/conf/provisioning
+</pre></div>
+</div>
+<p>Start the server:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> /home/centos/grafana-6.5.1/
+./bin/grafana-server -config /home/centos/grafana-6.5.1/conf/scylla.ini
+</pre></div>
+</div>
+<ol class="arabic simple" start="7">
+<li><p>Make sure Grafana is running</p></li>
+</ol>
+<p>Point your browser to the Grafana server port 3000, the assumption is that Grafana and Prometheus are collocated on the same server.</p>
+<img alt="../../_images/grafana5.png" src="../../_images/grafana5.png" />
+</div>
+</div>
+
+        </div>
+
+        <div id="sidebar" class="large-3 large-pull-6 columns"><div class="side-nav">
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../3.4/">Scylla Monitoring 3.4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../3.3/">Scylla Monitoring 3.3</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../">Scylla Monitoring 3.2</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../monitoring_stack/">Install Scylla Monitoring Stack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../start_all/">The start-all.sh script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../monitoring_apis/">Scylla Monitoring Interfaces</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Deploy Scylla Monitoring Without Docker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../monitor_troubleshoot/">Troubleshoot Monitoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../upgrade/upgrade-monitor/">Upgrade Monitoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cql_optimization/">The CQL Optimiztion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cql_optimization/#cross-dc">Cross DC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../updating_dashboard/">Adding and Modifying Dashboards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../alerting/">Alerting</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../">Scylla Monitoring 3.2</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../monitoring_stack/">Install Scylla Monitoring Stack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../start_all/">The start-all.sh script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../monitoring_apis/">Scylla Monitoring Interfaces</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Deploy Scylla Monitoring Without Docker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../monitor_troubleshoot/">Troubleshoot Monitoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../upgrade/upgrade-monitor/">Upgrade Monitoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cql_optimization/">The CQL Optimiztion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cql_optimization/#cross-dc">Cross DC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../updating_dashboard/">Adding and Modifying Dashboards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../alerting/">Alerting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../3.1/">Scylla Monitoring 3.1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../3.0/">Scylla Monitoring 3.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../2.4/">Scylla Monitoring 2.4</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../2.3/">Scylla Monitoring 2.3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../2.2/">Scylla Monitoring 2.2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../upgrade/upgrade-monitor/">Upgrade Scylla Monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../matrix/">Monitoring Support Matrix</a></li>
+</ul>
+
+</div>
+        </div>
+
+        <div class="large-3 columns">
+            
+        </div>
+
+    </div>
+</section>
+
+<!-- newsleter modal -->
+
+<div id="newsletter_signup" class="reveal-modal tiny radius dark_modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+    <a class="close-reveal-modal" aria-label="Close">×</a>
+    <h2 id="modalTitle">Sign up for the Scylla newsletter</h2>
+    <div id="mc_embed_signup">
+        <form action="//cloudius-systems.us10.list-manage.com/subscribe/post?u=df8bb543c68230d5f7b4dcf78&amp;id=9a4589f144" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate="">
+            <div id="mc_embed_signup_scroll">
+
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-EMAIL">Email</label></div>
+                        <div class="small-9 columns"><input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-FNAME">First Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="FNAME" class="" id="mce-FNAME"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-LNAME">Last Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="LNAME" class="" id="mce-LNAME"></div>
+                    </div>
+                </div>
+                <div id="mce-responses" class="clear">
+                    <div class="response" id="mce-error-response" style="display:none"></div>
+                    <div class="response" id="mce-success-response" style="display:none"></div>
+                </div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+                <div style="position: absolute; left: -5000px;"><input type="text" name="b_df8bb543c68230d5f7b4dcf78_9a4589f144" tabindex="-1" value=""></div>
+                <div class="clear"><input type="submit" class="button" value="Sign up" name="subscribe" id="mc-embedded-subscribe"></div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- end newsleter modal -->
+
+
+
+<!-- footer.html -->
+<footer id="footer">
+    <div class="footer-top">
+        <a class="logo" href="https://www.scylladb.com"><img src="../../_static/img/logo-scylla-horizontal-RGB.svg" alt=""></a>
+        <div class="footer-links">
+            <a class="link" href="https://docs.scylladb.com">Docs</a>
+            <a class="link" href="https://www.scylladb.com/company/contact-us/">Contact Us</a>
+            <a class="link" href="https://www.scylladb.com/company/">About Us</a>
+            <a class="link button" href="https://github.com/scylladb/scylla-doc-issues/issues/new?title=Issue in page Deploying Scylla Monitoring Without Docker&&body=I%20would%20like%20to%20report%20an%20issue%20in%20page%20http://docs.scylladb.com/3.2/monitor_without_docker%0A%0A%23%23%23%20Problem%0A%0A%23%23%23%20%20Suggest%20a%20fix" target="_blank">
+                Report an issue on this page</a>
+        </div>
+        <div class="footer-actions">
+            <a class="link-icon" href="https://github.com/ScyllaDB" target="_blank">
+                <span class="icon-github2"></span></a>
+            <a class="link-icon" href="https://twitter.com/ScyllaDB" target="_blank">
+                <span class="icon-twitter"></span></a>
+            <a class="link-icon" href="https://www.linkedin.com/company/scylladb"  target="_blank">
+                <span class="icon-linkedin2"></span></a>
+            <a class="link-icon" href="https://www.facebook.com/scylladb/" target="_blank">
+                <span class="icon-facebook"></span></a>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-info">
+            <div class="footer-copyright">
+                &#169; 2020, ScyllaDB. All rights reserved.
+            </div>
+            <div class="footer-last-updated">
+                Last updated on 30 June 2020.
+            </div>
+        </div>
+        <div class="footer-links">
+        </div>
+    </div>
+</footer>
+<!-- end footer.html -->
+
+<!-- bodyscripts.html -->
+<!-- at the end of the BODY --> 
+<script src="../../_static/js/vendor/jquery.js"></script>
+<script src="../../_static/expertrec.js"></script>
+<script src="../../_static/js/foundation/foundation.js"></script>
+<script src="../../_static/js/foundation/foundation.topbar.js"></script>
+<script src="../../_static/app.js"></script>
+<script>
+    $(document).foundation();
+</script>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8P2JP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <!-- end bodyscripts.html -->
+</body>
+</html>
