@@ -34,7 +34,7 @@ class MySiteDetector(Transform):
     default_priority = 500
 
     def apply(self):
-        absolute_path = r'[http|https]://docs.scylladb.com/.*'
+        absolute_path = r'[http|https]://scylladb.github.io/scylla-monitoring.*'
         for node in self.document.traverse(nodes.reference):
             if 'refuri' in node and re.search(absolute_path,node['refuri']):
                     logger.warning('found absolote path reference at: %r', node, location=node)
@@ -290,9 +290,9 @@ html_sidebars = {'**': ['side-nav.html']}
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ScyllaDocumentationdoc'
+htmlhelp_basename = 'ScyllaMonitorDocumentationdoc'
 
-html_baseurl = 'https://docs.scylladb.com/'
+html_baseurl = 'https://scylladb.github.io/scylla-monitoring/'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -375,8 +375,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'ScyllaDocumentation', u'Scylla Documentation Documentation',
-     author, 'ScyllaDocumentation', 'One line description of project.',
+    (master_doc, 'ScyllaMonitorDocumentation', u'Scylla Monitor Documentation',
+     author, 'ScyllaMonitorDocumentation', 'Documentation for Scylla Monitor.',
      'Miscellaneous'),
 ]
 
