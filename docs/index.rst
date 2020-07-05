@@ -5,11 +5,18 @@ Scylla Monitor
    :hidden:
    :maxdepth: 2 
 
-   Scylla Monitoring 3.4 <3.4/index/> 
+   Install Scylla Monitoring Stack <monitoring_stack>
+   The start-all.sh script <start_all>
+   Scylla Monitoring Interfaces <monitoring_apis>
+   Deploy Scylla Monitoring Without Docker <monitor_without_docker>
+   Troubleshoot Monitoring <monitor_troubleshoot>
+   CQL Optimization Dashboard <cql_optimization>
+   Adding and Modifying Dashboards <updating_dashboard>
+   Alerting <alerting>
    Monitoring Support Matrix <matrix>
    
 
-Scylla Monitor is a full stack for Scylla monitoring and alerting. The stack contains open source tools including Prometheus and Grafana, as well as custom Scylla dashboards and tooling.
+.. include:: /_common/monitor-description.rst
 
 The Scylla Monitor Stack consists of three components, wrapped in Docker containers:
 
@@ -18,12 +25,14 @@ The Scylla Monitor Stack consists of three components, wrapped in Docker contain
 * `grafana` - dashboard server
 
 
-**Choose your Monitoring Version**:
+**Choose a topic to get started**:
 
-* `Scylla Monitoring 3.4 <3.4/>`_
-
-**Additional Information**:
-
-* `Scylla Monitoring Support Matrix <matrix>`_
-
-
+* `Scylla Monitor Support Matrix <matrix>`_
+* `Install Scylla Monitor Stack <monitoring_stack>`_
+* :doc:`The start-all.sh script <start_all>`
+* `Scylla Monitor Interfaces <monitoring_apis>`_
+* `Deploy Scylla Monitor Without Docker <monitor_without_docker>`_
+* `Troubleshoot Scylla Monitor <monitor_troubleshoot>`_
+* :doc:`CQL Optimization Dashboard <cql_optimization>`
+* :doc:`Adding and Modifying Dashboards <updating_dashboard>`
+* :doc:`Alerting <alerting>`
