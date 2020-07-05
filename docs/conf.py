@@ -172,14 +172,12 @@ html_style = ''
 #
 html_theme_options = {
     'header_links': [
-    ('Getting Started', '/getting-started/'),
-    ('Administrators', '/operating-scylla/'),
-    ('Developers', '/using-scylla/'),
-    ('Scylla Cloud', '/scylla-cloud/'),
-    ('Scylla Alternator', '/using-scylla/alternator/'),
+    ('Scylla Monitor', 'https://scylladb.github.io/scylla-monitoring/'),
+    ('Scylla Cloud', 'https://docs.scylladb.com/scylla-cloud/'),
     ('Scylla University', 'https://university.scylladb.com/'),
     ('ScyllaDB Home', 'https://www.scylladb.com/')],
-    'github_issues_repository': 'scylladb/scylla-doc-issues'
+    'github_issues_repository': 'scylladb/python-driver',
+    'show_sidebar_index': True,
 }
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
