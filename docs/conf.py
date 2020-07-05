@@ -20,11 +20,13 @@ import os
 import sys
 import yaml
 import re
+
 sys.path.insert(0, os.path.abspath('.'))
 
 from docutils import nodes 
 from docutils.transforms import Transform 
 from sphinx.util import logging
+
 
 
 
@@ -69,6 +71,8 @@ needs_sphinx = '1.8'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
+
 extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.mathjax',
@@ -77,6 +81,9 @@ extensions = [
 #    'sphinx.ext.autosectionlabel',
     'sphinx_sitemap',
     'sphinx_scylladb_theme',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.viewcode',
+    
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -86,6 +93,9 @@ extensions = [
 # The encoding of source files.
 #
 # source_encoding = 'utf-8-sig'
+
+# The suffix of source filenames.
+source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
@@ -123,7 +133,9 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'lib', 'lib64','**/_common/*', 'README.md', '.git', '.github', '_utils', 'rst_include', 'venv']
+
+exclude_patterns = ['_build', 'cloud.rst', 'core_graph.rst', 'geo_types.rst', 'graph.rst', 'graph_fluent.rst']
+
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -242,7 +254,7 @@ html_sidebars = {'**': ['side-nav.html']}
 
 # If false, no index is generated.
 #
-# html_use_index = True
+html_use_index = False
 
 # If true, the index is split into individual pages for each letter.
 #
@@ -521,3 +533,14 @@ rst_epilog = """
 """ 
 
 sitemap_url_scheme = "{link}"
+# -- Options for multiversion --------------------------------------------
+# Whitelist pattern for tags (set to None to ignore all tags)
+smv_tag_whitelist = r'\b(branch-3.4)\b'
+# Whitelist pattern for branches (set to None to ignore all branches)
+smv_branch_whitelist = r"^master$"
+# Whitelist pattern for remotes (set to None to use local branches only)
+smv_remote_whitelist = r"^origin$"
+# Pattern for released versions
+smv_released_pattern = r'^tags/.*$'
+# Format for versioned output directories inside the build directory
+smv_outputdir_format = '{ref.name}'
