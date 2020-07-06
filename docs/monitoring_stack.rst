@@ -59,7 +59,7 @@ Install Scylla Monitoring
 
 **Procedure**
 
-1. Download and extract the latest `Scylla Monitoring Stack binary`_; for example, for release |mon_version|.
+1. Download and extract the latest `Scylla Monitoring Stack binary`_;.
 
 .. _`Scylla Monitoring Stack binary`: https://github.com/scylladb/scylla-monitoring/releases
 
