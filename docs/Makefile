@@ -67,3 +67,10 @@ dummy: 	setup
 .PHONY: linkcheck
 linkcheck: setup
 	$(SPHINXBUILD) -b linkcheck . $(BUILDDIR)/linkcheck
+
+.PHONY: multiversion
+multiversion: setup
+	cd .. && poetry run sphinx-multiversion docs docs/$(BUILDDIR)/dirhtml 
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."	
+	

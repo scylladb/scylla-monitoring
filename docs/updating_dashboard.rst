@@ -2,21 +2,21 @@
 Adding and Modifying Dashboards
 *******************************
 
-The following document explains how to update or create Grafana dashboards for the Scylla Monitoring stack.
+The following document explains how to update or create Grafana dashboards for the Scylla Monitor.
 
-It will explain about Scylla monitoring templated dashboards and how to modify them.
+It will explain about Scylla Monitor dashboard templates and how to modify them.
 
 
 General Limitations
 ###################
-Scylla Monitoring Stack uses Grafana for its dashboards.
+Scylla Monitor uses Grafana for its dashboards.
 The dashboards are provisioned from files and are stored in Grafana internal storage.
 There are consistency issues here, between restarts and between upgrades.
 
 consistency between restarts
 ****************************
 
-By default, Grafana internal storage is inside the container. That means whenever you restart the monitoring stack (explicitly when restarting Grafana) any local changes will be gone.
+By default, Grafana internal storage is inside the container. That means whenever you restart the Scylla Monitor (explicitly when restarting Grafana) any local changes will be gone.
  If you are doing and saving changes from the GUI make sure to configure an external directory for Grafana.
 
 consistency between upgrades
@@ -25,12 +25,12 @@ As mentioned earlier, the dashboards are provisioned from files, this means that
 
 .. note::  You can save a dashboard change you made from the GUI, but it can be overridden and should be avoided.
 
-At large, we suggest maintaining your dashboards as files, as Scylla Monitoring Stack does.
+At large, we suggest maintaining your dashboards as files, as Scylla Monitor does.
 
 
 Using templated Dashboards
 ##########################
-Why Scylla Monitoring uses templated dashboards?
+Why does Scylla Monitor use dashboard templates?
 
 We found the Grafana dashboards Json format too verbose to be maintainable.
 
@@ -127,11 +127,12 @@ For example a typical graph panel would look like:
 
 As you can imagine, most panels would have similar values.
 
-To reduce the redundancy of Grafana JSON format, we added templated dashboards.
+To reduce the redundancy of Grafana JSON format, we added dashboard templates.
 
-The template classes system
+The template class system
 ***************************
-Scylla Monitoring templates use ``class`` attribute that can be added to any JSON object in a template file.
+
+Scylla Monitor dashboard templates use ``class`` attribute that can be added to any JSON object in a template file.
 The different classes are defined in a file.
 
 The ``class`` system resembles CSS classes. It is hierarchical, so a ``class`` type definition can have a ``class`` attribute and
@@ -139,7 +140,7 @@ it would inherit that class attributes, the inherit class can add or override in
 
 In the template file, you can also add or override attributes.
 
-Scylla Monitoring Stack generation script, uses the `types.json` file and a template file and creates a dashboard.
+The Scylla Monitor generation script, uses the `types.json` file and a template file and creates a dashboard.
 
 When generating dashboards, each class will be replaced by its definition.
 
@@ -216,7 +217,7 @@ panel for the available disk size.
         ]
    }
 
-In the example we used the `bytes_panel` class that generate a graph with bytes as units (that would mean that your
+In the example, we used the `bytes_panel` class that generate a graph with bytes as units (that would mean that your
 `Y` axis unit would adjust themselves to make the graph readable (i.e. GB, MB, bytes, etc')
 
 You can also see that we override the `span` attribute to set the panel size.
@@ -225,7 +226,8 @@ To get a grasp of the difference, take a look at the Grafana panel example and s
 
 Grafana Formats and Layouts
 ***************************
-Grafana layout used to be based on rows, each contains multiple panels.
+
+The Grafana layout used to be based on rows, where each contains multiple panels.
 Each row would have a total span of 12, if the total span of the panels be larger than 12, it would
 break the lines into multiple lines.
 
