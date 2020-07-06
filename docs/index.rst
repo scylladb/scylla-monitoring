@@ -4,17 +4,16 @@ Scylla Monitor
 .. toctree::
    :hidden:
    :maxdepth: 2 
-
-   Install Scylla Monitoring Stack <monitoring_stack>
+   
+   Scylla Monitor Support Matrix <matrix>
+   Install Scylla Monitor Stack <monitoring_stack>
    The start-all.sh script <start_all>
-   Scylla Monitoring Interfaces <monitoring_apis>
-   Deploy Scylla Monitoring Without Docker <monitor_without_docker>
-   Troubleshoot Monitoring <monitor_troubleshoot>
+   Scylla Monitor Interfaces <monitoring_apis>
+   Deploy Scylla Monitor Without Docker <monitor_without_docker>
    CQL Optimization Dashboard <cql_optimization>
    Adding and Modifying Dashboards <updating_dashboard>
    Alerting <alerting>
-   Monitoring Support Matrix <matrix>
-   
+   Troubleshoot Monitor <monitor_troubleshoot>
 
 .. include:: /_common/monitor-description.rst
 

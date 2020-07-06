@@ -1,7 +1,7 @@
 The start-all.sh command
 ========================
 
-Scylla-Monitoring is container-based, the simplest way to configure and start the monitoring is with the `start-all.sh` command.
+Scylla Monitor is container-based, the simplest way to configure and start the monitoring is with the `start-all.sh` command.
 
 The `start-all.sh` script is a small utility that sets the dashboards and starts the containers with the appropriate configuration.
 
@@ -13,7 +13,7 @@ General Options
 **--version** print the current Scylla-Monitoring stack version, and exit.
 
 **-l** local. Use the host network. This is important when one of the containers need access to an application that runs on the host.
-For example, when Scylla-Manager runs on the localhost next to the monitoring.
+For example, when Scylla Manager runs on the localhost next to the monitoring.
 Because the monitoring applications run inside containers by default their local IP address (127.0.0.1) is the container local IP address.
 You cannot use port mapping when using the ``-l`` flag
 
@@ -76,8 +76,10 @@ Prometheus storage configuration is covered here_.
 
 For example to set the retention time to 30 days add ``-b "-storage.tsdb.retention.time=30d"`` to the ``start-all.sh`` command
 
-Alertmanager 
-------------
+Alert Manager 
+-------------
+
+alertmanager handles the alerts and takes the following parameters:
 
 **-m alertmanager-port** Override the default Alertmanager port, this is done using port mapping, note that port mapping does not work when using the host network.
 
