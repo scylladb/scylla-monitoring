@@ -42,7 +42,7 @@ Files And Directory Permissions
 The preferred way of running the container is using a non root user.
 See the `monitoring`_ Docker post-installation section.
 
-.. _`monitoring`: /operating-scylla/monitoring/3.4/monitoring_stack/#docker-post-installation 
+.. _`monitoring`: /monitoring_stack/#docker-post-installation 
 
 
 If a container failed to start because of a permission problem, make sure
@@ -205,5 +205,4 @@ In this example, Scylla is not running
 
    Monitor ip        Scylla node ip
    199.203.229.89 -> 172.16.12.142 TCP 74 60440 > 9180 [SYN] Seq=0 Win=29200 Len=0 MSS=1460 SACK_PERM=1 TSval=79988291 TSecr=0 WS=128
-
 
