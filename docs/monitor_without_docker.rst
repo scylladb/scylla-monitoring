@@ -14,7 +14,7 @@ Install Scylla Monitor
 
 The following procedure uses a ``CentOS 7`` based instance
 
-1. Download the latest Scylla Monitoring release. Currently it is |mon_version|.
+1. Download the latest Scylla Monitoring release.
 
 ``wget https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-3.4.tar.gz``
 
@@ -375,5 +375,4 @@ Start the server:
 Point your browser to the Grafana server port 3000, the assumption is that Grafana and Prometheus are collocated on the same server.
 
 .. image:: grafana.png
-
 

@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-ORIGIN="https://github.com/scylladb/scylla-docs.git"
+ORIGIN="https://github.com/scylladb/scylla-monitoring.git"
 BUILD="_build/dirhtml"
 
 # Make a git repo for the built pages
@@ -14,4 +14,3 @@ cp CNAME _build/dirhtml/
 # Commit and push
 (cd $BUILD && git add . && git commit -a -m "scripted deploy, will be overwritten")
 (cd $BUILD && git push -f $ORIGIN gh-pages)
-
