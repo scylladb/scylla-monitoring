@@ -189,7 +189,7 @@ html_theme_options = {
     ('Scylla Cloud', 'https://docs.scylladb.com/scylla-cloud/'),
     ('Scylla University', 'https://university.scylladb.com/'),
     ('ScyllaDB Home', 'https://www.scylladb.com/')],
-    'github_issues_repository': 'scylladb/python-driver',
+    'github_issues_repository': 'scylladb/scylla-monitoring',
     'show_sidebar_index': True,
 }
 # Add any paths that contain custom themes here, relative to this directory.
@@ -511,12 +511,12 @@ def setup(sphinx):
     sphinx.add_source_parser(CustomCommonMarkParser)
 
     # Add CQL support
-    sys.path.insert(0, os.path.abspath('./_utils'))
-    from cql import CQLLexer
-    sphinx.add_lexer("cql", CQLLexer())
-    sphinx.add_transform(MySiteDetector)
+    #sys.path.insert(0, os.path.abspath('./_utils'))
+    #from cql import CQLLexer
+    #sphinx.add_lexer("cql", CQLLexer())
+    #sphinx.add_transform(MySiteDetector)
 
-    sphinx.connect('build-finished', create_redirects)
+    #sphinx.connect('build-finished', create_redirects)
 
 extlinks = {
     'manager': ('/operating-scylla/manager/%s/',''),
