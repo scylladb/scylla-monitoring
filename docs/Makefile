@@ -7,7 +7,7 @@ BUILDDIR      = _build
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
+ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
@@ -22,17 +22,13 @@ pristine: clean
 setup:
 	./_utils/setup.sh
 
-.PHONY: deploy
-deploy: dirhtml
-	./_utils/deploy.sh
-
 .PHONY: clean
 clean:
 	rm -rf $(BUILDDIR)/*
 
 .PHONY: preview
-preview: setup 
-	 poetry run sphinx-autobuild -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml --port 5500
+preview: setup
+	poetry run sphinx-autobuild -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml --port 5500
 
 .PHONY: dirhtml
 dirhtml: setup
@@ -70,7 +66,6 @@ linkcheck: setup
 
 .PHONY: multiversion
 multiversion: setup
-	cd .. && poetry run sphinx-multiversion docs docs/$(BUILDDIR)/dirhtml 
+	cd .. && poetry run sphinx-multiversion docs/source docs/$(BUILDDIR)/dirhtml
 	@echo
-	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."	
-	
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
