@@ -1,6 +1,6 @@
 # Scylla monitoring with Grafana and Prometheus
 
-Scylla-Monitoring configuration can be found: https://docs.scylladb.com/operating-scylla/monitoring/
+Scylla-Monitoring configuration can be found: http://scylladb.github.io/scylla-monitoring/
 
 ### Introduction
 
