@@ -25,7 +25,7 @@ On CentOS, you can do:
 
 Please follow the instructions at: https://docs.docker.com/install/linux/docker-ce/centos/
 Note that Docker was renamed and it is now docker-ce.
-If you are running older docker version, remove it first by following the instruction.
+If you are running an older docker version, remove it first by following the instruction.
 
 ##### Complete Prerequisites Installation
 
@@ -39,8 +39,8 @@ On Ubuntu 16.04, you can do:
 
 ##### Install Docker
 
-Please follow the instructions at: https://docs.docker.com/install/linux/docker-ce/ubuntu/ Note that Dokcer was rename and it is now docker-ce.
-If you are running older docker version, remove it first by following the instruction.
+Please follow the instructions at: https://docs.docker.com/install/linux/docker-ce/ubuntu/ Note that Docker was renamed and it is now docker-ce.
+If you are running an older docker version, remove it first by following the instruction.
 
 On Ubuntu, the latest package name is `docker-ce` for "Community Edition". You may want/need to adjust other Docker specific settings to meet your requirements. These instructions will get you a basic working Docker host.
 
@@ -53,9 +53,9 @@ sudo apt-get install -y python3 python3-yaml
 
 ### Docker Post Installation
 
-Docker post installation guide can be found here: https://docs.docker.com/install/linux/linux-postinstall/
+Docker post-installation guide can be found here: https://docs.docker.com/install/linux/linux-postinstall/
 
-**Note: It is recommended not to run container as root**
+**Note: It is recommended not to run containers as root**
 
 To avoid running docker as root, you should add the user you are going to use to start the monitoring to the docker group.
 
@@ -128,7 +128,7 @@ A typicall node_exporter configuration file would look like:
 ```
 #### Clusters and Data centers
 Note that each "targets" section (there could be more than one) come with its own cluster and dc labels.
-For multiple DC or multiple cluster create multiple "targets" entries, each with the right cluster or dc.
+For multiple DCs or multiple clusters create multiple "targets" entries, each with the right cluster or dc.
 
 #### Using your own target files
 You can also use your own target files instead of updating `scylla_servers.yml`, using the `-s` for scylla target file.
@@ -222,8 +222,8 @@ Direct your browser to `your-server-ip:3000`
 By default, Grafana authentication is disabled. To enable it and set a password for user admin use the `-a` option
 
 #### Choose Disk and network interface
-The dashboard holds a drop down menu at its upper left corner for disk and network interface.
-You should choose relevant disk and interface for the dashboard to show the graphs. 
+The dashboard holds a drop-down menu at its upper left corner for disk and network interface.
+You should choose the relevant disk and interface for the dashboard to show the graphs.
 
 ### Update Scylla servers to send metrics
 See [here](https://github.com/scylladb/scylla/wiki/Monitor-Scylla-with-Prometheus-and-Grafana#14-and-later-instruction)
@@ -241,7 +241,7 @@ Full commandline:
 
 ### Using your own Grafana installation
 
-``` ./load-grafana``` is not currently  beeing supported, please follow the instuction in the documentation.
+``` ./load-grafana``` is not currently being maintained, please follow the instruction in the documentation.
 
 Some users who already have grafana installed can just upload the Scylla dashboards into your existing grafana environment.
 This is possible using the `load-grafana.sh` script.
@@ -257,4 +257,4 @@ Prometheus [Alertmanager](https://prometheus.io/docs/alerting/alertmanager/) han
 
 Alerts are generated according to the [Alerting rules](https://prometheus.io/docs/prometheus/1.8/configuration/alerting_rules/).
 
-The Alertmanager listen on port `9093` and you can use a web-browser to connect to it.
+The Alertmanager listens on port `9093` and you can use a web browser to connect to it.
