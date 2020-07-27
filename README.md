@@ -1,6 +1,6 @@
 # Scylla monitoring with Grafana and Prometheus
 
-Scylla-Monitoring configuration can be found: https://docs.scylladb.com/operating-scylla/monitoring/
+Scylla-Monitoring configuration can be found: http://scylladb.github.io/scylla-monitoring/
 
 ### Introduction
 
@@ -25,7 +25,7 @@ On CentOS, you can do:
 
 Please follow the instructions at: https://docs.docker.com/install/linux/docker-ce/centos/
 Note that Docker was renamed and it is now docker-ce.
-If you are running older docker version, remove it first by following the instruction.
+If you are running an older docker version, remove it first by following the instruction.
 
 ##### Complete Prerequisites Installation
 
@@ -39,8 +39,8 @@ On Ubuntu 16.04, you can do:
 
 ##### Install Docker
 
-Please follow the instructions at: https://docs.docker.com/install/linux/docker-ce/ubuntu/ Note that Dokcer was rename and it is now docker-ce.
-If you are running older docker version, remove it first by following the instruction.
+Please follow the instructions at: https://docs.docker.com/install/linux/docker-ce/ubuntu/ Note that Docker was renamed and it is now docker-ce.
+If you are running an older docker version, remove it first by following the instruction.
 
 On Ubuntu, the latest package name is `docker-ce` for "Community Edition". You may want/need to adjust other Docker specific settings to meet your requirements. These instructions will get you a basic working Docker host.
 
@@ -53,9 +53,9 @@ sudo apt-get install -y python3 python3-yaml
 
 ### Docker Post Installation
 
-Docker post installation guide can be found here: https://docs.docker.com/install/linux/linux-postinstall/
+Docker post-installation guide can be found here: https://docs.docker.com/install/linux/linux-postinstall/
 
-**Note: It is recommended not to run container as root**
+**Note: It is recommended not to run containers as root**
 
 To avoid running docker as root, you should add the user you are going to use to start the monitoring to the docker group.
 
@@ -128,7 +128,7 @@ A typicall node_exporter configuration file would look like:
 ```
 #### Clusters and Data centers
 Note that each "targets" section (there could be more than one) come with its own cluster and dc labels.
-For multiple DC or multiple cluster create multiple "targets" entries, each with the right cluster or dc.
+For multiple DCs or multiple clusters create multiple "targets" entries, each with the right cluster or dc.
 
 #### Using your own target files
 You can also use your own target files instead of updating `scylla_servers.yml`, using the `-s` for scylla target file.
@@ -138,16 +138,8 @@ You can also use your own target files instead of updating `scylla_servers.yml`,
 ```
 
 To automatically generate the target files, one can use the `genconfig.py` script.
+Check the documentation for usage instructions.
 
-```
-./genconfig.py -n -d myconf 192.168.0.1 192.168.0.2
-```
-
-After that, the monitoring stack can be started pointing to the servers at `192.168.0.1` and `192.168.0.2` with::
-
-```
-./start-all.sh -s myconf/scylla_servers.yml
-```
 
 #### node_exporter Installation
 [node_exporter](https://github.com/prometheus/node_exporter) is an exporter of hardware and OS metrics such as disk space.
@@ -177,23 +169,18 @@ For full list of options
 As counters change their names between versions, we create a new dashboard for each new version.
 We use tags to distinguish between the different versions, to keep the dashboard menu, relatively short,
 by default, only the last two releases are loaded. You can load specific versions by using the `-v` flag.
- 
-* You can supply multiple comma delimited versions, for example to load only 1.5 and 1.6 version:
- ```
- ./start-all.sh -v 1.5,1.6
- ```
+ 
+* You can supply multiple comma delimited versions, for example to load only 4.1 and 4.2 version:
+ ```
+ ./start-all.sh -v 4.1,4.2
+ ```
 
-* Use the `all` to load all available versions.
+* The master branch is called master, so to load 4.2 and master you would use:
+ ```
+ ./start-all.sh -v 4.2,master
+ ```
 
-* The master branch is called master, so to load 1.6 and master you would use:
- ```
- ./start-all.sh -v 1.6,master
- ```
-
-* If you only need the latest version you can use:
- ```
- ./start-all.sh -v latest
- ```
+* The latest version will be used by default.
 ___
 **Note: The -d data_dir is optional, but without it, Prometheus will erase all data between runs.**
 
@@ -201,10 +188,13 @@ ___
 **For systems in production it is recommended to use an external directory.**
 ___
 
-#### Prometheus Command Line Options
+#### Prometheus Command Line Options and Retention Period
+Check the documentation for a full list of command line option for [start-all.sh](http://scylladb.github.io/scylla-monitoring/master/start_all.html)
+Prometheus retention time is set to two weeks by default, you can override it as well as other Prometheus configuration with the `-b` flag.
 
+For example:
 ```
--b storage.local.retention=1000h -b query.staleness-delta=1m
+-b "-storage.tsdb.retention.time=30d"
 ```
 
 #### connecting Scylla and the Monitoring locally - the local flag
@@ -222,8 +212,8 @@ Direct your browser to `your-server-ip:3000`
 By default, Grafana authentication is disabled. To enable it and set a password for user admin use the `-a` option
 
 #### Choose Disk and network interface
-The dashboard holds a drop down menu at its upper left corner for disk and network interface.
-You should choose relevant disk and interface for the dashboard to show the graphs. 
+The dashboard holds a drop-down menu at its upper left corner for disk and network interface.
+You should choose the relevant disk and interface for the dashboard to show the graphs.
 
 ### Update Scylla servers to send metrics
 See [here](https://github.com/scylladb/scylla/wiki/Monitor-Scylla-with-Prometheus-and-Grafana#14-and-later-instruction)
@@ -241,7 +231,7 @@ Full commandline:
 
 ### Using your own Grafana installation
 
-``` ./load-grafana``` is not currently  beeing supported, please follow the instuction in the documentation.
+``` ./load-grafana``` is not currently being maintained, please follow the instruction in the documentation.
 
 Some users who already have grafana installed can just upload the Scylla dashboards into your existing grafana environment.
 This is possible using the `load-grafana.sh` script.
@@ -255,6 +245,6 @@ For example, if you have prometheus running at `192.168.0.1:9090`, and grafana a
 ### Alertmanager
 Prometheus [Alertmanager](https://prometheus.io/docs/alerting/alertmanager/) handles alerts that are generated by the Prometheus server.
 
-Alerts are generated according to the [Alerting rules](https://prometheus.io/docs/prometheus/1.8/configuration/alerting_rules/).
+Alerts are generated according to the [Alerting rules](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/).
 
-The Alertmanager listen on port `9093` and you can use a web-browser to connect to it.
+The Alertmanager listens on port `9093` and you can use a web browser to connect to it.
