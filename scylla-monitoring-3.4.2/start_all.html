@@ -1,0 +1,316 @@
+
+
+
+<!doctype html>
+<html class="no-js" lang="en">
+  
+<head><!-- begin head.html -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>
+    The start-all.sh command | Scylla Docs
+    </title>
+    <meta name="description" content="Scylla is an Apache Cassandra-compatible NoSQL data store that can handle 1 million transactions per second on a single server." />
+
+    <link rel="icon" href="_static/img/favicon.ico" type="image/x-icon"/>
+    <link rel="canonical" href="https://docs.scylladb.com/">
+
+    <link rel="author" href="mailto:info@scylladb.com">
+    <link rel="stylesheet" href="_static/" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/css/doc/main.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/expertrec.js"></script>
+
+    <script src="_static/js/vendor/modernizr.js"></script>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-T8P2JP');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Marketo -->
+    <script type="text/javascript"> (function() { var didInit = false; function initMunchkin() { if(didInit === false) { didInit = true; Munchkin.init('791-QBF-350'); } } var s = document.createElement('script'); s.type = 'text/javascript'; s.async = true; s.src = '//munchkin.marketo.net/munchkin.js'; s.onreadystatechange = function() { if (this.readyState == 'complete' || this.readyState == 'loaded') { initMunchkin(); } }; s.onload = initMunchkin; document.getElementsByTagName('head')[0].appendChild(s); })(); </script>
+    <!-- End Marketo -->
+
+<!-- end head.html -->
+</head>
+
+<body>
+<header id="header" class="animated">
+    <div class="topbar_continer contain-to-grid clearfix">
+        <nav class="top-bar" id="top-bar" data-topbar role="navigation">
+            <ul class="title-area">
+                <li class="name">
+                    <div class="logo">
+                        <a href="https://docs.scylladb.com/"><img src="_static/img/logo-scylla-docs.svg" alt="" width="151"></a>
+                    </div>
+                </li>
+                <li class="toggle-topbar"><a href="#"><span class="icon-manu"></span></a></li>
+            </ul>
+            <section class="top-bar-section clearfix">
+                <ul class="right">
+                    
+                    <li>
+                        <a href="https://scylladb.github.io/scylla-monitoring/">Scylla Monitor</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://docs.scylladb.com/scylla-cloud/">Scylla Cloud</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://university.scylladb.com/">Scylla University</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://www.scylladb.com/">ScyllaDB Home</a>
+                    </li>
+                    
+                    <li class="search_continer show-for-medium-up">	
+                        <ci-search></ci-search>	
+                    </li>	
+                </ul>
+            </section>
+        </nav>
+    </div>
+</header>
+<section id="content">
+    <div class="row">
+	
+	<div class="large-6 large-push-3 columns">
+            
+                <p>
+                    <strong>
+                    
+                    You're reading the documentation for a development version.
+                    For the latest released version, please have a look at <a href="../master/start_all.html">
+		    	
+				latest
+		    	</a>.
+                    
+                    </strong>
+                </p>
+            
+
+            <div class="section" id="the-start-all-sh-command">
+<h1>The start-all.sh command<a class="headerlink" href="#the-start-all-sh-command" title="Permalink to this headline">¶</a></h1>
+<p>Scylla Monitor is container-based, the simplest way to configure and start the monitoring is with the <cite>start-all.sh</cite> command.</p>
+<p>The <cite>start-all.sh</cite> script is a small utility that sets the dashboards and starts the containers with the appropriate configuration.</p>
+<div class="section" id="general-options">
+<h2>General Options<a class="headerlink" href="#general-options" title="Permalink to this headline">¶</a></h2>
+<p><strong>-h</strong> Help, Print the help, and exit.</p>
+<p><strong>–version</strong> print the current Scylla-Monitoring stack version, and exit.</p>
+<p><strong>-l</strong> local. Use the host network. This is important when one of the containers need access to an application that runs on the host.
+For example, when Scylla Manager runs on the localhost next to the monitoring.
+Because the monitoring applications run inside containers by default their local IP address (127.0.0.1) is the container local IP address.
+You cannot use port mapping when using the <code class="docutils literal notranslate"><span class="pre">-l</span></code> flag</p>
+<p><strong>-A bind-to-ip-address</strong> Bind the listening-address to an explicit IP address.</p>
+<p><strong>-D encapsulate docker param</strong> Allows passing additional parameters to all the docker containers.</p>
+</div>
+<div class="section" id="grafana-related-commands">
+<h2>Grafana Related Commands<a class="headerlink" href="#grafana-related-commands" title="Permalink to this headline">¶</a></h2>
+<p><strong>-G path/to/grafana data-dir</strong> Use an external directory for the Grafana database.
+This flag places the Grafana data directory outside of its container and by doing that makes it persistent.
+This is only important if you are creating your own dashboards using the grafana GUI and wish to keep them.
+If not used, each run of the containers will clear all of Grafana information.</p>
+<p><strong>-v comma-separated versions</strong> Each Scylla version comes with its own set of dashboards. By default, Grafana starts with the two latest versions. The <code class="docutils literal notranslate"><span class="pre">-v</span></code> flag allows specifying a specific version or versions.</p>
+<p><strong>-M scylla-manager version</strong> Each Scylla-Manager version has its own dashboard. By default, Grafana starts with the latest Scylla Manager version.  The <code class="docutils literal notranslate"><span class="pre">-M</span></code> flag allows specifying a specific version.</p>
+<p><strong>-j dashboard</strong> Allows adding dashboards to Grafana, multiple parameters are supported.</p>
+<p><strong>-c grafana environment variable</strong> Grafana allows overridden its configuration from the environment. The <code class="docutils literal notranslate"><span class="pre">-c</span></code> flag, allows adding an environment variable to Grafana and altering its configuration by doing so.</p>
+<p><strong>-g grafana port</strong> Override the default grafana port, this is done using port mapping, note that port mapping does not work when using the host network.</p>
+<p><strong>-a admin password</strong> Allows specifying the admin password.</p>
+<p><strong>-Q Grafana anonymous role</strong> By default, anonymous users have admin privileges. That means they can create and edit dashboards. The <code class="docutils literal notranslate"><span class="pre">-Q</span></code> fag change this behavior  by setting the role privileges to one of Admin, Editor, or Viewer.</p>
+</div>
+<div class="section" id="prometheus-related-commands">
+<h2>Prometheus Related Commands<a class="headerlink" href="#prometheus-related-commands" title="Permalink to this headline">¶</a></h2>
+<p><strong>-d path/to/data-dir</strong> Use an external directory for the Prometheus data directory.
+This flag places the Prometheus data directory outside of its container and by doing that makes it persistent.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Specifying an external directory is important for systems in production. Without it,
+every restart of the monitoring stack will result in metrics lost.</p>
+</div>
+<p><strong>-p prometheus-port</strong> Override the default Prometheus port, this is done using port mapping, note that port mapping does not work when using the host network.</p>
+<p><strong>-b command-line options</strong> Allows adding command-line options that will be passed to the Prometheus server.</p>
+<p><strong>-s scylla-target-file</strong> Specify the location of the Scylla target files. This file contains the IP addresses of the Scylla nodes.</p>
+<p><strong>-n node-target-file</strong> Scylla Monitoring collects OS metrics (Disk, network, etc.) using an agent called node_exporter. By default, Scylla Monitoring assumes that there is a node_exporter running beside each Scylla node, for situations that this is not the case, for example, Scylla runs inside a container and the relevant metrics are of the host machine, it is possible to specify a target file for the node_exporter agents.</p>
+<p><strong>-N manager target file</strong> Specify the location of the Scylla Manager target file.</p>
+<p><strong>-R prometheus-alert-file</strong> By default Prometheus alert rules are found in <code class="docutils literal notranslate"><span class="pre">prometheus.rules.yml</span></code> in the <code class="docutils literal notranslate"><span class="pre">prometheus</span></code> directory. The <code class="docutils literal notranslate"><span class="pre">-R</span></code> flag allows specifying a different location.</p>
+<p><strong>-L manager-address</strong> Using Scylla Manager <strong>Consul</strong> API to resolve the servers’ IP address. When using this option, Prometheus will ignore the target files even if they are explicitly passed in the command line.</p>
+<div class="section" id="prometheus-retention-period">
+<h3>Prometheus Retention Period<a class="headerlink" href="#prometheus-retention-period" title="Permalink to this headline">¶</a></h3>
+<p>Prometheus retention period is set for 2 weeks by default. A common request is how to set it to something else.
+It is also an opportunity to demonstrates how to set a Prometheus specific command line option.
+Prometheus storage configuration is covered <a class="reference external" href="https://prometheus.io/docs/prometheus/latest/storage/#operational-aspects">here</a>.</p>
+<p>For example to set the retention time to 30 days add <code class="docutils literal notranslate"><span class="pre">-b</span> <span class="pre">&quot;-storage.tsdb.retention.time=30d&quot;</span></code> to the <code class="docutils literal notranslate"><span class="pre">start-all.sh</span></code> command</p>
+</div>
+</div>
+<div class="section" id="alert-manager">
+<h2>Alert Manager<a class="headerlink" href="#alert-manager" title="Permalink to this headline">¶</a></h2>
+<p>alertmanager handles the alerts and takes the following parameters:</p>
+<p><strong>-m alertmanager-port</strong> Override the default Alertmanager port, this is done using port mapping, note that port mapping does not work when using the host network.</p>
+<p><strong>-r alert-manager-config</strong> By default, the Alertmanager takes its configuration from <code class="docutils literal notranslate"><span class="pre">rule_config.yml</span></code> in the <code class="docutils literal notranslate"><span class="pre">prometheus</span></code> directory. The <code class="docutils literal notranslate"><span class="pre">-r</span></code> override it to another file.prometheus</p>
+<p><strong>-C alertmanager-commands</strong> Allows adding an arbitrary command line to the alertmanager container starting command.</p>
+</div>
+</div>
+
+        </div>
+
+        <div id="sidebar" class="large-3 large-pull-6 columns"><div class="side-nav">
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="matrix.html">Scylla Monitor Support Matrix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitoring_stack.html">Install Scylla Monitor Stack</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The start-all.sh script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitoring_apis.html">Scylla Monitor Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitor_without_docker.html">Deploy Scylla Monitor Without Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cql_optimization.html">The CQL Optimiztion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cql_optimization.html#cross-dc">Cross DC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="updating_dashboard.html">Adding and Modifying Dashboards</a></li>
+<li class="toctree-l1"><a class="reference internal" href="alerting.html">Alerting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitor_troubleshoot.html">Troubleshoot Monitor</a></li>
+</ul>
+
+</div>
+        </div>
+
+        <div class="large-3 columns">
+            
+                <div class="versions-dropdown">
+    <button class="button"><span class="version">
+
+	
+		scylla-monitoring-3.4.2
+	
+	 <i class="fa fa-caret-down" aria-hidden="true"></i>
+    </button>
+    <ul class="content">
+  	<li><a href="../master/start_all.html">
+		
+			latest
+		
+	</a></li>
+        <li><a href="start_all.html">scylla-monitoring-3.4.2</a></li>
+    </ul>
+</div>
+            
+        </div>
+
+    </div>
+</section>
+
+<!-- newsleter modal -->
+
+<div id="newsletter_signup" class="reveal-modal tiny radius dark_modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+    <a class="close-reveal-modal" aria-label="Close">×</a>
+    <h2 id="modalTitle">Sign up for the Scylla newsletter</h2>
+    <div id="mc_embed_signup">
+        <form action="//cloudius-systems.us10.list-manage.com/subscribe/post?u=df8bb543c68230d5f7b4dcf78&amp;id=9a4589f144" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate="">
+            <div id="mc_embed_signup_scroll">
+
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-EMAIL">Email</label></div>
+                        <div class="small-9 columns"><input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-FNAME">First Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="FNAME" class="" id="mce-FNAME"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-LNAME">Last Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="LNAME" class="" id="mce-LNAME"></div>
+                    </div>
+                </div>
+                <div id="mce-responses" class="clear">
+                    <div class="response" id="mce-error-response" style="display:none"></div>
+                    <div class="response" id="mce-success-response" style="display:none"></div>
+                </div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+                <div style="position: absolute; left: -5000px;"><input type="text" name="b_df8bb543c68230d5f7b4dcf78_9a4589f144" tabindex="-1" value=""></div>
+                <div class="clear"><input type="submit" class="button" value="Sign up" name="subscribe" id="mc-embedded-subscribe"></div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- end newsleter modal -->
+
+
+
+<!-- footer.html -->
+<footer id="footer">
+    <div class="footer-top">
+        <a class="logo" href="https://www.scylladb.com"><img src="_static/img/logo-scylla-horizontal-RGB.svg" alt=""></a>
+        <div class="footer-links">
+            <a class="link" href="https://docs.scylladb.com">Docs</a>
+            <a class="link" href="https://www.scylladb.com/company/contact-us/">Contact Us</a>
+            <a class="link" href="https://www.scylladb.com/company/">About Us</a>
+            <a class="link button" href="https://github.com/scylladb/scylla-monitoring/issues/new?title=Issue in page The start-all.sh command&&body=I%20would%20like%20to%20report%20an%20issue%20in%20page%20http://docs.scylladb.com/start_all%0A%0A%23%23%23%20Problem%0A%0A%23%23%23%20%20Suggest%20a%20fix" target="_blank">
+                Report an issue on this page</a>
+        </div>
+        <div class="footer-actions">
+            <a class="link-icon" href="https://github.com/ScyllaDB" target="_blank">
+                <span class="icon-github2"></span></a>
+            <a class="link-icon" href="https://twitter.com/ScyllaDB" target="_blank">
+                <span class="icon-twitter"></span></a>
+            <a class="link-icon" href="https://www.linkedin.com/company/scylladb"  target="_blank">
+                <span class="icon-linkedin2"></span></a>
+            <a class="link-icon" href="https://www.facebook.com/scylladb/" target="_blank">
+                <span class="icon-facebook"></span></a>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-info">
+            <div class="footer-copyright">
+                &#169; 2020, ScyllaDB. All rights reserved.
+            </div>
+            <div class="footer-last-updated">
+                Last updated on 28 July 2020.
+            </div>
+        </div>
+        <div class="footer-links">
+        </div>
+    </div>
+</footer>
+<!-- end footer.html -->
+
+<!-- bodyscripts.html -->
+<!-- at the end of the BODY --> 
+<script src="_static/js/vendor/jquery.js"></script>
+<script src="_static/expertrec.js"></script>
+<script src="_static/js/foundation/foundation.js"></script>
+<script src="_static/js/foundation/foundation.topbar.js"></script>
+<script src="_static/app.js"></script>
+<script>
+    $(document).foundation();
+</script>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8P2JP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <!-- end bodyscripts.html -->
+</body>
+</html>

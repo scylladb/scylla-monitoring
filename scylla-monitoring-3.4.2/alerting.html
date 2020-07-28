@@ -1,0 +1,323 @@
+
+
+
+<!doctype html>
+<html class="no-js" lang="en">
+  
+<head><!-- begin head.html -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>
+    Alerting | Scylla Docs
+    </title>
+    <meta name="description" content="Scylla is an Apache Cassandra-compatible NoSQL data store that can handle 1 million transactions per second on a single server." />
+
+    <link rel="icon" href="_static/img/favicon.ico" type="image/x-icon"/>
+    <link rel="canonical" href="https://docs.scylladb.com/">
+
+    <link rel="author" href="mailto:info@scylladb.com">
+    <link rel="stylesheet" href="_static/" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/css/doc/main.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/expertrec.js"></script>
+
+    <script src="_static/js/vendor/modernizr.js"></script>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-T8P2JP');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Marketo -->
+    <script type="text/javascript"> (function() { var didInit = false; function initMunchkin() { if(didInit === false) { didInit = true; Munchkin.init('791-QBF-350'); } } var s = document.createElement('script'); s.type = 'text/javascript'; s.async = true; s.src = '//munchkin.marketo.net/munchkin.js'; s.onreadystatechange = function() { if (this.readyState == 'complete' || this.readyState == 'loaded') { initMunchkin(); } }; s.onload = initMunchkin; document.getElementsByTagName('head')[0].appendChild(s); })(); </script>
+    <!-- End Marketo -->
+
+<!-- end head.html -->
+</head>
+
+<body>
+<header id="header" class="animated">
+    <div class="topbar_continer contain-to-grid clearfix">
+        <nav class="top-bar" id="top-bar" data-topbar role="navigation">
+            <ul class="title-area">
+                <li class="name">
+                    <div class="logo">
+                        <a href="https://docs.scylladb.com/"><img src="_static/img/logo-scylla-docs.svg" alt="" width="151"></a>
+                    </div>
+                </li>
+                <li class="toggle-topbar"><a href="#"><span class="icon-manu"></span></a></li>
+            </ul>
+            <section class="top-bar-section clearfix">
+                <ul class="right">
+                    
+                    <li>
+                        <a href="https://scylladb.github.io/scylla-monitoring/">Scylla Monitor</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://docs.scylladb.com/scylla-cloud/">Scylla Cloud</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://university.scylladb.com/">Scylla University</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://www.scylladb.com/">ScyllaDB Home</a>
+                    </li>
+                    
+                    <li class="search_continer show-for-medium-up">	
+                        <ci-search></ci-search>	
+                    </li>	
+                </ul>
+            </section>
+        </nav>
+    </div>
+</header>
+<section id="content">
+    <div class="row">
+	
+	<div class="large-6 large-push-3 columns">
+            
+                <p>
+                    <strong>
+                    
+                    You're reading the documentation for a development version.
+                    For the latest released version, please have a look at <a href="../master/alerting.html">
+		    	
+				latest
+		    	</a>.
+                    
+                    </strong>
+                </p>
+            
+
+            <div class="section" id="alerting">
+<h1>Alerting<a class="headerlink" href="#alerting" title="Permalink to this headline">¶</a></h1>
+<p>Alerts are a Prometheus enhancement to notify that something is wrong in the system.</p>
+<p>You can read more about <a class="reference external" href="https://prometheus.io/docs/alerting/overview/">Prometheus alerting here</a></p>
+<p>By default, alerts are shown in the overview dashboard, but you can also configure the alerts to be sent to
+other external systems like email or slack.</p>
+<p>In general, alerts are generated by Prometheus when a specific condition is met within a certain period of time,
+they are then sent to the Alertmanager, that can send them to external systems.</p>
+<p>The Alertmanager also acts as a data source for Grafana so the active alerts are shown in the dashboard.</p>
+<img alt="_images/monitoring_stack.png" src="_images/monitoring_stack.png" />
+<div class="section" id="prometheus-alerts">
+<h2>Prometheus Alerts<a class="headerlink" href="#prometheus-alerts" title="Permalink to this headline">¶</a></h2>
+<p>The Prometheus alerts are defined in the <cite>prometheus.rules.yml</cite> file that is located in the prometheus directory.</p>
+<p>Each alert consists of:</p>
+<ul class="simple">
+<li><p>Name</p></li>
+<li><p>What happened</p></li>
+<li><p>For how long</p></li>
+<li><p>What to report</p></li>
+</ul>
+<p>For example, let us look at the <cite>InstanceDown</cite> alert that comes by default as part of Scylla-Monitoring.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">alert</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">InstanceDown</span>
+  <span class="l l-Scalar l-Scalar-Plain">expr</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">up == 0</span>
+  <span class="l l-Scalar l-Scalar-Plain">for</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">60s</span>
+  <span class="l l-Scalar l-Scalar-Plain">labels</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">severity</span><span class="p p-Indicator">:</span> <span class="s">&quot;2&quot;</span>
+  <span class="l l-Scalar l-Scalar-Plain">annotations</span><span class="p p-Indicator">:</span>
+    <span class="l l-Scalar l-Scalar-Plain">description</span><span class="p p-Indicator">:</span> <span class="s">&#39;{{</span><span class="nv"> </span><span class="s">$labels.instance</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">been</span><span class="nv"> </span><span class="s">down</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">more</span><span class="nv"> </span><span class="s">than</span><span class="nv"> </span><span class="s">30</span><span class="nv"> </span><span class="s">seconds.&#39;</span>
+    <span class="l l-Scalar l-Scalar-Plain">summary</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">Instance {{ $labels.instance }} down</span>
+</pre></div>
+</div>
+<p>The <strong>expr</strong> is a legal Prometheus expression, in this case, the <strong>up</strong> metric is equal to <strong>0</strong>.</p>
+<p>The <strong>for</strong> set the minimal duration before the alert will be active. Prior to that, the alert will be in pending-mode and will not be sent.</p>
+<p>The <strong>labels</strong> part holds additional labels that will be added to the alert, in the example, the <strong>severity</strong> label will be set to <strong>2</strong>.</p>
+<p><strong>annotations</strong> are special labels that add a description to the alert and can be used in emails and notification when the alert is forward to external systems.</p>
+</div>
+<div class="section" id="alertmanager">
+<h2>Alertmanager<a class="headerlink" href="#alertmanager" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://prometheus.io/docs/alerting/alertmanager/">Alertmanager</a> gets the alerts from the Prometheus server and responsible for duplicating, grouping and routing.</p>
+<p>The Alertmanager configuration is found in <cite>rule_config.yml</cite> file that is located in the <cite>prometheus</cite> directory.
+The configuration consists of three parts:</p>
+<ul class="simple">
+<li><p>Routes: Represent a routing tree, the most specific rule, wins</p></li>
+<li><p>Inhibition: Mute an alert, based on another alert</p></li>
+<li><p>Receiver: Send a notification via email, sluck, etc’</p></li>
+</ul>
+<p>Check the Alertmanager documentation the details on how to specify a specific receiver.</p>
+<p>In the default configuration, the Grafana server will use the Alertmanager as a data source for the alert table found in the <strong>overview</strong> dashboard.</p>
+</div>
+<div class="section" id="tips-when-adding-an-alert">
+<h2>Tips When Adding an Alert<a class="headerlink" href="#tips-when-adding-an-alert" title="Permalink to this headline">¶</a></h2>
+<p><strong>It’s worse having an alert that does not work, then not having an alert at all</strong></p>
+<p>There are multiple ways you can use to make sure your alert is set correctly:</p>
+<ul class="simple">
+<li><p>Start with making sure that the full path (alert to mail or dashboard) is working a simple way is by negating the logic.</p></li>
+<li><p>Force the alert to be active by reducing the limits or the duration.</p></li>
+<li><p>When possible simulate the actual scenario and see that the alert works as expected.</p></li>
+</ul>
+<p>For example, low available disk space.</p>
+<p>Assume that you want an alert when you have lower than 10% disk space.
+You can start by setting the alert that is fire when you have more than 10% disk space.
+That would show that the alert is active and is propagated to the dashboard and to any external system you are using.
+You can then set the alert rule to a value similar to the current situation.</p>
+<p>Now you are sure that when setting the expression to alert when the free space below 10% the alert would work, but if possible,
+simulate that situation, in this case by creating some big files.</p>
+<p>Starting with a simple working expression helps you bisect problems.</p>
+</div>
+</div>
+
+        </div>
+
+        <div id="sidebar" class="large-3 large-pull-6 columns"><div class="side-nav">
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="matrix.html">Scylla Monitor Support Matrix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitoring_stack.html">Install Scylla Monitor Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start_all.html">The start-all.sh script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitoring_apis.html">Scylla Monitor Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitor_without_docker.html">Deploy Scylla Monitor Without Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cql_optimization.html">The CQL Optimiztion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cql_optimization.html#cross-dc">Cross DC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="updating_dashboard.html">Adding and Modifying Dashboards</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Alerting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitor_troubleshoot.html">Troubleshoot Monitor</a></li>
+</ul>
+
+</div>
+        </div>
+
+        <div class="large-3 columns">
+            
+                <div class="versions-dropdown">
+    <button class="button"><span class="version">
+
+	
+		scylla-monitoring-3.4.2
+	
+	 <i class="fa fa-caret-down" aria-hidden="true"></i>
+    </button>
+    <ul class="content">
+  	<li><a href="../master/alerting.html">
+		
+			latest
+		
+	</a></li>
+        <li><a href="alerting.html">scylla-monitoring-3.4.2</a></li>
+    </ul>
+</div>
+            
+        </div>
+
+    </div>
+</section>
+
+<!-- newsleter modal -->
+
+<div id="newsletter_signup" class="reveal-modal tiny radius dark_modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+    <a class="close-reveal-modal" aria-label="Close">×</a>
+    <h2 id="modalTitle">Sign up for the Scylla newsletter</h2>
+    <div id="mc_embed_signup">
+        <form action="//cloudius-systems.us10.list-manage.com/subscribe/post?u=df8bb543c68230d5f7b4dcf78&amp;id=9a4589f144" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate="">
+            <div id="mc_embed_signup_scroll">
+
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-EMAIL">Email</label></div>
+                        <div class="small-9 columns"><input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-FNAME">First Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="FNAME" class="" id="mce-FNAME"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-LNAME">Last Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="LNAME" class="" id="mce-LNAME"></div>
+                    </div>
+                </div>
+                <div id="mce-responses" class="clear">
+                    <div class="response" id="mce-error-response" style="display:none"></div>
+                    <div class="response" id="mce-success-response" style="display:none"></div>
+                </div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+                <div style="position: absolute; left: -5000px;"><input type="text" name="b_df8bb543c68230d5f7b4dcf78_9a4589f144" tabindex="-1" value=""></div>
+                <div class="clear"><input type="submit" class="button" value="Sign up" name="subscribe" id="mc-embedded-subscribe"></div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- end newsleter modal -->
+
+
+
+<!-- footer.html -->
+<footer id="footer">
+    <div class="footer-top">
+        <a class="logo" href="https://www.scylladb.com"><img src="_static/img/logo-scylla-horizontal-RGB.svg" alt=""></a>
+        <div class="footer-links">
+            <a class="link" href="https://docs.scylladb.com">Docs</a>
+            <a class="link" href="https://www.scylladb.com/company/contact-us/">Contact Us</a>
+            <a class="link" href="https://www.scylladb.com/company/">About Us</a>
+            <a class="link button" href="https://github.com/scylladb/scylla-monitoring/issues/new?title=Issue in page Alerting&&body=I%20would%20like%20to%20report%20an%20issue%20in%20page%20http://docs.scylladb.com/alerting%0A%0A%23%23%23%20Problem%0A%0A%23%23%23%20%20Suggest%20a%20fix" target="_blank">
+                Report an issue on this page</a>
+        </div>
+        <div class="footer-actions">
+            <a class="link-icon" href="https://github.com/ScyllaDB" target="_blank">
+                <span class="icon-github2"></span></a>
+            <a class="link-icon" href="https://twitter.com/ScyllaDB" target="_blank">
+                <span class="icon-twitter"></span></a>
+            <a class="link-icon" href="https://www.linkedin.com/company/scylladb"  target="_blank">
+                <span class="icon-linkedin2"></span></a>
+            <a class="link-icon" href="https://www.facebook.com/scylladb/" target="_blank">
+                <span class="icon-facebook"></span></a>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-info">
+            <div class="footer-copyright">
+                &#169; 2020, ScyllaDB. All rights reserved.
+            </div>
+            <div class="footer-last-updated">
+                Last updated on 28 July 2020.
+            </div>
+        </div>
+        <div class="footer-links">
+        </div>
+    </div>
+</footer>
+<!-- end footer.html -->
+
+<!-- bodyscripts.html -->
+<!-- at the end of the BODY --> 
+<script src="_static/js/vendor/jquery.js"></script>
+<script src="_static/expertrec.js"></script>
+<script src="_static/js/foundation/foundation.js"></script>
+<script src="_static/js/foundation/foundation.topbar.js"></script>
+<script src="_static/app.js"></script>
+<script>
+    $(document).foundation();
+</script>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8P2JP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <!-- end bodyscripts.html -->
+</body>
+</html>
