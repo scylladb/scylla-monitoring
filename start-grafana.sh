@@ -19,10 +19,11 @@ EXTERNAL_VOLUME=""
 BIND_ADDRESS=""
 ANONYMOUS_ROLE="Admin"
 SPECIFIC_SOLUTION=""
+LDAP_FILE=""
 
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:S:Q:' option; do
+while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:Q:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -43,6 +44,12 @@ while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:S:Q:' option; do
        ALERT_MANAGER_ADDRESS=$OPTARG
        ;;
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
+       ;;
+    P) LDAP_FILE="$OPTARG"
+       GRAFANA_ENV_ARRAY+=("GF_AUTH_LDAP_ENABLED=true" "GF_AUTH_LDAP_CONFIG_FILE=/etc/grafana/ldap.toml" "GF_AUTH_LDAP_ALLOW_SIGN_UP=true")
+       LDAP_FILE="-v "`readlink -m $OPTARG`":/etc/grafana/ldap.toml"
+       GRAFANA_AUTH=true
+       GRAFANA_AUTH_ANONYMOUS=false
        ;;
     D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
@@ -133,6 +140,7 @@ docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=$ANONYMOUS_ROLE" \
      -e "GF_PANELS_DISABLE_SANITIZE_HTML=true" \
+     $LDAP_FILE \
      "${group_args[@]}" \
      -v $PWD/grafana/build:/var/lib/grafana/dashboards:z \
      -v $PWD/grafana/plugins:/var/lib/grafana/plugins:z \
