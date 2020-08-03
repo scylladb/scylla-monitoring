@@ -5,6 +5,7 @@ if [ "$1" = "-e" ]; then
 else
 . versions.sh
 fi
+is_podman="$(docker --help | grep -o podman)"
 VERSIONS=$DEFAULT_VERSION
 RULE_FILE=$PWD/prometheus/rule_config.yml
 ALERT_MANAGER_VERSION="v0.20.0"
@@ -85,4 +86,8 @@ then
 fi
 
 AM_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $ALERTMANAGER_NAME):9093"
+if [ ! -z "$is_podman" ] && [ "$AM_ADDRESS" = ":9093" ]; then
+    HOST_IP=`hostname -I | awk '{print $1}'`
+    AM_ADDRESS="$HOST_IP:9093"
+fi
 echo $AM_ADDRESS
