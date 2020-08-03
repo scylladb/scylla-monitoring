@@ -26,6 +26,14 @@ else
     GROUPID=`id -g`
     USER_PERMISSIONS="-u $UID:$GROUPID"
 fi
+
+group_args=()
+is_podman="$(docker --help | grep -o podman)"
+if [ ! -z "$is_podman" ]; then
+    group_args+=(--userns=keep-id)
+fi
+
+
 PROMETHEUS_RULES="$PWD/prometheus/prometheus.rules.yml"
 VERSIONS=$DEFAULT_VERSION
 usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] -- starts Grafana and Prometheus Docker instances"
@@ -223,6 +231,7 @@ fi
 
 docker run -d $DOCKER_PARAM $USER_PERMISSIONS \
      $DATA_DIR \
+     "${group_args[@]}" \
      -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
      -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
      $SCYLLA_TARGET_FILE \
