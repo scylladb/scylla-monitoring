@@ -17,6 +17,7 @@ Scylla Monitor
 
 .. include:: /_common/monitor-description.rst
 
+For older versions of Scylla Monitoring see `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
 
 .. image:: monitor.png
     :width: 400pt
@@ -26,8 +27,6 @@ The Scylla Monitor Stack consists of three components, wrapped in Docker contain
 * `prometheus` - collects and stores metrics
 * `alertmanager` - handles alerts
 * `grafana` - dashboard server
-
-For older versions of Scylla Monitoring see `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
 
 **Choose a topic to get started**:
 
