@@ -234,7 +234,9 @@ def add_row(y, panels, row, args):
     for p in row["panels"]:
         gridpos = {}
         if "gridPos" in p:
-            gridpos = p["gridPos"]
+            gridpos = dict(p["gridPos"])
+        else:
+            gridpos = {}
         w = panel_width(gridpos, p)
         if  w + x > 24:
             x = 0
