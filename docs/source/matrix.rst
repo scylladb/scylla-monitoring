@@ -14,6 +14,11 @@ The following table shows which version of Scylla Monitor supports dashboards fo
      - Scylla Enterprise Version
      - Node_exporter[1] Version
      - Scylla Manager Version
+   * - 3.4.3
+     - 3.3, 4.0, 4.1, 4.2
+     - 2018.1, 2019.1, 2020.1
+     - 0.17
+     - 2.0, 2.1
    * - 3.4
      - 3.3, 4.0, 4.1
      - 2018.1, 2019.1
