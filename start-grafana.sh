@@ -139,6 +139,7 @@ docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
      -v $PWD/grafana/provisioning:/var/lib/grafana/provisioning:z $EXTERNAL_VOLUME \
      -e "GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning" \
      -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
+     -e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource" \
      $GRAFANA_ENV_COMMAND \
      "${proxy_args[@]}" \
      --name $GRAFANA_NAME grafana/grafana:$GRAFANA_VERSION >& /dev/null
