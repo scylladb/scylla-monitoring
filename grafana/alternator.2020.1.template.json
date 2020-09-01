@@ -434,6 +434,15 @@
                 "title": "New row"
             },
             {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Data Plane Actions"
+                    }
+                ]
+            },
+            {
                 "class": "header_row",
                 "panels": [
                     {
@@ -558,65 +567,19 @@
                 "class": "row",
                 "panels": [
                     {
-                        "class": "ops_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"PutItem\"}[60s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Completed PutItem"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"PutItem\"}[60s])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"PutItem\"}[60s])) by ([[by]]) + 1)",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Average PutItem latency by [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"PutItem\"}[60s])) by ([[by]], le))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "95th percentile PutItem latency by [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"PutItem\"}[60s])) by ([[by]], le))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "99th percentile PutItem latency by [[by]]"
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "alternator_latency_ops",
+                      "title": "$alternator_latency_ops",
+                      "type": "row"
                     }
-                ],
-                "title": "New row"
+                ]
             },
             {
                 "class": "row",
@@ -626,35 +589,35 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetItem\"}[60s])) by ([[by]])",
+                                "expr": "$func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[60s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
-                        "title": "Completed GetItem"
+                        "title": "Completed $alternator_latency_ops"
                     },
                     {
                         "class": "us_panel",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetItem\"}[60s])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetItem\"}[60s])) by ([[by]]) + 1)",
+                                "expr": "$func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[60s])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"PutItem\"}[60s])) by ([[by]]) + 1)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
-                        "title": "Average GetItem latency by [[by]]"
+                        "title": "Average $alternator_latency_ops latency by [[by]]"
                     },
                     {
                         "class": "us_panel",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetItem\"}[60s])) by ([[by]], le))",
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[60s])) by ([[by]], le))",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -662,14 +625,14 @@
                                 "step": 1
                             }
                         ],
-                        "title": "95th percentile GetItem latency by [[by]]"
+                        "title": "95th percentile $alternator_latency_ops latency by [[by]]"
                     },
                     {
                         "class": "us_panel",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetItem\"}[60s])) by ([[by]], le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[60s])) by ([[by]], le))",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -677,7 +640,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "99th percentile GetItem latency by [[by]]"
+                        "title": "99th percentile $alternator_latency_ops latency by [[by]]"
                     }
                 ],
                 "title": "New row"
@@ -686,129 +649,10 @@
                 "class": "row",
                 "panels": [
                     {
-                        "class": "ops_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"UpdateItem\"}[60s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Completed UpdateItem"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"UpdateItem\"}[60s])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"UpdateItem\"}[60s])) by ([[by]]) + 1)",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Average UpdateItem latency by [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"UpdateItem\"}[60s])) by ([[by]], le))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "95th percentile UpdateItem latency by [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"UpdateItem\"}[60s])) by ([[by]], le))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "99th percentile UpdateItem latency by [[by]]"
+                        "class": "collapsible_row_panel",
+                        "title": "Control plane"
                     }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "panels": [
-                    {
-                        "class": "ops_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DeleteItem\"}[60s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Completed DeleteItem"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DeleteItem\"}[60s])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DeleteItem\"}[60s])) by ([[by]]) + 1)",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Average DeleteItem latency by [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DeleteItem\"}[60s])) by ([[by]], le))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "95th percentile DeleteItem latency by [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DeleteItem\"}[60s])) by ([[by]], le))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "99th percentile DeleteItem latency by [[by]]"
-                    }
-                ],
-                "title": "New row"
+                ]
             },
             {
                 "class": "header_row",
@@ -1064,9 +908,11 @@
                 {
                     "class": "template_variable_custom",
                     "name": "alternator_latency_ops",
+                    "multi": true,
+                    "includeAll": true,
                     "current": {
-                        "text": "GetItem",
-                        "value": "GetItem"
+                        "text": "All",
+                        "value": "$__all"
                     },
                     "options": [
                         {
