@@ -1,5 +1,6 @@
 {
     "annotations": {
+        "class": "default_annotations",
         "list": [
             {
                 "builtIn": 1,
@@ -23,6 +24,51 @@
                 "tagKeys": "instance,dc,cluster",
                 "tags": [],
                 "titleFormat": "restart",
+                "type": "tags"
+            },
+            {
+                "class": "annotation_stall",
+                "datasource": "prometheus",
+                "enable": false,
+                "expr": "changes(scylla_stall_detector_reported[1m])>0",
+                "hide": false,
+                "iconColor": "rgba(255, 96, 96, 1)",
+                "limit": 100,
+                "name": "stall detector",
+                "showIn": 0,
+                "tagKeys": "dc,instance,shard",
+                "tags": [],
+                "titleFormat": "Stall found",
+                "type": "tags"
+            },
+            {
+                "class": "annotation_schema_changed",
+                "datasource": "prometheus",
+                "enable": false,
+                "expr": "changes(scylla_database_schema_changed[30s])>0",
+                "hide": false,
+                "iconColor": "rgba(255, 96, 96, 1)",
+                "limit": 100,
+                "name": "Schema Changed",
+                "showIn": 0,
+                "tagKeys": "instance,dc,cluster",
+                "tags": [],
+                "titleFormat": "schema changed",
+                "type": "tags"
+            },
+            {
+                "class": "annotation_manager_task",
+                "datasource": "prometheus",
+                "enable": true,
+                "expr": "scylla_manager_task_active_count{type=~\"repair|backup\",cluster=~\"$cluster|$^\"}>0",
+                "hide": false,
+                "iconColor": "#73BF69",
+                "limit": 100,
+                "name": "Task",
+                "showIn": 0,
+                "tagKeys": "type",
+                "tags": [],
+                "titleFormat": "Running",
                 "type": "tags"
             }
         ]
