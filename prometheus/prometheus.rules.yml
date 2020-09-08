@@ -101,3 +101,19 @@ groups:
     annotations:
       description: '{{ $labels.instance }} has average high latency for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} Hight Read  Latency
+  - alert: BackupFailed
+    expr: (sum(scylla_manager_task_run_total{type=~"backup", status="ERROR"}) or vector(0)) - (sum(scylla_manager_task_run_total{type=~"backup", status="ERROR"} offset 3m) or vector(0)) > 0
+    for: 10s
+    labels:
+      severity: "1"
+    annotations:
+      description: 'Backup failed'
+      summary: Backup task failed
+  - alert: RepairFailed
+    expr: (sum(scylla_manager_task_run_total{type=~"repair", status="ERROR"}) or vector(0)) - (sum(scylla_manager_task_run_total{type=~"repair", status="ERROR"} offset 3m) or vector(0)) > 0
+    for: 10s
+    labels:
+      severity: "1"
+    annotations:
+      description: 'Repair failed'
+      summary: Repair task failed
