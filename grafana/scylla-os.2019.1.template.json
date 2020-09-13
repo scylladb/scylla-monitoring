@@ -4,7 +4,25 @@
         "overwrite": true,
         "rows": [
             {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": ""
+                    }
+                ]
+            },
+            {
                 "class": "logo_row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": ""
+                    }
+                ]
             },
             {
                 "class": "row",
@@ -41,18 +59,21 @@
             },
             {
                 "class": "row",
-                "gridPos": {
-                    "h": 2
-                },
-                "height": "25px",
                 "panels": [
                     {
-                        "class": "text_panel",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Disk $monitor_disk</h1>",
-                        "style": {}
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "mount_point",
+                      "title": "Partition $mount_point",
+                      "type": "row"
                     }
-                ],
-                "title": "New row"
+                ]
             },
             {
                 "class": "row",
@@ -78,8 +99,77 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Disk Size by $by"
+                        "title": "Used Bytes by $by"
                     },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(node_filesystem_free_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Free Bytes by $by"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(node_filesystem_files{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Number of files by $by"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "monitor_disk",
+                      "title": "Disk $monitor_disk",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "gridPos": {
+                    "h": 2
+                },
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Disk $monitor_disk</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
                     {
                         "class": "wps_panel",
                         "span": 3,
@@ -123,17 +213,6 @@
                             }
                         ],
                         "title": "Disk Reads per $by"
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "panels": [
-                    {
-                        "class": "text_panel",
-                        "content": "",
-                        "span": 3
                     },
                     {
                         "class": "bps_panel",
@@ -181,6 +260,24 @@
                     }
                 ],
                 "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "monitor_network_interface",
+                      "title": "Network Interface $monitor_network_interface",
+                      "type": "row"
+                    }
+                ]
             },
             {
                 "class": "row",
@@ -368,7 +465,7 @@
                     "hide": 0,
                     "includeAll": false,
                     "label": null,
-                    "multi": false,
+                    "multi": true,
                     "name": "monitor_disk",
                     "options": [],
                     "query": "node_disk_read_bytes_total",
@@ -392,7 +489,7 @@
                     "hide": 0,
                     "includeAll": false,
                     "label": null,
-                    "multi": false,
+                    "multi": true,
                     "name": "monitor_network_interface",
                     "options": [],
                     "query": "node_network_receive_packets_total",
@@ -415,7 +512,7 @@
                     "hide": 0,
                     "includeAll": false,
                     "label": "Mount path",
-                    "multi": false,
+                    "multi": true,
                     "name": "mount_point",
                     "options": [],
                     "query": "node_filesystem_avail_bytes",
