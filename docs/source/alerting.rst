@@ -52,7 +52,7 @@ The **labels** part holds additional labels that will be added to the alert, in 
 Alertmanager
 ^^^^^^^^^^^^
 
-The `Alertmanager`_ gets the alerts from the Prometheus server and responsible for duplicating, grouping and routing.
+The `Alertmanager`_ gets the alerts from the Prometheus server responsible for duplicating, grouping and routing.
 
 ..  _`Alertmanager` : https://prometheus.io/docs/alerting/alertmanager/
 
@@ -63,14 +63,14 @@ The configuration consists of three parts:
 - Inhibition: Mute an alert, based on another alert
 - Receiver: Send a notification via email, sluck, etc’
 
-Check the Alertmanager documentation the details on how to specify a specific receiver.
+Check the Alertmanager documentation for details on how to specify a specific receiver.
 
 In the default configuration, the Grafana server will use the Alertmanager as a data source for the alert table found in the **overview** dashboard. 
 
 Tips When Adding an Alert
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**It's worse having an alert that does not work, then not having an alert at all**
+**It's worse having an alert that does not work, than not having an alert at all**
 
 There are multiple ways you can use to make sure your alert is set correctly:
 
@@ -81,7 +81,7 @@ There are multiple ways you can use to make sure your alert is set correctly:
 For example, low available disk space.
 
 Assume that you want an alert when you have lower than 10% disk space.
-You can start by setting the alert that is fire when you have more than 10% disk space.
+You can start by setting the alert that is fired when you have more than 10% disk space.
 That would show that the alert is active and is propagated to the dashboard and to any external system you are using.
 You can then set the alert rule to a value similar to the current situation.
 
