@@ -34,7 +34,7 @@ Docker post installation guide can be found `here`_
 
    Avoid running the container as root.
 
-To avoid running docker as root, you should add the user you are going to use for monitoring purposes to the Docker group.
+To avoid running docker as root, you should add the user you are going to use for Scylla Monitor to the Docker group.
 
 1. Create the Docker group.
 
