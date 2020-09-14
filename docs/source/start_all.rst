@@ -35,7 +35,7 @@ If not used, each run of the containers will clear all of Grafana information.
 
 **-j dashboard** Allows adding dashboards to Grafana, multiple parameters are supported.
 
-**-c grafana environment variable** Grafana allows its environment configuration to be overridden. The ``-c`` flag, allows adding an environment variable to Grafana and altering its configuration by doing so.
+**-c grafana environment variable** Use this parameter to override Grafana's configuration settings.  The ``-c`` flag allows adding an environment variable to Grafana and by doing so alters its configuration.
 
 **-g grafana port** Override the default grafana port, this is done using port mapping, note that port mapping does not work when using the host network.
 
