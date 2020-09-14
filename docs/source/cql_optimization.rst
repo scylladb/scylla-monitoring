@@ -37,10 +37,9 @@ The **CQL Non-Prepared Queries** Graph shows the rate of the queries. Make sure 
 Token Aware
 ^^^^^^^^^^^
 
-Scylla is a distributed database, with each node contains only part of the data - a range of the token ring.
+Scylla is a distributed database, where each node contains only part of the data, specifically a range of the token ring.
 Ideally, a query would reach the node that holds the data (one of the replicas), failing to do so would mean the coordinator
-will need to send the query internally to a replica, result with a higher latency,
-and more resources usage.
+needs to send the query internally to a replica. This results in higher latency and increased resource usage.
 
 Typically, your driver would know how to route the queries to a replication node, but using non-prepared statements, non-token-aware driver
 or load-balance can cause the query to reach a node that is not a replica.
@@ -97,7 +96,7 @@ return part of it to the user. Data that is read and then filtered is an overhea
 
 These kinds of queries can create a big load on the system, and should be used with care.
 
-The CQL optimization dashboard, check for two things related to queries that use ``ALLOW FILTERING`` how many such queries exist and how much of the data that was read was
+The CQL optimization dashboard, checks for two things related to queries that use ``ALLOW FILTERING``: how many such queries exist; and how much of the data that was read was
 dropped before returning to the client.
 
 The **ALLOW FILTERING CQL Reads** Gauge shows the percentage of read queries that use ``ALLOW FILTERING``.
@@ -114,13 +113,13 @@ Consistency Level
 
 Typically data in Scylla is duplicated into multiple replicas for availability reasons. A coordinator node would get the request and will send it
 to the nodes holding the replicas.
-  
-A query Consistency Level determines at what point the coordinator will reply to the client with regards to the number of replied it got from the replicas.
-The most common case is to use QUORUM, that means that when the coordinator gets a majority of the replies from the replicas it will return success to the client.
 
+The query Consistency Level determines how many replies from the replicas are required before the coordinator replies to the client.
+The most common case is to use QUORUM, which means that when the coordinator gets a majority of the replies from the replicas, it will return success to the client.
+  
 Two consistency levels hold a potential problem and should be used with care ``ANY`` and ``ALL``.
 
-The **CQL ANY Queries** Gauge shows the percentage of queries that use Consistency Level ``ANY``. Using consistency level ANY in a query may hurt persistency, if the node receiving the request will fail, the data may be lost.
+The **CQL ANY Queries** Gauge shows the percentage of queries that use Consistency Level ``ANY``. Using consistency level ANY in a query may hurt persistency, if the node receiving the request fails, the data may be lost.
 
 The **CQL ANY CL Queries** Graph shows the rate of the queries that use Consistency Level ``ANY``, make sure both are low.
 
