@@ -35,13 +35,13 @@ If not used, each run of the containers will clear all of Grafana information.
 
 **-j dashboard** Allows adding dashboards to Grafana, multiple parameters are supported.
 
-**-c grafana environment variable** Grafana allows overridden its configuration from the environment. The ``-c`` flag, allows adding an environment variable to Grafana and altering its configuration by doing so.
+**-c grafana environment variable** Use this parameter to override Grafana's configuration settings.  The ``-c`` flag allows adding an environment variable to Grafana and by doing so alters its configuration.
 
 **-g grafana port** Override the default grafana port, this is done using port mapping, note that port mapping does not work when using the host network.
 
 **-a admin password** Allows specifying the admin password.
 
-**-Q Grafana anonymous role** By default, anonymous users have admin privileges. That means they can create and edit dashboards. The ``-Q`` fag change this behavior  by setting the role privileges to one of Admin, Editor, or Viewer.
+**-Q Grafana anonymous role** By default, anonymous users have admin privileges. That means they can create and edit dashboards. The ``-Q`` flag changes this behavior  by setting the role privileges to one of Admin, Editor, or Viewer.
 
 Prometheus Related Commands
 ---------------------------
@@ -83,6 +83,6 @@ alertmanager handles the alerts and takes the following parameters:
 
 **-m alertmanager-port** Override the default Alertmanager port, this is done using port mapping, note that port mapping does not work when using the host network.
 
-**-r alert-manager-config** By default, the Alertmanager takes its configuration from ``rule_config.yml`` in the ``prometheus`` directory. The ``-r`` override it to another file.prometheus
+**-r alert-manager-config** By default, the Alertmanager takes its configuration from ``rule_config.yml`` in the ``prometheus`` directory. The ``-r`` flag overrides it to another file.prometheus
 
 **-C alertmanager-commands** Allows adding an arbitrary command line to the alertmanager container starting command.
