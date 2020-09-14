@@ -21,4 +21,4 @@ For example, when monitoring a 6 node Scylla cluster, each with 16 CPU cores, an
 
 
 To account for unexpected events, like replacing or adding nodes, we recommend allocating at least x4-5 space, in this case, ~100GB.
-Prometheus Storage disk does not have to be as fast as Scylla disk, and EC2 EBS, for example, is fast enough and provide HA out of the box.
+Prometheus Storage disk does not have to be as fast as Scylla disk, and EC2 EBS, for example, is fast enough and provides HA out of the box.
