@@ -59,7 +59,11 @@ if [[ -z "$TEST_ONLY" ]]; then
    mkdir -p $VERDIR
 fi
 
-set_loader $v $v "$VERDIR_NAME"
+if [[ $VERSIONS = *","* ]]; then
+    set_loader $v "$v" "$VERDIR_NAME"
+else
+    set_loader $v "" "$VERDIR_NAME"
+fi
 
 CURRENT_VERSION=`cat CURRENT_VERSION.sh`
 
@@ -85,7 +89,7 @@ if [ -e grafana/scylla-manager.$MANAGER_VERSION.template.json ]
 then
     VERDIR="grafana/build/manager_$MANAGER_VERSION"
     mkdir -p $VERDIR
-    set_loader "manager_$MANAGER_VERSION" "manager_$MANAGER_VERSION" "manager_$MANAGER_VERSION"
+    set_loader "manager_$MANAGER_VERSION" "" "manager_$MANAGER_VERSION"
     if [ ! -f "$VERDIR/scylla-manager.$MANAGER_VERSION.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/scylla-manager.$MANAGER_VERSION.template.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
         if [[ -z "$TEST_ONLY" ]]; then
            echo "updating grafana/scylla-manager.$MANAGER_VERSION.template.json"
