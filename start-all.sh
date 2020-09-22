@@ -50,8 +50,9 @@ BIND_ADDRESS=""
 BIND_ADDRESS_CONFIG=""
 GRAFNA_ANONYMOUS_ROLE=""
 SPECIFIC_SOLUTION=""
+LDAP_FILE=""
 
-while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:S:' option; do
+while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -86,6 +87,8 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:S:' option; do
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
     L) CONSUL_ADDRESS="$OPTARG"
+       ;;
+    P) LDAP_FILE="-P $OPTARG"
        ;;
     a) GRAFANA_ADMIN_PASSWORD="-a $OPTARG"
        ;;
@@ -288,4 +291,4 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 
-./start-grafana.sh $BIND_ADDRESS_CONFIG $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
+./start-grafana.sh $LDAP_FILE $BIND_ADDRESS_CONFIG $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
