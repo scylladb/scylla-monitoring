@@ -51,8 +51,9 @@ BIND_ADDRESS_CONFIG=""
 GRAFNA_ANONYMOUS_ROLE=""
 SPECIFIC_SOLUTION=""
 LDAP_FILE=""
+RUN_RENDERER=""
 
-while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:' option; do
+while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -105,6 +106,8 @@ while getopts ':hled:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:' option; do
     N) SCYLLA_MANGER_TARGET_FILE="$OPTARG"
        ;;
     S) SPECIFIC_SOLUTION="-S $OPTARG"
+       ;;
+    E) RUN_RENDERER="-E"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -291,4 +294,4 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 
-./start-grafana.sh $LDAP_FILE $BIND_ADDRESS_CONFIG $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
+./start-grafana.sh $LDAP_FILE $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD

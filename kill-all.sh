@@ -48,6 +48,7 @@ sleep 2
 ./kill-container.sh $PROMETHEUS_PORT -b aprom
 ./kill-container.sh $GRAFANA_PORT -b agraf
 ./kill-container.sh $ALERTMANAGER_PORT -b aalert
+./kill-container.sh -b agrafrender
 
 
 

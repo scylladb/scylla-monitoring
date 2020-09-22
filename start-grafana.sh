@@ -23,7 +23,7 @@ LDAP_FILE=""
 
 usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:Q:' option; do
+while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:Q:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -68,6 +68,8 @@ while getopts ':hlg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:Q:' option; do
     A) BIND_ADDRESS="$OPTARG:"
        ;;
     S) SPECIFIC_SOLUTION="-S $OPTARG"
+       ;;
+    E) RUN_RENDERER="-E"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -134,11 +136,19 @@ if [ ! -d $EXTERNAL_VOLUME ]; then
     echo "Creating grafana directory directory $EXTERNAL_VOLUME"
     mkdir -p $EXTERNAL_VOLUME
 fi
+if [ ! -z $RUN_RENDERER ]; then
+    RENDERING_SERVER_URL=`./start-grafana-renderer.sh -D "$DOCKER_PARAM"`
+fi
+
+
+DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
 
 docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=$ANONYMOUS_ROLE" \
+     -e "GF_RENDERING_SERVER_URL=http://$DOCKER_HOST:8081/render" \
+     -e "GF_RENDERING_CALLBACK_URL=http://$DOCKER_HOST:3000/" \
      -e "GF_PANELS_DISABLE_SANITIZE_HTML=true" \
      $LDAP_FILE \
      "${group_args[@]}" \
