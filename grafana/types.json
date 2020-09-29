@@ -7,6 +7,437 @@
 		"class": "base_row",
 		"height": "25px"
 	},
+	"small_stat" : {
+      "datasource": "prometheus",
+      "gridPos": {
+        "w": 2,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": "auto",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.1.3",
+      "timeFrom": null,
+      "timeShift": null,
+      "type": "stat"
+	},
+	"small_stat_rows": {
+                "class": "row",
+                "height": "200px",
+                "panels": [
+                    {
+                        "class": "small_stat",
+                        "description": "The number of nodes configured in the cluster.",
+                        "targets": [
+                            {
+                                "expr": "count(up{job=\"scylla\", cluster=~\"$cluster|$^\"})",
+                                "intervalFactor": 1,
+                                "legendFormat": "Total Nodes",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "# Nodes"
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "The number of unreachable nodes.\nUsually because a machine is down or unreachable.",
+                        "targets": [
+                            {
+                                "expr": "(count(scrape_samples_scraped{job=\"scylla\", cluster=~\"$cluster|$^\"}==0) OR vector(0))",
+                                "intervalFactor": 1,
+                                "legendFormat": "Offline ",
+                                "refId": "A",
+                                "step": 20
+                            }
+                        ],
+                        "fieldConfig": {
+                            "defaults": {
+                            "custom": {},
+                            "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "green",
+                                    "value": null
+                                  },
+                                  {
+                                    "value": 0,
+                                    "color": "green"
+                                  },
+                                  {
+                                    "value": 1,
+                                    "color": "red"
+                                  }
+                                ]
+                            }
+                          }
+                        },
+                        "title": "Unreachable"
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "The number of joining and leaving nodes.\nThe number of nodes that are up but not actively part of the cluster, either because they are still joining or because they are leaving.",
+                        "targets": [
+                            {
+                                "expr": "count(scylla_node_operation_mode!=3)OR vector(0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "Offline ",
+                                "refId": "A",
+                                "step": 20
+                            }
+                        ],
+                        "thresholds": "1,2",
+                        "fieldConfig": {
+                            "defaults": {
+                            "custom": {},
+                            "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "green",
+                                    "value": null
+                                  },
+                                  {
+                                    "value": 0,
+                                    "color": "green"
+                                  },
+                                  {
+                                    "value": 1,
+                                    "color": "red"
+                                  }
+                                ]
+                            }
+                          }
+                        },
+                        "title": "Inactive"
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "decimals": 0,
+                              "mappings": [],
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "green",
+                                    "value": null
+                                  },
+                                  {
+                                    "color": "red",
+                                    "value": 80
+                                  }
+                                ]
+                              },
+                              "unit": "percent"
+                            },
+                            "overrides": []
+                          },
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} )",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Load"
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "Average Write Latency",
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "unit": "\u00b5s",
+                              "decimals": 0,
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "green",
+                                    "value": null
+                                  },
+                                  {
+                                    "color": "red",
+                                    "value": 50000
+                                  }
+                                ]
+                              },
+                              "mappings": []
+                            },
+                            "overrides": []
+                          },
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s]))/(sum(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Avg Write"
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "99% write Latency",
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "unit": "\u00b5s",
+                              "decimals": 0,
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "green",
+                                    "value": null
+                                  },
+                                  {
+                                    "color": "red",
+                                    "value": 100000
+                                  }
+                                ]
+                              },
+                              "mappings": []
+                            },
+                            "overrides": []
+                          },
+
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "99% Write"
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "Average Read Latency",
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "unit": "\u00b5s",
+                              "decimals": 0,
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "green",
+                                    "value": null
+                                  },
+                                  {
+                                    "color": "red",
+                                    "value": 50000
+                                  }
+                                ]
+                              },
+                              "mappings": []
+                            },
+                            "overrides": []
+                          },
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s]))/(sum(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Average Read"
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "99% read Latency",
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "unit": "\u00b5s",
+                              "decimals": 0,
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "green",
+                                    "value": null
+                                  },
+                                  {
+                                    "color": "red",
+                                    "value": 100000
+                                  }
+                                ]
+                              },
+                              "mappings": []
+                            },
+                            "overrides": []
+                          },
+
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "99% Read"
+                    },
+                    {
+                        "class": "small_stat",
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) + sum(rate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]))",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Requests"
+                    },
+                    {
+                        "class": "small_stat",
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "green",
+                                    "value": null
+                                  },
+                                  {
+                                    "color": "red",
+                                    "value": 1
+                                  }
+                                ]
+                              },
+                              "mappings": []
+                            },
+                            "overrides": []
+                          },
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Timeouts"
+                    },
+                    {
+                        "class": "small_stat",
+                        "fieldConfig": {
+                            "defaults": {
+                                "noValue": " Offline",
+                                "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "red",
+                                    "value": null
+                                  },
+                                  {
+                                    "color": "green",
+                                    "value": 1
+                                  }
+                                ]
+                              },
+                                "mappings": [
+                                    {
+                                      "from": "",
+                                      "id": 0,
+                                      "text": "Backup",
+                                      "to": "",
+                                      "type": 1,
+                                      "value": "3"
+                                    },
+                                    {
+                                      "from": "",
+                                      "id": 1,
+                                      "text": "Repair",
+                                      "to": "",
+                                      "type": 1,
+                                      "value": "2"
+                                    },
+                                    {
+                                      "from": "",
+                                      "id": 2,
+                                      "text": "Online",
+                                      "to": "",
+                                      "type": 1,
+                                      "value": "1"
+                                    }
+                                  ]
+                            }
+                        },
+                        "targets": [
+                            {
+                                "expr": "1+scylla_manager_task_active_count{type=~\"repair\",cluster=~\"$cluster|$^\"} + scylla_manager_task_active_count{type=~\"backup\",cluster=~\"$cluster|$^\"} * 2",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Manager"
+                    },
+                    {
+                        "class": "text_panel",
+                        "gridPos": {
+                            "w": 2,
+                            "h": 4
+                          },
+                        "title": "",
+                        "options": {
+                            "mode": "html",
+                            "content": "<div id=\"amnon\" style=\"margin: 0;top: 50%; margin: auto;transform: translateY(50%);\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_dash_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#57d1e5;color:black;font-size:20px\" value=\"Open issue\"></a></span></div>"
+                        }
+                    }
+                ],
+                "title": "New row"
+            },
     "logo_row": {
         "collapse": false,
         "editable": true,
@@ -1201,6 +1632,169 @@
         ],
         "title": "Nodes"
     },
+    "small_nodes_table" : {
+        "class": "nodes_table",
+        "styles": [
+            {
+                "alias": "",
+                "colorMode": null,
+                "colors": [
+                    "rgba(245, 54, 54, 0.9)",
+                    "rgba(237, 129, 40, 0.89)",
+                    "rgba(50, 172, 45, 0.97)"
+                ],
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "decimals": 2,
+                "link": true,
+                "linkTooltip": "Jump to the detailed node information",
+                "linkUrl": "./d/detailed-[[dash_version]]/Detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell}",
+                "mappingType": 1,
+                "pattern": "instance",
+                "thresholds": [],
+                "type": "string",
+                "unit": "short"
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "Time"
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "dc"
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "__name__"
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "exported_instance"
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "job"
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "version"
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "type"
+            },
+            {
+                "alias": "Version",
+                "colorMode": null,
+                "colors": [
+                    "rgba(245, 54, 54, 0.9)",
+                    "rgba(237, 129, 40, 0.89)",
+                    "rgba(50, 172, 45, 0.97)"
+                ],
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "decimals": 2,
+                "link": true,
+                "linkTooltip": "${__cell_11}",
+                "linkUrl": "./d/OS-[[dash_version]]/OS-metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
+                "mappingType": 1,
+                "pattern": "svr",
+                "thresholds": [],
+                "type": "string",
+                "unit": "short"
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "OS"
+            },
+            {
+                "colorMode": null,
+                "colors": [
+                    "rgba(245, 54, 54, 0.9)",
+                    "rgba(237, 129, 40, 0.89)",
+                    "rgba(50, 172, 45, 0.97)"
+                ],
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "decimals": 2,
+                "link": true,
+                "linkTooltip": "Jump to the CQL information",
+                "linkUrl": "./d/cql-[[dash_version]]/scylla-cql?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
+                "mappingType": 1,
+                "pattern": "CQL",
+                "thresholds": [],
+                "type": "string",
+                "unit": "short",
+                "valueMaps": [
+                    {
+                        "text": "CQL",
+                        "value": "cql"
+                    }
+                ]
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "Errors"
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "IO"
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "CPU"
+            },
+            {
+                "alias": "Status",
+                "mappingType": 2,
+                "pattern": "Value",
+                "rangeMaps": [
+                    {
+                        "from": "1",
+                        "text": "Starting",
+                        "to": "1"
+                    },
+                    {
+                        "from": "2",
+                        "text": "Joining",
+                        "to": "2"
+                    },
+                    {
+                        "from": "3",
+                        "text": "Normal",
+                        "to": "3"
+                    },
+                    {
+                        "from": "4",
+                        "text": "Leaving",
+                        "to": "4"
+                    },
+                    {
+                        "from": "5",
+                        "text": "Decommissioned",
+                        "to": "5"
+                    },
+                    {
+                        "from": "6",
+                        "text": "Draining",
+                        "to": "6"
+                    },
+                    {
+                        "from": "7",
+                        "text": "Drained",
+                        "to": "7"
+                    },
+                    {
+                        "from": "8",
+                        "text": "Moving",
+                        "to": "8"
+                    }
+                ],
+                "type": "string"
+            },
+            {
+                "class": "hidden_column",
+                "pattern": "cluster"
+            }
+        ]
+    },
     "template_variable_single" : {
             "allValue": null,
              "current": {
@@ -1377,6 +1971,53 @@
         "titleFormat": "Running",
         "type": "tags"
       },
+      "vertical_lcd": {
+          "datasource": "prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 1
+          },
+          "id": "auto",
+          "options": {
+            "displayMode": "lcd",
+            "orientation": "vertical",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true
+          },
+          "pluginVersion": "7.1.3",
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "",
+          "type": "bargauge"
+        },
       "annotation_manager_task_failed": {
         "datasource": "prometheus",
         "enable": true,
