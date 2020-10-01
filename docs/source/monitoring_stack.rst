@@ -65,9 +65,9 @@ Install Scylla Monitoring
 
 .. code-block:: sh
 
-   wget https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-3.4.tar.gz
-   tar -xvf scylla-monitoring-3.4.tar.gz
-   cd scylla-monitoring-scylla-monitoring-3.4
+   wget https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-3.5.tar.gz
+   tar -xvf scylla-monitoring-3.5.tar.gz
+   cd scylla-monitoring-scylla-monitoring-3.5
 
 As an alternative, you can clone and use the Git repository directly.
 
@@ -75,7 +75,7 @@ As an alternative, you can clone and use the Git repository directly.
 
    git clone https://github.com/scylladb/scylla-monitoring.git
    cd scylla-monitoring
-   git checkout branch-3.4
+   git checkout branch-3.5
 
 2. Start Docker service if needed
 
