@@ -43,6 +43,16 @@ If not used, each run of the containers will clear all of Grafana information.
 
 **-Q Grafana anonymous role** By default, anonymous users have admin privileges. That means they can create and edit dashboards. The ``-Q`` flag changes this behavior  by setting the role privileges to one of Admin, Editor, or Viewer.
 
+Grafana LDAP support
+^^^^^^^^^^^^^^^^^^^^
+Grafana supports LDAP_ for authentication and authorization.
+
+.. _LDAP: https://grafana.com/docs/grafana/latest/auth/ldap/
+
+Use the ``-P`` flag to supply an LDAP configuration file.
+
+**-P ldap-config-file**
+
 Prometheus Related Commands
 ---------------------------
 
