@@ -93,7 +93,7 @@ This configuration can be done from files, or using the Consul_ api.
 .. _Consul: https://www.consul.io/
 
 
-Sylla Manager 2.0 and higher supports the Consul API.
+Scylla Manager 2.0 and higher supports the Consul API.
 
 Configure Scylla nodes from files
 .................................
@@ -218,6 +218,21 @@ For example:
 .. note::
    If you are running Scylla-Manager on the same host as Scylla-Monitoring you should use -l flag so that the localhost address
    will be available from within the container.
+
+Connecting Scylla-Monitoring to Scylla
+......................................
+
+Scylla-Manager version 3.5 and higher can read tables from a Scylla node using CQL. If your Scylla cluster is user/password protected (See `Scylla  Authorization`_) you should assign a user and password for the Scylla-Grafana connection.
+
+.. _`Scylla  Authorization`: https://docs.scylladb.com/operating-scylla/security/enable-authorization/
+
+
+You can limit the user to read only, currently it only read table from the system keyspace.
+
+To set a user/password edit `grafana/provisioning/datasources/datasource.yaml`.
+
+Under **scylla-datasource** Uncomment the **secureJsonData** part and set the user and password.
+
 
 Start and Stop Scylla Monitoring Stack
 --------------------------------------
