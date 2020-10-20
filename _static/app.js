@@ -7,3 +7,9 @@ $(document).ready(function() {
         }
     }, 300));
 });
+
+// Opens external links in a new tab
+$(document).ready(function () {
+  $('a.external').attr('target', '_blank');
+});
+
