@@ -6,6 +6,10 @@ The following document explains how to update or create Grafana dashboards for t
 
 It will explain about Scylla Monitor dashboard templates and how to modify them.
 
+.. contents::
+   :depth: 2
+   :local:
+
 
 General Limitations
 ###################
@@ -227,9 +231,9 @@ To get a grasp of the difference, take a look at the Grafana panel example and s
 Grafana Formats and Layouts
 ***************************
 
-The Grafana layout used to be based on rows, where each contains multiple panels.
-Each row would have a total span of 12, if the total span of the panels be larger than 12, it would
-break the lines into multiple lines.
+The Grafana layout used to be based on rows, where each row contained multiple panels.
+Each row would have a total of 12 panels and if the total span of the panels was larger than 12, it would
+break them into multiple lines. This is no longer the case.
 
 Starting from  Grafana version 5.0 and later, rows are no longer supported, it was replaced with a layout that uses
 absolute positions (ie. X,Y, height, width).
@@ -240,9 +244,9 @@ More so, absolute positions are impossible to get right when done by hand.
 To overcome these issues, the dashboard generation script will generate the dashboards in the Grafana version 5.0 format.
 In the transition, rows will be replaced with a calculated absolute position.
 
-Panels height will be taken from their row. The `span` attribute is stil supported like you expect it to work, so does row height.
+The panel's height will be taken from their row. The `span` attribute is still supported as is row height.
 
-you can use the `gridPos` attribute which is a Grafana 5.0 format, but not like Grafana, you can use partial attributes.
+you can use the `gridPos` attribute which is a Grafana 5.0 format, but unlike Grafana, you can use partial attributes.
 
 `gridPos` has the following attributes:
 
@@ -255,7 +259,7 @@ you can use the `gridPos` attribute which is a Grafana 5.0 format, but not like 
       "h": 4
     }
 
-When using Scylla's template you don't need to supply them all, so for example to specify that a row is 2 units height you can use:
+When using Scylla's template you don't need to supply all of the attributes, so for example to specify that a row is 2 units high you can use:
 
 .. code-block:: json
 
@@ -268,12 +272,12 @@ When using Scylla's template you don't need to supply them all, so for example t
 Generating the dashboards from templates (generate-dashboards.sh)
 *****************************************************************
 
-prerequisite
+Prerequisite
 ============
 Python 2.7
 
 
-`make_dashboards.py` is a utility that generates dashboards from templates or help you update the template when working in reverse mode (the `-r` flag).
+`make_dashboards.py` is a utility that generates dashboards from templates or helps you update the templates when working in reverse mode (the `-r` flag).
 
 Use the -h flag to get help information.
 
@@ -281,11 +285,11 @@ You can use the `make_dashboards.py` to generate a single dashboard, but it's us
 `generate-dashboards.sh` wrapper.
 
 When you're done changing an existing dashboard template, run the `generate-dashboards.sh` with the current version,
-this will replace your existing dashboards.
+to replace your existing dashboards.
 
-For example, if you are changing a dashboard in Scylla Enterprise version 2018.1 run:
+For example, if you are changing a dashboard in Scylla Enterprise version 2020.1 run:
 
-``.\generate-dashboards.sh -v 2018.1``
+``.\generate-dashboards.sh -v 2020.1``
 
 .. note::  generate-dashboards.sh will update the dashboards in place, no need for a restart for the changes to take effect, just refresh the dashboard.
 
