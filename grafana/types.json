@@ -1640,167 +1640,349 @@
         "title": "Nodes"
     },
     "small_nodes_table" : {
-        "class": "nodes_table",
-        "styles": [
-            {
-                "alias": "",
-                "colorMode": null,
-                "colors": [
-                    "rgba(245, 54, 54, 0.9)",
-                    "rgba(237, 129, 40, 0.89)",
-                    "rgba(50, 172, 45, 0.97)"
-                ],
-                "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                "decimals": 2,
-                "link": true,
-                "linkTooltip": "Jump to the detailed node information",
-                "linkUrl": "./d/detailed-[[dash_version]]/Detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell}",
-                "mappingType": 1,
-                "pattern": "instance",
-                "thresholds": [],
-                "type": "string",
-                "unit": "short"
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "Time"
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "dc"
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "__name__"
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "exported_instance"
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "job"
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "version"
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "type"
-            },
-            {
-                "alias": "Version",
-                "colorMode": null,
-                "colors": [
-                    "rgba(245, 54, 54, 0.9)",
-                    "rgba(237, 129, 40, 0.89)",
-                    "rgba(50, 172, 45, 0.97)"
-                ],
-                "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                "decimals": 2,
-                "link": true,
-                "linkTooltip": "${__cell_11}",
-                "linkUrl": "./d/OS-[[dash_version]]/OS-metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
-                "mappingType": 1,
-                "pattern": "svr",
-                "thresholds": [],
-                "type": "string",
-                "unit": "short"
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "OS"
-            },
-            {
-                "colorMode": null,
-                "colors": [
-                    "rgba(245, 54, 54, 0.9)",
-                    "rgba(237, 129, 40, 0.89)",
-                    "rgba(50, 172, 45, 0.97)"
-                ],
-                "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                "decimals": 2,
-                "link": true,
-                "linkTooltip": "Jump to the CQL information",
-                "linkUrl": "./d/cql-[[dash_version]]/scylla-cql?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
-                "mappingType": 1,
-                "pattern": "CQL",
-                "thresholds": [],
-                "type": "string",
-                "unit": "short",
-                "valueMaps": [
-                    {
-                        "text": "CQL",
-                        "value": "cql"
-                    }
-                ]
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "Errors"
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "IO"
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "CPU"
-            },
-            {
-                "alias": "Status",
-                "mappingType": 2,
-                "pattern": "Value",
-                "rangeMaps": [
-                    {
-                        "from": "1",
-                        "text": "Starting",
-                        "to": "1"
-                    },
-                    {
-                        "from": "2",
-                        "text": "Joining",
-                        "to": "2"
-                    },
-                    {
-                        "from": "3",
-                        "text": "Normal",
-                        "to": "3"
-                    },
-                    {
-                        "from": "4",
-                        "text": "Leaving",
-                        "to": "4"
-                    },
-                    {
-                        "from": "5",
-                        "text": "Decommissioned",
-                        "to": "5"
-                    },
-                    {
-                        "from": "6",
-                        "text": "Draining",
-                        "to": "6"
-                    },
-                    {
-                        "from": "7",
-                        "text": "Drained",
-                        "to": "7"
-                    },
-                    {
-                        "from": "8",
-                        "text": "Moving",
-                        "to": "8"
-                    }
-                ],
-                "type": "string"
-            },
-            {
-                "class": "hidden_column",
-                "pattern": "cluster"
-            }
-        ]
+        "datasource": "prometheus",
+        "id":"auto",
+        "span":8,
+        "targets": [
+		    {
+		      "expr": "0*scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode{cluster=~\"$cluster|$^\", dc=~\"$dc\"}",
+		      "legendFormat": "",
+		      "interval": "",
+		      "format": "table",
+		      "instant": true,
+		      "intervalFactor": 1,
+		      "refId": "A",
+		      "hide": false
+		    },
+		    {
+		      "expr": "avg(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\"} ) by (instance)",
+		      "legendFormat": "",
+		      "interval": "",
+		      "refId": "B",
+		      "instant": true,
+		      "format": "table"
+		    }
+		  ],
+		  "type": "table",
+		  "title": "Nodes",
+		  "fieldConfig": {
+		    "defaults": {
+		      "custom": {
+		        "align": null,
+		        "filterable": true
+		      },
+		      "color": {
+		        "mode": "thresholds"
+		      },
+		      "thresholds": {
+		        "mode": "absolute",
+		        "steps": [
+		          {
+		            "color": "green",
+		            "value": null
+		          },
+		          {
+		            "color": "red",
+		            "value": 80
+		          }
+		        ]
+		      },
+		      "mappings": [
+		        {
+		          "id": 1,
+		          "type": 1,
+		          "from": "",
+		          "to": "",
+		          "text": "Starting",
+		          "value": "1"
+		        },
+		        {
+		          "id": 2,
+		          "type": 1,
+		          "from": "",
+		          "to": "",
+		          "text": "Joining",
+		          "value": "2"
+		        },
+		        {
+		          "id": 3,
+		          "type": 1,
+		          "from": "",
+		          "to": "",
+		          "text": "Normal",
+		          "value": "3"
+		        },
+		        {
+		          "id": 4,
+		          "type": 1,
+		          "from": "",
+		          "to": "",
+		          "text": "Leaving",
+		          "value": "4"
+		        },
+		        {
+		          "id": 5,
+		          "type": 1,
+		          "from": "",
+		          "to": "",
+		          "text": "Decommissioned",
+		          "value": "5"
+		        },
+		        {
+		          "id": 6,
+		          "type": 1,
+		          "from": "",
+		          "to": "",
+		          "text": "Draining",
+		          "value": "6"
+		        },
+		        {
+		          "id": 7,
+		          "type": 1,
+		          "from": "",
+		          "to": "",
+		          "text": "Drained",
+		          "value": "7"
+		        },
+		        {
+		          "id": 8,
+		          "type": 1,
+		          "from": "",
+		          "to": "",
+		          "text": "Moving",
+		          "value": "8"
+		        }
+		      ]
+		    },
+		    "overrides": [
+		      {
+		        "matcher": {
+		          "id": "byName",
+		          "options": "Value #B"
+		        },
+		        "properties": [
+		          {
+		            "id": "custom.displayMode",
+		            "value": "lcd-gauge"
+		          },
+		          {
+		            "id": "min",
+		            "value": 0
+		          },
+		          {
+		            "id": "max",
+		            "value": 101
+		          },
+		          {
+		            "id": "displayName",
+		            "value": "Load"
+		          },
+		          {
+		            "id": "custom.width",
+		            "value": 120
+		          },
+		          {
+		            "id": "custom.filterable",
+		            "value": false
+		          }
+		        ]
+		      },
+		      {
+		        "matcher": {
+		          "id": "byName",
+		          "options": "svr"
+		        },
+		        "properties": [
+		          {
+		            "id": "custom.width",
+		            "value": 90
+		          },
+		          {
+		            "id": "displayName",
+		            "value": "Version"
+		          }
+		        ]
+		      },
+		      {
+		        "matcher": {
+		          "id": "byName",
+		          "options": "instance"
+		        },
+		        "properties": [
+		          {
+		            "id": "custom.width",
+		            "value": 120
+		          }
+		        ]
+		      },
+		      {
+		        "matcher": {
+		          "id": "byName",
+		          "options": "Value #A"
+		        },
+		        "properties": [
+		          {
+		            "id": "custom.width",
+		            "value": 110
+		          },
+		          {
+		            "id": "displayName",
+		            "value": "Status"
+		          },
+		          {
+		            "id": "custom.displayMode",
+		            "value": "color-background"
+		          },
+		          {
+		            "id": "thresholds",
+		            "value": {
+		              "mode": "absolute",
+		              "steps": [
+		                {
+		                  "color": "yellow",
+		                  "value": null
+		                },
+		                {
+		                  "value": 3,
+		                  "color": "rgba(0, 0, 0, 0)"
+		                },
+		                {
+		                  "color": "red",
+		                  "value": 4
+		                }
+		              ]
+		            }
+		          },
+		          {
+		            "id": "custom.align",
+		            "value": "center"
+		          }
+		        ]
+		      },
+		      {
+		        "matcher": {
+		          "id": "byName",
+		          "options": "CQL"
+		        },
+		        "properties": [
+		          {
+		            "id": "links",
+		            "value": [
+		              {
+		                "title": "CQL Information Dashboard",
+		                "url": "./d/cql-[[dash_version]]/scylla-cql?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}"
+		              }
+		            ]
+		          },
+		          {
+		            "id": "custom.width",
+		            "value": 120
+		          },
+		          {
+		            "id": "custom.filterable",
+		            "value": false
+		          },
+		          {
+		            "id": "mappings",
+		            "value": [
+		              {
+		                "id": 1,
+		                "type": 1,
+		                "from": "",
+		                "to": "",
+		                "text": "CQL Dashboard",
+		                "value": "cql"
+		              }
+		            ]
+		          }
+		        ]
+		      },
+		      {
+		        "matcher": {
+		          "id": "byName",
+		          "options": "OS"
+		        },
+		        "properties": [
+		          {
+		            "id": "links",
+		            "value": [
+		              {
+		                "title": "OS Information Dashboard",
+		                "url": "./d/OS-[[dash_version]]/OS-metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}"
+		              }
+		            ]
+		          },
+		          {
+		            "id": "custom.width",
+		            "value": 120
+		          },
+		          {
+		            "id": "custom.filterable",
+		            "value": false
+		          },
+		          {
+		            "id": "mappings",
+		            "value": [
+		              {
+		                "id": 1,
+		                "type": 1,
+		                "from": "",
+		                "to": "",
+		                "text": "OS Dashboard",
+		                "value": "os"
+		              }
+		            ]
+		          }
+		        ]
+		      },
+		      {
+		        "matcher": {
+		          "id": "byName",
+		          "options": "instance"
+		        },
+		        "properties": [
+		          {
+		            "id": "links",
+		            "value": [
+		              {
+		                "title": "Detailed view",
+		                "url": "./d/detailed-[[dash_version]]/Detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}"
+		              }
+		            ]
+		          }
+		        ]
+		        }
+	        ]},
+        "scopedVars": {
+		    "dc": {
+		      "text": "datacenter1",
+		      "value": "datacenter1",
+		      "selected": false
+		    }
+		  },
+		  "transformations": [
+		    {
+		      "id": "filterFieldsByName",
+		      "options": {
+		        "include": {
+		          "names": [
+		            "instance",
+		            "svr",
+		            "Value #A",
+		            "Value #B",
+		            "CQL",
+		            "OS"
+		          ]
+		        }
+		      }
+		    },
+		    {
+		      "id": "seriesToColumns",
+		      "options": {
+		        "byField": "instance"
+		      }
+		    }
+		  ]
     },
     "template_variable_single" : {
             "allValue": null,
