@@ -1,3 +1,4 @@
+===================
 The CQL Optimiztion
 ===================
 
@@ -16,7 +17,7 @@ The lower parts holds gauges and graphs. When inspecting the system, we like the
 The following sections describe each of the dashboard's panel
 
 Prepared Statements
-^^^^^^^^^^^^^^^^^^^
+===================
 
 `Prepared statements`_ are queries that are first defined as a template with place holders for the values and then that template is used
 multiple times with different values.
