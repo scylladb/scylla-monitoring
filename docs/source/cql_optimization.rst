@@ -129,7 +129,7 @@ The **CQL ALL CL Queries** Gauge shows the percentage of queries that use Consis
 The **CQL ALL CL Queries** Graph shows the rate of the queries that use Consistency Level ``ALL``, make sure both are low.
 
 Cross DC
-========
+^^^^^^^^
 
 Cross DC traffic is usually more expensive in terms of latencies and cost.
 This metric reports on such traffic in situations were it could be avoided.
