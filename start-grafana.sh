@@ -136,19 +136,19 @@ if [ ! -d $EXTERNAL_VOLUME ]; then
     echo "Creating grafana directory directory $EXTERNAL_VOLUME"
     mkdir -p $EXTERNAL_VOLUME
 fi
-if [ ! -z $RUN_RENDERER ]; then
-    RENDERING_SERVER_URL=`./start-grafana-renderer.sh -D "$DOCKER_PARAM"`
-fi
-
 
 DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+
+if [ ! -z $RUN_RENDERER ]; then
+    RENDERING_SERVER_URL=`./start-grafana-renderer.sh -D "$DOCKER_PARAM"`
+    GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_RENDERING_SERVER_URL=http://$DOCKER_HOST:8081/render -e GF_RENDERING_CALLBACK_URL=http://$DOCKER_HOST:3000/"
+fi
+
 
 docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=$ANONYMOUS_ROLE" \
-     -e "GF_RENDERING_SERVER_URL=http://$DOCKER_HOST:8081/render" \
-     -e "GF_RENDERING_CALLBACK_URL=http://$DOCKER_HOST:3000/" \
      -e "GF_PANELS_DISABLE_SANITIZE_HTML=true" \
      $LDAP_FILE \
      "${group_args[@]}" \
