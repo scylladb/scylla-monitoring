@@ -103,7 +103,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:' option; do
        ;;
     b) PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=("$OPTARG")
        ;;
-    N) SCYLLA_MANGER_TARGET_FILE="$OPTARG"
+    N) SCYLLA_MANGER_TARGET_FILES=($OPTARG)
        ;;
     S) SPECIFIC_SOLUTION="-S $OPTARG"
        ;;
