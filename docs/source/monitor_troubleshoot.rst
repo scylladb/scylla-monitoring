@@ -25,7 +25,7 @@ For backward compatibility, Scylla Monitoring 3.5 default configuration reads fr
 
   
 
-If you configure ``scylla_manager_server.yml`` file with the new port, Scylla-Manager dashboard will report all metrics twice.
+However, if you configure ``scylla_manager_server.yml`` file with the new port, Scylla-Manager dashboard will report all metrics twice.
 
 The easiest way around this is to edit ``prometheus/prometheus.yml.template`` and remove the ``scylla_manager1`` job.
 
