@@ -13,6 +13,19 @@ Problem
    :depth: 1
    :local:
 
+Scylla-Manager 2.2 with Duplicate information
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There is a change in Scylla-Manager 2.2 ports, to smooth the upgrade between earlier versions of Scylla-Manager and
+Scylla-Manager 2.2 and higher Prometheus is configured to listen to both ports. This way, after upgrading Scylla Manager
+and start using its new port the dashboards would continue to work.
+
+If you configure ``scylla_manager_server.yml`` file with the new port, Scylla-Manager dashboard will report all metrics twice.
+
+The easiest way around this is to edit ``prometheus/prometheus.yml.template`` and remove the ``scylla_manager1`` job.
+
+Note that for this change to take effect you need to run ``kill-all.sh`` followed by ``start-all.sh``.
+
 A Container Fails To Start
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
