@@ -13,6 +13,24 @@ Problem
    :depth: 1
    :local:
 
+Scylla-Manager 2.2 with Duplicate information
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Scylla Manager 2.2 change the default metrics (Prometheus) reporting ports:
+
+* For Manager server: from 56090 to 5090 
+* For Manager Agent: from 56090 to 5090 
+
+For backward compatibility, Scylla Monitoring 3.5 default configuration reads from **both** Manager ports, old and new, so you do not have to update the Prometheus configuration when upgrading to Manager 2.2
+
+  
+
+However, if you configure ``scylla_manager_server.yml`` file with the new port, Scylla-Manager dashboard will report all metrics twice.
+
+The easiest way around this is to edit ``prometheus/prometheus.yml.template`` and remove the ``scylla_manager1`` job.
+
+Note that for this change to take effect you need to run ``kill-all.sh`` followed by ``start-all.sh``.
+
 A Container Fails To Start
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -205,4 +223,3 @@ In this example, Scylla is not running
 
    Monitor ip        Scylla node ip
    199.203.229.89 -> 172.16.12.142 TCP 74 60440 > 9180 [SYN] Seq=0 Win=29200 Len=0 MSS=1460 SACK_PERM=1 TSval=79988291 TSecr=0 WS=128
-
