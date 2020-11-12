@@ -36,7 +36,7 @@ fi
 
 PROMETHEUS_RULES="$PWD/prometheus/prometheus.rules.yml"
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [--no-loki] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.18.1
 
 SCYLLA_TARGET_FILES=($PWD/prometheus/scylla_servers.yml $PWD/scylla_servers.yml)
@@ -52,6 +52,16 @@ GRAFNA_ANONYMOUS_ROLE=""
 SPECIFIC_SOLUTION=""
 LDAP_FILE=""
 RUN_RENDERER=""
+RUN_LOKI=1
+
+for var in "$@"; do
+    case $var in
+        --no-loki)
+        RUN_LOKI=0
+        shift
+        ;;
+    esac
+done
 
 while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:' option; do
   case "$option" in
@@ -186,6 +196,11 @@ if [ $? -ne 0 ]; then
     echo "$AM_ADDRESS"
     exit 1
 fi
+
+if [ $RUN_LOKI -eq 1 ]; then
+	./start-loki.sh $BIND_ADDRESS_CONFIG -D "$DOCKER_PARAM" -m $AM_ADDRESS
+fi
+
 if [ -z $PROMETHEUS_PORT ]; then
     PROMETHEUS_PORT=9090
     PROMETHEUS_NAME=aprom
