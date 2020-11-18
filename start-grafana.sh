@@ -137,9 +137,12 @@ if [ ! -d $EXTERNAL_VOLUME ]; then
     mkdir -p $EXTERNAL_VOLUME
 fi
 
-DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
-
 if [ ! -z $RUN_RENDERER ]; then
+	if [ ! -z "$is_podman" ]; then
+		DOCKER_HOST=`hostname -I | awk '{print $1}'`
+	else
+		DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+	fi
     RENDERING_SERVER_URL=`./start-grafana-renderer.sh -D "$DOCKER_PARAM"`
     GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_RENDERING_SERVER_URL=http://$DOCKER_HOST:8081/render -e GF_RENDERING_CALLBACK_URL=http://$DOCKER_HOST:3000/"
 fi
