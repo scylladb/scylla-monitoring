@@ -196,9 +196,14 @@ if [ $? -ne 0 ]; then
     echo "$AM_ADDRESS"
     exit 1
 fi
-
+echo "Wait for Loki container to start."
+LOKI_ADDRESS="127.0.0.1"
 if [ $RUN_LOKI -eq 1 ]; then
-	./start-loki.sh $BIND_ADDRESS_CONFIG -D "$DOCKER_PARAM" -m $AM_ADDRESS
+	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG -D "$DOCKER_PARAM" -m $AM_ADDRESS`
+	if [ $? -ne 0 ]; then
+	    echo "$LOKI_ADDRESS"
+	    exit 1
+	fi
 fi
 
 if [ -z $PROMETHEUS_PORT ]; then

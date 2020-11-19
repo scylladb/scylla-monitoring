@@ -62,7 +62,7 @@ if [ -z $ALERT_MANAGER_ADDRESS ]; then
 fi
 
 sed "s/ALERTMANAGER/$ALERT_MANAGER_ADDRESS/" loki/conf/loki-config.template.yaml > loki/conf/loki-config.yaml
-printf "Wait for Loki container to start."
+
 docker run -d $DOCKER_PARAM -i $PORT_MAPPING \
 	 -v $LOKI_RULE_DIR:/etc/loki/rules \
 	 -v $LOKI_CONF_DIR:/mnt/config \
@@ -80,7 +80,6 @@ TRIES=0
 until $(curl --output /dev/null -f --silent http://localhost:$LOKI_PORT) || [ $TRIES -eq $RETRIES ]; do
     ((TRIES=TRIES+1))
     sleep 5
-    printf "."
 done
 
 if [ ! "$(docker ps -q -f name=$LOKI_NAME)" ]
@@ -88,7 +87,6 @@ then
     echo "Error: Loki container failed to start"
     exit 1
 fi
-echo
 
 LOKI_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $LOKI_NAME):3100"
 if [ ! -z "$is_podman" ] && [ "$AM_ADDRESS" = ":3100" ]; then
@@ -115,7 +113,6 @@ fi
 
 sed "s/LOKI_IP/$LOKI_ADDRESS/" loki/promtail/promtail_config.template.yml > loki/promtail/promtail_config.yml
 
-printf "Wait for Promtail container to start."
 docker run -d $DOCKER_PARAM -i $PROMTAIL_PORT_MAPPING \
 	 -v $PROMTAIL_CONFIG:/etc/promtail/config.yml \
      --name $PROMTAIL_NAME grafana/promtail:$LOKI_VERSION --config.file=/etc/promtail/config.yml >& /dev/null
@@ -132,7 +129,6 @@ TRIES=0
 until $(curl --output /dev/null -f --silent http://localhost:$PROMTAIL_PORT) || [ $TRIES -eq $RETRIES ]; do
     ((TRIES=TRIES+1))
     sleep 5
-    printf "."
 done
 
 if [ ! "$(docker ps -q -f name=$PROMTAIL_NAME)" ]
@@ -140,4 +136,5 @@ then
     echo "Error: Promtail container failed to start"
     exit 1
 fi
-echo
+
+echo "$LOKI_ADDRESS"
