@@ -20,10 +20,11 @@ BIND_ADDRESS=""
 ANONYMOUS_ROLE="Admin"
 SPECIFIC_SOLUTION=""
 LDAP_FILE=""
+LOKI_ADDRESS=""
 
 usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:Q:' option; do
+while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -42,6 +43,8 @@ while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:Q:' option; do
        ;;
     m) AM_ADDRESS="-m $OPTARG"
        ALERT_MANAGER_ADDRESS=$OPTARG
+       ;;
+    L) LOKI_ADDRESS=$OPTARG
        ;;
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
@@ -126,7 +129,7 @@ done
 
 ./generate-dashboards.sh -t $SPECIFIC_SOLUTION -v $VERSIONS -M $MANAGER_VERSION $GRAFANA_DASHBOARD_COMMAND
 mkdir -p grafana/provisioning/datasources
-sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
+sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" | sed "s/LOKI_ADDRESS/$LOKI_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
 
 if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
     PORT_MAPPING="-p $BIND_ADDRESS$GRAFANA_PORT:3000"
