@@ -129,27 +129,6 @@ scrape_configs:
     - source_labels: [host]
       target_label: instance
 
-- job_name: scylla_manager1
-  honor_labels: false
-  file_sd_configs:
-    - files:
-      - /etc/scylla.d/prometheus/scylla_manager_servers.yml
-  relabel_configs:
-    - source_labels: [__address__]
-      regex:  '(.*):\d+'
-      target_label: instance
-      replacement: '${1}'
-    - source_labels: [__address__]
-      regex:  '([^:]+)'
-      target_label: instance
-      replacement: '${1}'
-    - source_labels: [instance]
-      regex:  '(.*)'
-      target_label: __address__
-      replacement: '${1}:5090'
-  metric_relabel_configs:
-    - source_labels: [host]
-      target_label: instance
 - job_name: 'prometheus'
   # Override the global default and scrape targets from this job every 5 seconds.
   scrape_interval: 5s
