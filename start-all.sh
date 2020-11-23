@@ -98,6 +98,7 @@ GRAFANA_ADMIN_PASSWORD=""
 ALERTMANAGER_PORT=""
 DOCKER_PARAM=""
 DATA_DIR=""
+DATA_DIR_CMD=""
 CONSUL_ADDRESS=""
 PROMETHEUS_TARGETS=""
 BIND_ADDRESS=""
@@ -107,13 +108,15 @@ SPECIFIC_SOLUTION=""
 LDAP_FILE=""
 RUN_RENDERER="-E"
 RUN_LOKI=1
-
+RUN_THANOS_SC=1
 for arg; do
 	shift
 	case $arg in
         (--no-loki) RUN_LOKI=0
             ;;
         (--no-renderer) RUN_RENDERER=""
+            ;;
+        (--no-thanos-sc) RUN_THANOS_SC=0
             ;;
         (--auto-restart) DOCKER_PARAM="--restart=on-failure"
             ;;
@@ -245,7 +248,7 @@ else
         echo "Creating data directory $DATA_DIR"
         mkdir -p $DATA_DIR
     fi
-    DATA_DIR="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
+    DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
 fi
 
 if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
@@ -309,14 +312,14 @@ if [ -z $HOST_NETWORK ]; then
 fi
 
 docker run -d $DOCKER_PARAM $USER_PERMISSIONS \
-     $DATA_DIR \
+     $DATA_DIR_CMD \
      "${group_args[@]}" \
      -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
      -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
      $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
      $NODE_TARGET_FILE \
-     $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION  --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS >& /dev/null
+     $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION  --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
 
 if [ $? -ne 0 ]; then
     echo "Error: Prometheus container failed to start"
@@ -354,9 +357,18 @@ fi
 # Can't use localhost here, because the monitoring may be running remotely.
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
 DB_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME):9090"
+
 if [ ! -z "$is_podman" ] && [ "$DB_ADDRESS" = ":9090" ]; then
     HOST_IP=`hostname -I | awk '{print $1}'`
     DB_ADDRESS="$HOST_IP:9090"
+fi
+
+if [ $RUN_THANOS_SC -eq 1 ]; then
+    if [ -z $DATA_DIR ]; then
+        echo "You must use external prometheus directory to use the thanos side cart"
+    else
+        ./start-thanos-sc.sh -d $DATA_DIR -a $DB_ADDRESS
+    fi
 fi
 
 for val in "${GRAFANA_ENV_ARRAY[@]}"; do
