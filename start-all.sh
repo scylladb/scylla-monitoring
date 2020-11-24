@@ -54,12 +54,13 @@ LDAP_FILE=""
 RUN_RENDERER=""
 RUN_LOKI=1
 
-for var in "$@"; do
-    case $var in
-        --no-loki)
-        RUN_LOKI=0
-        shift
-        ;;
+for arg; do
+	shift
+	case $arg in
+        (--no-loki) RUN_LOKI=0
+            ;;
+        (*) set -- "$@" "$arg"
+            ;;
     esac
 done
 
