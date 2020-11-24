@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
+from datetime import date
 from sphinx.util import logging
 import recommonmark
 from recommonmark.transform import AutoStructify	
 
-logger = logging.getLogger(__name__) 
-
+logger = logging.getLogger(__name__)
+sys.path.insert(0, os.path.abspath('.'))
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -50,7 +50,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Scylla'
-copyright = u'2020, ScyllaDB. All rights reserved.'
+copyright = str(date.today().year) + ', ScyllaDB. All rights reserved.'
 author = u'Scylla Project Contributors'
 
 # The version info for the project you're documenting, acts as replacement for
