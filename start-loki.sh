@@ -64,8 +64,8 @@ fi
 sed "s/ALERTMANAGER/$ALERT_MANAGER_ADDRESS/" loki/conf/loki-config.template.yaml > loki/conf/loki-config.yaml
 
 docker run -d $DOCKER_PARAM -i $PORT_MAPPING \
-	 -v $LOKI_RULE_DIR:/etc/loki/rules \
-	 -v $LOKI_CONF_DIR:/mnt/config \
+	 -v $LOKI_RULE_DIR:/etc/loki/rules:z \
+	 -v $LOKI_CONF_DIR:/mnt/config:z \
      --name $LOKI_NAME grafana/loki:$LOKI_VERSION $LOKI_COMMANDS --config.file=/mnt/config/loki-config.yaml >& /dev/null
 
 if [ $? -ne 0 ]; then
@@ -114,7 +114,7 @@ fi
 sed "s/LOKI_IP/$LOKI_ADDRESS/" loki/promtail/promtail_config.template.yml > loki/promtail/promtail_config.yml
 
 docker run -d $DOCKER_PARAM -i $PROMTAIL_PORT_MAPPING \
-	 -v $PROMTAIL_CONFIG:/etc/promtail/config.yml \
+	 -v $PROMTAIL_CONFIG:/etc/promtail/config.yml:z \
      --name $PROMTAIL_NAME grafana/promtail:$LOKI_VERSION --config.file=/etc/promtail/config.yml >& /dev/null
 
 if [ $? -ne 0 ]; then
