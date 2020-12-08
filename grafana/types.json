@@ -50,6 +50,111 @@
       "timeShift": null,
       "type": "stat"
 	},
+    "small_gauge_std": {
+        "class": "small_stat",
+        "type": "gauge",
+        "fieldConfig": {
+		    "defaults": {
+		      "custom": {},
+		      "min": 0,
+			  "max": 10,
+			  "decimals": 1,
+		      "thresholds": {
+		        "mode": "absolute",
+		        "steps": [
+		          {
+		            "color": "green",
+		            "value": null
+		          },
+		          {
+		            "value": 2,
+		            "color": "red"
+		          }
+		        ]
+		      },
+		      "mappings": []
+		    },
+		    "overrides": []
+		  },
+        "transformations": [
+	    {
+	      "id": "calculateField",
+	      "options": {
+	        "mode": "reduceRow",
+	        "reduce": {
+	          "reducer": "max"
+	        },
+	        "replaceFields": true
+	      }
+	    }
+	    ]
+    },
+    "small_stat_error" : {
+        "class": "small_stat",
+        "fieldConfig": {
+		    "defaults": {
+		      "custom": {},
+		      "thresholds": {
+		        "mode": "absolute",
+		        "steps": [
+		          {
+		            "color": "green",
+		            "value": null
+		          },
+		          {
+		            "value": 0.00001,
+		            "color": "red"
+		          }
+		        ]
+		      },
+		      "mappings": [
+		        {
+		          "id": 1,
+		          "type": 2,
+		          "from": "-1000",
+		          "to": "0.01",
+		          "text": "✓",
+		          "value": ""
+		        },
+		        {
+		          "id": 2,
+		          "type": 2,
+		          "from": "0.01",
+		          "to": "10000",
+		          "text": "⚠",
+		          "value": "0.01"
+		        }
+			]
+		    },
+		    "overrides": []
+		  },
+		"options": {
+		    "reduceOptions": {
+		      "values": false,
+		      "calcs": [
+		        "last"
+		      ],
+		      "fields": ""
+		    },
+		    "orientation": "auto",
+		    "textMode": "auto",
+		    "colorMode": "value",
+		    "graphMode": "none",
+		    "justifyMode": "auto"
+		},
+        "transformations": [
+	    {
+	      "id": "calculateField",
+	      "options": {
+	        "mode": "reduceRow",
+	        "reduce": {
+	          "reducer": "max"
+	        },
+	        "replaceFields": true
+	      }
+	    }
+	    ]
+    },
 	"small_stat_rows": {
                 "class": "row",
                 "height": "200px",
@@ -240,7 +345,6 @@
                             },
                             "overrides": []
                           },
-
                         "targets": [
                             {
                                 "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (le))",
@@ -1391,10 +1495,11 @@
         "targets": [
             {
                 "annotations": true,
-                "expr": "job!=\"scylla_manager\"",
+                "expr": "job!=\"scylla_manager\",advisor=\"\"",
                 "legendFormat": "{{description}}",
                 "refId": "A",
                 "target": "Query",
+                "labelSelector": "description,dc,instance",
                 "type": "table"
             }
         ],
