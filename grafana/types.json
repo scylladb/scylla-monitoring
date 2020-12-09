@@ -102,7 +102,7 @@
 		            "value": null
 		          },
 		          {
-		            "value": 0.00001,
+		            "value": 0.001,
 		            "color": "red"
 		          }
 		        ]
@@ -112,17 +112,17 @@
 		          "id": 1,
 		          "type": 2,
 		          "from": "-1000",
-		          "to": "0.01",
+		          "to": "0.001",
 		          "text": "✓",
 		          "value": ""
 		        },
 		        {
 		          "id": 2,
 		          "type": 2,
-		          "from": "0.01",
+		          "from": "0.001",
 		          "to": "10000",
 		          "text": "⚠",
-		          "value": "0.01"
+		          "value": "0.001"
 		        }
 			]
 		    },
@@ -159,6 +159,54 @@
                 "class": "row",
                 "height": "200px",
                 "panels": [
+                	{
+                        "class": "text_panel",
+                        "gridPos": {
+                            "w": 8,
+                            "h": 1
+                          },
+                        "title": "",
+                        "transparent": false,
+                        "options": {
+                            "content": "# "
+                        }
+                    },
+                    {
+                        "class": "text_panel",
+                        "gridPos": {
+                            "w": 4,
+                            "h": 1
+                          },
+                        "title": "",
+                        "transparent": false,
+                        "options": {
+                            "content": "# "
+                    	}
+                    },
+                    {
+                        "class": "text_panel",
+                        "gridPos": {
+                            "w": 4,
+                            "h": 1
+                          },
+                        "title": "",
+                        "transparent": false,
+                        "options": {
+                            "content": "# "
+                    	}
+                    },
+                    {
+                        "class": "text_panel",
+                        "gridPos": {
+                            "w": 7,
+                            "h": 1
+                          },
+                        "title": "",
+                        "transparent": false,
+                        "options": {
+                            "content": "# "
+                    	}
+                    },
                     {
                         "class": "small_stat",
                         "description": "The number of nodes configured in the cluster.",
@@ -248,40 +296,59 @@
                     },
                     {
                         "class": "small_stat",
-                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
                         "fieldConfig": {
                             "defaults": {
-                              "custom": {},
-                              "decimals": 0,
-                              "mappings": [],
-                              "thresholds": {
+                                "noValue": " Offline",
+                                "thresholds": {
                                 "mode": "absolute",
                                 "steps": [
                                   {
-                                    "color": "green",
+                                    "color": "red",
                                     "value": null
                                   },
                                   {
-                                    "color": "red",
-                                    "value": 80
+                                    "color": "green",
+                                    "value": 1
                                   }
                                 ]
                               },
-                              "unit": "percent"
-                            },
-                            "overrides": []
-                          },
+                                "mappings": [
+                                    {
+                                      "from": "",
+                                      "id": 0,
+                                      "text": "Backup",
+                                      "to": "",
+                                      "type": 1,
+                                      "value": "3"
+                                    },
+                                    {
+                                      "from": "",
+                                      "id": 1,
+                                      "text": "Repair",
+                                      "to": "",
+                                      "type": 1,
+                                      "value": "2"
+                                    },
+                                    {
+                                      "from": "",
+                                      "id": 2,
+                                      "text": "Online",
+                                      "to": "",
+                                      "type": 1,
+                                      "value": "1"
+                                    }
+                                  ]
+                            }
+                        },
                         "targets": [
                             {
-                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} )",
+                                "expr": "(1+sum(scylla_manager_task_active_count{type=~\"repair\",cluster=~\"$cluster|$^\"}) + sum(scylla_manager_task_active_count{type=~\"backup\",cluster=~\"$cluster|$^\"}) * 2) or (1+scylla_manager_server_current_version)",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
                                 "refId": "A",
-                                "instant": true,
-                                "step": 4
+                                "step": 40
                             }
                         ],
-                        "title": "Load"
+                        "title": "Manager"
                     },
                     {
                         "class": "small_stat",
@@ -443,7 +510,66 @@
                                 "step": 40
                             }
                         ],
-                        "title": "Requests"
+                        "gridPos": {
+					        "w": 3,
+					        "h": 4
+					      },
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "unit": "si:",
+      						  "decimals": 1,
+                              "thresholds": {
+                              	"mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "green",
+                                    "value": null
+                                  }
+                                  ]
+                              },
+                              "mappings": []
+                            },
+                            "overrides": []
+                          },
+                        "title": "Requests/s"
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "decimals": 0,
+                              "mappings": [],
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "green",
+                                    "value": null
+                                  },
+                                  {
+                                    "color": "red",
+                                    "value": 80
+                                  }
+                                ]
+                              },
+                              "unit": "percent"
+                            },
+                            "overrides": []
+                          },
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} )",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "instant": true,
+                                "step": 4
+                            }
+                        ],
+                        "title": "Load"
                     },
                     {
                         "class": "small_stat",
@@ -479,71 +605,14 @@
                         "title": "Timeouts"
                     },
                     {
-                        "class": "small_stat",
-                        "fieldConfig": {
-                            "defaults": {
-                                "noValue": " Offline",
-                                "thresholds": {
-                                "mode": "absolute",
-                                "steps": [
-                                  {
-                                    "color": "red",
-                                    "value": null
-                                  },
-                                  {
-                                    "color": "green",
-                                    "value": 1
-                                  }
-                                ]
-                              },
-                                "mappings": [
-                                    {
-                                      "from": "",
-                                      "id": 0,
-                                      "text": "Backup",
-                                      "to": "",
-                                      "type": 1,
-                                      "value": "3"
-                                    },
-                                    {
-                                      "from": "",
-                                      "id": 1,
-                                      "text": "Repair",
-                                      "to": "",
-                                      "type": 1,
-                                      "value": "2"
-                                    },
-                                    {
-                                      "from": "",
-                                      "id": 2,
-                                      "text": "Online",
-                                      "to": "",
-                                      "type": 1,
-                                      "value": "1"
-                                    }
-                                  ]
-                            }
-                        },
-                        "targets": [
-                            {
-                                "expr": "(1+sum(scylla_manager_task_active_count{type=~\"repair\",cluster=~\"$cluster|$^\"}) + sum(scylla_manager_task_active_count{type=~\"backup\",cluster=~\"$cluster|$^\"}) * 2) or (1+scylla_manager_server_current_version)",
-                                "intervalFactor": 1,
-                                "refId": "A",
-                                "step": 40
-                            }
-                        ],
-                        "title": "Manager"
-                    },
-                    {
                         "class": "text_panel",
                         "gridPos": {
-                            "w": 2,
+                            "w": 1,
                             "h": 4
                           },
                         "title": "",
                         "options": {
-                            "mode": "html",
-                            "content": "<div id=\"amnon\" style=\"margin: 0;top: 50%; margin: auto;transform: translateY(50%);\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_dash_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#57d1e5;color:black;font-size:20px\" value=\"Open issue\"></a></span></div>"
+                            "content": "# "
                         }
                     }
                 ],
@@ -963,7 +1032,7 @@
         "panels": [
             {
                 "class": "plain_text",
-                "content": "<h4 style=\"color:#5881c2; border-bottom: 0px solid #5881c2;\">Scylla Monitoring version - __MONITOR_VERSION__</h4>"
+                "content": "<div style=\"color:#5881c2; border-bottom: 0px solid #5881c2;\">Scylla Monitoring version - __MONITOR_VERSION__</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_dash_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#57d1e5;color:black;font-size:20px\" value=\"Report an issue on this page\"></a></span></div>"
             }
         ],
         "title": "New row"
@@ -1831,73 +1900,7 @@
 		            "value": 80
 		          }
 		        ]
-		      },
-		      "mappings": [
-		        {
-		          "id": 1,
-		          "type": 1,
-		          "from": "",
-		          "to": "",
-		          "text": "Starting",
-		          "value": "1"
-		        },
-		        {
-		          "id": 2,
-		          "type": 1,
-		          "from": "",
-		          "to": "",
-		          "text": "Joining",
-		          "value": "2"
-		        },
-		        {
-		          "id": 3,
-		          "type": 1,
-		          "from": "",
-		          "to": "",
-		          "text": "Normal",
-		          "value": "3"
-		        },
-		        {
-		          "id": 4,
-		          "type": 1,
-		          "from": "",
-		          "to": "",
-		          "text": "Leaving",
-		          "value": "4"
-		        },
-		        {
-		          "id": 5,
-		          "type": 1,
-		          "from": "",
-		          "to": "",
-		          "text": "Decommissioned",
-		          "value": "5"
-		        },
-		        {
-		          "id": 6,
-		          "type": 1,
-		          "from": "",
-		          "to": "",
-		          "text": "Draining",
-		          "value": "6"
-		        },
-		        {
-		          "id": 7,
-		          "type": 1,
-		          "from": "",
-		          "to": "",
-		          "text": "Drained",
-		          "value": "7"
-		        },
-		        {
-		          "id": 8,
-		          "type": 1,
-		          "from": "",
-		          "to": "",
-		          "text": "Moving",
-		          "value": "8"
-		        }
-		      ]
+		      }
 		    },
 		    "overrides": [
 		      {
@@ -2005,6 +2008,75 @@
 		          {
 		            "id": "custom.align",
 		            "value": "center"
+		          },
+		          {
+		            "id": "mappings",
+		            "value": [
+		              {
+		                "id": 1,
+		                "type": 1,
+		                "from": "",
+		                "to": "",
+		                "text": "Starting",
+		                "value": "1"
+		              },
+				        {
+				          "id": 2,
+				          "type": 1,
+				          "from": "",
+				          "to": "",
+				          "text": "Joining",
+				          "value": "2"
+				        },
+				        {
+				          "id": 3,
+				          "type": 1,
+				          "from": "",
+				          "to": "",
+				          "text": "Normal",
+				          "value": "3"
+				        },
+				        {
+				          "id": 4,
+				          "type": 1,
+				          "from": "",
+				          "to": "",
+				          "text": "Leaving",
+				          "value": "4"
+				        },
+				        {
+				          "id": 5,
+				          "type": 1,
+				          "from": "",
+				          "to": "",
+				          "text": "Decommissioned",
+				          "value": "5"
+				        },
+				        {
+				          "id": 6,
+				          "type": 1,
+				          "from": "",
+				          "to": "",
+				          "text": "Draining",
+				          "value": "6"
+				        },
+				        {
+				          "id": 7,
+				          "type": 1,
+				          "from": "",
+				          "to": "",
+				          "text": "Drained",
+				          "value": "7"
+				        },
+				        {
+				          "id": 8,
+				          "type": 1,
+				          "from": "",
+				          "to": "",
+				          "text": "Moving",
+				          "value": "8"
+				        }
+		            ]
 		          }
 		        ]
 		      },
