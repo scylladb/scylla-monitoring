@@ -107,6 +107,98 @@
             "type": "row"
         },
         {
+            "class": "text_panel",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "gridPos": {
+                "h": 1,
+                "w": 8,
+                "x": 0,
+                "y": 1
+            },
+            "id": 2,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {
+                "content": "# "
+            },
+            "span": 12,
+            "title": "",
+            "transparent": false,
+            "type": "text"
+        },
+        {
+            "class": "text_panel",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "gridPos": {
+                "h": 1,
+                "w": 4,
+                "x": 8,
+                "y": 1
+            },
+            "id": 3,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {
+                "content": "# "
+            },
+            "span": 12,
+            "title": "",
+            "transparent": false,
+            "type": "text"
+        },
+        {
+            "class": "text_panel",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "gridPos": {
+                "h": 1,
+                "w": 4,
+                "x": 12,
+                "y": 1
+            },
+            "id": 4,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {
+                "content": "# "
+            },
+            "span": 12,
+            "title": "",
+            "transparent": false,
+            "type": "text"
+        },
+        {
+            "class": "text_panel",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "gridPos": {
+                "h": 1,
+                "w": 7,
+                "x": 16,
+                "y": 1
+            },
+            "id": 5,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {
+                "content": "# "
+            },
+            "span": 12,
+            "title": "",
+            "transparent": false,
+            "type": "text"
+        },
+        {
             "class": "small_stat",
             "datasource": "prometheus",
             "description": "The number of nodes configured in the cluster.",
@@ -130,9 +222,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 0,
-                "y": 1
+                "y": 2
             },
-            "id": 2,
+            "id": 6,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -192,9 +284,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 2,
-                "y": 1
+                "y": 2
             },
-            "id": 3,
+            "id": 7,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -254,9 +346,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 4,
-                "y": 1
+                "y": 2
             },
-            "id": 4,
+            "id": 8,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -290,36 +382,57 @@
         {
             "class": "small_stat",
             "datasource": "prometheus",
-            "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
             "fieldConfig": {
                 "defaults": {
-                    "custom": {},
-                    "decimals": 0,
-                    "mappings": [],
+                    "mappings": [
+                        {
+                            "from": "",
+                            "id": 0,
+                            "text": "Backup",
+                            "to": "",
+                            "type": 1,
+                            "value": "3"
+                        },
+                        {
+                            "from": "",
+                            "id": 1,
+                            "text": "Repair",
+                            "to": "",
+                            "type": 1,
+                            "value": "2"
+                        },
+                        {
+                            "from": "",
+                            "id": 2,
+                            "text": "Online",
+                            "to": "",
+                            "type": 1,
+                            "value": "1"
+                        }
+                    ],
+                    "noValue": " Offline",
                     "thresholds": {
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green",
+                                "color": "red",
                                 "value": null
                             },
                             {
-                                "color": "red",
-                                "value": 80
+                                "color": "green",
+                                "value": 1
                             }
                         ]
-                    },
-                    "unit": "percent"
-                },
-                "overrides": []
+                    }
+                }
             },
             "gridPos": {
                 "h": 4,
                 "w": 2,
                 "x": 6,
-                "y": 1
+                "y": 2
             },
-            "id": 5,
+            "id": 9,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -337,17 +450,15 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} )",
-                    "instant": true,
+                    "expr": "(1+sum(scylla_manager_task_active_count{type=~\"repair\",cluster=~\"$cluster|$^\"}) + sum(scylla_manager_task_active_count{type=~\"backup\",cluster=~\"$cluster|$^\"}) * 2) or (1+scylla_manager_server_current_version)",
                     "intervalFactor": 1,
-                    "legendFormat": "",
                     "refId": "A",
-                    "step": 4
+                    "step": 40
                 }
             ],
             "timeFrom": null,
             "timeShift": null,
-            "title": "Load",
+            "title": "Manager",
             "type": "stat"
         },
         {
@@ -380,9 +491,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 8,
-                "y": 1
+                "y": 2
             },
-            "id": 6,
+            "id": 10,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -443,9 +554,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 10,
-                "y": 1
+                "y": 2
             },
-            "id": 7,
+            "id": 11,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -506,9 +617,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 12,
-                "y": 1
+                "y": 2
             },
-            "id": 8,
+            "id": 12,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -569,9 +680,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 14,
-                "y": 1
+                "y": 2
             },
-            "id": 9,
+            "id": 13,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -608,6 +719,7 @@
             "fieldConfig": {
                 "defaults": {
                     "custom": {},
+                    "decimals": 1,
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
@@ -617,17 +729,18 @@
                                 "value": null
                             }
                         ]
-                    }
+                    },
+                    "unit": "si:"
                 },
                 "overrides": []
             },
             "gridPos": {
                 "h": 4,
-                "w": 2,
+                "w": 3,
                 "x": 16,
-                "y": 1
+                "y": 2
             },
-            "id": 10,
+            "id": 14,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -654,7 +767,70 @@
             ],
             "timeFrom": null,
             "timeShift": null,
-            "title": "Requests",
+            "title": "Requests/s",
+            "type": "stat"
+        },
+        {
+            "class": "small_stat",
+            "datasource": "prometheus",
+            "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "decimals": 0,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "percent"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 2,
+                "x": 19,
+                "y": 2
+            },
+            "id": 15,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "last"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "7.1.3",
+            "targets": [
+                {
+                    "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} )",
+                    "instant": true,
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 4
+                }
+            ],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Load",
             "type": "stat"
         },
         {
@@ -683,10 +859,10 @@
             "gridPos": {
                 "h": 4,
                 "w": 2,
-                "x": 18,
-                "y": 1
+                "x": 21,
+                "y": 2
             },
-            "id": 11,
+            "id": 16,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -717,110 +893,133 @@
             "type": "stat"
         },
         {
-            "class": "small_stat",
-            "datasource": "prometheus",
-            "fieldConfig": {
-                "defaults": {
-                    "mappings": [
-                        {
-                            "from": "",
-                            "id": 0,
-                            "text": "Backup",
-                            "to": "",
-                            "type": 1,
-                            "value": "3"
-                        },
-                        {
-                            "from": "",
-                            "id": 1,
-                            "text": "Repair",
-                            "to": "",
-                            "type": 1,
-                            "value": "2"
-                        },
-                        {
-                            "from": "",
-                            "id": 2,
-                            "text": "Online",
-                            "to": "",
-                            "type": 1,
-                            "value": "1"
-                        }
-                    ],
-                    "noValue": " Offline",
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "red",
-                                "value": null
-                            },
-                            {
-                                "color": "green",
-                                "value": 1
-                            }
-                        ]
-                    }
-                }
-            },
-            "gridPos": {
-                "h": 4,
-                "w": 2,
-                "x": 20,
-                "y": 1
-            },
-            "id": 12,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "auto"
-            },
-            "pluginVersion": "7.1.3",
-            "targets": [
-                {
-                    "expr": "(1+sum(scylla_manager_task_active_count{type=~\"repair\",cluster=~\"$cluster|$^\"}) + sum(scylla_manager_task_active_count{type=~\"backup\",cluster=~\"$cluster|$^\"}) * 2) or (1+scylla_manager_server_current_version)",
-                    "intervalFactor": 1,
-                    "refId": "A",
-                    "step": 40
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Manager",
-            "type": "stat"
-        },
-        {
             "class": "text_panel",
             "datasource": null,
             "editable": true,
             "error": false,
             "gridPos": {
                 "h": 4,
-                "w": 2,
-                "x": 22,
-                "y": 1
+                "w": 1,
+                "x": 23,
+                "y": 2
             },
-            "id": 13,
+            "id": 17,
             "isNew": true,
             "links": [],
             "mode": "html",
             "options": {
-                "content": "<div id=\"amnon\" style=\"margin: 0;top: 50%; margin: auto;transform: translateY(50%);\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_dash_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#57d1e5;color:black;font-size:20px\" value=\"Open issue\"></a></span></div>",
-                "mode": "html"
+                "content": "# "
             },
             "span": 12,
             "title": "",
             "transparent": true,
             "type": "text"
+        },
+        {
+            "class": "alert_table",
+            "columns": [],
+            "datasource": "alertmanager",
+            "fontSize": "100%",
+            "gridPos": {
+                "h": 6,
+                "w": 8,
+                "x": 0,
+                "y": 6
+            },
+            "id": 18,
+            "links": [],
+            "options": {},
+            "pageSize": null,
+            "scroll": true,
+            "showHeader": true,
+            "sort": {
+                "col": 0,
+                "desc": true
+            },
+            "span": 4,
+            "styles": [
+                {
+                    "alias": "Time",
+                    "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                    "link": true,
+                    "linkTooltip": "Jump to the see the node",
+                    "linkUrl": "./d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_4}&from=${__cell_0}",
+                    "pattern": "Time",
+                    "type": "date"
+                },
+                {
+                    "class": "hidden_column",
+                    "pattern": "severity",
+                    "type": "hidden"
+                },
+                {
+                    "class": "hidden_column",
+                    "pattern": "alertname",
+                    "type": "hidden"
+                },
+                {
+                    "class": "hidden_column",
+                    "pattern": "cluster",
+                    "type": "hidden"
+                },
+                {
+                    "class": "hidden_column",
+                    "pattern": "monitor",
+                    "type": "hidden"
+                },
+                {
+                    "class": "hidden_column",
+                    "pattern": "summary",
+                    "type": "hidden"
+                },
+                {
+                    "alias": "Instance",
+                    "colorMode": null,
+                    "colors": [
+                        "rgba(245, 54, 54, 0.9)",
+                        "rgba(237, 129, 40, 0.89)",
+                        "rgba(50, 172, 45, 0.97)"
+                    ],
+                    "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                    "decimals": 2,
+                    "link": true,
+                    "linkTooltip": "Jump to the see the node",
+                    "linkUrl": "./d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell}",
+                    "mappingType": 1,
+                    "pattern": "instance",
+                    "thresholds": [],
+                    "type": "string",
+                    "unit": "short"
+                },
+                {
+                    "alias": "",
+                    "colorMode": null,
+                    "colors": [
+                        "rgba(245, 54, 54, 0.9)",
+                        "rgba(237, 129, 40, 0.89)",
+                        "rgba(50, 172, 45, 0.97)"
+                    ],
+                    "decimals": 2,
+                    "pattern": "/.*/",
+                    "thresholds": [],
+                    "type": "number",
+                    "unit": "short"
+                }
+            ],
+            "targets": [
+                {
+                    "annotations": true,
+                    "expr": "job!=\"scylla_manager\",advisor=\"\"",
+                    "labelSelector": "description,dc,instance",
+                    "legendFormat": "{{description}}",
+                    "refId": "A",
+                    "target": "Query",
+                    "type": "table"
+                }
+            ],
+            "title": "Active Alerts",
+            "transform": "table",
+            "type": "table"
         },
         {
             "aliasColors": {},
@@ -837,20 +1036,18 @@
             "gridPos": {
                 "h": 6,
                 "w": 4,
-                "x": 0,
-                "y": 5
+                "x": 8,
+                "y": 6
             },
             "hiddenSeries": false,
-            "id": 14,
+            "id": 19,
             "isNew": true,
             "legend": {
-                "alignAsTable": false,
                 "avg": false,
                 "current": false,
                 "max": false,
                 "min": false,
-                "rightSide": false,
-                "show": true,
+                "show": false,
                 "total": false,
                 "values": false
             },
@@ -866,16 +1063,7 @@
             "points": false,
             "renderer": "flot",
             "seriesOverrides": [
-                {
-                    "alias": "1 Day",
-                    "dashLength": 4,
-                    "dashes": true
-                },
-                {
-                    "alias": "1 Week",
-                    "dashLength": 2,
-                    "dashes": true
-                }
+                {}
             ],
             "spaceLength": 10,
             "span": 2,
@@ -885,24 +1073,8 @@
                 {
                     "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s]))",
                     "intervalFactor": 1,
-                    "legendFormat": "Writes",
+                    "legendFormat": "",
                     "refId": "A",
-                    "step": 1
-                },
-                {
-                    "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s] offset 1d))",
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "1 Day",
-                    "refId": "B",
-                    "step": 1
-                },
-                {
-                    "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s] offset 1w))",
-                    "interval": "",
-                    "intervalFactor": 1,
-                    "legendFormat": "1 Week",
-                    "refId": "C",
                     "step": 1
                 }
             ],
@@ -961,11 +1133,11 @@
             "gridPos": {
                 "h": 6,
                 "w": 4,
-                "x": 4,
-                "y": 5
+                "x": 12,
+                "y": 6
             },
             "hiddenSeries": false,
-            "id": 15,
+            "id": 20,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1065,20 +1237,18 @@
             "gridPos": {
                 "h": 6,
                 "w": 4,
-                "x": 8,
-                "y": 5
+                "x": 16,
+                "y": 6
             },
             "hiddenSeries": false,
-            "id": 16,
+            "id": 21,
             "isNew": true,
             "legend": {
-                "alignAsTable": false,
                 "avg": false,
                 "current": false,
                 "max": false,
                 "min": false,
-                "rightSide": false,
-                "show": true,
+                "show": false,
                 "total": false,
                 "values": false
             },
@@ -1094,16 +1264,7 @@
             "points": false,
             "renderer": "flot",
             "seriesOverrides": [
-                {
-                    "alias": "1 Day",
-                    "dashLength": 4,
-                    "dashes": true
-                },
-                {
-                    "alias": "1 Week",
-                    "dashLength": 2,
-                    "dashes": true
-                }
+                {}
             ],
             "spaceLength": 10,
             "span": 2,
@@ -1115,20 +1276,6 @@
                     "intervalFactor": 1,
                     "legendFormat": "Reads",
                     "refId": "A",
-                    "step": 1
-                },
-                {
-                    "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s] offset 1d))",
-                    "intervalFactor": 1,
-                    "legendFormat": "1 Day",
-                    "refId": "B",
-                    "step": 1
-                },
-                {
-                    "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s] offset 1w))",
-                    "intervalFactor": 1,
-                    "legendFormat": "1 Week",
-                    "refId": "C",
                     "step": 1
                 }
             ],
@@ -1187,11 +1334,11 @@
             "gridPos": {
                 "h": 6,
                 "w": 4,
-                "x": 12,
-                "y": 5
+                "x": 20,
+                "y": 6
             },
             "hiddenSeries": false,
-            "id": 17,
+            "id": 22,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1277,124 +1424,41 @@
             }
         },
         {
-            "class": "alert_table",
-            "columns": [],
-            "datasource": "alertmanager",
-            "fontSize": "100%",
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 16,
-                "y": 5
-            },
-            "id": 18,
-            "links": [],
-            "options": {},
-            "pageSize": null,
-            "scroll": true,
-            "showHeader": true,
-            "sort": {
-                "col": 0,
-                "desc": true
-            },
-            "span": 4,
-            "styles": [
-                {
-                    "alias": "Time",
-                    "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                    "link": true,
-                    "linkTooltip": "Jump to the see the node",
-                    "linkUrl": "./d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_4}&from=${__cell_0}",
-                    "pattern": "Time",
-                    "type": "date"
-                },
-                {
-                    "class": "hidden_column",
-                    "pattern": "severity",
-                    "type": "hidden"
-                },
-                {
-                    "class": "hidden_column",
-                    "pattern": "alertname",
-                    "type": "hidden"
-                },
-                {
-                    "class": "hidden_column",
-                    "pattern": "cluster",
-                    "type": "hidden"
-                },
-                {
-                    "class": "hidden_column",
-                    "pattern": "monitor",
-                    "type": "hidden"
-                },
-                {
-                    "class": "hidden_column",
-                    "pattern": "summary",
-                    "type": "hidden"
-                },
-                {
-                    "alias": "Instance",
-                    "colorMode": null,
-                    "colors": [
-                        "rgba(245, 54, 54, 0.9)",
-                        "rgba(237, 129, 40, 0.89)",
-                        "rgba(50, 172, 45, 0.97)"
-                    ],
-                    "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                    "decimals": 2,
-                    "link": true,
-                    "linkTooltip": "Jump to the see the node",
-                    "linkUrl": "./d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell}",
-                    "mappingType": 1,
-                    "pattern": "instance",
-                    "thresholds": [],
-                    "type": "string",
-                    "unit": "short"
-                },
-                {
-                    "alias": "",
-                    "colorMode": null,
-                    "colors": [
-                        "rgba(245, 54, 54, 0.9)",
-                        "rgba(237, 129, 40, 0.89)",
-                        "rgba(50, 172, 45, 0.97)"
-                    ],
-                    "decimals": 2,
-                    "pattern": "/.*/",
-                    "thresholds": [],
-                    "type": "number",
-                    "unit": "short"
-                }
-            ],
-            "targets": [
-                {
-                    "annotations": true,
-                    "expr": "job!=\"scylla_manager\",advisor=\"\"",
-                    "labelSelector": "description,dc,instance",
-                    "legendFormat": "{{description}}",
-                    "refId": "A",
-                    "target": "Query",
-                    "type": "table"
-                }
-            ],
-            "title": "Active Alerts",
-            "transform": "table",
-            "type": "table"
-        },
-        {
             "collapsed": false,
             "datasource": null,
             "gridPos": {
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 11
+                "y": 12
             },
-            "id": 19,
+            "id": 23,
             "panels": [],
-            "title": "Advisor",
+            "title": "",
             "type": "row"
+        },
+        {
+            "class": "plain_text",
+            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Advisor</h1>",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 13
+            },
+            "id": 24,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {},
+            "span": 12,
+            "style": {},
+            "title": "",
+            "transparent": true,
+            "type": "text"
         },
         {
             "datasource": null,
@@ -1408,11 +1472,11 @@
                 "h": 2,
                 "w": 12,
                 "x": 12,
-                "y": 12
+                "y": 14
             },
-            "id": 20,
+            "id": 25,
             "options": {
-                "content": "# Balanced",
+                "content": "### Balance\nAn Imbalance between shards or nodes may indicates a potential problem",
                 "mode": "markdown"
             },
             "pluginVersion": "7.3.4",
@@ -1494,9 +1558,9 @@
                 "h": 6,
                 "w": 12,
                 "x": 0,
-                "y": 14
+                "y": 17
             },
-            "id": 21,
+            "id": 26,
             "links": [],
             "options": {
                 "showHeader": true
@@ -1542,17 +1606,17 @@
                             "from": "-1000",
                             "id": 1,
                             "text": "\u2713",
-                            "to": "0.01",
+                            "to": "0.001",
                             "type": 2,
                             "value": ""
                         },
                         {
-                            "from": "0.01",
+                            "from": "0.001",
                             "id": 2,
                             "text": "\u26a0",
                             "to": "10000",
                             "type": 2,
-                            "value": "0.01"
+                            "value": "0.001"
                         }
                     ],
                     "thresholds": {
@@ -1564,7 +1628,7 @@
                             },
                             {
                                 "color": "red",
-                                "value": 1e-05
+                                "value": 0.001
                             }
                         ]
                     }
@@ -1575,9 +1639,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 12,
-                "y": 14
+                "y": 17
             },
-            "id": 22,
+            "id": 27,
             "links": [
                 {
                     "title": "The number of connections per shard should be balanced",
@@ -1635,17 +1699,17 @@
                             "from": "-1000",
                             "id": 1,
                             "text": "\u2713",
-                            "to": "0.01",
+                            "to": "0.001",
                             "type": 2,
                             "value": ""
                         },
                         {
-                            "from": "0.01",
+                            "from": "0.001",
                             "id": 2,
                             "text": "\u26a0",
                             "to": "10000",
                             "type": 2,
-                            "value": "0.01"
+                            "value": "0.001"
                         }
                     ],
                     "thresholds": {
@@ -1657,7 +1721,7 @@
                             },
                             {
                                 "color": "red",
-                                "value": 1e-05
+                                "value": 0.001
                             }
                         ]
                     }
@@ -1668,9 +1732,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 14,
-                "y": 14
+                "y": 17
             },
-            "id": 23,
+            "id": 28,
             "links": [
                 {
                     "title": "Indicates that the CQL traffic is not unified between shards",
@@ -1752,17 +1816,17 @@
                             "from": "-1000",
                             "id": 1,
                             "text": "\u2713",
-                            "to": "0.01",
+                            "to": "0.001",
                             "type": 2,
                             "value": ""
                         },
                         {
-                            "from": "0.01",
+                            "from": "0.001",
                             "id": 2,
                             "text": "\u26a0",
                             "to": "10000",
                             "type": 2,
-                            "value": "0.01"
+                            "value": "0.001"
                         }
                     ],
                     "thresholds": {
@@ -1774,7 +1838,7 @@
                             },
                             {
                                 "color": "red",
-                                "value": 1e-05
+                                "value": 0.001
                             }
                         ]
                     }
@@ -1785,9 +1849,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 16,
-                "y": 14
+                "y": 17
             },
-            "id": 24,
+            "id": 29,
             "links": [
                 {
                     "title": "A single node with higher latency is an indication for a node related issue",
@@ -1811,7 +1875,7 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "max(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[60s])) by (instance, le)) -scalar(avg(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[60s])) by (instance,le)))))/ scalar(stddev(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[60s])) by (instance,le))))-2",
+                    "expr": "max(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[60s])) by (instance, le)) -scalar(avg(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[60s])) by (instance,le))>0)))/ scalar(stddev(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[60s])) by (instance,le))>0))-2",
                     "legendFormat": "",
                     "refId": "A"
                 }
@@ -1845,17 +1909,17 @@
                             "from": "-1000",
                             "id": 1,
                             "text": "\u2713",
-                            "to": "0.01",
+                            "to": "0.001",
                             "type": 2,
                             "value": ""
                         },
                         {
-                            "from": "0.01",
+                            "from": "0.001",
                             "id": 2,
                             "text": "\u26a0",
                             "to": "10000",
                             "type": 2,
-                            "value": "0.01"
+                            "value": "0.001"
                         }
                     ],
                     "thresholds": {
@@ -1867,7 +1931,7 @@
                             },
                             {
                                 "color": "red",
-                                "value": 1e-05
+                                "value": 0.001
                             }
                         ]
                     }
@@ -1878,9 +1942,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 18,
-                "y": 14
+                "y": 17
             },
-            "id": 25,
+            "id": 30,
             "links": [
                 {
                     "title": "A single shard with high latency is an indication of a hot-partition, or a large row/cell/partition",
@@ -1904,7 +1968,7 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "max(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (instance,shard, le)) -scalar(avg(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (instance,shard,le)))))/ scalar(stddev(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (instance,shard, le))))-2",
+                    "expr": "max(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (instance,shard, le)) -scalar(avg(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (instance,shard,le))>0)))/ scalar(stddev(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (instance,shard, le))>0))-2",
                     "legendFormat": "",
                     "refId": "A"
                 }
@@ -1938,17 +2002,17 @@
                             "from": "-1000",
                             "id": 1,
                             "text": "\u2713",
-                            "to": "0.01",
+                            "to": "0.001",
                             "type": 2,
                             "value": ""
                         },
                         {
-                            "from": "0.01",
+                            "from": "0.001",
                             "id": 2,
                             "text": "\u26a0",
                             "to": "10000",
                             "type": 2,
-                            "value": "0.01"
+                            "value": "0.001"
                         }
                     ],
                     "thresholds": {
@@ -1960,7 +2024,7 @@
                             },
                             {
                                 "color": "red",
-                                "value": 1e-05
+                                "value": 0.001
                             }
                         ]
                     }
@@ -1971,9 +2035,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 20,
-                "y": 14
+                "y": 17
             },
-            "id": 26,
+            "id": 31,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -2027,17 +2091,17 @@
                             "from": "-1000",
                             "id": 1,
                             "text": "\u2713",
-                            "to": "0.01",
+                            "to": "0.001",
                             "type": 2,
                             "value": ""
                         },
                         {
-                            "from": "0.01",
+                            "from": "0.001",
                             "id": 2,
                             "text": "\u26a0",
                             "to": "10000",
                             "type": 2,
-                            "value": "0.01"
+                            "value": "0.001"
                         }
                     ],
                     "thresholds": {
@@ -2049,7 +2113,7 @@
                             },
                             {
                                 "color": "red",
-                                "value": 1e-05
+                                "value": 0.001
                             }
                         ]
                     }
@@ -2060,9 +2124,9 @@
                 "h": 4,
                 "w": 2,
                 "x": 22,
-                "y": 14
+                "y": 17
             },
-            "id": 27,
+            "id": 32,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -2111,13 +2175,36 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 20
+                "y": 23
             },
-            "id": 28,
+            "id": 33,
             "panels": [],
             "repeat": "dc",
-            "title": "$dc",
+            "title": "",
             "type": "row"
+        },
+        {
+            "class": "plain_text",
+            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Information for $dc</h1>",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 24
+            },
+            "id": 34,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {},
+            "span": 12,
+            "style": {},
+            "title": "",
+            "transparent": true,
+            "type": "text"
         },
         {
             "class": "vertical_lcd",
@@ -2148,9 +2235,9 @@
                 "h": 6,
                 "w": 1,
                 "x": 0,
-                "y": 21
+                "y": 26
             },
-            "id": 29,
+            "id": 35,
             "options": {
                 "displayMode": "lcd",
                 "orientation": "vertical",
@@ -2194,10 +2281,10 @@
                 "h": 6,
                 "w": 3,
                 "x": 1,
-                "y": 21
+                "y": 26
             },
             "hiddenSeries": false,
-            "id": 30,
+            "id": 36,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2296,17 +2383,19 @@
                 "h": 6,
                 "w": 6,
                 "x": 4,
-                "y": 21
+                "y": 26
             },
             "hiddenSeries": false,
-            "id": 31,
+            "id": 37,
             "isNew": true,
             "legend": {
+                "alignAsTable": false,
                 "avg": false,
                 "current": false,
                 "max": false,
                 "min": false,
-                "show": false,
+                "rightSide": false,
+                "show": true,
                 "total": false,
                 "values": false
             },
@@ -2322,7 +2411,16 @@
             "points": false,
             "renderer": "flot",
             "seriesOverrides": [
-                {}
+                {
+                    "alias": "1 Day Ago",
+                    "dashLength": 4,
+                    "dashes": true
+                },
+                {
+                    "alias": "1 Week Ago",
+                    "dashLength": 2,
+                    "dashes": true
+                }
             ],
             "spaceLength": 10,
             "span": 3,
@@ -2332,8 +2430,24 @@
                 {
                     "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "Writes",
                     "refId": "A",
+                    "step": 1
+                },
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s] offset 1d))",
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "1 Day Ago",
+                    "refId": "B",
+                    "step": 1
+                },
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s] offset 1w))",
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "1 Week Ago",
+                    "refId": "C",
                     "step": 1
                 }
             ],
@@ -2393,10 +2507,10 @@
                 "h": 6,
                 "w": 4,
                 "x": 10,
-                "y": 21
+                "y": 26
             },
             "hiddenSeries": false,
-            "id": 32,
+            "id": 38,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2497,17 +2611,19 @@
                 "h": 6,
                 "w": 6,
                 "x": 14,
-                "y": 21
+                "y": 26
             },
             "hiddenSeries": false,
-            "id": 33,
+            "id": 39,
             "isNew": true,
             "legend": {
+                "alignAsTable": false,
                 "avg": false,
                 "current": false,
                 "max": false,
                 "min": false,
-                "show": false,
+                "rightSide": false,
+                "show": true,
                 "total": false,
                 "values": false
             },
@@ -2523,7 +2639,16 @@
             "points": false,
             "renderer": "flot",
             "seriesOverrides": [
-                {}
+                {
+                    "alias": "1 Day Ago",
+                    "dashLength": 4,
+                    "dashes": true
+                },
+                {
+                    "alias": "1 Week Ago",
+                    "dashLength": 2,
+                    "dashes": true
+                }
             ],
             "spaceLength": 10,
             "span": 3,
@@ -2533,8 +2658,22 @@
                 {
                     "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "Reads",
                     "refId": "A",
+                    "step": 1
+                },
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s] offset 1d))",
+                    "intervalFactor": 1,
+                    "legendFormat": "1 Day Ago",
+                    "refId": "B",
+                    "step": 1
+                },
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s] offset 1w))",
+                    "intervalFactor": 1,
+                    "legendFormat": "1 Week Ago",
+                    "refId": "C",
                     "step": 1
                 }
             ],
@@ -2594,10 +2733,10 @@
                 "h": 6,
                 "w": 4,
                 "x": 20,
-                "y": 21
+                "y": 26
             },
             "hiddenSeries": false,
-            "id": 34,
+            "id": 40,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2694,72 +2833,6 @@
                         "align": null,
                         "filterable": true
                     },
-                    "mappings": [
-                        {
-                            "from": "",
-                            "id": 1,
-                            "text": "Starting",
-                            "to": "",
-                            "type": 1,
-                            "value": "1"
-                        },
-                        {
-                            "from": "",
-                            "id": 2,
-                            "text": "Joining",
-                            "to": "",
-                            "type": 1,
-                            "value": "2"
-                        },
-                        {
-                            "from": "",
-                            "id": 3,
-                            "text": "Normal",
-                            "to": "",
-                            "type": 1,
-                            "value": "3"
-                        },
-                        {
-                            "from": "",
-                            "id": 4,
-                            "text": "Leaving",
-                            "to": "",
-                            "type": 1,
-                            "value": "4"
-                        },
-                        {
-                            "from": "",
-                            "id": 5,
-                            "text": "Decommissioned",
-                            "to": "",
-                            "type": 1,
-                            "value": "5"
-                        },
-                        {
-                            "from": "",
-                            "id": 6,
-                            "text": "Draining",
-                            "to": "",
-                            "type": 1,
-                            "value": "6"
-                        },
-                        {
-                            "from": "",
-                            "id": 7,
-                            "text": "Drained",
-                            "to": "",
-                            "type": 1,
-                            "value": "7"
-                        },
-                        {
-                            "from": "",
-                            "id": 8,
-                            "text": "Moving",
-                            "to": "",
-                            "type": 1,
-                            "value": "8"
-                        }
-                    ],
                     "thresholds": {
                         "mode": "absolute",
                         "steps": [
@@ -2880,6 +2953,75 @@
                             {
                                 "id": "custom.align",
                                 "value": "center"
+                            },
+                            {
+                                "id": "mappings",
+                                "value": [
+                                    {
+                                        "from": "",
+                                        "id": 1,
+                                        "text": "Starting",
+                                        "to": "",
+                                        "type": 1,
+                                        "value": "1"
+                                    },
+                                    {
+                                        "from": "",
+                                        "id": 2,
+                                        "text": "Joining",
+                                        "to": "",
+                                        "type": 1,
+                                        "value": "2"
+                                    },
+                                    {
+                                        "from": "",
+                                        "id": 3,
+                                        "text": "Normal",
+                                        "to": "",
+                                        "type": 1,
+                                        "value": "3"
+                                    },
+                                    {
+                                        "from": "",
+                                        "id": 4,
+                                        "text": "Leaving",
+                                        "to": "",
+                                        "type": 1,
+                                        "value": "4"
+                                    },
+                                    {
+                                        "from": "",
+                                        "id": 5,
+                                        "text": "Decommissioned",
+                                        "to": "",
+                                        "type": 1,
+                                        "value": "5"
+                                    },
+                                    {
+                                        "from": "",
+                                        "id": 6,
+                                        "text": "Draining",
+                                        "to": "",
+                                        "type": 1,
+                                        "value": "6"
+                                    },
+                                    {
+                                        "from": "",
+                                        "id": 7,
+                                        "text": "Drained",
+                                        "to": "",
+                                        "type": 1,
+                                        "value": "7"
+                                    },
+                                    {
+                                        "from": "",
+                                        "id": 8,
+                                        "text": "Moving",
+                                        "to": "",
+                                        "type": 1,
+                                        "value": "8"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -2982,9 +3124,9 @@
                 "h": 6,
                 "w": 10,
                 "x": 0,
-                "y": 27
+                "y": 32
             },
-            "id": 35,
+            "id": 41,
             "scopedVars": {
                 "dc": {
                     "selected": false,
@@ -3055,10 +3197,10 @@
                 "h": 6,
                 "w": 4,
                 "x": 10,
-                "y": 27
+                "y": 32
             },
             "hiddenSeries": false,
-            "id": 36,
+            "id": 42,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3153,10 +3295,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 14,
-                "y": 27
+                "y": 32
             },
             "hiddenSeries": false,
-            "id": 37,
+            "id": 43,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3258,10 +3400,10 @@
                 "h": 6,
                 "w": 4,
                 "x": 20,
-                "y": 27
+                "y": 32
             },
             "hiddenSeries": false,
-            "id": 38,
+            "id": 44,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3354,9 +3496,9 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 33
+                "y": 38
             },
-            "id": 39,
+            "id": 45,
             "panels": [],
             "repeat": "",
             "title": "Your panels",
@@ -3372,9 +3514,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 34
+                "y": 39
             },
-            "id": 40,
+            "id": 46,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -3402,10 +3544,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 0,
-                "y": 36
+                "y": 41
             },
             "hiddenSeries": false,
-            "id": 41,
+            "id": 47,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3491,10 +3633,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 12,
-                "y": 36
+                "y": 41
             },
             "hiddenSeries": false,
-            "id": 42,
+            "id": 48,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3565,7 +3707,7 @@
         },
         {
             "class": "plain_text",
-            "content": "<h4 style=\"color:#5881c2; border-bottom: 0px solid #5881c2;\">Scylla Monitoring version - master</h4>",
+            "content": "<div style=\"color:#5881c2; border-bottom: 0px solid #5881c2;\">Scylla Monitoring version - master</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_dash_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#57d1e5;color:black;font-size:20px\" value=\"Report an issue on this page\"></a></span></div>",
             "datasource": null,
             "editable": true,
             "error": false,
@@ -3573,9 +3715,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 42
+                "y": 47
             },
-            "id": 43,
+            "id": 49,
             "isNew": true,
             "links": [],
             "mode": "html",
