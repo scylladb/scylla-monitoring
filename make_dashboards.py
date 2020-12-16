@@ -249,13 +249,38 @@ def add_row(y, panels, row, args):
         panels.append(p)
     return y + max_h
 
+def is_collapsed_row(row):
+    return len(row["panels"]) == 1 and row["panels"][0]["type"] == "row" and "collapsed" in row["panels"][0] and row["panels"][0]["collapsed"]
+
+def is_collapsable_row(row):
+    return len(row["panels"]) == 1 and row["panels"][0]["type"] == "row"
+
 def make_grafna_5(results, args):
     rows = results["dashboard"]["rows"]
     panels = [];
     y = 0
+    in_collapsable_panel = False
+    collapsible_row = []
+    collapsible_panels = []
     for row in rows:
-        y = add_row(y, panels, row, args)
+        if is_collapsable_row(row) and in_collapsable_panel:
+            collapsible_row[0]["panels"] = collapsible_panels
+            panels.append(collapsible_row[0])
+            collapsible_row = []
+            collapsible_panels = []
+            in_collapsable_panel = False
+        if is_collapsed_row(row):
+            in_collapsable_panel = True
+            y = add_row(y, collapsible_row, row, args)
+        else:
+            if in_collapsable_panel:
+                y = add_row(y, collapsible_panels, row, args)
+            else:
+                y = add_row(y, panels, row, args)
     del results["dashboard"]["rows"]
+    if in_collapsable_panel:
+        collapsible_row[0]["panels"] = collapsible_panels
+        panels.append(collapsible_row[0])
     results["dashboard"]["panels"] = panels
 
 def write_as_file(name_path, result, dir, replace_strings):
