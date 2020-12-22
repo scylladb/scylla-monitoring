@@ -98,7 +98,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:' option; do
        ;;
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
-    L) CONSUL_ADDRESS="$OPTARG"
+    L) CONSUL_ADDRESS="-L $OPTARG"
        ;;
     P) LDAP_FILE="-P $OPTARG"
        ;;
@@ -170,9 +170,6 @@ if [ -z $CONSUL_ADDRESS ]; then
     SCYLLA_MANGER_TARGET_FILE="-v "$(readlink -m $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z"
     NODE_TARGET_FILE="-v "$(readlink -m $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/node_exporter_servers.yml:Z"
 else
-    if [[ ! $CONSUL_ADDRESS = *":"* ]]; then
-        CONSUL_ADDRESS="$CONSUL_ADDRESS:56090"
-    fi
     SCYLLA_TARGET_FILE=""
     SCYLLA_MANGER_TARGET_FILE=""
     NODE_TARGET_FILE=""
@@ -232,12 +229,7 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
     PROMETHEUS_COMMAND_LINE_OPTIONS+=" -$val"
 done
 
-mkdir -p $PWD/prometheus/build/
-if [ -z $CONSUL_ADDRESS ]; then
-    sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template > $PWD/prometheus/build/prometheus.yml
-else
-    sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template| sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" > $PWD/prometheus/build/prometheus.yml
-fi
+./prometheus-config.sh -m $AM_ADDRESS $CONSUL_ADDRESS
 
 if [ -z $HOST_NETWORK ]; then
     PORT_MAPPING="-p $BIND_ADDRESS$PROMETHEUS_PORT:9090"
