@@ -7,6 +7,7 @@ Scylla Monitor
    
    Install Scylla Monitor Stack <monitoring_stack>
    The start-all.sh script <start_all>
+   Running using Docker Compose <docker_compose>
    Scylla Monitor Interfaces <monitoring_apis>
    Deploy Scylla Monitor Without Docker <monitor_without_docker>
    Troubleshoot Monitor <monitor_troubleshoot>
@@ -35,6 +36,7 @@ The Scylla Monitor Stack consists of three components, wrapped in Docker contain
 
 * :doc:`Install Scylla Monitor Stack <monitoring_stack>`
 * :doc:`The start-all.sh script <start_all>`
+* :doc:`Running using Docker Compose <docker_compose>`
 * :doc:`Scylla Monitor Interfaces <monitoring_apis>`
 * :doc:`Deploy Scylla Monitor Without Docker <monitor_without_docker>`
 * :doc:`Troubleshoot Scylla Monitor <monitor_troubleshoot>`
