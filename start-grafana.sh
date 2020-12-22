@@ -8,19 +8,18 @@ fi
 VERSIONS=$DEFAULT_VERSION
 
 GRAFANA_VERSION=7.3.5
-DB_ADDRESS="127.0.0.1:9090"
 LOCAL=""
 GRAFANA_ADMIN_PASSWORD="admin"
 GRAFANA_AUTH=false
 GRAFANA_AUTH_ANONYMOUS=true
-AM_ADDRESS=""
 DOCKER_PARAM=""
 EXTERNAL_VOLUME=""
 BIND_ADDRESS=""
 ANONYMOUS_ROLE="Admin"
 SPECIFIC_SOLUTION=""
 LDAP_FILE=""
-LOKI_ADDRESS=""
+
+DATA_SOURCES=""
 
 usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
@@ -39,12 +38,11 @@ while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:' option; do
        ;;
     n) GRAFANA_NAME=$OPTARG
        ;;
-    p) DB_ADDRESS=$OPTARG
+    p) DATA_SOURCES="$DATA_SOURCES -p $OPTARG"
        ;;
-    m) AM_ADDRESS="-m $OPTARG"
-       ALERT_MANAGER_ADDRESS=$OPTARG
+    m) DATA_SOURCES="$DATA_SOURCES -m $OPTARG"
        ;;
-    L) LOKI_ADDRESS=$OPTARG
+    L) DATA_SOURCES="$DATA_SOURCES -L $OPTARG"
        ;;
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
@@ -128,8 +126,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 done
 
 ./generate-dashboards.sh -t $SPECIFIC_SOLUTION -v $VERSIONS -M $MANAGER_VERSION $GRAFANA_DASHBOARD_COMMAND
-mkdir -p grafana/provisioning/datasources
-sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" | sed "s/LOKI_ADDRESS/$LOKI_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
+./grafana-datasource.sh $DATA_SOURCES
 
 if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
     PORT_MAPPING="-p $BIND_ADDRESS$GRAFANA_PORT:3000"
