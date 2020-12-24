@@ -42,7 +42,7 @@ To avoid running docker as root, you should add the user you are going to use fo
 
    sudo groupadd docker
 
-2. Add your user to the Docker group.
+2. Add your user to the docker group. Log out and log in again. The new group will be active for this user on next login.
 
 .. code-block:: sh
 
@@ -139,7 +139,7 @@ For example:
 
 
 For general node information (disk, network, etc.) Scylla Monitoring Stack uses the ``node_exporter`` agent that runs on the same machine as Scylla does.
-By default, Prometheus will assume you have a ``node_exporter`` running on each machine. If this is not the case, you can override the ``node_exporter``
+By default, Prometheus will assume you have a ``node_exporter`` running on each machine. If this is not the case, for example if Scylla runs in a container and the node_exporter runs on the host, you can override the ``node_exporter``
 targets configuration file by creating an additional file and passing it with the ``-n`` flag.
 
 .. note::
@@ -153,7 +153,7 @@ For example:
 
 .. code-block:: yaml
 
-   ./start-all.sh -s my_scylla_server.yml -d data_dir
+   ./start-all.sh -s my_scylla_server.yml -d prometheus_data
 
 
 Mark the different Data Centers with Labels.
@@ -179,21 +179,21 @@ The ``genconfig.py`` script can also use ``nodetool status`` to generate the ser
 
 
 2. Connect to `Scylla Manager`_ by creating ``prometheus/scylla_manager_servers.yml``
-If you are using Scylla Manager, you should set its IP.
+If you are using Scylla Manager, you should set its IP and port in this file.
 
 You must add a scylla_manager_servers.yml file even if you are not using the manager.
 You can look at: ``prometheus/scylla_manager_servers.example.yml`` for an example.
 
 ..  _`Scylla Manager`: /operating-scylla/manager/
 
-For example
+For example if `Scylla Manager` host IP is `172.17.0.7` ``prometheus/scylla_manager_servers.yml`` would look like:
 
 .. code-block:: yaml
 
    # List Scylla Manager end points
 
    - targets:
-     - 172.17.0.7:56090
+     - 172.17.0.7:5090
 
 Note that you do not need to add labels to the Scylla Manager targets.
 
@@ -233,6 +233,19 @@ To set a user/password edit `grafana/provisioning/datasources/datasource.yaml`.
 
 Under **scylla-datasource** Uncomment the **secureJsonData** part and set the user and password.
 
+Use an external directory for the Prometheus data directory
+...........................................................
+
+The ``-d`` flag, places the Prometheus data directory outside of its container and by doing that makes it persistent.
+
+.. note:: Specifying an external directory is important for systems in production. Without it, 
+          every restart of the monitoring stack will result in metrics lost. 
+
+If the directory provided does not exist, the ``start-all.sh`` script will create it. Note that you should avoid running docker as root, the ``start-all.sh`` script
+will use the user permissions that runs it. This is important if you want to place the prometheus directory not under the user path but somewhere else, for example ``/prometheus-data``.
+
+In that case, you need to create the directory before calling ``start-all.sh`` and make sure it has the right permissions for the user running the command.
+
 
 Start and Stop Scylla Monitoring Stack
 --------------------------------------
@@ -242,7 +255,7 @@ Start
 
 .. code-block:: yaml
 
-   ./start-all.sh -d data_dir
+   ./start-all.sh -d prometheus_data
 
 
 Stop
@@ -256,7 +269,7 @@ Stop
 Start a Specific Scylla Monitoring Stack  Version
 .................................................
 
-By default, start-all.sh will start with dashboards for the latest two Scylla versions and the latest Scylla Manager version.
+By default, start-all.sh will start with dashboards for the latest Scylla version and the latest Scylla Manager version.
 
 You can specify specific scylla version with the ``-v`` flag and Scylla Manager version with ``-M`` flag
 
@@ -264,7 +277,7 @@ For example:
 
 .. code-block:: sh
 
-   ./start-all.sh -v 3.1,master -M 2.0 -d /prometheus-data
+   ./start-all.sh -v 3.1,master -M 2.0 -d prometheus-data
 
 will load the dashboards for Scylla versions ``3.1`` and ``master`` and the dashboard for Scylla Manager ``2.0``
 
@@ -277,7 +290,7 @@ To do that run ./start-all.sh with the -l flag. For example:
 
 .. code-block:: sh
 
-   ./start-all.sh -l -d /prometheus-data
+   ./start-all.sh -l -d prometheus-data
 
 
 
