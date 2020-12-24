@@ -1,0 +1,65 @@
+services:
+  alertmanager:
+    container_name: aalert
+    image: prom/alertmanager:v0.21.0
+    ports:
+    - 9093:9093
+    volumes:
+    - ./prometheus/rule_config.yml:/etc/alertmanager/config.yml
+  grafana:
+    container_name: agraf
+    environment:
+    - GF_PANELS_DISABLE_SANITIZE_HTML=true
+    - GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning
+    - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource
+    # This is where you set Grafana security
+    - GF_AUTH_BASIC_ENABLED=false
+    - GF_AUTH_ANONYMOUS_ENABLED=true
+    - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    - GF_SECURITY_ADMIN_PASSWORD=admin
+    image: grafana/grafana:7.3.5
+    ports:
+    - 3000:3000
+    user: 1000:1000
+    volumes:
+    - ./grafana/build:/var/lib/grafana/dashboards
+    - ./grafana/plugins:/var/lib/grafana/plugins
+    - ./grafana/provisioning:/var/lib/grafana/provisioning
+    # Uncomment the following line for grafana persistency
+    # - path/to/grafana/dir:/var/lib/grafana
+  loki:
+    command:
+    - --config.file=/mnt/config/loki-config.yaml
+    container_name: loki
+    image: grafana/loki:2.0.0
+    ports:
+    - 3100:3100
+    volumes:
+    - ./loki/rules:/etc/loki/rules
+    - ./loki/conf:/mnt/config
+  promotheus:
+    command:
+    - --config.file=/etc/prometheus/prometheus.compose.yml
+    container_name: aprom
+    image: prom/prometheus:v2.18.1
+    ports:
+    - 9090:9090
+    volumes:
+    - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    - ./prometheus/prometheus.rules.yml:/etc/prometheus/prometheus.rules.yml
+    - ./prometheus/scylla_servers.yml:/etc/scylla.d/prometheus/scylla_servers.yml
+    - ./prometheus/scylla_manager_servers.yml:/etc/scylla.d/prometheus/scylla_manager_servers.yml
+    - ./prometheus/scylla_servers.yml:/etc/scylla.d/prometheus/node_exporter_servers.yml
+    # Uncomment the following line for prometheus persistency 
+    # - path/to/data/dir:/prometheus/data
+  promtail:
+    command:
+    - --config.file=/etc/promtail/config.yml
+    container_name: promtail
+    image: grafana/promtail:2.0.0
+    ports:
+    - 1514:1514
+    - 9080:9080
+    volumes:
+    - ./loki/promtail/promtail_config.compose.yml:/etc/promtail/config.yml
+version: '3'
