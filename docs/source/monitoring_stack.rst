@@ -42,7 +42,7 @@ To avoid running docker as root, you should add the user you are going to use fo
 
    sudo groupadd docker
 
-2. Add your user to the Docker group.
+2. Add your user to the docker group. Log out and log in again. The new group will be active for this user on next login.
 
 .. code-block:: sh
 
