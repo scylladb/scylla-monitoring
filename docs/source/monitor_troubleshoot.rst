@@ -4,7 +4,7 @@ Troubleshoot Monitoring
 
 This document describes steps that need to be done to troubleshoot monitoring problems when using `Grafana/Prometheus`_ monitoring tool.
 
-..  _`Grafana/Prometheus`: /monitoring_apis/
+..  _`Grafana/Prometheus`: ../monitoring_apis
 
 Problem
 ~~~~~~~
@@ -116,7 +116,7 @@ For example:
 
 More on start-all.sh `options`_.
 
-..  _`options`: /monitoring_stack/
+..  _`options`: ../monitoring_stack/
 
 
 Grafana Chart Shows Error (!) Sign
@@ -170,10 +170,10 @@ Prometheus fails to fetch metrics from ``node_exporter``.
 Solution
 .........
 
-1. Make sure that ``node_exporter`` is running on each Scylla server. ``node_exporter`` is installed with ``scylla_setup``.
-If it does not, make sure to install and run it.
+1. Make sure that ``node_exporter`` is running on each Scylla server (by login to the machine and running ``ps -ef |gre node_exporter``). ``node_exporter`` is installed with ``scylla_setup``.
+to check that ``node_exporter`` is installed, run ``node_exporter --version``, If it is not, make sure to install and run it.
 
-2. If it is running, use ``curl <scylla_node>:9100/metrics`` (where 172.17.0.2 is a Scylla server IP) to fetch binary metric data from Scylla.  If curl does not return data, the problem is the connectivity between Scylla Monitoring and Scylla server. Please check your IPs and firewalls.
+2. If it is running, use ``curl http://<scylla_node>:9100/metrics`` (where <scylla_node> is a Scylla server IP) to fetch metric data from Scylla.  If curl does not return data, the problem is the connectivity between Scylla Monitoring and Scylla server. Please check your IPs and firewalls.
 
 Notice to users upgrading to Scylla Open Source 3.0 or Scylla Enterprise 2019.1
 ................................................................................
