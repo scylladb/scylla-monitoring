@@ -14,7 +14,7 @@ For evaluation, you can run Scylla Monitoring stack on any server (or laptop) th
 
 .. include:: min-prod-hw.rst
 
-.. _`Scylla Prometheus API`: ../monitoring_apis/#prometheus
+.. _`Scylla Prometheus API`: /monitoring_apis/#prometheus
 
 Prerequisites
 -------------
