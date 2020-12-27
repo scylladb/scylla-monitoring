@@ -1005,6 +1005,63 @@
                 "class": "row",
                 "panels": [
                     {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Paxos operations",
+                        "description" : "A single Read/Write LWT will result in multiple paxos operations"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_cas_foreground{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Paxos Foreground operations",
+                        "description" : "How many paxos operations that did not yet produce a result are running"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_cas_background{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Paxos Background operations",
+                        "description" : "How many paxos operations are still running after a result was alredy returned"
+                    },
+                    {
+                        "class": "text_panel",
+                        "span": 3,
+                        "options": {
+                            "content": "# "
+                        }
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
                         "class": "wps_panel",
                         "span": 3,
                         "targets": [
