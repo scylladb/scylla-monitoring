@@ -16,6 +16,7 @@ Scylla Monitor
    CQL Optimization Dashboard <cql_optimization>
    Adding and Modifying Dashboards <updating_dashboard>
    Alerting <alerting>
+   Using Thanos <thanos>
    Scylla Monitor Support Matrix <matrix>
 
 
@@ -45,6 +46,7 @@ The Scylla Monitor Stack consists of three components, wrapped in Docker contain
 * :doc:`CQL Optimization Dashboard <cql_optimization>`
 * :doc:`Adding and Modifying Dashboards <updating_dashboard>`
 * :doc:`Alerting <alerting>`
+* :doc:`Using Thanos <thanos>`
 * :doc:`Scylla Monitor Support Matrix <matrix>`
 * `Scylla Monitor lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on Scylla University
 
