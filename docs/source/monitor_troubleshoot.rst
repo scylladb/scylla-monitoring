@@ -60,7 +60,7 @@ Files And Directory Permissions
 The preferred way of running the container is using a non root user.
 See the `monitoring`_ Docker post-installation section.
 
-.. _`monitoring`: /monitoring_stack/#docker-post-installation 
+.. _`monitoring`: ../monitoring_stack#docker-post-installation
 
 
 If a container failed to start because of a permission problem, make sure
