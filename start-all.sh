@@ -36,7 +36,7 @@ fi
 
 PROMETHEUS_RULES="$PWD/prometheus/prometheus.rules.yml"
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [--no-loki] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [--no-loki] [--auto-restart] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.18.1
 
 SCYLLA_TARGET_FILES=($PWD/prometheus/scylla_servers.yml $PWD/scylla_servers.yml)
@@ -58,6 +58,9 @@ for arg; do
 	shift
 	case $arg in
         (--no-loki) RUN_LOKI=0
+            ;;
+        (--auto-restart) DOCKER_PARAM="--restart=on-failure"
+            echo "using restart-on failure"
             ;;
         (*) set -- "$@" "$arg"
             ;;
