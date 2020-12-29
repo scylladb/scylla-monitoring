@@ -134,7 +134,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:' option; do
   esac
 done
 
-if [ -z $CONSUL_ADDRESS ]; then
+if [ -z "$CONSUL_ADDRESS" ]; then
 
     for f in ${SCYLLA_TARGET_FILES[@]}; do
         if [ -f $f ]; then
