@@ -249,8 +249,9 @@ In that case, you need to create the directory before calling ``start-all.sh`` a
 Add Additional Prometheus Targets
 ....................................
 There are situations where you would like to monitor additional targets using the Prometheus server of the monitoring stack.
-The Prometheus server reads its targets from file, this file is generated from a template when calling ``start-all.sh``. 
-To add your own target you would need to edit the template file before calling ``start-all.sh``.
+For example, an agent that runs on a firewall server.
+The Prometheus server reads its targets from a file, this file is generated from a template when calling ``start-all.sh``.
+To add your targets you would need to edit the template file before calling ``start-all.sh``.
 
 The template file is either ``prometheus/prometheus.yml.template`` if Prometheus reads the Scylla target from file, or ``prometheus/prometheus.consul.yml.template``
 if Prometheus gets Scylla targets from the manager Consul API.
