@@ -36,7 +36,7 @@ fi
 
 PROMETHEUS_RULES="$PWD/prometheus/prometheus.rules.yml"
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [--no-loki] [--auto-restart] [--no-renderer] -- starts Grafana and Prometheus Docker instances"
+usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.18.1
 
 SCYLLA_TARGET_FILES=($PWD/prometheus/scylla_servers.yml $PWD/scylla_servers.yml)
@@ -46,6 +46,7 @@ ALERTMANAGER_PORT=""
 DOCKER_PARAM=""
 DATA_DIR=""
 CONSUL_ADDRESS=""
+PROMETHEUS_TARGETS=""
 BIND_ADDRESS=""
 BIND_ADDRESS_CONFIG=""
 GRAFNA_ANONYMOUS_ROLE=""
@@ -62,14 +63,13 @@ for arg; do
         (--no-renderer) RUN_RENDERER=""
             ;;
         (--auto-restart) DOCKER_PARAM="--restart=on-failure"
-            echo "using restart-on failure"
             ;;
         (*) set -- "$@" "$arg"
             ;;
     esac
 done
 
-while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:' option; do
+while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:T:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -92,6 +92,8 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:' option; do
     g) GRAFANA_PORT="-g $OPTARG"
        ;;
     m) ALERTMANAGER_PORT="-p $OPTARG"
+       ;;
+    T) PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS -T $OPTARG"
        ;;
     Q) GRAFNA_ANONYMOUS_ROLE="-Q $OPTARG"
        ;;
@@ -234,7 +236,7 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
     PROMETHEUS_COMMAND_LINE_OPTIONS+=" -$val"
 done
 
-./prometheus-config.sh -m $AM_ADDRESS $CONSUL_ADDRESS
+./prometheus-config.sh -m $AM_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS
 
 if [ -z $HOST_NETWORK ]; then
     PORT_MAPPING="-p $BIND_ADDRESS$PROMETHEUS_PORT:9090"

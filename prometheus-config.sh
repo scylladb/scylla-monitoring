@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [--compose] -- Generate grafna's datasource file"
+usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [--compose] -- Generate grafna's datasource file"
 CONSUL_ADDRESS=""
 COMPOSE=0
 if [ "$1" = "" ]; then
@@ -17,12 +17,14 @@ for arg; do
     esac
 done
 
-while getopts ':hL:m:' option; do
+while getopts ':hL:m:T:' option; do
   case "$option" in
     h) echo "$usage"
        exit
        ;;
     L) CONSUL_ADDRESS="$OPTARG"
+       ;;
+    T) PROMETHEUS_TARGETS+=("$OPTARG")
        ;;
     m) AM_ADDRESS="$$OPTARG"
        ;;
@@ -46,3 +48,11 @@ else
     fi
     sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template| sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" > $PWD/prometheus/build/prometheus.yml
 fi
+
+for val in "${PROMETHEUS_TARGETS[@]}"; do
+    if [[ ! -f $val ]]; then
+        echo "Target file $val does not exists"
+        exit 1
+    fi
+    cat $val >> $PWD/prometheus/build/prometheus.yml
+done
