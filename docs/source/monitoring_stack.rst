@@ -246,6 +246,30 @@ will use the user permissions that runs it. This is important if you want to pla
 
 In that case, you need to create the directory before calling ``start-all.sh`` and make sure it has the right permissions for the user running the command.
 
+Add Additional Prometheus Targets
+....................................
+There are situations where you would like to monitor additional targets using the Prometheus server of the monitoring stack.
+For example, an agent that runs on a firewall server.
+The Prometheus server reads its targets from a file, this file is generated from a template when calling ``start-all.sh``.
+To add your targets you would need to edit the template file before calling ``start-all.sh``.
+
+The template file is either ``prometheus/prometheus.yml.template`` if Prometheus reads the Scylla target from file, or ``prometheus/prometheus.consul.yml.template``
+if Prometheus gets Scylla targets from the manager Consul API.
+
+You can add a target at the end of the file, for example, the following example would read from a server with IP address 17.0.0.1 with a Prometheus port of 7000.
+
+
+.. code-block:: yaml
+
+    - job_name: 'myservice'
+      # Override the global default and scrape targets from this job every 5 seconds.
+      scrape_interval: 5s
+      static_configs:
+        - targets:
+          - 17.0.0.1:7000
+
+
+
 
 Start and Stop Scylla Monitoring Stack
 --------------------------------------
