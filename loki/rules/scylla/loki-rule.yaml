@@ -1,7 +1,17 @@
 groups:
   - name: datamodel
     rules:
-    - alert: HighThroughputLogStreams
+    - alert: largeEntry
       expr: rate({app="scylla", module="seastar_memory"}[1h])>0
       for: 20s
-
+      labels:
+        severity: "1"
+      annotations:
+        description: '{{ $labels.instance }} {{ $labels.msg }} memory.'
+    - alert: largeEntry
+      expr: rate({app="scylla", module="large_data"}[1h])>0
+      for: 20s
+      labels:
+        severity: "1"
+      annotations:
+        description: '{{ $labels.instance }} {{ $labels.msg }} memory.'
