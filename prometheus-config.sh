@@ -26,7 +26,7 @@ while getopts ':hL:m:T:' option; do
        ;;
     T) PROMETHEUS_TARGETS+=("$OPTARG")
        ;;
-    m) AM_ADDRESS="$$OPTARG"
+    m) AM_ADDRESS="$OPTARG"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
