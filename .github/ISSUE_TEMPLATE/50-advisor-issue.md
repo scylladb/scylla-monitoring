@@ -9,8 +9,10 @@ Please make sure that this is Advisor related
 
 **Describe the issue logically**
 
-**Describe the condition when the issue haapens**
-- When this condition hapens (Metrics/logs/something else):
+**Describe the condition when the issue hapens**
+- When this condition hapens (What Metrics/logs/something else indicate the issue):
 - For how long:
 
-**Any Other info.**
+**What the user should do when this hapens**
+
+**Any Other info or Links.**
