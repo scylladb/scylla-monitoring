@@ -1,5 +1,5 @@
 ---
-name: "📖 Documentation issue: I found an issue "
+name: "📖 Documentation issue: I found an issue with the documentation"
 about: Use this template for reporting a feature or a problem in the documentation
 labels: documentation
 assignees: 'lauranovich'
