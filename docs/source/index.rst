@@ -14,6 +14,7 @@ Scylla Monitor
    Troubleshooting Guide for Scylla Manager and Scylla Monitor Integration <https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/>
    Upgrade Guide for Scylla Monitor <https://docs.scylladb.com/upgrade/upgrade-monitor/>
    CQL Optimization Dashboard <cql_optimization>
+   Scylla Monitoring Advisor <advisor>
    Adding and Modifying Dashboards <updating_dashboard>
    Alerting <alerting>
    Using Thanos <thanos>
@@ -43,7 +44,7 @@ The Scylla Monitor Stack consists of three components, wrapped in Docker contain
 * :doc:`Troubleshoot Scylla Monitor <monitor_troubleshoot>`
 * `Troubleshooting Guide for Scylla Manager and Scylla Monitor Integration <https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/>`_
 * `Upgrade Guide for Monitoring <https://docs.scylladb.com/upgrade/upgrade-monitor/>`_
-* :doc:`CQL Optimization Dashboard <cql_optimization>`
+* :doc:`Scylla Monitoring Advisor <advisor>`
 * :doc:`Adding and Modifying Dashboards <updating_dashboard>`
 * :doc:`Alerting <alerting>`
 * :doc:`Using Thanos <thanos>`
