@@ -293,17 +293,17 @@ Stop
 Start a Specific Scylla Monitoring Stack  Version
 .................................................
 
-By default, start-all.sh will start with dashboards for the latest Scylla version and the latest Scylla Manager version.
+By default, start-all.sh will start with dashboards for the latest Scylla Open source version and the latest Scylla Manager version.
 
-You can specify specific scylla version with the ``-v`` flag and Scylla Manager version with ``-M`` flag
+You can specify specific scylla version with the ``-v`` flag and Scylla Manager version with ``-M`` flag.
 
-For example:
+Multiple versions are supported. For example:
 
 .. code-block:: sh
 
-   ./start-all.sh -v 3.1,master -M 2.0 -d prometheus-data
+   ./start-all.sh -v 2020.1,2019.1 -M 2.1 -d prometheus-data
 
-will load the dashboards for Scylla versions ``3.1`` and ``master`` and the dashboard for Scylla Manager ``2.0``
+will load the dashboards for Scylla Enterprise versions ``2020.1`` and ``2019.1`` and the dashboard for Scylla Manager ``2.1``
 
 
 Accessing the `localhost`
