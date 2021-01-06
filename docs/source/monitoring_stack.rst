@@ -118,7 +118,7 @@ For example:
 
 .. note:: If you want to add your managed cluster to Scylla Monitoring, add the IPs of the nodes as well as the cluster name you used when you `added the cluster`_ to Scylla Manager. It is important that the label ``cluster name`` and the cluster name in Scylla Manager match.
 
-..  _`added the cluster`: /operating-scylla/manager/1.4/add-a-cluster/#add-a-cluster>
+..  _`added the cluster`: https://scylladb.github.io/scylla-manager/2.2/add-a-cluster.html
 
 *Using IPV6*
 
@@ -184,7 +184,7 @@ If you are using Scylla Manager, you should set its IP.
 You must add a scylla_manager_servers.yml file even if you are not using the manager.
 You can look at: ``prometheus/scylla_manager_servers.example.yml`` for an example.
 
-..  _`Scylla Manager`: /operating-scylla/manager/
+..  _`Scylla Manager`: https://scylladb.github.io/scylla-manager/
 
 For example
 
