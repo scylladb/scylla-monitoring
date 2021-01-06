@@ -22,7 +22,7 @@ Prepared Statements
 `Prepared statements`_ are queries that are first defined as a template with place holders for the values and then that template is used
 multiple times with different values.
 
-.. _`Prepared statements`: http://docs.scylladb.com/getting-started/definitions/#prepared-statements
+.. _`Prepared statements`: https://docs.scylladb.com/getting-started/definitions/#prepared-statements
 
 
 Using prepared statements has the following benefits:
@@ -150,5 +150,4 @@ In a typical situation, a client performs a read from the nearest data-center an
 A read request that ends up causing traffic between data-centers adds additional overhead to the system.
 
 The **Cross DC read requests** Gauge shows the percentage of read queries that caused a request to an external data-center, make sure it is low or zero.
-
 
