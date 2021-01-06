@@ -22,7 +22,7 @@ Prepared Statements
 `Prepared statements`_ are queries that are first defined as a template with place holders for the values and then that template is used
 multiple times with different values.
 
-.. _`Prepared statements`: /getting-started/definitions/#prepared-statements
+.. _`Prepared statements`: http://docs.scylladb.com/getting-started/definitions/#prepared-statements
 
 
 Using prepared statements has the following benefits:
