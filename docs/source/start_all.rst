@@ -21,6 +21,8 @@ You cannot use port mapping when using the ``-l`` flag
 
 **-D encapsulate docker param** Allows passing additional parameters to all the docker containers.
 
+**--auto-restart** When set, Docker will automatically restart all the services inside the containers in case of a failure.
+
 Grafana Related Commands
 ------------------------
 
