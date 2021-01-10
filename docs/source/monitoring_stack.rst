@@ -316,9 +316,13 @@ To do that run ./start-all.sh with the -l flag. For example:
 
    ./start-all.sh -l -d prometheus-data
 
-Configure rsyslog on Scylla
-...........................
-Scylla Monitoring generates metrics and alerts from logs. To get full functionality, you should use rsyslog_. Scylla Monitoring will act as an additional rsyslog server.
+Configure rsyslog on each Scylla node
+.....................................
+generates metrics and alerts from logs. To get full functionality, you should use rsyslog_. Scylla Monitoring will act as an additional rsyslog server.
+Scylla Monitoring Stack can collect Scylla logs with Loki, and generates metrics and alerts base on these logs. 
+To use this feature, you need to direct logs from each Scylla node to Loki.
+A recommended way to do that is using rsyslog_, where Scylla Monitoring (Loki) acts as an additional rsyslog server.
+Note that you can have Scylla to send logs to more than one log collection service.
 
 .. _rsyslog: https://www.rsyslog.com/
 
@@ -338,6 +342,10 @@ If Scylla monitoring IP is 10.0.0.1, the file should look like
 
 Restart rsyslog for the configuration to take effect.
 
+.. code-block:: sh
+
+
+   systemctl restart rsyslog
 
 View Grafana Dashboards
 -----------------------
