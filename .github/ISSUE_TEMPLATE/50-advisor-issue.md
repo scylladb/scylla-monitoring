@@ -1,7 +1,7 @@
 ---
 name: "🎓 Advisor enhancement: I want the Advisor to warn about a situation"
 about: Use this template for reporting a feature or a problem with the Advisor
-labels: Advisor
+labels: advisor
 assignees: ''
 ---
 
