@@ -65,9 +65,9 @@ Install Scylla Monitoring
 
 .. code-block:: sh
 
-   wget https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-3.5.tar.gz
-   tar -xvf scylla-monitoring-3.5.tar.gz
-   cd scylla-monitoring-scylla-monitoring-3.5
+   wget https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-3.6.0.tar.gz
+   tar -xvf scylla-monitoring-3.6.0.tar.gz
+   cd scylla-monitoring-scylla-monitoring-3.6.0
 
 As an alternative, you can clone and use the Git repository directly.
 
@@ -75,7 +75,7 @@ As an alternative, you can clone and use the Git repository directly.
 
    git clone https://github.com/scylladb/scylla-monitoring.git
    cd scylla-monitoring
-   git checkout branch-3.5
+   git checkout branch-3.6
 
 2. Start Docker service if needed
 
@@ -316,13 +316,39 @@ To do that run ./start-all.sh with the -l flag. For example:
 
    ./start-all.sh -l -d prometheus-data
 
+Configure rsyslog on each Scylla node
+.....................................
+generates metrics and alerts from logs. To get full functionality, you should use rsyslog_. Scylla Monitoring will act as an additional rsyslog server.
+Scylla Monitoring Stack collects Scylla logs using Loki and generates metrics and alerts based on these logs. 
+To use this feature, you need to direct logs from each Scylla node to Loki.
+The recommended method to do this is by using rsyslog_, where Scylla Monitoring (Loki) acts as an additional rsyslog server.
+.. note:: Scylla can send logs to more than one log collection service.
 
+.. _rsyslog: https://www.rsyslog.com/
+
+
+
+**Prerequisite**, make sure rsyslog is installed and running. If rsyslog is not installed, follow the installation instruction_.
+
+.. _instruction: https://www.rsyslog.com/doc/v8-stable/installation/index.html
+
+Add scylla's rsyslog configuration file. Add the file: ``/etc/rsyslog.d/scylla.conf``.
+
+If Scylla monitoring IP is 10.0.0.1, the file should look like
+
+.. code-block:: sh
+
+   if $programname ==  'scylla' then @@10.0.0.1:1514;RSYSLOG_SyslogProtocol23Format
+
+Restart rsyslog for the configuration to take effect.
+
+.. code-block:: sh
+
+
+   systemctl restart rsyslog
 
 View Grafana Dashboards
 -----------------------
 
 Point your browser to ``your-server-ip:3000``
 By default, Grafana authentication is disabled. To enable it and set a password for user admin use the ``-a`` option.
-
-
-
