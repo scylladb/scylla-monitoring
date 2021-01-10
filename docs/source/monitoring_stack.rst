@@ -321,7 +321,7 @@ Configure rsyslog on each Scylla node
 generates metrics and alerts from logs. To get full functionality, you should use rsyslog_. Scylla Monitoring will act as an additional rsyslog server.
 Scylla Monitoring Stack collects Scylla logs using Loki and generates metrics and alerts based on these logs. 
 To use this feature, you need to direct logs from each Scylla node to Loki.
-A recommended way to do that is using rsyslog_, where Scylla Monitoring (Loki) acts as an additional rsyslog server.
+The recommended method to do this is by using rsyslog_, where Scylla Monitoring (Loki) acts as an additional rsyslog server.
 Note that you can have Scylla to send logs to more than one log collection service.
 
 .. _rsyslog: https://www.rsyslog.com/
@@ -352,5 +352,4 @@ View Grafana Dashboards
 
 Point your browser to ``your-server-ip:3000``
 By default, Grafana authentication is disabled. To enable it and set a password for user admin use the ``-a`` option.
-
 
