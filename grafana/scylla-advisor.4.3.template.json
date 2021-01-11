@@ -1,0 +1,796 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "originalTitle": "Scylla Cluster Metrics",
+        "overwrite": true,
+        "rows": [
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "title": "Cluster overview $cluster",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class" : "small_stat_rows"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "title": "Advisor - Errors",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "small_stat_error",
+                        "description": "Requests are not completed because there are not enough replicas, for example when using consistency level ALL and a node is down",
+                        "title": "CL Errors",
+                        "targets": [
+                            {
+						      "expr": "sum(rate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]))",
+						      "legendFormat": "",
+						      "interval": "",
+						      "refId": "A",
+						      "queryType": "randomWalk",
+						      "hide": false,
+						      "format": "time_series"
+						    },
+						    {
+						      "expr": "sum(rate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]))",
+						      "legendFormat": "",
+						      "interval": "",
+						      "refId": "B",
+						      "hide": false
+						    },
+						    {
+						      "expr": "sum(rate(scylla_storage_proxy_coordinator_range_unavailable{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]))",
+						      "legendFormat": "",
+						      "interval": "",
+						      "refId": "C",
+						      "hide": false
+						    }
+                        ],
+					    "links": [
+						    {
+						      "title": "CQL",
+						      "url": "http://localhost:3000/d/cql-4.3/scylla-cql?orgId=1&refresh=30s&var-by=instance,shard&from=$__from&to=$__to"
+						    }
+						  ]
+						
+                    },
+                    {
+                        "class": "small_stat",
+                        "datasource": "loki",
+                        "description": "A warning due to large cell, large row or large partition",
+                        "title": "Big Data",
+                        "targets": [
+                            {
+						      "expr": "count_over_time({module=\"large_data\"}[5m])",
+						      "legendFormat": "",
+						      "refId": "A"
+						    }
+                        ],
+                        "fieldConfig": {
+						    "defaults": {
+						      "custom": {},
+						      "thresholds": {
+						        "mode": "absolute",
+						        "steps": [
+						          {
+						            "color": "green",
+						            "value": null
+						          },
+						          {
+						            "value": 1,
+						            "color": "red"
+						          }
+						        ]
+						      }
+						    },
+						    "overrides": []
+						  },
+                        "transformations": [
+					    {
+					      "id": "calculateField",
+					      "options": {
+					        "mode": "reduceRow",
+					        "reduce": {
+					          "reducer": "max"
+					        },
+					        "replaceFields": true
+					      }
+					    }
+					    ],
+					    "links": [
+						    {
+						      "title": "CQL",
+						      "url": "http://localhost:3000/d/cql-4.3/scylla-cql?orgId=1&refresh=30s&var-by=instance,shard&from=$__from&to=$__to"
+						    }
+						  ]
+						
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "IO Errors indictes of a bad disk in a node",
+                        "title": "Disk Errors",
+                        "targets": [
+                            {
+						      "expr": "sum(rate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]))",
+						      "legendFormat": "",
+						      "interval": "",
+						      "refId": "A",
+						      "queryType": "randomWalk",
+						      "hide": false,
+						      "format": "time_series"
+						    }
+                        ],
+                        "fieldConfig": {
+						    "defaults": {
+						      "custom": {},
+						      "thresholds": {
+						        "mode": "absolute",
+						        "steps": [
+						          {
+						            "color": "green",
+						            "value": null
+						          },
+						          {
+						            "value": 0.00001,
+						            "color": "red"
+						          }
+						        ]
+						      }
+						    },
+						    "overrides": []
+						  },
+					    "links": [
+						    {
+						      "title": "OS",
+						      "url": "http://localhost:3000/d/OS-4.3/os-metrics?orgId=1&refresh=30s&from=$__from&to=$__to"
+						    }
+						  ]
+						
+                    },
+                    {
+                        "class": "small_stat_error",
+                        "description": "Requests are not completed, ",
+                        "title": "",
+                        "targets": [
+                            {
+						      "expr": "sum(rate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]))",
+						      "legendFormat": "",
+						      "refId": "A"
+						    },
+						    {
+						      "expr": "sum(rate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]))",
+						      "legendFormat": "",
+						      "interval": "",
+						      "refId": "B",
+						      "hide": false
+						    },
+						    {
+						      "expr": "sum(rate(scylla_storage_proxy_coordinator_range_unavailable{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]))",
+						      "legendFormat": "",
+						      "interval": "",
+						      "refId": "C",
+						      "hide": false
+						    }
+                        ],
+					    "links": [
+						    {
+						      "title": "CQL",
+						      "url": "http://localhost:3000/d/cql-4.3/scylla-cql?orgId=1&refresh=30s&var-by=instance,shard&from=$__from&to=$__to"
+						    }
+						  ]
+						
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "title": "Advisor - Imbalance and Traffic Change",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_header_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Imbalance</h1>"
+                    },
+                    {
+                        "class": "text_header_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Traffic Change</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                	{
+                        "class": "small_stat",
+                        "description": "The number of connections per shard should be balanced",
+                        "title": "Connections",
+                        "targets": [
+                            {
+						      "expr": "max(abs(sum(scylla_transport_current_connections{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by (instance,shard)-scalar(avg(scylla_transport_current_connections{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}))))",
+						      "refId": "A",
+						      "hide": false
+						    }
+                        ],
+                        "fieldConfig": {
+						    "defaults": {
+						      "custom": {},
+						      "thresholds": {
+						        "mode": "absolute",
+						        "steps": [
+						          {
+						            "color": "green",
+						            "value": null
+						          },
+						          {
+						            "value": 3,
+						            "color": "red"
+						          }
+						        ]
+						      }
+						    },
+						    "overrides": []
+						  },
+                        "transformations": [
+					    ],
+					    "links": [
+						    {
+						      "title": "CQL",
+						      "url": "http://localhost:3000/d/cql-4.3/scylla-cql?orgId=1&refresh=30s&var-by=instance,shard&from=$__from&to=$__to"
+						    }
+						  ]
+						
+                    },
+                	{
+                        "class": "small_gauge_std",
+                        "description": "Indicates that the CQL traffic is not unified between shards",
+                        "title": "CQL Traffic",
+                        "targets": [
+                            {
+						      "expr": "max(abs(rate(scylla_cql_updates{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]) - scalar(avg(rate(scylla_cql_updates{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))))/scalar(stddev(rate(scylla_cql_updates{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))+100))",
+						      "legendFormat": "",
+						      "interval": "",
+						      "refId": "A",
+						      "queryType": "randomWalk",
+						      "hide": false,
+						      "format": "time_series"
+						    },
+						    {
+						      "expr": "max(abs(rate(scylla_cql_inserts{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]) - scalar(avg(rate(scylla_cql_inserts{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))))/scalar(stddev(rate(scylla_cql_inserts{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))+100))",
+						      "legendFormat": "",
+						      "interval": "",
+						      "refId": "B",
+						      "hide": false
+						    },
+						    {
+						      "expr": "max(abs(rate(scylla_cql_reads{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]) - scalar(avg(rate(scylla_cql_reads{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))))/scalar(stddev(rate(scylla_cql_reads{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))+100))",
+						      "legendFormat": "",
+						      "interval": "",
+						      "refId": "C",
+						      "hide": false
+						    },
+						    {
+						      "expr": "max(abs(rate(scylla_cql_deletes{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]) - scalar(avg(rate(scylla_cql_deletes{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))))/scalar(stddev(rate(scylla_cql_deletes{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))+100))",
+						      "legendFormat": "",
+						      "interval": "",
+						      "refId": "D",
+						      "hide": false
+						    }
+                        ],
+					    "links": [
+						    {
+						      "title": "CQL",
+						      "url": "http://localhost:3000/d/cql-4.3/scylla-cql?orgId=1&refresh=30s&var-by=instance,shard&from=$__from&to=$__to"
+						    }
+						  ]
+						
+                    },
+                    {
+                        "class": "small_gauge_std",
+                        "description": "A single node with high latency is an indication for a node related issue",
+                        "title": "Node Latency",
+                        "targets": [
+                            {
+						      "expr": "max(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[60s])) by (instance, le)) -scalar(avg(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[60s])) by (instance,le)))))/ scalar(stddev(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[60s])) by (instance,le))))",
+						      "legendFormat": "",
+						      "refId": "A"
+						    }
+                        ],
+					    "links": [
+						    {
+						      "title": "CQL",
+						      "url": "http://localhost:3000/d/cql-4.3/scylla-cql?orgId=1&refresh=30s&var-by=instance,shard&from=$__from&to=$__to"
+						    }
+						  ]
+						
+                    },
+                    {
+                        "class": "small_gauge_std",
+                        "description": "A single shard with high latency is an indication for hot-partition, or large row/cell/partition",
+                        "title": "Shard Latency",
+                        "targets": [
+                            {
+						      "expr": "max(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (instance,shard, le)) -scalar(avg(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (instance,shard,le)))))/ scalar(stddev(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by (instance,shard, le))))",
+						      "legendFormat": "",
+						      "refId": "A"
+						    }
+                        ],
+					    "links": [
+						    {
+						      "title": "CQL",
+						      "url": "http://localhost:3000/d/cql-4.3/scylla-cql?orgId=1&refresh=30s&var-by=instance,shard&from=$__from&to=$__to"
+						    }
+						  ]
+						
+                    },
+                    {
+                    	"class": "small_gauge_std",
+                    	"description": "A single shard with high latency is an indication for hot-partition, or large row/cell/partition",
+                        "title": "Cache",
+                        "type": "gauge",
+                        "targets": [
+                            {
+                                "expr": "((rate(scylla_cache_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]) - rate(scylla_cache_reads_with_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]))- scalar(avg(rate(scylla_cache_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]) - rate(scylla_cache_reads_with_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]))))/scalar(stddev(rate(scylla_cache_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]) - rate(scylla_cache_reads_with_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s]))+100)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ]
+                    },
+                    {
+                        "class": "plain_text",
+                        "content": "",
+                        "gridPos": {
+					        "w": 2,
+					        "h": 4
+					      }
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "Compare an hourly avrage to yesterday",
+                        "title": "24H",
+                        "targets": [
+                            {
+						      "expr": "(sum(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1h]))/sum(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1h] offset 1d))-1)",
+						      "refId": "A",
+						      "hide": false
+						    }
+                        ],
+                        "fieldConfig": {
+                        "defaults": {
+					      "custom": {},
+					      "unit": "percentunit",
+					      "decimals": 0,
+					      "thresholds": {
+					        "mode": "absolute",
+					        "steps": [
+					          {
+					            "value": null,
+					            "color": "green"
+					          }
+					        ]
+					      }
+                        }
+                        }
+                        ,
+                        "transformations": [
+					    ]
+				    },
+                    {
+                        "class": "small_stat",
+                        "description": "Compare an hourly avrage to last weeks traffic",
+                        "title": "Week",
+                        "targets": [
+                            {
+						      "expr": "(sum(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1h]))/sum(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1h] offset 1w))-1)",
+						      "refId": "A",
+						      "hide": false
+						    }
+                        ],
+                        "fieldConfig": {
+                        	"defaults": {
+						      "custom": {},
+						      "unit": "percentunit",
+						      "decimals": 0,
+						      "thresholds": {
+						        "mode": "absolute",
+						        "steps": [
+						          {
+						            "value": null,
+						            "color": "green"
+						          }
+						        ]
+						      }
+	                        }
+                        },
+                        "transformations": [
+					    ]
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "title": "$dc",
+                      "repeat": "dc",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "vertical_lcd",
+                        "targets": [
+                            {
+                              "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"} )",
+                              "interval": "",
+                              "legendFormat": "",
+                              "instant": true,
+                              "refId": "A"
+                            }
+                          ],
+                          "title": "Load"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "gridPos": {
+                        "w": 3
+                        },
+                        "targets": [
+                            {
+                                "expr": "Avg(node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}) by ([[by]])-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Avg Usage {{[[by]]}}",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                              "expr": "avg(node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}) by ([[by]])",
+                              "legendFormat": "Size {{[[by]]}}",
+                              "interval": "",
+                              "refId": "B"
+                            }
+                        ],
+                        "title": "Disk Size by $by"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "95% {{[[by]]}}",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "99% {{[[by]]}}",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Write Latencies"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "95% {{[[by]]}}",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "99% {{[[by]]}}",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Read Latencies"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "class":"small_nodes_table",
+                      "span":5
+                    },
+                    {
+                        "class": "graph_panel_int",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_compaction_manager_compactions{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Running Compactions"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "The Hits and Misses",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_row_hits{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Hit {{[[by]]}}",
+                                "refId": "A",
+                                "step": 10
+                            },
+                            {
+                                "expr": "$func(rate(scylla_cache_row_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Misses {{[[by]]}}",
+                                "refId": "B",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Cache Hits/Misses"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Writes timeout {{[[by]]}}",
+                                "refId": "A",
+                                "step": 10
+                            },
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])+rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])+rate(scylla_storage_proxy_coordinator_range_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Read  timeout {{[[by]]}}",
+                                "refId": "B",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Read/Write Timeouts by [[by]]"
+                    }
+
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Your panels"
+                    }
+                ]
+            },
+            {
+                "class": "user_panel_row_header"
+            },
+            {
+                "class": "user_panels_row"
+            },
+            {
+                "class": "monitoring_version_row"
+            }
+        ],
+        "tags": [
+            "4.3"
+        ],
+        "templating": {
+            "list": [
+                {
+                    "class": "by_template_var",
+                    "current": {
+                        "tags": [],
+                        "text": "DC",
+                        "value": "dc"
+                    },
+                    "options": [
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": true,
+                            "text": "DC",
+                            "value": "dc"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Instance",
+                            "value": "instance"
+                        },
+                        {
+                            "selected": false,
+                            "text": "instance,shard",
+                            "value": "instance,shard"
+                        }
+                    ]
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "shard",
+                    "name": "shard",
+                    "query": "label_values(scylla_reactor_utilization,shard)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_single",
+                    "current": {
+                        "text": "/var/lib/scylla",
+                        "value": "/var/lib/scylla"
+                    },
+                    "label": "Mount path",
+                    "name": "mount_point",
+                    "query": "node_filesystem_avail_bytes",
+                    "regex": "/mountpoint=\"([^\"]*)\".*/",
+                    "sort": 0
+                },
+                {
+                    "class": "aggregation_function"
+                },
+                {
+                    "class": "adhoc_filter"
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "4.3",
+                        "value": "4.3"
+                    },
+                    "name": "dash_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "4.3",
+                            "value": "4.3"
+                        }
+                    ],
+                    "query": "4.3"
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "4.3",
+                        "value": "4.3"
+                    },
+                    "name": "scylla_dash_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "4.3",
+                            "value": "4.3"
+                        }
+                    ],
+                    "query": "4.3"
+                },
+                {
+                    "class": "monitor_version_var"
+                }
+            ]
+        },
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Advisor",
+        "uid": "advisor-4-3",
+        "version": 1
+    }
+}
