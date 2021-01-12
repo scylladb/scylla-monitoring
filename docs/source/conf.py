@@ -92,7 +92,8 @@ def setup(sphinx):
 
 # substitutions and variables - these are global to the entire Monitoring docs project.
 # Adds version variables for monitoring and manager versions when used in inline text
-# version should be set to the latest monitoring version
+# Version should be set to the latest monitoring version
+
 rst_prolog = """
 .. |version| replace:: 3.5.3
 """
