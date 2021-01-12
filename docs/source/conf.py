@@ -90,14 +90,12 @@ def setup(sphinx):
     }, True)
     sphinx.add_transform(AutoStructify)
 
-
+# substitutions and variables - these are global to the entire Monitoring docs project.
 # Adds version variables for monitoring and manager versions when used in inline text
-
+# version should be set to the latest monitoring version
 rst_prolog = """
-.. |mon_version| replace:: 3.4
-.. |man_version| replace:: 2.0
-.. |mon_root| replace::  :doc:`Scylla Monitoring Stack </operating-scylla/monitoring/index>`
-""" 
+.. |version| replace:: 3.5.3
+"""
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -250,3 +248,4 @@ epub_copyright = copyright
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
+
