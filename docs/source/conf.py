@@ -179,7 +179,7 @@ redirects_file = "_utils/redirections.yaml"
 # -- Options for multiversion --------------------------------------------
 
 # Whitelist pattern for tags (set to None to ignore all tags)
-TAGS = ['scylla-monitoring-3.4.2', 'scylla-monitoring-3.5', 'scylla-monitoring-3.5.\d+']
+TAGS = ['scylla-monitoring-3.4.2', 'scylla-monitoring-3.5', 'scylla-monitoring-3.5.\d+', 'scylla-monitoring-3.6.0']
 smv_tag_whitelist = multiversion_regex_builder(TAGS)
 # Whitelist pattern for branches (set to None to ignore all branches)
 BRANCHES = []
