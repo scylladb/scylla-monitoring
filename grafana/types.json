@@ -308,7 +308,7 @@
                                   },
                                   {
                                     "color": "green",
-                                    "value": 1
+                                    "value": 0
                                   }
                                 ]
                               },
@@ -319,7 +319,7 @@
                                       "text": "Backup",
                                       "to": "",
                                       "type": 1,
-                                      "value": "3"
+                                      "value": "2"
                                     },
                                     {
                                       "from": "",
@@ -327,7 +327,7 @@
                                       "text": "Repair",
                                       "to": "",
                                       "type": 1,
-                                      "value": "2"
+                                      "value": "1"
                                     },
                                     {
                                       "from": "",
@@ -335,14 +335,22 @@
                                       "text": "Online",
                                       "to": "",
                                       "type": 1,
-                                      "value": "1"
+                                      "value": "0"
+                                    },
+                                    {
+                                      "from": "",
+                                      "id": 2,
+                                      "text": "Offline",
+                                      "to": "",
+                                      "type": 1,
+                                      "value": "-1"
                                     }
                                   ]
                             }
                         },
                         "targets": [
                             {
-                                "expr": "(1+sum(scylla_manager_task_active_count{type=~\"repair\",cluster=~\"$cluster|$^\"}) + sum(scylla_manager_task_active_count{type=~\"backup\",cluster=~\"$cluster|$^\"}) * 2) or (1+scylla_manager_server_current_version)",
+                                "expr": "(sum(scylla_manager_task_active_count{type=~\"repair\",cluster=~\"$cluster|$^\"}) or on() vector(0)) + (sum(scylla_manager_task_active_count{type=~\"backup\",cluster=~\"$cluster|$^\"})*2 or on() vector(0)) + (sum(scylla_manager_server_current_version{}) or on() vector(-1))",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 40
