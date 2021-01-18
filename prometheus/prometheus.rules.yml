@@ -257,3 +257,11 @@ groups:
     annotations:
       description: 'node restarted'
       summary: Instance {{ $labels.instance }} restarted
+  - alert: oomKill
+    expr: changes(node_vmstat_oom_kill[1h])>0
+    for: 10s
+    labels:
+      severity: "2"
+    annotations:
+      description: 'OOM Kill on {{ $labels.instance }}'
+      summary: A process was terminate on Instance {{ $labels.instance }}
