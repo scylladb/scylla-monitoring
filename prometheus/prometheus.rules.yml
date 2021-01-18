@@ -249,3 +249,11 @@ groups:
     annotations:
       description: 'Repair failed'
       summary: Repair task failed
+  - alert: restart
+    expr: resets(scylla_gossip_heart_beat[1h])>0
+    for: 10s
+    labels:
+      severity: "1"
+    annotations:
+      description: 'node restarted'
+      summary: Instance {{ $labels.instance }} restarted
