@@ -162,7 +162,7 @@
                     {
                         "class": "text_panel",
                         "gridPos": {
-                            "w": 8,
+                            "w": 9,
                             "h": 1
                           },
                         "title": "",
@@ -357,6 +357,40 @@
                             }
                         ],
                         "title": "Manager"
+                    },
+                    {
+                        "class": "vertical_lcd",
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "unit": "percent",
+                              "decimals": 0,
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                  {
+                                    "color": "green",
+                                    "value": null
+                                  }
+                                ]
+                              },
+                              "mappings": []
+                            },
+                            "overrides": []
+                          },
+                        "gridPos": {
+                            "w": 1,
+                            "h": 4
+                          },
+                        "targets": [
+                            {
+                              "expr": "(sum(avg(scylla_manager_repair_progress{cluster=~\"$cluster|$^\"}) by (task) * sum(scylla_manager_task_active_count{type=\"repair\",cluster=~\"$cluster|$^\"}) by (task)) or on () vector(0)) + (sum(avg(scylla_manager_backup_percent_progress{cluster=~\"$cluster|$^\"}) by (task) * sum(scylla_manager_task_active_count{type=\"backup\",cluster=~\"$cluster|$^\"}) by (task)) or on () vector(0))",
+                              "legendFormat": "",
+                              "interval": "",
+                              "refId": "A",
+                              "instant": true
+                            }
+                          ]
                     },
                     {
                         "class": "small_stat",
@@ -611,17 +645,6 @@
                             }
                         ],
                         "title": "Timeouts"
-                    },
-                    {
-                        "class": "text_panel",
-                        "gridPos": {
-                            "w": 1,
-                            "h": 4
-                          },
-                        "title": "",
-                        "options": {
-                            "content": "# "
-                        }
                     }
                 ],
                 "title": "New row"
