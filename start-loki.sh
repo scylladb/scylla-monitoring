@@ -88,8 +88,8 @@ then
     exit 1
 fi
 
-LOKI_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $LOKI_NAME):3100"
-if [ ! -z "$is_podman" ] && [ "$AM_ADDRESS" = ":3100" ]; then
+LOKI_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $LOKI_NAME):3100"
+if [ "$LOKI_ADDRESS" = ":3100" ]; then
     HOST_IP=`hostname -I | awk '{print $1}'`
     LOKI_ADDRESS="$HOST_IP:3100"
 fi

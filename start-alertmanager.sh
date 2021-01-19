@@ -85,8 +85,8 @@ then
     exit 1
 fi
 
-AM_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $ALERTMANAGER_NAME):9093"
-if [ ! -z "$is_podman" ] && [ "$AM_ADDRESS" = ":9093" ]; then
+AM_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $ALERTMANAGER_NAME):9093"
+if [ "$AM_ADDRESS" = ":9093" ]; then
     HOST_IP=`hostname -I | awk '{print $1}'`
     AM_ADDRESS="$HOST_IP:9093"
 fi
