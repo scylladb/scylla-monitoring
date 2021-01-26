@@ -31,8 +31,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx_multiversion',
-    'recommonmark'
-    
+    'recommonmark'   
 ]
 
 
@@ -50,7 +49,7 @@ source_suffix = {
 master_doc = 'index'
 
 # General information about the project.
-project = u'Scylla'
+project = u'Scylla Monitoring'
 copyright = str(date.today().year) + ', ScyllaDB. All rights reserved.'
 author = u'Scylla Project Contributors'
 
@@ -181,6 +180,10 @@ redirects_file = "_utils/redirections.yaml"
 # Whitelist pattern for tags (set to None to ignore all tags)
 TAGS = ['scylla-monitoring-3.4.2', 'scylla-monitoring-3.5', 'scylla-monitoring-3.5.\d+', 'scylla-monitoring-3.6.0']
 smv_tag_whitelist = multiversion_regex_builder(TAGS)
+# Defines which version is considered to be the latest stable version.
+# Must be listed in smv_tag_whitelist or smv_branch_whitelist.
+smv_latest_version = 'scylla-monitoring-3.6.0'
+smv_rename_latest_version = 'stable'
 # Whitelist pattern for branches (set to None to ignore all branches)
 BRANCHES = []
 smv_branch_whitelist = multiversion_regex_builder(BRANCHES)
