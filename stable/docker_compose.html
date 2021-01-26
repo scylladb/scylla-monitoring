@@ -1,0 +1,385 @@
+
+
+
+<!doctype html>
+<html class="no-js" lang="en">
+  
+<head><!-- begin head.html -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>
+    Using Docker Compose | Scylla Docs
+    </title>
+    <meta name="description" content="Scylla is an Apache Cassandra-compatible NoSQL data store that can handle 1 million transactions per second on a single server."/>
+
+    <link rel="icon" href="_static/img/favicon.ico" type="image/x-icon"/>
+    <link rel="canonical" href="https://docs.scylladb.com/">
+
+    <link rel="author" href="mailto:info@scylladb.com">
+    <link rel="stylesheet" href="_static/" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_tabs/semantic-ui-2.4.1/segment.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_tabs/semantic-ui-2.4.1/menu.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_tabs/tabs.css" />
+    
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/css/doc/main.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/expertrec.js"></script>
+
+    <script src="_static/js/vendor/modernizr.js"></script>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-T8P2JP');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Marketo -->
+    <script type="text/javascript"> (function() { var didInit = false; function initMunchkin() { if(didInit === false) { didInit = true; Munchkin.init('791-QBF-350'); } } var s = document.createElement('script'); s.type = 'text/javascript'; s.async = true; s.src = '//munchkin.marketo.net/munchkin.js'; s.onreadystatechange = function() { if (this.readyState == 'complete' || this.readyState == 'loaded') { initMunchkin(); } }; s.onload = initMunchkin; document.getElementsByTagName('head')[0].appendChild(s); })(); </script>
+    <!-- End Marketo -->
+
+<!-- end head.html -->
+</head>
+
+<body>
+
+
+
+<header id="header" class="animated">
+    <div class="topbar_continer contain-to-grid clearfix">
+        <nav class="top-bar" id="top-bar" data-topbar role="navigation">
+            <ul class="title-area">
+                <li class="name">
+                    <div class="logo">
+                        <a href="https://docs.scylladb.com/"><img src="_static/img/logo-scylla-docs.svg" alt="" width="151"></a>
+                    </div>
+                </li>
+                <li class="toggle-topbar"><a href="#"><span class="icon-manu"></span></a></li>
+            </ul>
+            <section class="top-bar-section clearfix">
+                <ul class="right">
+                    
+                    <li>
+                        <a href="https://scylladb.github.io/scylla-monitoring/">Scylla Monitor</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://docs.scylladb.com/scylla-cloud/">Scylla Cloud</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://university.scylladb.com/">Scylla University</a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://www.scylladb.com/">ScyllaDB Home</a>
+                    </li>
+                    
+                    <li class="search_continer show-for-medium-up">	
+                        <ci-search></ci-search>	
+                    </li>	
+                </ul>
+            </section>
+        </nav>
+    </div>
+</header>
+<section id="content">
+    <div class="row">
+	
+	<div class="large-6 large-push-3 columns">
+
+        
+
+        <div class="section" id="using-docker-compose">
+<h1>Using Docker Compose<a class="headerlink" href="#using-docker-compose" title="Permalink to this headline">¶</a></h1>
+<p>Scylla-Monitoring is container-based.
+You can start and stop the monitoring stack with the <cite>start-all.sh</cite> and <cite>kill-all.sh</cite> scripts.</p>
+<p>Docker Compose is an alternative method to start and stop the stack. It requires more manual steps, but once
+set it simplify starting and stopping the monitoring stack.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><em>docker-compose</em> <strong>and</strong> <em>start_all.sh</em> are two <strong>alternative</strong> ways to launch Scylla Monitoring Stack.
+You should use <strong>one</strong> method, <strong>not both</strong>. In particular,  creating and updating <em>docker-compose.yml</em> is ignored
+when using <em>start_all.sh</em></p>
+</div>
+<div class="section" id="prerequisite">
+<h2>Prerequisite<a class="headerlink" href="#prerequisite" title="Permalink to this headline">¶</a></h2>
+<p>Make sure you have <cite>docker</cite> and <cite>docker-compose</cite> installed.</p>
+</div>
+<div class="section" id="setting-prometheus">
+<h2>Setting Prometheus<a class="headerlink" href="#setting-prometheus" title="Permalink to this headline">¶</a></h2>
+<p>The Prometheus configuration file contains among others the IP address of the <em>alertmanager</em> and either the location
+of the <em>scylla_server.yml</em> file or a Consul IP address of Scylla Manager, if Scylla Manager is used for server provisioning.</p>
+<p>You can use <cite>./prometheus-config.sh</cite> to generate the file, for example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./prometheus-config.sh --compose
+</pre></div>
+</div>
+<p>For production systems, It is advised to use an external directory for the Prometheus database. Make sure to create one and
+update the docker-compose file accordingly (see the docker-compose example below).</p>
+</div>
+<div class="section" id="setting-grafana-provisioning">
+<h2>Setting Grafana Provisioning<a class="headerlink" href="#setting-grafana-provisioning" title="Permalink to this headline">¶</a></h2>
+<p>Grafana reads its provisioning configuration from files, one for the data-source and one for the dashboards.
+Note that the latter tells Grafana where the dashboards are located, it is not the dashboards themselves, which are
+at a different location.</p>
+<div class="section" id="grafana-data-source-file">
+<h3>Grafana Data-Source file<a class="headerlink" href="#grafana-data-source-file" title="Permalink to this headline">¶</a></h3>
+<p>Run the following command to update the datasource:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./grafana-datasource.sh --compose
+</pre></div>
+</div>
+<p>You can see the generated file under: <cite>grafana/provisioning/datasources/datasource.yaml</cite></p>
+</div>
+<div class="section" id="grafana-dashboard-load-file">
+<h3>Grafana Dashboard Load file<a class="headerlink" href="#grafana-dashboard-load-file" title="Permalink to this headline">¶</a></h3>
+<p>To set the dashboard load file, you can run the <cite>./generate-sashboards.sh</cite> with the <cite>-t</cite> command line flag and the <cite>-v</cite> flag to specify the version.
+For example, Scylla-enterprise version 2020.1:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>./generate-dashboards.sh -t -v <span class="m">2020</span>.1
+</pre></div>
+</div>
+<p>This command generates the files under: <cite>grafana/provisioning/dashboards/</cite></p>
+</div>
+</div>
+<div class="section" id="docker-compose-file">
+<h2>Docker Compose file<a class="headerlink" href="#docker-compose-file" title="Permalink to this headline">¶</a></h2>
+<p>You can use the following example as a base for your docker compose.</p>
+<p>Pass the following to a file called <cite>docker-compose.yml</cite></p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="ss">services</span><span class="p">:</span>
+  <span class="ss">alertmanager</span><span class="p">:</span>
+    <span class="ss">container_name</span><span class="p">:</span> <span class="n">aalert</span>
+    <span class="ss">image</span><span class="p">:</span> <span class="n">prom</span><span class="o">/</span><span class="ss">alertmanager</span><span class="p">:</span><span class="n">v0</span><span class="o">.</span><span class="mi">21</span><span class="o">.</span><span class="mi">0</span>
+    <span class="ss">ports</span><span class="p">:</span>
+    <span class="o">-</span> <span class="mi">9093</span><span class="p">:</span><span class="mi">9093</span>
+    <span class="ss">volumes</span><span class="p">:</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">rule_config</span><span class="o">.</span><span class="n">yml</span><span class="ss">:/</span><span class="n">etc</span><span class="o">/</span><span class="n">alertmanager</span><span class="o">/</span><span class="n">config</span><span class="o">.</span><span class="n">yml</span>
+  <span class="ss">grafana</span><span class="p">:</span>
+    <span class="ss">container_name</span><span class="p">:</span> <span class="n">agraf</span>
+    <span class="ss">environment</span><span class="p">:</span>
+    <span class="o">-</span> <span class="no">GF_PANELS_DISABLE_SANITIZE_HTML</span><span class="o">=</span><span class="kp">true</span>
+    <span class="o">-</span> <span class="no">GF_PATHS_PROVISIONING</span><span class="o">=</span><span class="sr">/var/</span><span class="n">lib</span><span class="o">/</span><span class="n">grafana</span><span class="o">/</span><span class="n">provisioning</span>
+    <span class="o">-</span> <span class="no">GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS</span><span class="o">=</span><span class="n">scylladb</span><span class="o">-</span><span class="n">scylla</span><span class="o">-</span><span class="n">datasource</span>
+    <span class="c1"># This is where you set Grafana security</span>
+    <span class="o">-</span> <span class="no">GF_AUTH_BASIC_ENABLED</span><span class="o">=</span><span class="kp">false</span>
+    <span class="o">-</span> <span class="no">GF_AUTH_ANONYMOUS_ENABLED</span><span class="o">=</span><span class="kp">true</span>
+    <span class="o">-</span> <span class="no">GF_AUTH_ANONYMOUS_ORG_ROLE</span><span class="o">=</span><span class="no">Admin</span>
+    <span class="o">-</span> <span class="no">GF_SECURITY_ADMIN_PASSWORD</span><span class="o">=</span><span class="n">admin</span>
+    <span class="ss">image</span><span class="p">:</span> <span class="n">grafana</span><span class="o">/</span><span class="ss">grafana</span><span class="p">:</span><span class="mi">7</span><span class="o">.</span><span class="mi">3</span><span class="o">.</span><span class="mi">5</span>
+    <span class="ss">ports</span><span class="p">:</span>
+    <span class="o">-</span> <span class="mi">3000</span><span class="p">:</span><span class="mi">3000</span>
+    <span class="ss">user</span><span class="p">:</span> <span class="mi">1000</span><span class="p">:</span><span class="mi">1000</span>
+    <span class="ss">volumes</span><span class="p">:</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">grafana</span><span class="o">/</span><span class="ss">build</span><span class="p">:</span><span class="sr">/var/</span><span class="n">lib</span><span class="o">/</span><span class="n">grafana</span><span class="o">/</span><span class="n">dashboards</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">grafana</span><span class="o">/</span><span class="ss">plugins</span><span class="p">:</span><span class="sr">/var/</span><span class="n">lib</span><span class="o">/</span><span class="n">grafana</span><span class="o">/</span><span class="n">plugins</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">grafana</span><span class="o">/</span><span class="ss">provisioning</span><span class="p">:</span><span class="sr">/var/</span><span class="n">lib</span><span class="o">/</span><span class="n">grafana</span><span class="o">/</span><span class="n">provisioning</span>
+    <span class="c1"># Uncomment the following line for grafana persistency</span>
+    <span class="c1"># - path/to/grafana/dir:/var/lib/grafana</span>
+  <span class="ss">loki</span><span class="p">:</span>
+    <span class="ss">command</span><span class="p">:</span>
+    <span class="o">-</span> <span class="o">--</span><span class="n">config</span><span class="o">.</span><span class="n">file</span><span class="o">=</span><span class="sr">/mnt/</span><span class="n">config</span><span class="o">/</span><span class="n">loki</span><span class="o">-</span><span class="n">config</span><span class="o">.</span><span class="n">yaml</span>
+    <span class="ss">container_name</span><span class="p">:</span> <span class="n">loki</span>
+    <span class="ss">image</span><span class="p">:</span> <span class="n">grafana</span><span class="o">/</span><span class="ss">loki</span><span class="p">:</span><span class="mi">2</span><span class="o">.</span><span class="mi">0</span><span class="o">.</span><span class="mi">0</span>
+    <span class="ss">ports</span><span class="p">:</span>
+    <span class="o">-</span> <span class="mi">3100</span><span class="p">:</span><span class="mi">3100</span>
+    <span class="ss">volumes</span><span class="p">:</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">loki</span><span class="o">/</span><span class="ss">rules</span><span class="p">:</span><span class="sr">/etc/</span><span class="n">loki</span><span class="o">/</span><span class="n">rules</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">loki</span><span class="o">/</span><span class="ss">conf</span><span class="p">:</span><span class="sr">/mnt/</span><span class="n">config</span>
+  <span class="ss">promotheus</span><span class="p">:</span>
+    <span class="ss">command</span><span class="p">:</span>
+    <span class="o">-</span> <span class="o">--</span><span class="n">config</span><span class="o">.</span><span class="n">file</span><span class="o">=</span><span class="sr">/etc/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">prometheus</span><span class="o">.</span><span class="n">compose</span><span class="o">.</span><span class="n">yml</span>
+    <span class="ss">container_name</span><span class="p">:</span> <span class="n">aprom</span>
+    <span class="ss">image</span><span class="p">:</span> <span class="n">prom</span><span class="o">/</span><span class="ss">prometheus</span><span class="p">:</span><span class="n">v2</span><span class="o">.</span><span class="mi">18</span><span class="o">.</span><span class="mi">1</span>
+    <span class="ss">ports</span><span class="p">:</span>
+    <span class="o">-</span> <span class="mi">9090</span><span class="p">:</span><span class="mi">9090</span>
+    <span class="ss">volumes</span><span class="p">:</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">prometheus</span><span class="o">.</span><span class="n">yml</span><span class="ss">:/</span><span class="n">etc</span><span class="o">/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">prometheus</span><span class="o">.</span><span class="n">yml</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">prometheus</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">yml</span><span class="ss">:/</span><span class="n">etc</span><span class="o">/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">prometheus</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">yml</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">scylla_servers</span><span class="o">.</span><span class="n">yml</span><span class="ss">:/</span><span class="n">etc</span><span class="o">/</span><span class="n">scylla</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">scylla_servers</span><span class="o">.</span><span class="n">yml</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">scylla_manager_servers</span><span class="o">.</span><span class="n">yml</span><span class="ss">:/</span><span class="n">etc</span><span class="o">/</span><span class="n">scylla</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">scylla_manager_servers</span><span class="o">.</span><span class="n">yml</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">scylla_servers</span><span class="o">.</span><span class="n">yml</span><span class="ss">:/</span><span class="n">etc</span><span class="o">/</span><span class="n">scylla</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">prometheus</span><span class="o">/</span><span class="n">node_exporter_servers</span><span class="o">.</span><span class="n">yml</span>
+    <span class="c1"># Uncomment the following line for prometheus persistency </span>
+    <span class="c1"># - path/to/data/dir:/prometheus/data</span>
+  <span class="ss">promtail</span><span class="p">:</span>
+    <span class="ss">command</span><span class="p">:</span>
+    <span class="o">-</span> <span class="o">--</span><span class="n">config</span><span class="o">.</span><span class="n">file</span><span class="o">=</span><span class="sr">/etc/</span><span class="n">promtail</span><span class="o">/</span><span class="n">config</span><span class="o">.</span><span class="n">yml</span>
+    <span class="ss">container_name</span><span class="p">:</span> <span class="n">promtail</span>
+    <span class="ss">image</span><span class="p">:</span> <span class="n">grafana</span><span class="o">/</span><span class="ss">promtail</span><span class="p">:</span><span class="mi">2</span><span class="o">.</span><span class="mi">0</span><span class="o">.</span><span class="mi">0</span>
+    <span class="ss">ports</span><span class="p">:</span>
+    <span class="o">-</span> <span class="mi">1514</span><span class="p">:</span><span class="mi">1514</span>
+    <span class="o">-</span> <span class="mi">9080</span><span class="p">:</span><span class="mi">9080</span>
+    <span class="ss">volumes</span><span class="p">:</span>
+    <span class="o">-</span> <span class="o">.</span><span class="n n-Operator">/</span><span class="n">loki</span><span class="o">/</span><span class="n">promtail</span><span class="o">/</span><span class="n">promtail_config</span><span class="o">.</span><span class="n">compose</span><span class="o">.</span><span class="n">yml</span><span class="ss">:/</span><span class="n">etc</span><span class="o">/</span><span class="n">promtail</span><span class="o">/</span><span class="n">config</span><span class="o">.</span><span class="n">yml</span>
+<span class="ss">version</span><span class="p">:</span> <span class="s1">&#39;3&#39;</span>
+</pre></div>
+</div>
+<div class="section" id="start-and-stop">
+<h3>Start and Stop<a class="headerlink" href="#start-and-stop" title="Permalink to this headline">¶</a></h3>
+<p>To start the Scylla Monitoring Stack run <code class="docutils literal notranslate"><span class="pre">docker-compose</span> <span class="pre">up</span></code> and to stop run <code class="docutils literal notranslate"><span class="pre">docker-compose</span> <span class="pre">down</span></code>.</p>
+</div>
+</div>
+</div>
+
+        </div>
+
+        <div id="sidebar" class="large-3 large-pull-6 columns"><div class="side-nav">
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="monitoring_stack.html">Install Scylla Monitor Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start_all.html">The start-all.sh script</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Running using Docker Compose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitoring_apis.html">Scylla Monitor Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitor_without_docker.html">Deploy Scylla Monitor Without Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitor_troubleshoot.html">Troubleshoot Monitor</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/">Troubleshooting Guide for Scylla Manager and Scylla Monitor Integration</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://docs.scylladb.com/upgrade/upgrade-monitor/">Upgrade Guide for Scylla Monitor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cql_optimization.html">CQL Optimization Dashboard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advisor.html">Scylla Monitoring Advisor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="updating_dashboard.html">Adding and Modifying Dashboards</a></li>
+<li class="toctree-l1"><a class="reference internal" href="alerting.html">Alerting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="thanos.html">Using Thanos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="matrix.html">Scylla Monitor Support Matrix</a></li>
+</ul>
+
+</div>
+        </div>
+
+        <div class="large-3 columns">
+            
+                <div class="versions-dropdown ">
+    <button class="button">
+	scylla-monitoring-3.6.0
+
+	 <i class="fa fa-caret-down" aria-hidden="true"></i>
+    </button>
+    <ul class="content">
+            <li><a href="docker_compose.html">scylla-monitoring-3.6.0</a></li>
+            <li><a href="../scylla-monitoring-3.5.3/index.html">scylla-monitoring-3.5.3</a></li>
+            <li><a href="../scylla-monitoring-3.5.2/index.html">scylla-monitoring-3.5.2</a></li>
+            <li><a href="../scylla-monitoring-3.5.1/index.html">scylla-monitoring-3.5.1</a></li>
+            <li><a href="../scylla-monitoring-3.5/index.html">scylla-monitoring-3.5</a></li>
+            <li><a href="../scylla-monitoring-3.4.2/index.html">scylla-monitoring-3.4.2</a></li>
+    </ul>
+</div>
+            
+        </div>
+
+    </div>
+</section>
+
+<!-- newsleter modal -->
+
+<div id="newsletter_signup" class="reveal-modal tiny radius dark_modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+    <a class="close-reveal-modal" aria-label="Close">×</a>
+    <h2 id="modalTitle">Sign up for the Scylla newsletter</h2>
+    <div id="mc_embed_signup">
+        <form action="//cloudius-systems.us10.list-manage.com/subscribe/post?u=df8bb543c68230d5f7b4dcf78&amp;id=9a4589f144" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate="">
+            <div id="mc_embed_signup_scroll">
+
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-EMAIL">Email</label></div>
+                        <div class="small-9 columns"><input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-FNAME">First Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="FNAME" class="" id="mce-FNAME"></div>
+                    </div>
+                </div>
+                <div class="mc-field-group">
+                    <div class="row collapse">
+                        <div class="small-3 columns"><label for="mce-LNAME">Last Name </label></div>
+                        <div class="small-9 columns"><input type="text" value="" name="LNAME" class="" id="mce-LNAME"></div>
+                    </div>
+                </div>
+                <div id="mce-responses" class="clear">
+                    <div class="response" id="mce-error-response" style="display:none"></div>
+                    <div class="response" id="mce-success-response" style="display:none"></div>
+                </div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+                <div style="position: absolute; left: -5000px;"><input type="text" name="b_df8bb543c68230d5f7b4dcf78_9a4589f144" tabindex="-1" value=""></div>
+                <div class="clear"><input type="submit" class="button" value="Sign up" name="subscribe" id="mc-embedded-subscribe"></div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- end newsleter modal -->
+
+
+
+<!-- footer.html -->
+<footer id="footer">
+    <div class="footer-top">
+        <a class="logo" href="https://www.scylladb.com"><img src="_static/img/logo-scylla-horizontal-RGB.svg" alt=""></a>
+        <div class="footer-links">
+            <a class="link" href="https://docs.scylladb.com">Docs</a>
+            <a class="link" href="https://www.scylladb.com/company/contact-us/">Contact Us</a>
+            <a class="link" href="https://www.scylladb.com/company/">About Us</a>
+            <a class="link button" href="https://github.com/scylladb/scylla-monitoring/issues/new?title=Issue in page Using Docker Compose&&body=I%20would%20like%20to%20report%20an%20issue%20in%20page%20https://monitoring.docs.scylladb.com/scylla-monitoring-3.6.0/docker_compose%0A%0A%23%23%23%20Problem%0A%0A%23%23%23%20%20Suggest%20a%20fix" target="_blank">
+                Report an issue on this page</a>
+        </div>
+        <div class="footer-actions">
+            <a class="link-icon" href="https://github.com/ScyllaDB" target="_blank">
+                <span class="icon-github2"></span></a>
+            <a class="link-icon" href="https://twitter.com/ScyllaDB" target="_blank">
+                <span class="icon-twitter"></span></a>
+            <a class="link-icon" href="https://www.linkedin.com/company/scylladb"  target="_blank">
+                <span class="icon-linkedin2"></span></a>
+            <a class="link-icon" href="https://www.facebook.com/scylladb/" target="_blank">
+                <span class="icon-facebook"></span></a>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-info">
+            <div class="footer-copyright">
+                &#169; 2021, ScyllaDB. All rights reserved.
+            </div>
+            <div class="footer-last-updated">
+                Last updated on 26 January 2021.
+            </div>
+            <div class="footer-version">
+                Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+                &amp; <a href="https://pypi.org/project/sphinx-scylladb-theme">ScyllaDB Theme 0.1.21</a>
+            </div>
+        </div>
+        <div class="footer-links">
+        </div>
+    </div>
+</footer>
+<!-- end footer.html -->
+
+<!-- bodyscripts.html -->
+<!-- at the end of the BODY --> 
+<script src="_static/js/vendor/jquery.js"></script>
+<script src="_static/js/vendor/jquery.cookie.min.js"></script>
+<script src="_static/expertrec.js"></script>
+<script src="_static/js/foundation/foundation.js"></script>
+<script src="_static/js/foundation/foundation.topbar.js"></script>
+<script src="_static/app.js"></script>
+<script>
+    $(document).foundation();
+</script>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8P2JP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <!-- end bodyscripts.html -->
+</body>
+</html>
