@@ -208,7 +208,7 @@ groups:
       description: '{{ $labels.host }} has denied cql connection for more than 30 seconds.'
       summary: Instance {{ $labels.host }} no cql connection
   - alert: HighLatencies
-    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket[300s])) by (instance, le)) > 100000
+    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{scheduling_group_name=~"statement|$"}[300s])) by (instance, le)) > 100000
     for: 5m
     labels:
       severity: "1"
@@ -224,7 +224,7 @@ groups:
       description: '{{ $labels.instance }} has average high latency for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} Hight Write  Latency
   - alert: HighLatencies
-    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket[300s])) by (instance, le)) > 100000
+    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{scheduling_group_name=~"statement|$"}[300s])) by (instance, le)) > 100000
     for: 5m
     labels:
       severity: "1"
