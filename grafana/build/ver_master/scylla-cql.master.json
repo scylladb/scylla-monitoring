@@ -2422,7 +2422,7 @@
             "span": 1,
             "targets": [
                 {
-                    "expr": "floor(100 *sum(rate(scylla_query_processor_statements_prepared{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) /(sum(rate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) + sum(rate(scylla_cql_inserts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) + sum(rate(scylla_cql_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) + sum(rate(scylla_cql_deletes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])))) OR vector(0)",
+                    "expr": "floor(100 *sum(cql:non_system_prepared1m)/ (sum(cql:all_shardrate1m{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) - sum(cql:all_system_shardrate1m{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}))) OR vector(0)",
                     "format": "time_series",
                     "hide": false,
                     "instant": false,
@@ -2494,7 +2494,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(rate(scylla_query_processor_statements_prepared{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                    "expr": "sum(cql:non_system_prepared1m{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                     "format": "time_series",
                     "hide": false,
                     "intervalFactor": 2,
@@ -2609,7 +2609,7 @@
             "span": 1,
             "targets": [
                 {
-                    "expr": "100 * (sum(rate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))/sum(rate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))) OR vector(0)",
+                    "expr": "100 * ((sum(rate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))-sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks=\"system\",instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))/sum(rate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))) OR vector(0)",
                     "format": "time_series",
                     "hide": false,
                     "instant": false,
@@ -2681,7 +2681,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(rate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                    "expr": "sum(rate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])-sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks=\"system\",instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
                     "format": "time_series",
                     "hide": false,
                     "intervalFactor": 2,
