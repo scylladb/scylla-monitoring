@@ -1,0 +1,585 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "overwrite": true,
+        "rows": [
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": ""
+                    }
+                ]
+            },
+            {
+                "class": "logo_row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": ""
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "200px",
+                "panels": [
+                    {
+                        "class": "pie_chart_panel",
+                        "height": "250px",
+                        "repeat": "node",
+                        "targets": [
+                            {
+                                "expr": "sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"})",
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "Free",
+                                "metric": "",
+                                "refId": "A",
+                                "instant": true,
+                                "step": 7200
+                            },
+                            {
+                                "expr": "(sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"})-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}))",
+                                "intervalFactor": 1,
+                                "legendFormat": "Used",
+                                "refId": "B",
+                                "instant": true,
+                                "step": 7200
+                            }
+                        ],
+                        "title": "Total Storage $node"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "mount_point",
+                      "title": "Partition $mount_point",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(node_filesystem_size{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])-sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Used Bytes by $by"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(node_filesystem_free_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Free Bytes by $by"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(node_filesystem_files{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Number of files by $by"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "monitor_disk",
+                      "title": "Disk $monitor_disk",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "gridPos": {
+                    "h": 2
+                },
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Disk $monitor_disk</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(node_disk_writes_completed_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(rate(node_disk_writes_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Writes per $by"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(node_disk_reads_completed_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(rate(node_disk_reads_completed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Reads per $by"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(node_disk_written_bytes_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(rate(node_disk_bytes_written{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Writes Bps per $by"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(node_disk_read_bytes_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(rate(node_disk_bytes_read{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_disk\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Read Bps per $by"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "monitor_network_interface",
+                      "title": "Network Interface $monitor_network_interface",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "gridPos": {
+                    "h": 2
+                },
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Network $monitor_network_interface</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "pps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(node_network_receive_packets_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(rate(node_network_receive_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Rx Packets"
+                    },
+                    {
+                        "class": "pps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(node_network_transmit_packets_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(rate(node_network_transmit_packets{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Tx Packets"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(node_network_receive_bytes_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(rate(node_network_receive_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Rx Bps"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(node_network_transmit_bytes_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(rate(node_network_transmit_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", device=\"$monitor_network_interface\"}[4m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Interface Tx Bps"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "monitoring_version_row"
+            }
+        ],
+        "tags": [
+            "4.4"
+        ],
+        "templating": {
+            "list": [
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(node_filesystem_avail_bytes, cluster)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(node_filesystem_avail_bytes{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(node_filesystem_avail_bytes{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Instance",
+                        "value": "instance"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": false,
+                            "text": "DC",
+                            "value": "dc"
+                        },
+                        {
+                            "selected": true,
+                            "text": "Instance",
+                            "value": "instance"
+                        }
+                    ],
+                    "query": "Cluster,DC,Instance",
+                    "type": "custom"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "isNone": true,
+                        "text": "None",
+                        "value": ""
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": true,
+                    "name": "monitor_disk",
+                    "options": [],
+                    "query": "node_disk_read_bytes_total",
+                    "refresh": 2,
+                    "regex": "/.*device=\"([^\\\"]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "isNone": true,
+                        "text": "None",
+                        "value": ""
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": true,
+                    "name": "monitor_network_interface",
+                    "options": [],
+                    "query": "node_network_receive_packets_total",
+                    "refresh": 2,
+                    "regex": "/.*device=\"([^\\\"]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "/var/lib/scylla",
+                        "value": "/var/lib/scylla"
+                    },
+                    "datasource": "prometheus",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "Mount path",
+                    "multi": true,
+                    "name": "mount_point",
+                    "options": [],
+                    "query": "node_filesystem_avail_bytes",
+                    "refresh": 2,
+                    "regex": "/mountpoint=\"([^\"]*)\".*/",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "class": "adhoc_filter"
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "4.4",
+                        "value": "4.4"
+                    },
+                    "name": "scylla_dash_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "4.4",
+                            "value": "4.4"
+                        }
+                    ],
+                    "query": "4.4"
+                },
+                {
+                    "class": "monitor_version_var"
+                }
+            ]
+        },
+        "annotations" :{
+            "list": [
+              {
+                "builtIn": 1,
+                "datasource": "-- Grafana --",
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+              },
+              {
+                "class" : "annotation_restart"
+              },
+              {
+                "class" : "annotation_stall"
+              },
+              {
+              "class" : "annotation_schema_changed"
+              }
+            ]
+        },
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "OS Metrics",
+        "uid": "OS-4-4",
+        "version": 5
+    }
+}
