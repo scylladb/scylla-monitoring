@@ -1,0 +1,534 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "uid": "advanced-4-4",
+        "rows": [
+            {
+                "class": "small_stat_rows"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": ""
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">IO Queue Information</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "classes",
+                      "title": "$classes",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "us_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "1000000*max(scylla_io_queue_delay{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "$classes I/O Queue delay by [[by]]"
+                    },
+                    {
+                        "class": "bps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_io_queue_total_bytes{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "$classes I/O Queue bandwidth by [[by]]"
+                    },
+                    {
+                        "class": "iops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_io_queue_total_operations{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "$classes I/O Queue IOPS by [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": ""
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Information by Task Group</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "group",
+                      "title": "$group",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ms_panel",
+                        "span":4,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Time used by [[by]] - $group",
+                        "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. This graph shows how much time was spent in $group group"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span":4,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_scheduler_time_spent_on_task_quota_violations_ms{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Time spent in task quota violations by [[by]] - $group",
+                        "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer. This may cause latency issues"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span":4,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_scheduler_shares{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Scheduler shares [[by]] - $group",
+                        "description": "Shares assigned to the $group. Shares determine how Scylla reactor distributes the task quotas between groups (Higher share gets more quotas)"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Internal node errors"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Internal node Errors - $cluster</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "avg(rate(scylla_storage_proxy_coordinator_read_errors_local_node{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Local Reads Error by [[by]]",
+                        "description": "Number of Read requests that failed due to an 'unavailable' error"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "avg(rate(scylla_storage_proxy_coordinator_write_errors_local_node{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Local Write Error by [[by]]",
+                        "description": "Number of write requests that failed due to an 'unavailable' error"
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "##  ",
+                        "mode": "markdown",
+                        "span": 4,
+                        "style": {}
+                    }
+                 ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "avg(rate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Reads Unavailable Error by [[by]]",
+                        "description": "Number of Read requests that failed due to an 'unavailable' error"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "avg(rate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Write Unavailable Error by [[by]]",
+                        "description": "Number of write requests that failed on a local Node"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "avg(rate(scylla_storage_proxy_coordinator_range_unavailable{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Range Unavailable Error by [[by]]",
+                        "description": "Number of write requests that failed on a local Node"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "avg(rate(scylla_reactor_aio_errors{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "AIO Error by [[by]]",
+                        "description": "Number of AIO Errors"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_reactor_abandoned_failed_futures{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Ignored Future By [[by]]",
+                        "description": "Total number of abandoned failed futures, futures destroyed while still containing an exception."
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_reactor_cpp_exceptions{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "C++ Exceptions [[by]]",
+                        "description": "Number of C++ exceptions thrown.\n\n An exception by itself does not indicate a problem"
+                    }
+
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Your panels"
+                    }
+                ]
+            },
+            {
+                "class": "user_panel_row_header"
+            },
+            {
+                "class": "user_panels_row"
+            },
+            {
+                "class": "monitoring_version_row"
+            }
+        ],
+        "templating": {
+            "list": [
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Instance",
+                        "value": "instance"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": false,
+                            "text": "DC",
+                            "value": "dc"
+                        },
+                        {
+                            "selected": true,
+                            "text": "Instance",
+                            "value": "instance"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Shard",
+                            "value": "instance,shard"
+                        }
+                    ],
+                    "query": "Cluster,DC,Instance,Shard",
+                    "type": "custom"
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "shard",
+                    "name": "shard",
+                    "query": "label_values(scylla_reactor_utilization,shard)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "classes",
+                    "name": "classes",
+                    "hide": 2,
+                    "query": "label_values(scylla_io_queue_delay,class)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "group",
+                    "name": "group",
+                    "hide": 2,
+                    "query": "label_values(scylla_scheduler_time_spent_on_task_quota_violations_ms,group)",
+                    "sort": 3
+                },
+                {
+                    "class": "adhoc_filter"
+                },
+                {
+                    "class": "aggregation_function",
+                    "current": {
+                      "tags": [],
+                      "text": "avg",
+                      "value": "avg"
+                    }
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "4.4",
+                        "value": "4.4"
+                    },
+                    "name": "scylla_dash_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "4.4",
+                            "value": "4.4"
+                        }
+                    ],
+                    "query": "4.4"
+                },
+                {
+                    "class": "monitor_version_var"
+                }
+            ]
+        },
+		"tags": [
+			"4.4"
+		],
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "annotations" :{
+            "list": [
+              {
+                "builtIn": 1,
+                "datasource": "-- Grafana --",
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+              },
+              {
+                "class" : "annotation_restart"
+              },
+              {
+                "class" : "annotation_stall"
+              },
+              {
+              "class" : "annotation_schema_changed"
+              }
+            ]
+        },
+        "title": "Advanced",
+        "overwrite": true,
+        "version": 5
+    }
+}

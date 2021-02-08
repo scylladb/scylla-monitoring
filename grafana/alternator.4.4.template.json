@@ -1,0 +1,1150 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "originalTitle": "Scylla Cluster Metrics",
+        "overwrite": true,
+        "rows": [
+            {
+                "class": "alternator_logo_row"
+            },
+            {
+                "class": "row",
+                "height": "200px",
+                "panels": [
+                    {
+                        "class": "single_stat_panel",
+                        "targets": [
+                            {
+                                "expr": "count(up{job=\"scylla\", cluster=~\"$cluster|$^\"})",
+                                "intervalFactor": 1,
+                                "legendFormat": "Total Nodes",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Total Nodes"
+                    },
+                    {
+                        "class": "single_stat_panel_fail",
+                        "targets": [
+                            {
+                                "expr": "count(scrape_samples_scraped{job=\"scylla\", cluster=~\"$cluster|$^\"}==0) OR vector(0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "Unreachable",
+                                "refId": "A",
+                                "step": 20
+                            }
+                        ],
+                        "thresholds": "1,2",
+                        "title": "Unreachable"
+                    },
+                    {
+                        "class": "single_stat_panel_fail",
+                        "description": "Number of nodes that reported their status as Starting or Joining",
+                        "targets": [
+                            {
+                                "expr": "count(scylla_node_operation_mode<=2)OR vector(0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "Joining",
+                                "refId": "A",
+                                "step": 20
+                            }
+                        ],
+                        "thresholds": "1,2",
+                        "title": "Joining"
+                    },
+                    {
+                        "class": "single_stat_panel_fail",
+                        "description": "Number of nodes that reported their status as  Leaving, Decommissioned, Draining or Drained",
+                        "targets": [
+                            {
+                                "expr": "count(scylla_node_operation_mode>3)OR vector(0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "Leaving",
+                                "refId": "A",
+                                "step": 20
+                            }
+                        ],
+                        "thresholds": "1,2",
+                        "title": "Leaving"
+                    },
+                    {
+                        "class": "percent_panel",
+                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Load"
+                    },
+                    {
+                        "class": "single_value_table",
+                        "description": "Nodes Information table",
+                        "span": 4,
+                        "styles": [
+                            {
+                                "alias": "",
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "Jump to the detailed node information",
+                                "linkUrl": "/d/detailed-[[dash_version]]/Detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell}",
+                                "mappingType": 1,
+                                "pattern": "instance",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "Time"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "__name__"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "exported_instance"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "job"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "version"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "type"
+                            },
+                            {
+                                "alias": "Version",
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "${__cell_11}",
+                                "linkUrl": "/d/OS-[[dash_version]]/OS-metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
+                                "mappingType": 1,
+                                "pattern": "svr",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short"
+                            },
+                            {
+                                "alias": "OS",
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "Jump to the OS node information",
+                                "linkUrl": "/d/OS-[[dash_version]]/OS-metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
+                                "mappingType": 1,
+                                "pattern": "OS",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short",
+                                "valueMaps": [
+                                    {
+                                        "text": "OS",
+                                        "value": "os"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "CQL"
+                            },
+                            {
+                                "colorMode": null,
+                                "alias": "Advanced",
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "Jump to the Advanced metrics information",
+                                "linkUrl": "/d/advanced-[[dash_version]]/advanced?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_8}",
+                                "mappingType": 1,
+                                "pattern": "Errors",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short",
+                                "valueMaps": [
+                                    {
+                                        "text": "Advanced",
+                                        "value": "errors"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "IO"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "CPU"
+                            },
+                            {
+                                "alias": "Status",
+                                "mappingType": 2,
+                                "pattern": "Value",
+                                "rangeMaps": [
+                                    {
+                                        "from": "1",
+                                        "text": "Starting",
+                                        "to": "1"
+                                    },
+                                    {
+                                        "from": "2",
+                                        "text": "Joining",
+                                        "to": "2"
+                                    },
+                                    {
+                                        "from": "3",
+                                        "text": "Normal",
+                                        "to": "3"
+                                    },
+                                    {
+                                        "from": "4",
+                                        "text": "Leaving",
+                                        "to": "4"
+                                    },
+                                    {
+                                        "from": "5",
+                                        "text": "Decommissioned",
+                                        "to": "5"
+                                    },
+                                    {
+                                        "from": "6",
+                                        "text": "Draining",
+                                        "to": "6"
+                                    },
+                                    {
+                                        "from": "7",
+                                        "text": "Drained",
+                                        "to": "7"
+                                    },
+                                    {
+                                        "from": "8",
+                                        "text": "Moving",
+                                        "to": "8"
+                                    }
+                                ],
+                                "type": "string"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "cluster"
+                            }
+                        ],
+                        "targets": [
+                            {
+                                "expr": "0*scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode",
+                                "format": "table",
+                                "instant": true,
+                                "intervalFactor": 1,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "Nodes"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bytes_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(node_filesystem_size{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])-sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Disk Size by $by"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Number of Alternator Actions",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Total Actions"
+                    },
+                    {
+                        "class": "alert_table",
+                        "span": 4,
+                        "styles": [
+                            {
+                                "alias": "Time",
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "link": true,
+                                "linkTooltip": "Jump to the see the node",
+                                "linkUrl": "/d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_4}&from=${__cell_0}",
+                                "pattern": "Time",
+                                "type": "date"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "severity"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "alertname"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "cluster"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "monitor"
+                            },
+                            {
+                                "class": "hidden_column",
+                                "pattern": "summary"
+                            },
+                            {
+                                "alias": "Instance",
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                                "decimals": 2,
+                                "link": true,
+                                "linkTooltip": "Jump to the see the node",
+                                "linkUrl": "/d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__cell}",
+                                "mappingType": 1,
+                                "pattern": "instance",
+                                "thresholds": [],
+                                "type": "string",
+                                "unit": "short"
+                            },
+                            {
+                                "alias": "",
+                                "colorMode": null,
+                                "colors": [
+                                    "rgba(245, 54, 54, 0.9)",
+                                    "rgba(237, 129, 40, 0.89)",
+                                    "rgba(50, 172, 45, 0.97)"
+                                ],
+                                "decimals": 2,
+                                "pattern": "/.*/",
+                                "thresholds": [],
+                                "type": "number",
+                                "unit": "short"
+                            }
+                        ],
+                        "title": "Active Alerts"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Data Plane Actions"
+                    }
+                ]
+            },
+            {
+                "class": "header_row",
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Data Plane Actions</h1>"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetItem\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "GetItem by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"PutItem\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "PutItem by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"UpdateItem\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "UpdateItem by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DeleteItem\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "DeleteItem by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "BatchWriteItem by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"Query\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Query by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"Scan\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Scan by [[by]]"
+                    }
+                    ]
+            },
+            {
+                "class": "header_row",
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Data Plane Latencies</h1>"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "alternator_latency_ops",
+                      "title": "$alternator_latency_ops",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Completed $alternator_latency_ops"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[60s])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[60s])) by ([[by]]) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Average $alternator_latency_ops latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "95th percentile $alternator_latency_ops latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "99th percentile $alternator_latency_ops latency by [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Streams"
+                    }
+                ]
+            },
+            {
+                "class": "header_row",
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Streams Actions</h1>"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"ListStreams\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "ListStreams by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DescribeStream\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "DescribeStream by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetShardIterator\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "GetShardIterator by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetRecords\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "GetRecords by [[by]]"
+                    }
+                ]
+            },
+            {
+                "class": "header_row",
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Streams Latencies</h1>"
+                    }
+                ]
+            },
+                        {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "alternator_streams_latency_ops",
+                      "title": "$alternator_streams_latency_ops",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Completed $alternator_streams_latency_ops"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[60s])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[60s])) by ([[by]]) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Average $alternator_streams_latency_ops latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "95th percentile $alternator_streams_latency_ops latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "99th percentile $alternator_streams_latency_ops latency by [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Control plane"
+                    }
+                ]
+            },
+            {
+                "class": "header_row",
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Control Plane Actions</h1>"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"CreateTable\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CreateTable by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DeleteTable\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "DeleteTable by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DescribeTable\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "DescribeTable by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"ListTables\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "ListTables by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DescribeEndpoints\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "DescribeEndpoints by [[by]]"
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "##  ",
+                        "mode": "markdown",
+                        "span": 4,
+                        "style": {}
+                    }
+                    ]
+            },
+            {
+                "class": "row",
+                "gridPos": {
+                    "h": 2
+                },
+                "height": "25px",
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Cache</h1>",
+                        "span": 6
+                    },
+                    {
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Timeouts</h1>",
+                        "class": "plain_text",
+                        "span": 6
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "description": "Number of rows that were read from the cache, without needing to be fetched from storage.",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_row_hits{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Cache Hits"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Number of rows that were not present in the cache, and had to be fetched from storage.",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_row_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Cache Misses"
+                    },
+                    {
+                        "class": "wpm_panel",
+                        "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(delta(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Write Timeouts/Minutes by [[by]]"
+                    },
+                    {
+                        "class": "rpm_panel",
+                        "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(delta(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Read Timeouts/Minutes by [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "user_panel_row_header"
+            },
+            {
+                "class": "user_panels_row"
+            },
+            {
+                "class": "monitoring_version_row"
+            }
+        ],
+        "tags": [
+            "4.4"
+        ],
+        "templating": {
+            "list": [
+                {
+                    "class": "by_template_var"
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "shard",
+                    "name": "shard",
+                    "query": "label_values(scylla_reactor_utilization,shard)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_single",
+                    "current": {
+                        "text": "/var/lib/scylla",
+                        "value": "/var/lib/scylla"
+                    },
+                    "label": "Mount path",
+                    "name": "mount_point",
+                    "query": "node_filesystem_avail_bytes",
+                    "regex": "/mountpoint=\"([^\"]*)\".*/",
+                    "sort": 0
+                },
+                {
+                    "class": "aggregation_function"
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "4.4",
+                        "value": "4.4"
+                    },
+                    "name": "dash_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "4.4",
+                            "value": "4.4"
+                        }
+                    ],
+                    "query": "4.4"
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "4.4",
+                        "value": "4.4"
+                    },
+                    "name": "scylla_dash_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "4.4",
+                            "value": "4.4"
+                        }
+                    ],
+                    "query": "4.4"
+                },
+                {
+                    "class": "monitor_version_var"
+                },
+                {
+                    "class": "template_variable_custom",
+                    "name": "alternator_latency_ops",
+                    "multi": true,
+                    "includeAll": true,
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "All",
+                            "value": "$__all"
+                        },
+                        {
+                            "selected": false,
+                            "text": "GetItem",
+                            "value": "GetItem"
+                        },
+                        {
+                            "selected": false,
+                            "text": "PutItem",
+                            "value": "PutItem"
+                        },
+                        {
+                            "selected": false,
+                            "text": "UpdateItem",
+                            "value": "UpdateItem"
+                        },
+                        {
+                            "selected": false,
+                            "text": "DeleteItem",
+                            "value": "DeleteItem"
+                        }
+                    ],
+                    "query": "GetItem,PutItem,UpdateItem,DeleteItem"
+                },
+                {
+                    "class": "template_variable_custom",
+                    "name": "alternator_streams_latency_ops",
+                    "multi": true,
+                    "includeAll": true,
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "All",
+                            "value": "$__all"
+                        },
+                        {
+                            "selected": false,
+                            "text": "GetRecords",
+                            "value": "GetRecords"
+                        }
+                    ],
+                    "query": "GetRecords"
+                }
+            ]
+        },
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "annotations" :{
+            "list": [
+              {
+                "builtIn": 1,
+                "datasource": "-- Grafana --",
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+              },
+              {
+                "class" : "annotation_restart"
+              },
+              {
+                "class" : "annotation_stall"
+              },
+              {
+              "class" : "annotation_schema_changed"
+              }
+            ]
+        },
+        "title": "Alternator",
+        "uid": "alternator-4-4",
+        "version": 1
+    }
+}
