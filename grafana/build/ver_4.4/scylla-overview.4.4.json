@@ -119,7 +119,7 @@
             },
             "gridPos": {
                 "h": 1,
-                "w": 9,
+                "w": 8,
                 "x": 0,
                 "y": 1
             },
@@ -149,7 +149,7 @@
             "gridPos": {
                 "h": 1,
                 "w": 4,
-                "x": 9,
+                "x": 8,
                 "y": 1
             },
             "id": 3,
@@ -178,7 +178,7 @@
             "gridPos": {
                 "h": 1,
                 "w": 4,
-                "x": 13,
+                "x": 12,
                 "y": 1
             },
             "id": 4,
@@ -207,7 +207,7 @@
             "gridPos": {
                 "h": 1,
                 "w": 7,
-                "x": 17,
+                "x": 16,
                 "y": 1
             },
             "id": 5,
@@ -415,7 +415,7 @@
                             "text": "Backup",
                             "to": "",
                             "type": 1,
-                            "value": "2"
+                            "value": "3"
                         },
                         {
                             "from": "",
@@ -423,7 +423,7 @@
                             "text": "Repair",
                             "to": "",
                             "type": 1,
-                            "value": "1"
+                            "value": "2"
                         },
                         {
                             "from": "",
@@ -431,15 +431,7 @@
                             "text": "Online",
                             "to": "",
                             "type": 1,
-                            "value": "0"
-                        },
-                        {
-                            "from": "",
-                            "id": 2,
-                            "text": "Offline",
-                            "to": "",
-                            "type": 1,
-                            "value": "-1"
+                            "value": "1"
                         }
                     ],
                     "noValue": " Offline",
@@ -452,7 +444,7 @@
                             },
                             {
                                 "color": "green",
-                                "value": 0
+                                "value": 1
                             }
                         ]
                     }
@@ -482,7 +474,7 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "(sum(scylla_manager_task_active_count{type=~\"repair\",cluster=~\"$cluster|$^\"}) or on() vector(0)) + (sum(scylla_manager_task_active_count{type=~\"backup\",cluster=~\"$cluster|$^\"})*2 or on() vector(0)) + (sum(scylla_manager_server_current_version{}) or on() vector(-1))",
+                    "expr": "(1+sum(scylla_manager_task_active_count{type=~\"repair\",cluster=~\"$cluster|$^\"}) + sum(scylla_manager_task_active_count{type=~\"backup\",cluster=~\"$cluster|$^\"}) * 2) or (1+scylla_manager_server_current_version)",
                     "intervalFactor": 1,
                     "refId": "A",
                     "step": 40
@@ -492,61 +484,6 @@
             "timeShift": null,
             "title": "Manager",
             "type": "stat"
-        },
-        {
-            "class": "vertical_lcd",
-            "datasource": "prometheus",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "decimals": 0,
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
-                    "unit": "percent"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 4,
-                "w": 1,
-                "x": 8,
-                "y": 2
-            },
-            "id": 10,
-            "options": {
-                "displayMode": "lcd",
-                "orientation": "vertical",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "showUnfilled": true
-            },
-            "pluginVersion": "7.1.3",
-            "targets": [
-                {
-                    "expr": "(sum(avg(scylla_manager_repair_progress{cluster=~\"$cluster|$^\"}) by (task) * sum(scylla_manager_task_active_count{type=\"repair\",cluster=~\"$cluster|$^\"}) by (task)) or on () vector(0)) + (sum(avg(scylla_manager_backup_percent_progress{cluster=~\"$cluster|$^\"}) by (task) * sum(scylla_manager_task_active_count{type=\"backup\",cluster=~\"$cluster|$^\"}) by (task)) or on () vector(0))",
-                    "instant": true,
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "",
-            "type": "bargauge"
         },
         {
             "class": "small_stat",
@@ -577,10 +514,10 @@
             "gridPos": {
                 "h": 4,
                 "w": 2,
-                "x": 9,
+                "x": 8,
                 "y": 2
             },
-            "id": 11,
+            "id": 10,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -640,10 +577,10 @@
             "gridPos": {
                 "h": 4,
                 "w": 2,
-                "x": 11,
+                "x": 10,
                 "y": 2
             },
-            "id": 12,
+            "id": 11,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -703,10 +640,10 @@
             "gridPos": {
                 "h": 4,
                 "w": 2,
-                "x": 13,
+                "x": 12,
                 "y": 2
             },
-            "id": 13,
+            "id": 12,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -766,10 +703,10 @@
             "gridPos": {
                 "h": 4,
                 "w": 2,
-                "x": 15,
+                "x": 14,
                 "y": 2
             },
-            "id": 14,
+            "id": 13,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -824,10 +761,10 @@
             "gridPos": {
                 "h": 4,
                 "w": 3,
-                "x": 17,
+                "x": 16,
                 "y": 2
             },
-            "id": 15,
+            "id": 14,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -886,10 +823,10 @@
             "gridPos": {
                 "h": 4,
                 "w": 2,
-                "x": 20,
+                "x": 19,
                 "y": 2
             },
-            "id": 16,
+            "id": 15,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -946,10 +883,10 @@
             "gridPos": {
                 "h": 4,
                 "w": 2,
-                "x": 22,
+                "x": 21,
                 "y": 2
             },
-            "id": 17,
+            "id": 16,
             "options": {
                 "colorMode": "value",
                 "graphMode": "none",
@@ -978,6 +915,35 @@
             "timeShift": null,
             "title": "Timeouts",
             "type": "stat"
+        },
+        {
+            "class": "text_panel",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {}
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 1,
+                "x": 23,
+                "y": 2
+            },
+            "id": 17,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {
+                "content": "# "
+            },
+            "span": 12,
+            "title": "",
+            "transparent": true,
+            "type": "text"
         },
         {
             "class": "alert_table",
@@ -3240,7 +3206,7 @@
                     {
                         "matcher": {
                             "id": "byName",
-                            "options": "Value #C"
+                            "options": "OS"
                         },
                         "properties": [
                             {
@@ -3258,7 +3224,7 @@
                             },
                             {
                                 "id": "custom.filterable",
-                                "value": true
+                                "value": false
                             },
                             {
                                 "id": "mappings",
@@ -3269,45 +3235,9 @@
                                         "text": "OS Dashboard",
                                         "to": "",
                                         "type": 1,
-                                        "value": "0"
-                                    },
-                                    {
-                                        "from": "0",
-                                        "id": 2,
-                                        "text": "OS Errors",
-                                        "to": "100000",
-                                        "type": 2,
-                                        "value": "0"
+                                        "value": "os"
                                     }
                                 ]
-                            },
-                            {
-                                "id": "thresholds",
-                                "value": {
-                                    "mode": "absolute",
-                                    "steps": [
-                                        {
-                                            "color": "rgba(0, 0, 0,0)",
-                                            "value": null
-                                        },
-                                        {
-                                            "color": "dark-orange",
-                                            "value": 0.001
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "id": "custom.displayMode",
-                                "value": "color-background"
-                            },
-                            {
-                                "id": "custom.align",
-                                "value": "left"
-                            },
-                            {
-                                "id": "displayName",
-                                "value": "OS"
                             }
                         ]
                     },
@@ -3363,14 +3293,6 @@
                     "interval": "",
                     "legendFormat": "",
                     "refId": "B"
-                },
-                {
-                    "expr": "sum(rate(scylla_reactor_aio_errors{cluster=~\"$cluster\", dc=~\"$dc\"}[1m])) by (instance)",
-                    "format": "table",
-                    "instant": true,
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "C"
                 }
             ],
             "title": "Nodes",
@@ -3385,7 +3307,7 @@
                                 "Value #A",
                                 "Value #B",
                                 "CQL",
-                                "Value #C"
+                                "OS"
                             ]
                         }
                     }
@@ -3394,21 +3316,6 @@
                     "id": "seriesToColumns",
                     "options": {
                         "byField": "instance"
-                    }
-                },
-                {
-                    "id": "organize",
-                    "options": {
-                        "excludeByName": {},
-                        "indexByName": {
-                            "CQL": 1,
-                            "Value #A": 4,
-                            "Value #B": 5,
-                            "Value #C": 2,
-                            "instance": 0,
-                            "svr": 3
-                        },
-                        "renameByName": {}
                     }
                 }
             ],
@@ -4003,7 +3910,7 @@
             "links": [],
             "mode": "html",
             "options": {
-                "content": "<div style=\"color:#5881c2; border-bottom: 0px solid #5881c2;\">Scylla Monitoring version - master</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_dash_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1000&height=2500\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
+                "content": "<div style=\"color:#5881c2; border-bottom: 0px solid #5881c2;\">Scylla Monitoring version - 3.6.1</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_dash_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1000&height=2500\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
                 "mode": "html"
             },
             "span": 12,
@@ -4325,8 +4232,8 @@
                 "allValue": null,
                 "class": "monitor_version_var",
                 "current": {
-                    "text": "master",
-                    "value": "master"
+                    "text": "3.6.1",
+                    "value": "3.6.1"
                 },
                 "error": null,
                 "hide": 2,
@@ -4337,11 +4244,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "master",
-                        "value": "master"
+                        "text": "3.6.1",
+                        "value": "3.6.1"
                     }
                 ],
-                "query": "master",
+                "query": "3.6.1",
                 "skipUrlSync": false,
                 "type": "custom"
             }
