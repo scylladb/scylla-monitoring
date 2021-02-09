@@ -1974,6 +1974,30 @@
               "refId": "B",
               "instant": true,
               "format": "table"
+            },
+            {
+              "expr": "sum(rate(scylla_reactor_aio_errors{cluster=~\"$cluster\", dc=~\"$dc\"}[1m])) by (instance)",
+              "legendFormat": "",
+              "interval": "",
+              "refId": "C",
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "expr": "sum(errors:nodes_total{cluster=~\"$cluster\"}) by (instance) >bool 0",
+              "legendFormat": "",
+              "interval": "",
+              "refId": "D",
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "expr": "(sum(cql:non_system_prepared1m{cluster=~\"$cluster\"}) by (instance) >bool 1) + (sum(rate(scylla_cql_reverse_queries{cluster=~\"$cluster\"}[60s])) by(instance) >bool 1) + (sum(cql:non_paged_no_system{cluster=~\"$cluster\"}) by (instance) >bool 1)",
+              "legendFormat": "",
+              "interval": "",
+              "refId": "E",
+              "instant": true,
+              "format": "table"
             }
           ],
           "type": "table",
@@ -2046,7 +2070,7 @@
                 "properties": [
                   {
                     "id": "custom.width",
-                    "value": 90
+                    "value": 85
                   },
                   {
                     "id": "displayName",
@@ -2062,7 +2086,7 @@
                 "properties": [
                   {
                     "id": "custom.width",
-                    "value": 120
+                    "value": 105
                   }
                 ]
               },
@@ -2074,7 +2098,7 @@
                 "properties": [
                   {
                     "id": "custom.width",
-                    "value": 110
+                    "value": 105
                   },
                   {
                     "id": "displayName",
@@ -2182,21 +2206,21 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "CQL"
+                  "options": "Value #E"
                 },
                 "properties": [
                   {
                     "id": "links",
                     "value": [
                       {
-                        "title": "CQL Information Dashboard",
+                        "title": "CQL Information Dashboard. Warning indicates that there are potential issues in the CQL Optimization",
                         "url": "./d/cql-[[dash_version]]/scylla-cql?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}"
                       }
                     ]
                   },
                   {
                     "id": "custom.width",
-                    "value": 120
+                    "value": 90
                   },
                   {
                     "id": "custom.filterable",
@@ -2210,48 +2234,194 @@
                         "type": 1,
                         "from": "",
                         "to": "",
-                        "text": "CQL Dashboard",
-                        "value": "cql"
+                        "text": "CQL Info",
+                        "value": "0"
+                      },
+                      {
+                        "id": 1,
+                        "type": 2,
+                        "from": "1",
+                        "to": "20",
+                        "text": "CQL Warnings",
+                        "value": ""
                       }
                     ]
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "rgba(0, 0, 0,0)",
+                          "value": null
+                        },
+                        {
+                          "color": "dark-orange",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "custom.displayMode",
+                    "value": "color-background"
+                  },
+                  {
+                    "id": "custom.align",
+                    "value": "left"
+                  },
+                  {
+                    "id": "displayName",
+                    "value": "CQL"
                   }
                 ]
               },
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "OS"
+                  "options": "Value #C"
                 },
                 "properties": [
                   {
                     "id": "links",
                     "value": [
                       {
-                        "title": "OS Information Dashboard",
+                        "title": "OS Information Dashboard, an Error indicates there are OS related errors",
                         "url": "./d/OS-[[dash_version]]/OS-metrics?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}"
                       }
                     ]
                   },
                   {
                     "id": "custom.width",
-                    "value": 120
+                    "value": 90
                   },
                   {
                     "id": "custom.filterable",
-                    "value": false
+                    "value": true
                   },
                   {
                     "id": "mappings",
                     "value": [
                       {
+                        "from": "",
                         "id": 1,
+                        "text": "OS Info",
+                        "to": "",
+                        "type": 1,
+                        "value": "0"
+                      },
+                      {
+                        "id": 2,
+                        "type": 2,
+                        "from": "0",
+                        "to": "100000",
+                        "text": "OS Errors",
+                        "value": "0"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "rgba(0, 0, 0,0)",
+                          "value": null
+                        },
+                        {
+                          "color": "dark-orange",
+                          "value": 0.001
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "custom.displayMode",
+                    "value": "color-background"
+                  },
+                  {
+                    "id": "custom.align",
+                    "value": "left"
+                  },
+                  {
+                    "id": "displayName",
+                    "value": "OS"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value #D"
+                },
+                "properties": [
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "title": "Cordinator and Replica node errors",
+                        "url": "./d/detailed-[[dash_version]]/Detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 80
+                  },
+                  {
+                    "id": "custom.filterable",
+                    "value": true
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "from": "",
+                        "id": 1,
+                        "text": "",
+                        "to": "",
+                        "type": 1,
+                        "value": "0"
+                      },
+                      {
+                        "id": 2,
                         "type": 1,
                         "from": "",
                         "to": "",
-                        "text": "OS Dashboard",
-                        "value": "os"
+                        "text": "Errors",
+                        "value": "1"
                       }
                     ]
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "rgba(0, 0, 0,0)",
+                          "value": null
+                        },
+                        {
+                          "color": "dark-orange",
+                          "value": 0.001
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "custom.displayMode",
+                    "value": "color-background"
+                  },
+                  {
+                    "id": "custom.align",
+                    "value": "left"
+                  },
+                  {
+                    "id": "displayName",
+                    "value": " "
                   }
                 ]
               },
@@ -2290,8 +2460,9 @@
                     "svr",
                     "Value #A",
                     "Value #B",
-                    "CQL",
-                    "OS"
+                    "Value #C",
+                    "Value #D",
+                    "Value #E"
                   ]
                 }
               }
@@ -2300,6 +2471,22 @@
               "id": "seriesToColumns",
               "options": {
                 "byField": "instance"
+              }
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {},
+                "indexByName": {
+                  "instance": 0,
+                  "Value #D": 1,
+                  "Value #E": 2,
+                  "Value #C": 3,
+                  "svr": 4,
+                  "Value #A": 5,
+                  "Value #B": 6
+                },
+                "renameByName": {}
               }
             }
           ]
