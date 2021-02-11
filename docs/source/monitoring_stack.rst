@@ -64,6 +64,7 @@ Install Scylla Monitoring
 .. _`Scylla Monitoring Stack binary`: https://github.com/scylladb/scylla-monitoring/releases
 
 .. code-block:: sh
+   :substitutions:
 
    wget https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-|version|.tar.gz
    tar -xvf scylla-monitoring-|version|.tar.gz
