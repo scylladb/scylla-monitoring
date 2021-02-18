@@ -1042,26 +1042,44 @@
             "datasource": "alertmanager",
             "fieldConfig": {
                 "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
                     "custom": {
                         "align": null,
                         "filterable": false
                     },
                     "mappings": [],
                     "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
+                        "mode": "absolute"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Time"
+                        },
+                        "properties": [
                             {
-                                "color": "green",
-                                "value": null
-                            },
+                                "id": "custom.width",
+                                "value": 150
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "instance"
+                        },
+                        "properties": [
                             {
-                                "color": "red",
-                                "value": 80
+                                "id": "custom.width",
+                                "value": 100
                             }
                         ]
                     }
-                },
-                "overrides": []
+                ]
             },
             "fontSize": "100%",
             "gridPos": {
@@ -1154,17 +1172,42 @@
             ],
             "targets": [
                 {
+                    "active": true,
                     "annotations": true,
-                    "expr": "job!=\"scylla_manager\",advisor=\"\"",
-                    "labelSelector": "description,dc,instance",
+                    "filters": "job!=\"scylla_manager\",advisor=\"\"",
                     "legendFormat": "{{description}}",
                     "refId": "A",
-                    "target": "Query",
-                    "type": "table"
+                    "target": "Query"
                 }
             ],
             "title": "Active Alerts",
             "transform": "table",
+            "transformations": [
+                {
+                    "id": "filterFieldsByName",
+                    "options": {
+                        "include": {
+                            "names": [
+                                "Time",
+                                "summary",
+                                "instance"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {},
+                        "indexByName": {
+                            "Time": 0,
+                            "instance": 1,
+                            "summary": 2
+                        },
+                        "renameByName": {}
+                    }
+                }
+            ],
             "type": "table"
         },
         {
