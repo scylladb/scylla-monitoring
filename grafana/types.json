@@ -1561,92 +1561,84 @@
             "desc": true
         },
         "span": 5,
-        "styles": [
-            {
-                "alias": "Time",
-                "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                "pattern": "Time",
-                "link": true,
-                "linkTooltip": "Jump to the see the node",
-                "linkUrl": "./d/detail-[[dash_version]]/scylla-per-server-metrics-[[dash_version]]?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_4}&from=${__cell_0}",
-                "type": "date"
-            },
-            {
-              "alias": "",
-              "colorMode": null,
-              "colors": [
-                "rgba(245, 54, 54, 0.9)",
-                "rgba(237, 129, 40, 0.89)",
-                "rgba(50, 172, 45, 0.97)"
-              ],
-              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-              "decimals": 2,
-              "pattern": "Severity",
-              "thresholds": [],
-              "type": "hidden",
-              "unit": "short"
-            },
-            {
-              "alias": "",
-              "colorMode": null,
-              "colors": [
-                "rgba(245, 54, 54, 0.9)",
-                "rgba(237, 129, 40, 0.89)",
-                "rgba(50, 172, 45, 0.97)"
-              ],
-              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-              "decimals": 2,
-              "pattern": "Alertname",
-              "thresholds": [],
-              "type": "hidden",
-              "unit": "short"
-            },
-            {
-              "alias": "Instance",
-              "colorMode": null,
-              "colors": [
-                "rgba(245, 54, 54, 0.9)",
-                "rgba(237, 129, 40, 0.89)",
-                "rgba(50, 172, 45, 0.97)"
-              ],
-              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-              "decimals": 2,
-              "link": true,
-              "linkTooltip": "Jump to the see the node",
-              "linkUrl": "./d/detail-[[dash_version]]/scylla-per-server-metrics-[[dash_version]]?refresh=30s&orgId=1&var-by=instance&var-node=${__cell_4}",
-              "mappingType": 1,
-              "pattern": "instance",
-              "thresholds": [],
-              "type": "string",
-              "unit": "short"
-            },
-            {
-                "alias": "",
-                "colorMode": null,
-                "colors": [
-                    "rgba(245, 54, 54, 0.9)",
-                    "rgba(237, 129, 40, 0.89)",
-                    "rgba(50, 172, 45, 0.97)"
-                ],
-                "decimals": 2,
-                "pattern": "/.*/",
-                "thresholds": [],
-                "type": "number",
-                "unit": "short"
-            }
-        ],
         "targets": [
             {
-                "annotations": true,
-                "expr": "job!=\"scylla_manager\",advisor=\"\"",
-                "legendFormat": "{{description}}",
-                "refId": "A",
-                "target": "Query",
-                "labelSelector": "description,dc,instance",
-                "type": "table"
+              "annotations": true,
+              "legendFormat": "{{description}}",
+              "refId": "A",
+              "target": "Query",
+              "active": true,
+              "filters": "job!=\"scylla_manager\",advisor=\"\""
             }
         ],
+        "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null,
+            "filterable": false
+          },
+          "thresholds": {
+            "mode": "absolute"
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "instance"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          }
+        ]
+      },
         "transform": "table",
+        "transformations": [
+            {
+              "id": "filterFieldsByName",
+              "options": {
+                "include": {
+                  "names": [
+                    "Time",
+                    "summary",
+                    "instance"
+                  ]
+                }
+              }
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {},
+                "indexByName": {
+                  "Time": 0,
+                  "instance": 1,
+                  "summary": 2
+                },
+                "renameByName": {}
+              }
+            }
+          ],
         "type": "table"
     },
     "hidden_column" : {
