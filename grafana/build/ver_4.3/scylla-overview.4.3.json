@@ -1625,6 +1625,7 @@
             "type": "text"
         },
         {
+            "class": "advisor_table",
             "datasource": "alertmanager",
             "fieldConfig": {
                 "defaults": {
@@ -1665,7 +1666,7 @@
                             },
                             {
                                 "id": "custom.width",
-                                "value": 120
+                                "value": 100
                             }
                         ]
                     },
@@ -1682,6 +1683,57 @@
                             {
                                 "id": "displayName",
                                 "value": "Category"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "severity"
+                        },
+                        "properties": [
+                            {
+                                "id": "links",
+                                "value": [
+                                    {
+                                        "targetBlank": true,
+                                        "title": "Open an issue",
+                                        "url": "https://github.com/scylladb/scylla/issues/new?body=description%3D${__data.fields[4]}%0ASource%3DAdvisor%0AScylla-versions%3D${all_scyllas_versions}%0Ascylla-monitoring%3D${monitoring_version}"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "mappings",
+                                "value": [
+                                    {
+                                        "from": "0",
+                                        "id": 1,
+                                        "text": "\ud83d\udd14",
+                                        "to": "10",
+                                        "type": 2,
+                                        "value": ""
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Report"
+                            },
+                            {
+                                "id": "custom.width",
+                                "value": 65
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Time"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 150
                             }
                         ]
                     }
@@ -1703,7 +1755,7 @@
                 {
                     "active": true,
                     "annotations": true,
-                    "filters": "advisor!=\"\"",
+                    "filters": "advisor!=\"\",cluster=\"$cluster\"",
                     "legendFormat": "{{description}}",
                     "refId": "A",
                     "target": "Query"
@@ -1718,9 +1770,25 @@
                             "names": [
                                 "advisor",
                                 "dashboard",
-                                "description"
+                                "description",
+                                "severity",
+                                "Time"
                             ]
                         }
+                    }
+                },
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {},
+                        "indexByName": {
+                            "Time": 1,
+                            "advisor": 2,
+                            "dashboard": 3,
+                            "description": 4,
+                            "severity": 0
+                        },
+                        "renameByName": {}
                     }
                 }
             ],
@@ -4447,6 +4515,37 @@
                 "query": "4-3",
                 "skipUrlSync": false,
                 "type": "custom"
+            },
+            {
+                "allValue": null,
+                "class": "template_variable_all",
+                "current": {
+                    "selected": true,
+                    "text": [
+                        "All"
+                    ],
+                    "value": [
+                        "$__all"
+                    ]
+                },
+                "datasource": "prometheus",
+                "definition": "",
+                "error": null,
+                "hide": 2,
+                "includeAll": true,
+                "multi": true,
+                "name": "all_scyllas_versions",
+                "options": [],
+                "query": "label_values(scylla_scylladb_current_version{cluster=~\"$cluster|$^\"}, version)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
             },
             {
                 "allValue": null,

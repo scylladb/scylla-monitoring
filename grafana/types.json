@@ -1643,6 +1643,173 @@
          }
       ]
    },
+   "advisor_table":{
+      "datasource": "alertmanager",
+      "id": "auto",
+      "gridPos": {
+        "h": 6,
+        "w": 12
+      },
+      "links": [],
+      "targets": [
+        {
+          "annotations": true,
+          "legendFormat": "{{description}}",
+          "refId": "A",
+          "target": "Query",
+          "active": true,
+          "filters": "advisor!=\"\",cluster=\"$cluster\""
+        }
+      ],
+      "title": "",
+      "type": "table",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null,
+            "filterable": false
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dashboard"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "",
+                    "url": "./d/${__data.fields.dashboard}-[[dash_version]]/?refresh=30s&orgId=1&var-by=instance"
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "advisor"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              },
+              {
+                "id": "displayName",
+                "value": "Category"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "severity"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open an issue",
+                    "url": "https://github.com/scylladb/scylla/issues/new?body=description%3D${__data.fields[4]}%0ASource%3DAdvisor%0AScylla-versions%3D${all_scyllas_versions}%0Ascylla-monitoring%3D${monitoring_version}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "id": 1,
+                    "type": 2,
+                    "from": "0",
+                    "to": "10",
+                    "text": "🔔",
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "id": "displayName",
+                "value": "Report"
+              },
+              {
+                "id": "custom.width",
+                "value": 65
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "pluginVersion": "7.3.4",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "advisor",
+                "dashboard",
+                "description",
+                "severity",
+                "Time"
+              ]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "severity": 0,
+              "Time": 1,
+              "advisor": 2,
+              "dashboard": 3,
+              "description": 4
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
    "hidden_column":{
       "type":"hidden"
    },
