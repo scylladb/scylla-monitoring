@@ -176,104 +176,7 @@
                 "class": "row",
                 "panels": [
                     {
-                      "datasource": "alertmanager",
-                      "id": "auto",
-                      "gridPos": {
-                        "h": 6,
-                        "w": 12
-                      },
-                      "links": [],
-                      "targets": [
-                        {
-                          "annotations": true,
-                          "legendFormat": "{{description}}",
-                          "refId": "A",
-                          "target": "Query",
-                          "active": true,
-                          "filters": "advisor!=\"\""
-                        }
-                      ],
-                      "title": "",
-                      "type": "table",
-                      "fieldConfig": {
-                        "defaults": {
-                          "custom": {
-                            "align": null,
-                            "filterable": false
-                          },
-                          "thresholds": {
-                            "mode": "absolute",
-                            "steps": [
-                              {
-                                "value": null,
-                                "color": "green"
-                              },
-                              {
-                                "value": 80,
-                                "color": "red"
-                              }
-                            ]
-                          },
-                          "mappings": []
-                        },
-                        "overrides": [
-                          {
-                            "matcher": {
-                              "id": "byName",
-                              "options": "dashboard"
-                            },
-                            "properties": [
-                              {
-                                "id": "links",
-                                "value": [
-                                  {
-                                    "title": "",
-                                    "url": "./d/${__data.fields.dashboard}-[[dash_version]]/?refresh=30s&orgId=1&var-by=instance"
-                                  }
-                                ]
-                              },
-                              {
-                                "id": "custom.width",
-                                "value": 120
-                              }
-                            ]
-                          },
-                          {
-                            "matcher": {
-                              "id": "byName",
-                              "options": "advisor"
-                            },
-                            "properties": [
-                              {
-                                "id": "custom.width",
-                                "value": 120
-                              },
-                              {
-                                "id": "displayName",
-                                "value": "Category"
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      "options": {
-                        "showHeader": true
-                      },
-                      "pluginVersion": "7.3.4",
-                      "transformations": [
-                        {
-                          "id": "filterFieldsByName",
-                          "options": {
-                            "include": {
-                              "names": [
-                                "advisor",
-                                "dashboard",
-                                "description"
-                              ]
-                            }
-                          }
-                        }
-                      ]
+                      "class":"advisor_table"
                     },
                     {
                         "class": "small_stat_error",
@@ -803,6 +706,12 @@
                         }
                     ],
                     "query": "4-4"
+                },
+                {
+                    "class": "template_variable_all",
+                    "hide":2,
+                    "name": "all_scyllas_versions",
+                    "query": "label_values(scylla_scylladb_current_version{cluster=~\"$cluster|$^\"}, version)"
                 },
                 {
                     "class": "template_variable_custom",
