@@ -583,7 +583,7 @@
             }
         },
         {
-            "class": "text_header_panel",
+            "class": "plain_text",
             "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Reads and Writes - Coordinator</h1>",
             "datasource": null,
             "editable": true,
@@ -596,7 +596,7 @@
             },
             "gridPos": {
                 "h": 2,
-                "w": 12,
+                "w": 24,
                 "x": 0,
                 "y": 9
             },
@@ -605,36 +605,7 @@
             "links": [],
             "mode": "html",
             "options": {},
-            "span": 6,
-            "style": {},
-            "title": "",
-            "transparent": true,
-            "type": "text"
-        },
-        {
-            "class": "text_header_panel",
-            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Timeouts and Errors - Coordinator</h1>",
-            "datasource": null,
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 2,
-                "w": 12,
-                "x": 12,
-                "y": 9
-            },
-            "id": 7,
-            "isNew": true,
-            "links": [],
-            "mode": "html",
-            "options": {},
-            "span": 6,
+            "span": 12,
             "style": {},
             "title": "",
             "transparent": true,
@@ -667,7 +638,7 @@
                 "y": 11
             },
             "hiddenSeries": false,
-            "id": 8,
+            "id": 7,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -770,7 +741,7 @@
                 "y": 11
             },
             "hiddenSeries": false,
-            "id": 9,
+            "id": 8,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -850,11 +821,10 @@
         {
             "aliasColors": {},
             "bars": false,
-            "class": "wps_panel",
+            "class": "us_panel",
             "dashLength": 10,
             "dashes": false,
             "datasource": "prometheus",
-            "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -871,6 +841,110 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
+                "y": 11
+            },
+            "hiddenSeries": false,
+            "id": 9,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "alertThreshold": true
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1)",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Average write latency by [[by]]",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "\u00b5s",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "us_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "links": []
+                },
+                "overrides": []
+            },
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 18,
                 "y": 11
             },
             "hiddenSeries": false,
@@ -896,14 +970,16 @@
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
-            "seriesOverrides": [],
+            "seriesOverrides": [
+                {}
+            ],
             "spaceLength": 10,
             "span": 3,
             "stack": false,
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "$func(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1)",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A",
@@ -914,7 +990,7 @@
             "timeFrom": null,
             "timeRegions": [],
             "timeShift": null,
-            "title": "Write Timeouts/Seconds per [[by]]",
+            "title": "Average read latency by [[by]]",
             "tooltip": {
                 "msResolution": false,
                 "shared": true,
@@ -931,7 +1007,7 @@
             },
             "yaxes": [
                 {
-                    "format": "si:writes/s",
+                    "format": "\u00b5s",
                     "logBase": 1,
                     "max": null,
                     "min": 0,
@@ -953,11 +1029,10 @@
         {
             "aliasColors": {},
             "bars": false,
-            "class": "wps_panel",
+            "class": "us_panel",
             "dashLength": 10,
             "dashes": false,
             "datasource": "prometheus",
-            "description": "Requests that Scylla did not even try to write because replicas that were needed to execute this write were unavailable. Unavailable writes are counted in the node that received the request (the coordinator), not at the replicas.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -973,8 +1048,8 @@
             "gridPos": {
                 "h": 6,
                 "w": 6,
-                "x": 18,
-                "y": 11
+                "x": 0,
+                "y": 17
             },
             "hiddenSeries": false,
             "id": 11,
@@ -999,16 +1074,19 @@
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
-            "seriesOverrides": [],
+            "seriesOverrides": [
+                {}
+            ],
             "spaceLength": 10,
             "span": 3,
             "stack": false,
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "$func(rate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                    "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
                     "intervalFactor": 1,
                     "legendFormat": "",
+                    "metric": "",
                     "refId": "A",
                     "step": 1
                 }
@@ -1017,7 +1095,7 @@
             "timeFrom": null,
             "timeRegions": [],
             "timeShift": null,
-            "title": "Write Unavailable/Seconds per [[by]]",
+            "title": "95th percentile write latency by [[by]]",
             "tooltip": {
                 "msResolution": false,
                 "shared": true,
@@ -1034,7 +1112,322 @@
             },
             "yaxes": [
                 {
-                    "format": "si:writes/s",
+                    "format": "\u00b5s",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "us_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "links": []
+                },
+                "overrides": []
+            },
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 6,
+                "y": 17
+            },
+            "hiddenSeries": false,
+            "id": 12,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "alertThreshold": true
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "99th percentile write latency by [[by]]",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "\u00b5s",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "us_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "links": []
+                },
+                "overrides": []
+            },
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 12,
+                "y": 17
+            },
+            "hiddenSeries": false,
+            "id": 13,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "alertThreshold": true
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "95th percentile read latency by [[by]]",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "\u00b5s",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "us_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "links": []
+                },
+                "overrides": []
+            },
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 18,
+                "y": 17
+            },
+            "hiddenSeries": false,
+            "id": 14,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "alertThreshold": true
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+                {}
+            ],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "99th percentile read latency by [[by]]",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "\u00b5s",
                     "logBase": 1,
                     "max": null,
                     "min": 0,
@@ -1077,10 +1470,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 17
+                "y": 23
             },
             "hiddenSeries": false,
-            "id": 12,
+            "id": 15,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1180,10 +1573,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 17
+                "y": 23
             },
             "hiddenSeries": false,
-            "id": 13,
+            "id": 16,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1262,213 +1655,6 @@
         {
             "aliasColors": {},
             "bars": false,
-            "class": "rps_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "links": []
-                },
-                "overrides": []
-            },
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 6,
-                "x": 12,
-                "y": 17
-            },
-            "hiddenSeries": false,
-            "id": 14,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 3,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "$func(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]) + rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])+rate(scylla_storage_proxy_coordinator_range_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "refId": "A",
-                    "step": 1
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Read Timeouts/Seconds per [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 2,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "si:reads/s",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "class": "rps_panel",
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "description": "Requests that Scylla did not even try to read because replicas that were needed to execute this write were unavailable. Unavailable reads are counted in the node that received the request (the coordinator), not at the replicas.",
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "links": []
-                },
-                "overrides": []
-            },
-            "fill": 0,
-            "fillGradient": 0,
-            "grid": {},
-            "gridPos": {
-                "h": 6,
-                "w": 6,
-                "x": 18,
-                "y": 17
-            },
-            "hiddenSeries": false,
-            "id": 15,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": false,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
-            "links": [],
-            "nullPointMode": "connected",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "span": 3,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "$func(rate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "",
-                    "refId": "A",
-                    "step": 4
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Read Unavailable/Seconds per [[by]]",
-            "tooltip": {
-                "msResolution": false,
-                "shared": true,
-                "sort": 2,
-                "value_type": "cumulative"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "si:reads/s",
-                    "logBase": 1,
-                    "max": null,
-                    "min": 0,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
             "class": "wps_panel",
             "dashLength": 10,
             "dashes": false,
@@ -1489,10 +1675,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 23
+                "y": 29
             },
             "hiddenSeries": false,
-            "id": 16,
+            "id": 17,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1591,10 +1777,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 23
+                "y": 29
             },
             "hiddenSeries": false,
-            "id": 17,
+            "id": 18,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1696,10 +1882,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 23
+                "y": 29
             },
             "hiddenSeries": false,
-            "id": 18,
+            "id": 19,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1799,10 +1985,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 23
+                "y": 29
             },
             "hiddenSeries": false,
-            "id": 19,
+            "id": 20,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1880,6 +2066,448 @@
         },
         {
             "class": "plain_text",
+            "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Timeouts and Errors - Coordinator</h1>",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {}
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 35
+            },
+            "id": 21,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {},
+            "span": 12,
+            "style": {},
+            "title": "",
+            "transparent": true,
+            "type": "text"
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "wps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "links": []
+                },
+                "overrides": []
+            },
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 37
+            },
+            "hiddenSeries": false,
+            "id": 22,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "alertThreshold": true
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Write Timeouts/Seconds per [[by]]",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "si:writes/s",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "wps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Requests that Scylla did not even try to write because replicas that were needed to execute this write were unavailable. Unavailable writes are counted in the node that received the request (the coordinator), not at the replicas.",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "links": []
+                },
+                "overrides": []
+            },
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 6,
+                "y": 37
+            },
+            "hiddenSeries": false,
+            "id": 23,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "alertThreshold": true
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Write Unavailable/Seconds per [[by]]",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "si:writes/s",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "rps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "links": []
+                },
+                "overrides": []
+            },
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 12,
+                "y": 37
+            },
+            "hiddenSeries": false,
+            "id": 24,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "alertThreshold": true
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]) + rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])+rate(scylla_storage_proxy_coordinator_range_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Read Timeouts/Seconds per [[by]]",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "si:reads/s",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "class": "rps_panel",
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "prometheus",
+            "description": "Requests that Scylla did not even try to read because replicas that were needed to execute this write were unavailable. Unavailable reads are counted in the node that received the request (the coordinator), not at the replicas.",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {},
+                    "links": []
+                },
+                "overrides": []
+            },
+            "fill": 0,
+            "fillGradient": 0,
+            "grid": {},
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 18,
+                "y": 37
+            },
+            "hiddenSeries": false,
+            "id": 25,
+            "isNew": true,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "options": {
+                "alertThreshold": true
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "span": 3,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 4
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Read Unavailable/Seconds per [[by]]",
+            "tooltip": {
+                "msResolution": false,
+                "shared": true,
+                "sort": 2,
+                "value_type": "cumulative"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "si:reads/s",
+                    "logBase": 1,
+                    "max": null,
+                    "min": 0,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "class": "plain_text",
             "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Replica</h1>",
             "datasource": null,
             "editable": true,
@@ -1894,9 +2522,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 29
+                "y": 43
             },
-            "id": 20,
+            "id": 26,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -1931,10 +2559,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 31
+                "y": 45
             },
             "hiddenSeries": false,
-            "id": 21,
+            "id": 27,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2035,10 +2663,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 31
+                "y": 45
             },
             "hiddenSeries": false,
-            "id": 22,
+            "id": 28,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2139,10 +2767,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 31
+                "y": 45
             },
             "hiddenSeries": false,
-            "id": 23,
+            "id": 29,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2243,10 +2871,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 31
+                "y": 45
             },
             "hiddenSeries": false,
-            "id": 24,
+            "id": 30,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2339,9 +2967,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 37
+                "y": 51
             },
-            "id": 25,
+            "id": 31,
             "isNew": true,
             "links": [],
             "mode": "markdown",
@@ -2374,10 +3002,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 37
+                "y": 51
             },
             "hiddenSeries": false,
-            "id": 26,
+            "id": 32,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2476,10 +3104,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 37
+                "y": 51
             },
             "hiddenSeries": false,
-            "id": 27,
+            "id": 33,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2578,10 +3206,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 37
+                "y": 51
             },
             "hiddenSeries": false,
-            "id": 28,
+            "id": 34,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2673,9 +3301,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 43
+                "y": 57
             },
-            "id": 29,
+            "id": 35,
             "isNew": true,
             "links": [],
             "mode": "markdown",
@@ -2701,9 +3329,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 43
+                "y": 57
             },
-            "id": 30,
+            "id": 36,
             "isNew": true,
             "links": [],
             "mode": "markdown",
@@ -2736,10 +3364,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 43
+                "y": 57
             },
             "hiddenSeries": false,
-            "id": 31,
+            "id": 37,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2838,10 +3466,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 43
+                "y": 57
             },
             "hiddenSeries": false,
-            "id": 32,
+            "id": 38,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -2933,9 +3561,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 49
+                "y": 63
             },
-            "id": 33,
+            "id": 39,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -2969,10 +3597,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 0,
-                "y": 51
+                "y": 65
             },
             "hiddenSeries": false,
-            "id": 34,
+            "id": 40,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3071,10 +3699,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 12,
-                "y": 51
+                "y": 65
             },
             "hiddenSeries": false,
-            "id": 35,
+            "id": 41,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3173,10 +3801,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 57
+                "y": 71
             },
             "hiddenSeries": false,
-            "id": 36,
+            "id": 42,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3275,10 +3903,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 57
+                "y": 71
             },
             "hiddenSeries": false,
-            "id": 37,
+            "id": 43,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3377,10 +4005,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 57
+                "y": 71
             },
             "hiddenSeries": false,
-            "id": 38,
+            "id": 44,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3479,10 +4107,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 57
+                "y": 71
             },
             "hiddenSeries": false,
-            "id": 39,
+            "id": 45,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3581,10 +4209,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 63
+                "y": 77
             },
             "hiddenSeries": false,
-            "id": 40,
+            "id": 46,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3683,10 +4311,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 63
+                "y": 77
             },
             "hiddenSeries": false,
-            "id": 41,
+            "id": 47,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3785,10 +4413,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 63
+                "y": 77
             },
             "hiddenSeries": false,
-            "id": 42,
+            "id": 48,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3889,10 +4517,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 63
+                "y": 77
             },
             "hiddenSeries": false,
-            "id": 43,
+            "id": 49,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -3993,10 +4621,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 69
+                "y": 83
             },
             "hiddenSeries": false,
-            "id": 44,
+            "id": 50,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4097,10 +4725,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 69
+                "y": 83
             },
             "hiddenSeries": false,
-            "id": 45,
+            "id": 51,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4201,10 +4829,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 69
+                "y": 83
             },
             "hiddenSeries": false,
-            "id": 46,
+            "id": 52,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4305,10 +4933,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 69
+                "y": 83
             },
             "hiddenSeries": false,
-            "id": 47,
+            "id": 53,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4409,10 +5037,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 75
+                "y": 89
             },
             "hiddenSeries": false,
-            "id": 48,
+            "id": 54,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4511,10 +5139,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 75
+                "y": 89
             },
             "hiddenSeries": false,
-            "id": 49,
+            "id": 55,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4613,10 +5241,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 75
+                "y": 89
             },
             "hiddenSeries": false,
-            "id": 50,
+            "id": 56,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4715,10 +5343,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 75
+                "y": 89
             },
             "hiddenSeries": false,
-            "id": 51,
+            "id": 57,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4810,9 +5438,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 81
+                "y": 95
             },
-            "id": 52,
+            "id": 58,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -4847,10 +5475,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 83
+                "y": 97
             },
             "hiddenSeries": false,
-            "id": 53,
+            "id": 59,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -4950,10 +5578,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 83
+                "y": 97
             },
             "hiddenSeries": false,
-            "id": 54,
+            "id": 60,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5053,10 +5681,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 83
+                "y": 97
             },
             "hiddenSeries": false,
-            "id": 55,
+            "id": 61,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5156,10 +5784,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 83
+                "y": 97
             },
             "hiddenSeries": false,
-            "id": 56,
+            "id": 62,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5261,10 +5889,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 89
+                "y": 103
             },
             "hiddenSeries": false,
-            "id": 57,
+            "id": 63,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5364,10 +5992,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 89
+                "y": 103
             },
             "hiddenSeries": false,
-            "id": 58,
+            "id": 64,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5459,9 +6087,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 95
+                "y": 109
             },
-            "id": 59,
+            "id": 65,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -5496,10 +6124,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 97
+                "y": 111
             },
             "hiddenSeries": false,
-            "id": 60,
+            "id": 66,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5599,10 +6227,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 97
+                "y": 111
             },
             "hiddenSeries": false,
-            "id": 61,
+            "id": 67,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5704,10 +6332,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 97
+                "y": 111
             },
             "hiddenSeries": false,
-            "id": 62,
+            "id": 68,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5809,10 +6437,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 97
+                "y": 111
             },
             "hiddenSeries": false,
-            "id": 63,
+            "id": 69,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -5912,10 +6540,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 103
+                "y": 117
             },
             "hiddenSeries": false,
-            "id": 64,
+            "id": 70,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6015,10 +6643,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 103
+                "y": 117
             },
             "hiddenSeries": false,
-            "id": 65,
+            "id": 71,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6120,10 +6748,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 103
+                "y": 117
             },
             "hiddenSeries": false,
-            "id": 66,
+            "id": 72,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6225,10 +6853,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 103
+                "y": 117
             },
             "hiddenSeries": false,
-            "id": 67,
+            "id": 73,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6328,10 +6956,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 109
+                "y": 123
             },
             "hiddenSeries": false,
-            "id": 68,
+            "id": 74,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6431,10 +7059,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 109
+                "y": 123
             },
             "hiddenSeries": false,
-            "id": 69,
+            "id": 75,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6534,10 +7162,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 109
+                "y": 123
             },
             "hiddenSeries": false,
-            "id": 70,
+            "id": 76,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6637,10 +7265,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 109
+                "y": 123
             },
             "hiddenSeries": false,
-            "id": 71,
+            "id": 77,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6740,10 +7368,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 115
+                "y": 129
             },
             "hiddenSeries": false,
-            "id": 72,
+            "id": 78,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6843,10 +7471,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 115
+                "y": 129
             },
             "hiddenSeries": false,
-            "id": 73,
+            "id": 79,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -6946,10 +7574,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 115
+                "y": 129
             },
             "hiddenSeries": false,
-            "id": 74,
+            "id": 80,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -7049,10 +7677,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 115
+                "y": 129
             },
             "hiddenSeries": false,
-            "id": 75,
+            "id": 81,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -7152,10 +7780,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 121
+                "y": 135
             },
             "hiddenSeries": false,
-            "id": 76,
+            "id": 82,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -7255,10 +7883,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 121
+                "y": 135
             },
             "hiddenSeries": false,
-            "id": 77,
+            "id": 83,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -7360,10 +7988,10 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 121
+                "y": 135
             },
             "hiddenSeries": false,
-            "id": 78,
+            "id": 84,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -7457,9 +8085,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 127
+                "y": 141
             },
-            "id": 79,
+            "id": 85,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -7494,10 +8122,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 0,
-                "y": 129
+                "y": 143
             },
             "hiddenSeries": false,
-            "id": 80,
+            "id": 86,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -7599,10 +8227,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 8,
-                "y": 129
+                "y": 143
             },
             "hiddenSeries": false,
-            "id": 81,
+            "id": 87,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -7696,9 +8324,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 135
+                "y": 149
             },
-            "id": 82,
+            "id": 88,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -7732,10 +8360,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 0,
-                "y": 137
+                "y": 151
             },
             "hiddenSeries": false,
-            "id": 83,
+            "id": 89,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -7834,10 +8462,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 12,
-                "y": 137
+                "y": 151
             },
             "hiddenSeries": false,
-            "id": 84,
+            "id": 90,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -7929,9 +8557,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 143
+                "y": 157
             },
-            "id": 85,
+            "id": 91,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -7965,10 +8593,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 0,
-                "y": 145
+                "y": 159
             },
             "hiddenSeries": false,
-            "id": 86,
+            "id": 92,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -8070,10 +8698,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 8,
-                "y": 145
+                "y": 159
             },
             "hiddenSeries": false,
-            "id": 87,
+            "id": 93,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -8177,10 +8805,10 @@
                 "h": 6,
                 "w": 8,
                 "x": 16,
-                "y": 145
+                "y": 159
             },
             "hiddenSeries": false,
-            "id": 88,
+            "id": 94,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -8270,9 +8898,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 151
+                "y": 165
             },
-            "id": 89,
+            "id": 95,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -8310,10 +8938,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 0,
-                "y": 153
+                "y": 167
             },
             "hiddenSeries": false,
-            "id": 90,
+            "id": 96,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -8406,10 +9034,10 @@
                 "h": 6,
                 "w": 12,
                 "x": 12,
-                "y": 153
+                "y": 167
             },
             "hiddenSeries": false,
-            "id": 91,
+            "id": 97,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -8493,9 +9121,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 159
+                "y": 173
             },
-            "id": 92,
+            "id": 98,
             "isNew": true,
             "links": [],
             "mode": "html",

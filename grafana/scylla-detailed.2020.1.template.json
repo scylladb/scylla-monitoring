@@ -78,12 +78,8 @@
                 "gridPos": {"h": 2},
                 "panels": [
                     {
-                        "class": "text_header_panel",
+                        "class": "plain_text",
                         "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Reads and Writes - Coordinator</h1>"
-                    },
-                    {
-                        "class": "text_header_panel",
-                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Timeouts and Errors - Coordinator</h1>"
                     }
                 ],
                 "title": "New row"
@@ -124,34 +120,92 @@
                         "title": "Foreground Reads per [[by]]"
                     },
                     {
-                        "class": "wps_panel",
+                        "class": "us_panel",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
-                        "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
-                        "title": "Write Timeouts/Seconds per [[by]]"
+                        "title": "Average write latency by [[by]]"
                     },
                     {
-                        "class": "wps_panel",
+                        "class": "us_panel",
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
-                        "description": "Requests that Scylla did not even try to write because replicas that were needed to execute this write were unavailable. Unavailable writes are counted in the node that received the request (the coordinator), not at the replicas.",
-                        "title": "Write Unavailable/Seconds per [[by]]"
+                        "title": "Average read latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "95th percentile write latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "99th percentile write latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "95th percentile read latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "99th percentile read latency by [[by]]"
                     }
                 ],
                 "title": "New row"
@@ -189,37 +243,6 @@
                         ],
                         "description": "Background reads are reads that are already acknowledged to the application but have additional work to be done. For instance, if a replica responded and only one is needed, this request is still listed as a background request until all replicas respond. This metric represents a queue size, not a rate. High values here correlate with increased read latencies.",
                         "title": "Background Reads per [[by]]"
-                    },
-                    {
-                        "class": "rps_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]) + rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])+rate(scylla_storage_proxy_coordinator_range_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
-                        "title": "Read Timeouts/Seconds per [[by]]"
-                    },
-                    {
-                        "class": "rps_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "description": "Requests that Scylla did not even try to read because replicas that were needed to execute this write were unavailable. Unavailable reads are counted in the node that received the request (the coordinator), not at the replicas.",
-                        "title": "Read Unavailable/Seconds per [[by]]"
                     }
                 ],
                 "title": "New row"
@@ -288,6 +311,84 @@
                     }
                 ],
                 "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Timeouts and Errors - Coordinator</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "title": "Write Timeouts/Seconds per [[by]]"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Requests that Scylla did not even try to write because replicas that were needed to execute this write were unavailable. Unavailable writes are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "title": "Write Unavailable/Seconds per [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]) + rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])+rate(scylla_storage_proxy_coordinator_range_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "title": "Read Timeouts/Seconds per [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "description": "Requests that Scylla did not even try to read because replicas that were needed to execute this write were unavailable. Unavailable reads are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "title": "Read Unavailable/Seconds per [[by]]"
+                    }
+                ]
             },
             {
                 "class": "row",
