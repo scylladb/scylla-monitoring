@@ -1646,7 +1646,7 @@
                                     {
                                         "targetBlank": true,
                                         "title": "Open an issue",
-                                        "url": "https://github.com/scylladb/scylla/issues/new?body=description%3D${__data.fields[4]}%0ASource%3DAdvisor%0AScylla-versions%3D${all_scyllas_versions}%0Ascylla-monitoring%3D${monitoring_version}"
+                                        "url": "https://github.com/scylladb/scylla/issues/new?body=description%3D${__data.fields[4]}%0ASource%3DAdvisor%0AScylla-versions%3D${all_scyllas_versions}%0Ascylla-monitoring%3D${monitoring_version}%0Acluster%3D${count_dc}%0Aname%3D${cluster}"
                                     }
                                 ]
                             },
@@ -4473,6 +4473,40 @@
                 "query": "label_values(scylla_scylladb_current_version{cluster=~\"$cluster|$^\"}, version)",
                 "refresh": 2,
                 "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+            },
+            {
+                "allValue": null,
+                "class": "template_variable_all",
+                "current": {
+                    "selected": true,
+                    "text": [
+                        "All"
+                    ],
+                    "value": [
+                        "$__all"
+                    ]
+                },
+                "datasource": "prometheus",
+                "definition": "query_result(count(up{job=\"scylla\"}) by (dc))",
+                "error": null,
+                "hide": 2,
+                "includeAll": true,
+                "multi": true,
+                "name": "count_dc",
+                "options": [],
+                "query": {
+                    "query": "query_result(count(up{job=\"scylla\"}) by (dc))",
+                    "refId": "StandardVariableQuery"
+                },
+                "refresh": 2,
+                "regex": "/(?<dc>\\{dc=\"[^\"]+\".* \\d+) .*/",
                 "skipUrlSync": false,
                 "sort": 1,
                 "tagValuesQuery": "",
