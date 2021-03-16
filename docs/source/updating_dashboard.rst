@@ -2,9 +2,9 @@
 Adding and Modifying Dashboards
 *******************************
 
-The following document explains how to update or create Grafana dashboards for the Scylla Monitor.
+The following document explains how to update or create Grafana dashboards for the Scylla Monitoring Stack.
 
-It will explain about Scylla Monitor dashboard templates and how to modify them.
+It will explain about Scylla Monitoring Stack dashboard templates and how to modify them.
 
 .. contents::
    :depth: 2
@@ -13,14 +13,14 @@ It will explain about Scylla Monitor dashboard templates and how to modify them.
 
 General Limitations
 ###################
-Scylla Monitor uses Grafana for its dashboards.
+Scylla Monitoring Stack uses Grafana for its dashboards.
 The dashboards are provisioned from files and are stored in Grafana internal storage.
 There are consistency issues here, between restarts and between upgrades.
 
 consistency between restarts
 ****************************
 
-By default, Grafana internal storage is inside the container. That means whenever you restart the Scylla Monitor (explicitly when restarting Grafana) any local changes will be gone.
+By default, Grafana internal storage is inside the container. That means whenever you restart the Scylla Monitoring Stack (explicitly when restarting Grafana) any local changes will be gone.
  If you are doing and saving changes from the GUI make sure to configure an external directory for Grafana.
 
 consistency between upgrades
@@ -136,7 +136,7 @@ To reduce the redundancy of Grafana JSON format, we added dashboard templates.
 The template class system
 ***************************
 
-Scylla Monitor dashboard templates use ``class`` attribute that can be added to any JSON object in a template file.
+Scylla Monitoring Stack dashboard templates use ``class`` attribute that can be added to any JSON object in a template file.
 The different classes are defined in a file.
 
 The ``class`` system resembles CSS classes. It is hierarchical, so a ``class`` type definition can have a ``class`` attribute and

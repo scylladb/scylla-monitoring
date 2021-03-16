@@ -8,9 +8,9 @@ Install Scylla Monitoring Stack
 
 This document describes the setup of Scylla Monitoring Stack, based on `Scylla Prometheus API`_.
 
-The Scylla Monitoring stack needs to be installed on a dedicated server, external to the Scylla cluster. Make sure the Scylla Monitoring server has access to the Scylla nodes so that it can pull the metrics over the Prometheus API.
+The Scylla Monitoring Stack needs to be installed on a dedicated server, external to the Scylla cluster. Make sure the Scylla Monitoring Stack server has access to the Scylla nodes so that it can pull the metrics over the Prometheus API.
 
-For evaluation, you can run Scylla Monitoring stack on any server (or laptop) that can handle three Docker instances at the same time. For production, see recommendations below.
+For evaluation, you can run Scylla Monitoring Stack on any server (or laptop) that can handle three Docker instances at the same time. For production, see recommendations below.
 
 .. include:: min-prod-hw.rst
 
@@ -19,7 +19,7 @@ For evaluation, you can run Scylla Monitoring stack on any server (or laptop) th
 Prerequisites
 -------------
 
-* Follow the Installation Guide and install `docker`_ on the Scylla Monitoring Server. This server can be the same server that is running Scylla Manager. Alternatively, you can `Deploy Scylla Monitoring Without Docker <monitor_without_docker>`_ .
+* Follow the Installation Guide and install `docker`_ on the Scylla Monitoring Stack Server. This server can be the same server that is running Scylla Manager. Alternatively, you can `Deploy Scylla Monitoring Stack Without Docker <monitor_without_docker>`_ .
 
 .. _`docker`: https://docs.docker.com/install/
 
@@ -34,7 +34,7 @@ Docker post installation guide can be found `here`_
 
    Avoid running the container as root.
 
-To avoid running docker as root, you should add the user you are going to use for Scylla Monitor to the Docker group.
+To avoid running docker as root, you should add the user you are going to use for Scylla Monitoring Stack to the Docker group.
 
 1. Create the Docker group.
 
@@ -54,8 +54,8 @@ To avoid running docker as root, you should add the user you are going to use fo
 
    sudo systemctl enable docker
 
-Install Scylla Monitoring
--------------------------
+Install Scylla Monitoring Stack
+-------------------------------
 
 **Procedure**
 
@@ -84,10 +84,10 @@ As an alternative, you can clone and use the Git repository directly.
 
    sudo systemctl restart docker
 
-Configure Scylla Monitoring
----------------------------
+Configure Scylla Monitoring Stack
+---------------------------------
 
-To monitor the cluster, Scylla Monitor (Specifically the Prometheus Server) needs to know the IP of all the nodes and the IP of the Scylla Manager Server (if you are using Scylla Manager).
+To monitor the cluster, Scylla Monitoring Stack (Specifically the Prometheus Server) needs to know the IP of all the nodes and the IP of the Scylla Manager Server (if you are using Scylla Manager).
 
 This configuration can be done from files, or using the Consul_ api.
 
@@ -117,7 +117,7 @@ For example:
          cluster: cluster1
          dc: dc1
 
-.. note:: If you want to add your managed cluster to Scylla Monitoring, add the IPs of the nodes as well as the cluster name you used when you `added the cluster`_ to Scylla Manager. It is important that the label ``cluster name`` and the cluster name in Scylla Manager match.
+.. note:: If you want to add your managed cluster to Scylla Monitoring Stack, add the IPs of the nodes as well as the cluster name you used when you `added the cluster`_ to Scylla Manager. It is important that the label ``cluster name`` and the cluster name in Scylla Manager match.
 
 ..  _`added the cluster`: https://scylladb.github.io/scylla-manager/2.2/add-a-cluster.html
 
@@ -291,7 +291,7 @@ Stop
    ./kill-all.sh
 
 
-Start a Specific Scylla Monitoring Stack  Version
+Start a Specific Scylla Monitoring Stack Version
 .................................................
 
 By default, start-all.sh will start with dashboards for the latest Scylla Open source version and the latest Scylla Manager version.
@@ -319,10 +319,10 @@ To do that run ./start-all.sh with the -l flag. For example:
 
 Configure rsyslog on each Scylla node
 .....................................
-generates metrics and alerts from logs. To get full functionality, you should use rsyslog_. Scylla Monitoring will act as an additional rsyslog server.
+generates metrics and alerts from logs. To get full functionality, you should use rsyslog_. Scylla Monitoring Stack will act as an additional rsyslog server.
 Scylla Monitoring Stack collects Scylla logs using Loki and generates metrics and alerts based on these logs. 
 To use this feature, you need to direct logs from each Scylla node to Loki.
-The recommended method to do this is by using rsyslog_, where Scylla Monitoring (Loki) acts as an additional rsyslog server.
+The recommended method to do this is by using rsyslog_, where Scylla Monitoring Stack (Loki) acts as an additional rsyslog server.
 .. note:: Scylla can send logs to more than one log collection service.
 
 .. _rsyslog: https://www.rsyslog.com/
@@ -335,7 +335,7 @@ The recommended method to do this is by using rsyslog_, where Scylla Monitoring 
 
 Add scylla's rsyslog configuration file. Add the file: ``/etc/rsyslog.d/scylla.conf``.
 
-If Scylla monitoring IP is 10.0.0.1, the file should look like
+If Scylla Monitoring Stack IP is 10.0.0.1, the file should look like
 
 .. code-block:: sh
 

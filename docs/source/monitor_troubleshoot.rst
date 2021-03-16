@@ -1,5 +1,5 @@
-Troubleshoot Monitoring
-========================
+Troubleshoot Scylla Monitoring Stack
+====================================
 
 
 This document describes steps that need to be done to troubleshoot monitoring problems when using `Grafana/Prometheus`_ monitoring tool.
@@ -21,7 +21,7 @@ Scylla Manager 2.2 change the default metrics (Prometheus) reporting ports:
 * For Manager server: from 56090 to 5090 
 * For Manager Agent: from 56090 to 5090 
 
-For backward compatibility, Scylla Monitoring 3.5 default configuration reads from **both** Manager ports, old and new, so you do not have to update the Prometheus configuration when upgrading to Manager 2.2
+For backward compatibility, Scylla Monitoring Stack 3.5 default configuration reads from **both** Manager ports, old and new, so you do not have to update the Prometheus configuration when upgrading to Manager 2.2
 
   
 
@@ -122,14 +122,14 @@ More on start-all.sh `options`_.
 Grafana Chart Shows Error (!) Sign
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Run this procedure on the Monitoring server.
+Run this procedure on the Scylla Monitoring Stack server.
 
 If the Grafana charts show an error (!) sign, there is a problem with the connection between Grafana and Prometheus. 
 
 Solution
 .........
 
-On the monitoring server:
+On the Scylla Monitoring Stack server:
 
 1. Check Prometheus is running using ``docker ps``.
 
@@ -153,7 +153,7 @@ Prometheus fails to fetch metrics from Scylla servers.
 Solution
 .........
 
-* Use ``curl <scylla_node>:9180/metrics`` to fetch binary metric data from Scylla.  If curl does not return data, the problem is the connectivity between the Monitoring and Scylla server. In that case, check your IPs and firewalls.
+* Use ``curl <scylla_node>:9180/metrics`` to fetch binary metric data from Scylla.  If curl does not return data, the problem is the connectivity between the Scylla Monitoring Stack and Scylla server. In that case, check your IPs and firewalls.
 
 For example
 
@@ -173,7 +173,7 @@ Solution
 1. Make sure that ``node_exporter`` is running on each Scylla server (by login to the machine and running ``ps -ef |gre node_exporter``). ``node_exporter`` is installed with ``scylla_setup``.
 to check that ``node_exporter`` is installed, run ``node_exporter --version``, If it is not, make sure to install and run it.
 
-2. If it is running, use ``curl http://<scylla_node>:9100/metrics`` (where <scylla_node> is a Scylla server IP) to fetch metric data from Scylla.  If curl does not return data, the problem is the connectivity between Scylla Monitoring and Scylla server. Please check your IPs and firewalls.
+2. If it is running, use ``curl http://<scylla_node>:9100/metrics`` (where <scylla_node> is a Scylla server IP) to fetch metric data from Scylla.  If curl does not return data, the problem is the connectivity between Scylla Monitoring Stack and Scylla server. Please check your IPs and firewalls.
 
 Notice to users upgrading to Scylla Open Source 3.0 or Scylla Enterprise 2019.1
 ................................................................................
@@ -192,13 +192,13 @@ in the `upgrade guide`_.
 Working with Wireshark
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-No metrics shown in Scylla Monitoring.
+No metrics shown in the Scylla Monitoring Stack.
 
 1. Install `wireshark`_
 
 ..  _`wireshark`: https://www.wireshark.org/#download
 
-2. Capture the traffic between Scylla Monitoring and Scylla node using the ``tshark`` command.
+2. Capture the traffic between the Scylla Monitoring Stack and Scylla node using the ``tshark`` command.
 ``tshark -i <network interface name> -f "dst port 9180"``
 
 For example:
@@ -207,7 +207,7 @@ For example:
 
    tshark -i eth0 -f "dst port 9180"
 
-Capture from Scylla node towards Scylla Monitor server.
+Capture from Scylla node towards Scylla Monitoring Stack server.
 
 
 In this example, Scylla is running.
