@@ -143,7 +143,7 @@ as queries may end in the non-local DC. Use LOCAL_QUORUM and LOCAL_ONE instead.
 Cross DC read requests
 ^^^^^^^^^^^^^^^^^^^^^^
 .. note::
-   The CQL Optimization Dashboard relies on the definition of nodes per Data Center in the Monitoring Stack (prometheus/scylla_servers.yml) to match the Data Center names used in Scylla Cluster.
+   The CQL Optimization Dashboard relies on the definition of nodes per Data Center in the Scylla Monitoring Stack (prometheus/scylla_servers.yml) to match the Data Center names used in Scylla Cluster.
    If this is not the case, you will see the wrong result.
 
 In a typical situation, a client performs a read from the nearest data-center and that query is performed local to the data-center.

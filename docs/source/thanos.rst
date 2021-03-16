@@ -1,5 +1,5 @@
-Using Thanos as Data Source With Scylla Monitoring
-==================================================
+Using Thanos as Data Source With Scylla Monitoring Stack
+========================================================
 
 Scylla-Monitoring uses `Prometheus <https://prometheus.io/>`_ for metrics collection, which works out-of-the-box, but Prometheus does have limitations.
 `Thanos <https://thanos.io/>`_  is an opensource solution which when used on top of Prometheus, provides additiuonal functionalities such as:
@@ -53,7 +53,7 @@ After you run the sidecar you should be able to reach it from your browser at: h
 Thanos query
 ^^^^^^^^^^^^
 Thanos query is the aggregator, it expose a Prometheus like API and read from multiple thanos stores (in this case the Thanos stores are the sidecars).
-You run Thanos query together with Scylla Monitoring. Assuming that you have two sidecars running on IP addresses: `ip1` and `ip2`,
+You run Thanos query together with Scylla . Assuming that you have two sidecars running on IP addresses: `ip1` and `ip2`,
 Start the container  by running: 
 
 .. code-block:: shell
@@ -79,5 +79,5 @@ and replace DB_ADDRESS with {ip}:10903 (The IP address could be of the container
 
 The file you edit is a template file that replaces the file Grafana uses, next time you start.
 
-Restart the Scylla Monitoring stack it should now use Thanos.
+Restart the Scylla Monitoring Stack it should now use Thanos.
  

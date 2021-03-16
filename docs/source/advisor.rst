@@ -1,8 +1,8 @@
-=========================
-Scylla Monitoring Advisor
-=========================
+===============================
+Scylla Monitoring Stack Advisor
+===============================
 
-Scylla Advisor is an element of Scylla Monitoring that recognize bad practice, bad configuration, and potential problems and advice on how to solve them.
+The Scylla Monitoring Stack Advisor is an element of the Scylla Monitoring Stack that recognize bad practices, bad configurations, and potential problems and advises on how to solve them.
 
 The Advisor section
 ^^^^^^^^^^^^^^^^^^^^
@@ -10,12 +10,12 @@ The Advisor section
 
     **The Advisor section**
 
-The Advisor section is on the Overview dashboard and consists of two parts:
+The Advisor section is located on the Overview dashboard and consists of two parts:
     
-On the left, the Advisor issues table. Each issue has a category, a link to jump to a relevant dashboard, and a description of the issue.
+On the left, is the Advisor issues table. Each issue has a category, a link to jump to a relevant dashboard, and a description of the issue.
 
-For example, the Advisor would warn of large cells. Large cells in the data usually indicate a problem with the data model or a problem with the client code, impacting system performance.
+For example, the Advisor could warn about using large cells. Large cells in the data usually indicate a problem with the data model or a problem with the client code, and can impact system performance.
     
-On the right, the system balance section.  This section notifies for an imbalance between shards or nodes. An imbalanced system may indicate a potential problem.
+On the right, is the system balance section.  This section notifies you about an imbalance between shards or nodes. An imbalanced system may indicate a potential problem.
 
 For example, when a single, hot partition gets most of the requests, making one shard a bottleneck, the balance section will indicate that the latency and cache hits are imbalanced between shards.

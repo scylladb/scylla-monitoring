@@ -1,7 +1,7 @@
 The start-all.sh command
 ========================
 
-Scylla Monitor is container-based, the simplest way to configure and start the monitoring is with the `start-all.sh` command.
+Scylla Monitoring Stack is container-based, the simplest way to configure and start the monitoring is with the `start-all.sh` command.
 
 The `start-all.sh` script is a small utility that sets the dashboards and starts the containers with the appropriate configuration.
 
@@ -70,7 +70,7 @@ This flag places the Prometheus data directory outside of its container and by d
 
 **-s scylla-target-file** Specify the location of the Scylla target files. This file contains the IP addresses of the Scylla nodes.
 
-**-n node-target-file** Scylla Monitoring collects OS metrics (Disk, network, etc.) using an agent called node_exporter. By default, Scylla Monitoring assumes that there is a node_exporter running beside each Scylla node, for situations that this is not the case, for example, Scylla runs inside a container and the relevant metrics are of the host machine, it is possible to specify a target file for the node_exporter agents. 
+**-n node-target-file** Scylla Monitoring Stack collects OS metrics (Disk, network, etc.) using an agent called node_exporter. By default, Scylla Monitoring Stack assumes that there is a node_exporter running beside each Scylla node, for situations that this is not the case, for example, Scylla runs inside a container and the relevant metrics are of the host machine, it is possible to specify a target file for the node_exporter agents. 
 
 **-N manager target file** Specify the location of the Scylla Manager target file.
 
