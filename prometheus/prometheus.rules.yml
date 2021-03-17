@@ -31,15 +31,6 @@ groups:
     expr: sum(rate(scylla_storage_proxy_coordinator_read_errors_local_node[60s])) by (cluster, dc, instance) + sum(rate(scylla_storage_proxy_coordinator_write_errors_local_node[60s])) by (cluster, dc, instance)
   - record: errors:nodes_total
     expr: errors:local_failed + errors:operation_unavailable
-  - record: manager:repair_done_ts
-    expr: timestamp(sum(changes(scylla_manager_task_run_total{status="DONE",type="repair"}[60s])) by (cluster) > 0) or on(cluster) manager:repair_done_ts
-  - record: manager:backup_done_ts
-    expr: timestamp(sum(changes(scylla_manager_task_run_total{status="DONE",type="backup"}[60s])) by (cluster) > 0) or on(cluster) manager:backup_done_ts
-  - record: manager:repair_fail_ts
-    expr: timestamp(sum(changes(scylla_manager_task_run_total{status="ERROR",type="repair"}[60s])) by (cluster) > 0) or on(cluster) manager:repair_fail_ts
-  - record: manager:backup_fail_ts
-    expr: timestamp(sum(changes(scylla_manager_task_run_total{status="ERROR",type="backup"}[60s])) by (cluster) > 0) or on(cluster) manager:backup_fail_ts
-
   - alert: cqlNonPrepared
     expr: cql:non_prepared > 0
     for: 10s
