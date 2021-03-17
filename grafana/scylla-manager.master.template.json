@@ -12,8 +12,9 @@
                 "height": "150px",
                 "panels": [
                     {
-                        "class": "single_stat_panel",
+                        "class": "small_stat",
                         "span": 3,
+                        "title":"Manager",
                         "targets": [
                             {
                                 "expr": "count(scrape_samples_scraped{job=\"scylla_manager\"}==0) OR vector(0)",
@@ -22,21 +23,45 @@
                                 "step": 40
                             }
                         ],
-                        "valueFontSize": "80%",
-                         "valueMaps": [
-                        {
-                          "op": "=",
-                          "text": "Scylla Manager</br>Not Reachable",
-                          "value": "1"
-                        },
-                        {
-                          "op": "=",
-                          "text": "Scylla Manager</br>Connected",
-                          "value": "0"
-                        }]
+                        "fieldConfig":{
+                           "defaults":{
+                              "noValue":" Offline",
+                              "thresholds":{
+                                 "mode":"absolute",
+                                 "steps":[
+                                    {
+                                       "color":"red",
+                                       "value":null
+                                    },
+                                    {
+                                       "color":"green",
+                                       "value":0
+                                    }
+                                 ]
+                              },
+                              "mappings":[
+                                 {
+                                    "from":"",
+                                    "id":0,
+                                    "text":"Online",
+                                    "to":"",
+                                    "type":1,
+                                    "value":"0"
+                                 },
+                                 {
+                                    "from":"",
+                                    "id":1,
+                                    "text":"Offline",
+                                    "to":"",
+                                    "type":1,
+                                    "value":"1"
+                                 }
+                              ]
+                           }
+                        }
                     },
                     {
-                        "class": "single_stat_panel",
+                        "class": "small_stat",
                         "targets": [
                             {
                                 "expr": "count(scylla_manager_healthcheck_cql_rtt_ms{cluster=~\"$cluster|$^\"})",
@@ -49,7 +74,7 @@
                         "title": "Total Nodes"
                     },
                     {
-                        "class": "single_stat_panel_fail",
+                        "class": "small_stat",
                         "targets": [
                             {
                                 "expr": "count(scylla_manager_healthcheck_cql_status{cluster=~\"$cluster|$^\"}==-1) OR vector(0)",
@@ -61,64 +86,242 @@
                         ],
                         "thresholds": "1,2",
                         "description": "The number of nodes that Scylla manager CQL probe failed connecting to. It could indicate a network or a node problem",
-                        "title": "No CQL connectivity"
+                        "fieldConfig":{
+                           "defaults":{
+                              "custom":{
+                              },
+                              "thresholds":{
+                                 "mode":"absolute",
+                                 "steps":[
+                                    {
+                                       "color":"green",
+                                       "value":null
+                                    },
+                                    {
+                                       "value":0,
+                                       "color":"green"
+                                    },
+                                    {
+                                       "value":1,
+                                       "color":"red"
+                                    }
+                                 ]
+                              }
+                           }
+                        },
+                        "title": "CQL Fail"
                     },
                     {
-                        "class": "single_stat_panel",
-                        "targets": [
-                            {
-                                "expr": "sum(scylla_manager_task_active_count{cluster=~\"$cluster|$^\", type=\"repair\"}) or vector(0)",
-                                "intervalFactor": 1,
-                                "refId": "A",
-                                "step": 40
-                            }
-                        ],
-                        "title": "Active Repair"
-                    },
-                    {
-                        "class": "single_stat_panel",
-                        "targets": [
-                            {
-                                "expr": "sum(scylla_manager_task_active_count{cluster=~\"$cluster|$^\", type=\"backup\"}) or vector(0)",
-                                "intervalFactor": 1,
-                                "refId": "A",
-                                "step": 40
-                            }
-                        ],
-                        "title": "Active Backup"
-                    },
-                    {
-                        "class": "gauge_percent_panel",
-                        "span": 1,
+                        "class": "vertical_lcd",
+                        "span": 2,
                          "targets": [
                             {
-                              "expr": "sum(avg(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", instance=~\"$instance\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"repair\"}) by (task))",
+                              "expr": "sum(avg(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", instance=\"\", keyspace=\"\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"repair\"}) by (task))  or vector(0)",
                               "format": "time_series",
                               "intervalFactor": 2,
                               "refId": "A"
                             }
                           ],
+                      "fieldConfig":{
+                           "defaults":{
+                              "custom":{
+                              },
+                              "unit":"percent",
+                              "decimals":0,
+                              "thresholds":{
+                                 "mode":"absolute",
+                                 "steps":[
+                                    {
+                                       "color":"green",
+                                       "value":null
+                                    }
+                                 ]
+                              },
+                              "mappings":[]
+                           },
+                           "overrides":[]
+                        },
+                        "gridPos":{
+                           "w":2,
+                           "h":4
+                        },
                           "title": "Repair"
                     },
                     {
-                        "class": "gauge_percent_panel",
-                        "span": 1,
-                         "targets": [
+                        "class": "small_stat",
+                        "description": "The time of the last successful repair",
+                        "targets": [
                             {
-                              "expr": "sum(avg(scylla_manager_backup_percent_progress{cluster=~\"[[cluster]]\", instance=~\"$instance\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"backup\"}) by (task))",
+                                "expr": "manager:repair_done_ts{cluster=\"$cluster\"}*1000",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": []
+                              },
+                              "mappings": [],
+                              "color": {
+                                "mode": "fixed",
+                                "fixedColor": "green"
+                              },
+                              "unit": "dateTimeAsIsoNoDateIfToday",
+                              "noValue": "Never"
+                            },
+                            "overrides": []
+                        },
+                        "gridPos":{
+                           "w":2,
+                           "h":4
+                        },
+                        "title": "Last repair"
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "The time of the last failed repair",
+                        "targets": [
+                            {
+                                "expr": "manager:repair_fail_ts{cluster=\"$cluster\"}*1000",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": []
+                              },
+                              "mappings": [],
+                              "color": {
+                                "mode": "fixed",
+                                "fixedColor": "green"
+                              },
+                              "unit": "dateTimeAsIsoNoDateIfToday",
+                              "noValue": "Never"
+                            },
+                            "overrides": []
+                        },
+                        "gridPos":{
+                           "w":2,
+                           "h":4
+                        },
+                        "title": "Last Failure"
+                    },
+                    {
+                        "class": "vertical_lcd",
+                        "span": 2,
+                        "targets": [
+                            {
+                              "expr": "sum(avg(scylla_manager_backup_percent_progress{cluster=~\"[[cluster]]\", instance=\"\", keyspace=\"\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"backup\"}) by (task)) or vector(0)",
                               "format": "time_series",
                               "intervalFactor": 2,
                               "refId": "A"
                             }
                           ],
+                      "fieldConfig":{
+                           "defaults":{
+                              "custom":{
+                              },
+                              "unit":"percent",
+                              "decimals":0,
+                              "thresholds":{
+                                 "mode":"absolute",
+                                 "steps":[
+                                    {
+                                       "color":"green",
+                                       "value":null
+                                    }
+                                 ]
+                              },
+                              "mappings":[]
+                           },
+                           "overrides":[]
+                        },
+                        "gridPos":{
+                           "w":2,
+                           "h":4
+                        },
                           "title": "Backup"
                     },
                     {
-                        "class": "text_panel",
-                        "content": "##  ",
-                        "mode": "markdown",
-                        "span": 1,
-                        "style": {}
+                        "class": "small_stat",
+                        "description": "The time of the last successful backup",
+                        "targets": [
+                            {
+                                "expr": "manager:backup_done_ts{cluster=\"$cluster\"}*1000",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": []
+                              },
+                              "mappings": [],
+                              "color": {
+                                "mode": "fixed",
+                                "fixedColor": "green"
+                              },
+                              "unit": "dateTimeAsIsoNoDateIfToday",
+                              "noValue": "Never"
+                            },
+                            "overrides": []
+                        },
+                        "gridPos":{
+                           "w":2,
+                           "h":4
+                        },
+                        "title": "Last Backup"
+                    },
+                    {
+                        "class": "small_stat",
+                        "description": "The time of the last failed backup",
+                        "targets": [
+                            {
+                                "expr": "manager:backup_fail_ts{cluster=\"$cluster\"}*1000",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "fieldConfig": {
+                            "defaults": {
+                              "custom": {},
+                              "thresholds": {
+                                "mode": "absolute",
+                                "steps": []
+                              },
+                              "mappings": [],
+                              "color": {
+                                "mode": "fixed",
+                                "fixedColor": "green"
+                              },
+                              "unit": "dateTimeAsIsoNoDateIfToday",
+                              "noValue": "Never"
+                            },
+                            "overrides": []
+                        },
+                        "gridPos":{
+                           "w":2,
+                           "h":4
+                        },
+                        "title": "Last Failure"
                     }
                 ],
                 "title": "Summary row"
@@ -130,7 +333,7 @@
                         "class": "ops_panel",
                         "targets": [
                             {
-                                "expr": "sum(rate(scylla_manager_repair_segments_success{cluster=~\"[[cluster]]\", keyspace=~\"$keyspace\", instance=~\"$instance\", shard=~\"$shard\"}[60s])) by ([[by]])",
+                                "expr": "sum(rate(scylla_manager_repair_segments_success{cluster=~\"[[cluster]]\", instance=~\"$instance\", shard=~\"$shard\"}[60s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 4
@@ -142,7 +345,7 @@
                         "class": "ops_panel",
                         "targets": [
                             {
-                                "expr": "sum(rate(scylla_manager_repair_segments_error{cluster=~\"[[cluster]]\", instance=~\"$instance\", keyspace=~\"$keyspace\", shard=~\"$shard\"}[60s])) by ([[by]])",
+                                "expr": "sum(rate(scylla_manager_repair_segments_error{cluster=~\"[[cluster]]\", instance=~\"$instance\", shard=~\"$shard\"}[60s])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "refId": "A",
                                 "step": 4
@@ -305,12 +508,6 @@
                     "label": "instance",
                     "name": "instance",
                     "query": "label_values(scylla_manager_healthcheck_cql_rtt_ms{cluster=~\"$cluster|$^\"}, instance)"
-                },
-                {
-                    "class": "template_variable_all",
-                    "label": "keyspace",
-                    "name": "keyspace",
-                    "query": "label_values(scylla_manager_repair_segments_total{instance=~\"$instance\"}, keyspace)"
                 },
                 {
                     "class": "template_variable_all",
