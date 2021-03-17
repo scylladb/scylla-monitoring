@@ -1,15 +1,15 @@
 
-Scylla Monitor Support Matrix
-================================
+Scylla Monitoring Stack Support Matrix
+======================================
 
-The following table shows which version of Scylla Monitor supports dashboards for which versions of Scylla and Scylla Manager.
+The following table shows which version of Scylla Monitoring Stack supports dashboards for which versions of Scylla and Scylla Manager.
 
 
 .. list-table::
    :widths: 25 25 25 25 25
    :header-rows: 1
 
-   * - Scylla Monitor Version
+   * - Scylla Monitoring Stack Version
      - Scylla Open Source Version
      - Scylla Enterprise Version
      - Node_exporter[1] Version

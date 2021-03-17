@@ -1,11 +1,11 @@
 Using Docker Compose
 ====================
 
-Scylla-Monitoring is container-based.
-You can start and stop the monitoring stack with the `start-all.sh` and `kill-all.sh` scripts.
+Scylla-Monitoring Stack is container-based.
+You can start and stop the Scylla Monitoring Stack with the `start-all.sh` and `kill-all.sh` scripts.
  
 Docker Compose is an alternative method to start and stop the stack. It requires more manual steps, but once
-set it simplify starting and stopping the monitoring stack.
+configured, it simplifies starting and stopping the stack.
 
 .. warning:: 
 

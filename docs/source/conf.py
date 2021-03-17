@@ -112,7 +112,7 @@ html_style = ''
 #
 html_theme_options = {
     'header_links': [
-    ('Scylla Monitor', 'https://scylladb.github.io/scylla-monitoring/'),
+    ('Scylla Monitoring Stack', 'https://scylladb.github.io/scylla-monitoring/'),
     ('Scylla Cloud', 'https://docs.scylladb.com/scylla-cloud/'),
     ('Scylla University', 'https://university.scylladb.com/'),
     ('ScyllaDB Home', 'https://www.scylladb.com/')],

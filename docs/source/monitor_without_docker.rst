@@ -1,5 +1,5 @@
-Deploying Scylla Monitoring Without Docker
-==========================================
+Deploying Scylla Monitoring Stack Without Docker
+================================================
 
 The following instructions will help to deploy `Scylla Monitoring Stack <monitoring_stack>`_ in cases where you can not use the recommended Docker version.
 
@@ -9,12 +9,12 @@ Please note, Scylla recommends you use the Docker version as it will provide you
 
 The main item to set an alert on is the available disk space in the monitoring system. Data is indefinitely accrued on the Prometheus data directory. The current monitoring solution does not churn data.
 
-Install Scylla Monitor
-----------------------
+Install Scylla Monitoring Stack
+-------------------------------
 
 The following procedure uses a ``CentOS 7`` based instance
 
-1. Download the latest Scylla Monitoring release.
+1. Download the latest Scylla Monitoring Stack release.
 
 ``wget https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-3.5.tar.gz``
 

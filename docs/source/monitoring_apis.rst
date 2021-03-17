@@ -1,6 +1,6 @@
 
-Monitoring Interfaces
-=====================
+Scylla Monitoring Stack Interfaces
+==================================
 
 Scylla exposes two interfaces for online monitoring, as described below
 
