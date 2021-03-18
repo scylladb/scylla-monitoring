@@ -11,7 +11,7 @@ BIND_ADDRESS=""
 LOKI_COMMANDS=""
 usage="$(basename "$0") [-h] [-l] [-D encapsulate docker param] [-m alert_manager address]"
 
-while getopts ':hlp:D:m:' option; do
+while getopts ':hlp:D:m:A:' option; do
   case "$option" in
     h) echo "$usage"
        exit
