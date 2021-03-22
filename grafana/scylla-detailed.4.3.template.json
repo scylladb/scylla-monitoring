@@ -465,10 +465,19 @@
                         "title": "Writes currently blocked on commitlog"
                     },
                     {
-                        "class": "text_panel",
-                        "content": "",
-                        "mode": "markdown",
-                        "span": 3
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "clamp_max(1 + sum(rate(scylla_cache_row_hits[1m])) by ([[by]])/(sum(rate(scylla_cache_row_misses[1m])) by ([[by]]) + 0.00001),100)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description" :"Reciprocal Miss Rate is a score in the range of 1 to 100 that is used to decide the fraction of read requests to send to each replica - a replica with twice the RMR value of another replica will serve twice the number of read requests.\n\nRMR is calculated on a table level, this is an aggregate estimation of that score.",
+                        "title": "Reciprocal Miss Rate (HWLB)"
                     },
                     {
                         "class": "rps_panel",
