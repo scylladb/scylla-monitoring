@@ -76,7 +76,7 @@ As an alternative, you can clone and use the Git repository directly.
 
    git clone https://github.com/scylladb/scylla-monitoring.git
    cd scylla-monitoring
-   git checkout branch-3.6
+   git checkout branch-3.7
 
 2. Start Docker service if needed
 
