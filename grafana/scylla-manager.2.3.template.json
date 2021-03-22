@@ -1,0 +1,354 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "uid": "manager-2-3",
+        "originalTitle": "Scylla Manager Metrics",
+        "rows": [
+            {
+                "class": "logo_row"
+            },
+            {
+                "class": "row",
+                "height": "150px",
+                "panels": [
+                    {
+                        "class": "single_stat_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "count(scrape_samples_scraped{job=\"scylla_manager\"}==0) OR vector(0)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "valueFontSize": "80%",
+                         "valueMaps": [
+                        {
+                          "op": "=",
+                          "text": "Scylla Manager</br>Not Reachable",
+                          "value": "1"
+                        },
+                        {
+                          "op": "=",
+                          "text": "Scylla Manager</br>Connected",
+                          "value": "0"
+                        }]
+                    },
+                    {
+                        "class": "single_stat_panel",
+                        "targets": [
+                            {
+                                "expr": "count(scylla_manager_healthcheck_cql_rtt_ms{cluster=~\"$cluster|$^\"})",
+                                "intervalFactor": 1,
+                                "legendFormat": "Total Nodes",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Total Nodes"
+                    },
+                    {
+                        "class": "single_stat_panel_fail",
+                        "targets": [
+                            {
+                                "expr": "count(scylla_manager_healthcheck_cql_status{cluster=~\"$cluster|$^\"}==-1) OR vector(0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "Nodes without CQL connection",
+                                "refId": "A",
+                                "step": 20
+                            }
+                        ],
+                        "thresholds": "1,2",
+                        "description": "The number of nodes that Scylla manager CQL probe failed connecting to. It could indicate a network or a node problem",
+                        "title": "No CQL connectivity"
+                    },
+                    {
+                        "class": "single_stat_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_manager_task_active_count{cluster=~\"$cluster|$^\", type=\"repair\"}) or vector(0)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Active Repair"
+                    },
+                    {
+                        "class": "single_stat_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_manager_task_active_count{cluster=~\"$cluster|$^\", type=\"backup\"}) or vector(0)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Active Backup"
+                    },
+                    {
+                        "class": "gauge_percent_panel",
+                        "span": 1,
+                         "targets": [
+                            {
+                              "expr": "sum(avg(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", instance=~\"$instance\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"repair\"}) by (task))",
+                              "format": "time_series",
+                              "intervalFactor": 2,
+                              "refId": "A"
+                            }
+                          ],
+                          "title": "Repair"
+                    },
+                    {
+                        "class": "gauge_percent_panel",
+                        "span": 1,
+                         "targets": [
+                            {
+                              "expr": "sum(avg(scylla_manager_backup_percent_progress{cluster=~\"[[cluster]]\", instance=~\"$instance\", keyspace=~\"$keyspace\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"backup\"}) by (task))",
+                              "format": "time_series",
+                              "intervalFactor": 2,
+                              "refId": "A"
+                            }
+                          ],
+                          "title": "Backup"
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "##  ",
+                        "mode": "markdown",
+                        "span": 1,
+                        "style": {}
+                    }
+                ],
+                "title": "Summary row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_manager_repair_segments_success{cluster=~\"[[cluster]]\", keyspace=~\"$keyspace\", instance=~\"$instance\", shard=~\"$shard\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Repair Segments Rate"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_manager_repair_segments_error{cluster=~\"[[cluster]]\", instance=~\"$instance\", keyspace=~\"$keyspace\", shard=~\"$shard\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Repair Segments Error Rate"
+                    }],
+                "title": "Repair rate Row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_manager_ssh_open_streams_count{instance=~\"$instance\"}) by ($by)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "description": "The number of SSH connection used by the manager",
+                        "title": "SSH open connections by $by"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_manager_healthcheck_cql_rtt_ms{instance=~\"$instance\", cluster=~\"[[cluster]]\"}) by ($by)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "description": "Average duration time for a CQL ping operation",
+                        "title": "CQL probe duration by $by"
+                    }
+                    ],
+                "title": "SSH connection Row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Manager Agent</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bytes_panel",
+                        "targets": [
+                            {
+                                "expr": "sum(go_memstats_heap_inuse_bytes{job=~\"manager_agent.?\", instance=~\"$instance\"}) by ($by)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "description": "An increase in memory can indicate an issue with the Manager agent",
+                        "title": "Agent Memory Heap usage"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "targets": [
+                            {
+                                "expr": "avg(go_threads{job=~\"manager_agent.?\", instance=~\"$instance\"}) by ($by)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "description": "An increase in the number of threads can indicate an issue with the Manager agent",
+                        "title": "Agent Threads"
+                    }
+                    ],
+                "title": "SSH connection Row"
+            },
+            {
+                "class": "monitoring_version_row"
+            }
+        ],
+        "annotations": {
+            "list": [
+              {
+                "builtIn": 1,
+                "datasource": "-- Grafana --",
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+              },
+              {
+                "class" : "annotation_restart"
+              },
+              {
+              "class" : "annotation_manager_task"
+              },
+              {
+              "class" : "annotation_manager_task_failed"
+              }
+          ]
+        },
+        "templating": {
+            "list": [
+                {
+                    "allValue": null,
+                    "current": {
+                        "tags": [],
+                        "text": "Cluster",
+                        "value": "cluster"
+                    },
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": "by",
+                    "multi": false,
+                    "name": "by",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Instance",
+                            "value": "instance"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Keyspace",
+                            "value": "keyspace"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Shard",
+                            "value": "shard"
+                        }
+                    ],
+                    "query": "Instance,Shard,Keyspace,Cluster",
+                    "type": "custom"
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(scylla_manager_healthcheck_cql_rtt_ms, cluster)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "instance",
+                    "name": "instance",
+                    "query": "label_values(scylla_manager_healthcheck_cql_rtt_ms{cluster=~\"$cluster|$^\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "keyspace",
+                    "name": "keyspace",
+                    "query": "label_values(scylla_manager_repair_segments_total{instance=~\"$instance\"}, keyspace)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "shard",
+                    "name": "shard",
+                    "query": "label_values(scylla_manager_repair_segments_total, shard)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "2.3",
+                        "value": "2.3"
+                    },
+                    "name": "scylla_dash_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "2.3",
+                            "value": "2.3"
+                        }
+                    ],
+                    "query": "2.3"
+                },
+                {
+                    "class": "monitor_version_var"
+                }
+            ]
+        },
+		"tags": [
+			"2.3"
+		],
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Scylla Manager Metrics",
+        "overwrite": true,
+        "version": 3
+    }
+}
