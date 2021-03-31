@@ -6,7 +6,7 @@ The Scylla Monitoring Stack Advisor is an element of the Scylla Monitoring Stack
 
 The Advisor section
 ^^^^^^^^^^^^^^^^^^^^
-.. figure:: advisor_panel.png
+.. figure:: ./advisor_panel.png
 
     **The Advisor section**
 
