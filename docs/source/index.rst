@@ -5,24 +5,13 @@ Scylla Monitoring Stack
    :maxdepth: 1
    :hidden:
 
-
-   Install Scylla Monitoring Stack <monitoring_stack>
-   The start-all.sh script <start_all>
-   Running using Docker Compose <docker_compose>
-   Scylla Monitoring Stack Interfaces <monitoring_apis>
-   Deploy Scylla Monitoring Stack Without Docker <monitor_without_docker>
-   Troubleshoot the Monitoring Stack <monitor_troubleshoot>
-   Troubleshooting Guide for Scylla Manager and Scylla Monitor Integration <https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/>
-   Upgrade Guide for Scylla Monitor <https://docs.scylladb.com/upgrade/upgrade-monitor/>
-   CQL Optimization Dashboard <cql_optimization>
+   Install Scylla Monitoring Stack <install/index>
+   Grafana Dashboards <dashboards/index>
    Scylla Monitoring Stack Advisor <advisor/index>
-   Adding and Modifying Dashboards <updating_dashboard>
-   Alerting <alerting>
+   Alert Manager <alerts/index>
+   Troubleshooting Scylla Monitoring Stack <troubleshooting/index>
+   Reference Guides <reference/index>
    Using Thanos <thanos>
-   Scylla Monitoring Stack Support Matrix <matrix>
-
-   Troubleshooting Guide for Scylla Manager and Scylla Monitor Integration <https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/>
-   Upgrade Guide for Scylla Monitor <https://docs.scylladb.com/upgrade/upgrade-monitor/>
 
 .. include:: /_common/monitor-description.rst
 
@@ -39,18 +28,12 @@ The Scylla Monitoring Stack consists of three components, wrapped in Docker cont
 
 **Choose a topic to get started**:
 
-* :doc:`Install Scylla Monitoring Stack <monitoring_stack>`
-* :doc:`The start-all.sh script <start_all>`
-* :doc:`Running using Docker Compose <docker_compose>`
-* :doc:`Scylla Monitoring Stack Interfaces <monitoring_apis>`
-* :doc:`Deploy Scylla Monitoring Stack Without Docker <monitor_without_docker>`
-* :doc:`Troubleshoot Scylla Monitoring Stack <monitor_troubleshoot>`
-* `Troubleshooting Guide for Scylla Manager and Scylla Monitoring Stack Integration <https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/>`_
-* `Upgrade Guide for Scylla Monitoring Stack <https://docs.scylladb.com/upgrade/upgrade-monitor/>`_
+* :doc:`Install Scylla Monitoring Stack <install/index>`
+* :doc:`Grafana Dashboards <dashboards/index>`
 * :doc:`Scylla Monitoring Stack Advisor <advisor/index>`
-* :doc:`Adding and Modifying Dashboards <updating_dashboard>`
-* :doc:`Alerting <alerting>`
+* :doc:`Alert Manager <alerts/index>`
+* :doc:`Troubleshooting Scylla Monitoring Stack <troubleshooting/index>`
+* :doc:`Alerting <alerts/index>`
 * :doc:`Using Thanos <thanos>`
-* :doc:`Scylla Monitoring Stack Support Matrix <matrix>`
 * `Scylla Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on Scylla University
 
