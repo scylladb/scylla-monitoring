@@ -2,6 +2,13 @@
 Scylla Monitoring Stack Advisor
 ===============================
 
+.. toctree::
+   :glob:
+   :maxdepth: 2
+   :hidden:
+
+   *
+
 The Scylla Monitoring Stack Advisor is an element of the Scylla Monitoring Stack that recognize bad practices, bad configurations, and potential problems and advises on how to solve them.
 
 The Advisor section
@@ -19,3 +26,17 @@ For example, the Advisor could warn about using large cells. Large cells in the 
 On the right, is the system balance section.  This section notifies you about an imbalance between shards or nodes. An imbalanced system may indicate a potential problem.
 
 For example, when a single, hot partition gets most of the requests, making one shard a bottleneck, the balance section will indicate that the latency and cache hits are imbalanced between shards.
+
+Each Advisor issue is explained in detail:
+
+* :doc:`Some queries use ALLOW FILTERING <cqlAllowFiltering>`
+* :doc:`Some queries use Consistency Level: ALL <cqlCLAll>`
+* :doc:`Some queries use Consistency Level: ANY <cqlCLAny>`
+* :doc:`Some queries are not token-aware <cqlNoTokenAware>`
+* :doc:`Some SELECT queries are non-paged <cqlNonPaged>`
+* :doc:`Some queries are non-prepared <cqlNonPrepared>`
+* :doc:`Some queries use reverse order <cqlReverseOrder>`
+* :doc:`Some operation failed due to unsatisfied consistency level <nodeCLErrors>`
+* :doc:`I/O Errors can indicate a node with a faulty disk <nodeIOErrors>`
+* :doc:`Some operations failed on the replica side <nodeLocalErrors>`
+* :doc:`CQL queries are not balanced among shards  <nonBalancedcqlTraffic>`

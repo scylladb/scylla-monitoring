@@ -1,5 +1,5 @@
 Some queries use Consistency Level: ANY
---------------------------------------
+---------------------------------------
 
 Scylla stores your data in ReplicationFactor of nodes (replicas). A write query Consistency Level determines how many replicas need to acknowledge the write before a reply is returned.
 

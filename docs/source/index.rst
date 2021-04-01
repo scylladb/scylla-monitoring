@@ -2,9 +2,10 @@ Scylla Monitoring Stack
 =======================
 
 .. toctree::
+   :maxdepth: 1
    :hidden:
-   :maxdepth: 2 
-   
+
+
    Install Scylla Monitoring Stack <monitoring_stack>
    The start-all.sh script <start_all>
    Running using Docker Compose <docker_compose>
@@ -14,12 +15,14 @@ Scylla Monitoring Stack
    Troubleshooting Guide for Scylla Manager and Scylla Monitor Integration <https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/>
    Upgrade Guide for Scylla Monitor <https://docs.scylladb.com/upgrade/upgrade-monitor/>
    CQL Optimization Dashboard <cql_optimization>
-   Scylla Monitoring Stack Advisor <advisor>
+   Scylla Monitoring Stack Advisor <advisor/index>
    Adding and Modifying Dashboards <updating_dashboard>
    Alerting <alerting>
    Using Thanos <thanos>
    Scylla Monitoring Stack Support Matrix <matrix>
 
+   Troubleshooting Guide for Scylla Manager and Scylla Monitor Integration <https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/>
+   Upgrade Guide for Scylla Monitor <https://docs.scylladb.com/upgrade/upgrade-monitor/>
 
 .. include:: /_common/monitor-description.rst
 
@@ -44,7 +47,7 @@ The Scylla Monitoring Stack consists of three components, wrapped in Docker cont
 * :doc:`Troubleshoot Scylla Monitoring Stack <monitor_troubleshoot>`
 * `Troubleshooting Guide for Scylla Manager and Scylla Monitoring Stack Integration <https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/>`_
 * `Upgrade Guide for Scylla Monitoring Stack <https://docs.scylladb.com/upgrade/upgrade-monitor/>`_
-* :doc:`Scylla Monitoring Stack Advisor <advisor>`
+* :doc:`Scylla Monitoring Stack Advisor <advisor/index>`
 * :doc:`Adding and Modifying Dashboards <updating_dashboard>`
 * :doc:`Alerting <alerting>`
 * :doc:`Using Thanos <thanos>`
