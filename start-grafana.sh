@@ -7,7 +7,7 @@ else
 fi
 VERSIONS=$DEFAULT_VERSION
 
-GRAFANA_VERSION=7.4.5
+GRAFANA_VERSION=7.4.0
 LOCAL=""
 GRAFANA_ADMIN_PASSWORD="admin"
 GRAFANA_AUTH=false
@@ -161,7 +161,6 @@ docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
      -e "GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning" \
      -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
      -e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource" \
-     -e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/ver_$VERSION/scylla-overview.$VERSION.json" \
      $GRAFANA_ENV_COMMAND \
      "${proxy_args[@]}" \
      --name $GRAFANA_NAME grafana/grafana:$GRAFANA_VERSION >& /dev/null
