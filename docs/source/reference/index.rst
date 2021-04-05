@@ -7,10 +7,11 @@ Scylla Monitoring Stack Reference Guide
    :hidden:
 
 
-   Scylla Monitoring Stack Support Matrix <matrix>
-   Scylla Monitoring Stack Interfaces <monitoring_apis>
+   Support Matrix <matrix>
+   Interfaces <monitoring_apis>
 
 There are several reference guides available which give additional information. Choose a topic to begin:
 
-* :doc:`Scylla Monitoring Stack Interfaces <monitoring_apis>`
-* :doc:`Scylla Monitoring Stack Support Matrix <matrix>`
+* :doc:`Support Matrix <matrix>`
+* :doc:`Interfaces <monitoring_apis>`
+

@@ -7,9 +7,9 @@ Using Scylla Monitoring Stack
    :hidden:
 
    CQL Optimization Dashboard <cql_optimization>
-   Scylla Monitoring Stack Advisor <advisor/index>
+   Advisor <advisor/index>
 
 There are several dashboards you can use with Scylla Monitoring Stack. Choose a topic to begin:
 
 * :doc:`CQL Optimization Dashboard <cql_optimization>`
-* :doc:`Scylla Monitoring Stack Advisor <advisor/index>`
+* :doc:`Advisor <advisor/index>`

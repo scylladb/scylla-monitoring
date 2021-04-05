@@ -6,12 +6,12 @@ Download and Install Scylla Monitoring Stack
    :maxdepth: 2
    :hidden:
 
-   monitoring_stack
+   Install <monitoring_stack>
    The start-all.sh script <start_all>
-   monitor_without_docker
-   docker_compose
-   min-prod-hw
-   thanos
+   Deploy without Docker <monitor_without_docker>
+   Docker Compose <docker_compose>
+   System Recommendations <min-prod-hw>
+   Using Thanos <thanos>
 
 
 Scylla Monitoring Stack is a full stack for Scylla monitoring and alerting. The stack contains open source tools including Prometheus and Grafana, as well as custom Scylla dashboards and tooling.

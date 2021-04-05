@@ -7,12 +7,12 @@ Scylla Monitoring Stack Procedures
    :hidden:
 
 
-   Scylla Monitoring Stack Alert Manager <alerts/index>
+   Alert Manager <alerts/index>
    Adding and Modifying Dashboards <updating_dashboard>
-   Upgrade Scylla Monitoring Stack <https://docs.scylladb.com/upgrade/upgrade-monitor/>
+   Upgrade Guide <https://docs.scylladb.com/upgrade/upgrade-monitor/>
 
 There are several reference guides available which give additional information. Choose a topic to begin:
 
-* :doc:`Scylla Monitoring Stack Alert Manager <alerts/index>`
+* :doc:`Alert Manager <alerts/index>`
 * :doc:`Adding and Modifying Dashboards <updating_dashboard>`
-* `Upgrade Scylla Monitoring Stack <https://docs.scylladb.com/upgrade/upgrade-monitor/>`_
+* `Upgrade Guide <https://docs.scylladb.com/upgrade/upgrade-monitor/>`_
