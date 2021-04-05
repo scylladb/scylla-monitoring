@@ -64,7 +64,7 @@ For example:
 
    http://192.168.135.166:9093/
 
-.. image:: /alerts/alertmanager.png
+.. image:: alertmanager.png
 
 
 Install Prometheus

@@ -5,13 +5,11 @@ Scylla Monitoring Stack
    :maxdepth: 1
    :hidden:
 
-   Install Scylla Monitoring Stack <install/index>
-   Grafana Dashboards <dashboards/index>
-   Scylla Monitoring Stack Advisor <advisor/index>
-   Alert Manager <alerts/index>
+   Using Scylla Monitoring Stack <use-monitoring/index>
+   Download and Install Scylla Monitoring Stack <install/index>
+   Procedures <procedures/index>
    Troubleshooting Scylla Monitoring Stack <troubleshooting/index>
    Reference Guides <reference/index>
-   Using Thanos <thanos>
 
 .. include:: /_common/monitor-description.rst
 
@@ -28,12 +26,10 @@ The Scylla Monitoring Stack consists of three components, wrapped in Docker cont
 
 **Choose a topic to get started**:
 
-* :doc:`Install Scylla Monitoring Stack <install/index>`
-* :doc:`Grafana Dashboards <dashboards/index>`
-* :doc:`Scylla Monitoring Stack Advisor <advisor/index>`
-* :doc:`Alert Manager <alerts/index>`
+* :doc:`Using Scylla Monitoring Stack <use-monitoring/index>`
+* :doc:`Download and Install Scylla Monitoring Stack <install/index>`
+* :doc:`Procedures <procedures/index>`
 * :doc:`Troubleshooting Scylla Monitoring Stack <troubleshooting/index>`
-* :doc:`Alerting <alerts/index>`
-* :doc:`Using Thanos <thanos>`
+* :doc:`Reference Guides <reference/index>`
 * `Scylla Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on Scylla University
 

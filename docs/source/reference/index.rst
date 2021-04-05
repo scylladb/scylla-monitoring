@@ -6,10 +6,11 @@ Scylla Monitoring Stack Reference Guide
    :maxdepth: 2
    :hidden:
 
-   The start-all.sh script <start_all>
+
+   Scylla Monitoring Stack Support Matrix <matrix>
    Scylla Monitoring Stack Interfaces <monitoring_apis>
 
 There are several reference guides available which give additional information. Choose a topic to begin:
 
-* :doc:`The start-all.sh script <start_all>`
 * :doc:`Scylla Monitoring Stack Interfaces <monitoring_apis>`
+* :doc:`Scylla Monitoring Stack Support Matrix <matrix>`
