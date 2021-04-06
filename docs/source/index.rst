@@ -5,28 +5,14 @@ Scylla Monitoring Stack
    :maxdepth: 1
    :hidden:
 
-
-   Install Scylla Monitoring Stack <monitoring_stack>
-   The start-all.sh script <start_all>
-   Running using Docker Compose <docker_compose>
-   Scylla Monitoring Stack Interfaces <monitoring_apis>
-   Deploy Scylla Monitoring Stack Without Docker <monitor_without_docker>
-   Troubleshoot the Monitoring Stack <monitor_troubleshoot>
-   Troubleshooting Guide for Scylla Manager and Scylla Monitor Integration <https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/>
-   Upgrade Guide for Scylla Monitor <https://docs.scylladb.com/upgrade/upgrade-monitor/>
-   CQL Optimization Dashboard <cql_optimization>
-   Scylla Monitoring Stack Advisor <advisor/index>
-   Adding and Modifying Dashboards <updating_dashboard>
-   Alerting <alerting>
-   Using Thanos <thanos>
-   Scylla Monitoring Stack Support Matrix <matrix>
-
-   Troubleshooting Guide for Scylla Manager and Scylla Monitor Integration <https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/>
-   Upgrade Guide for Scylla Monitor <https://docs.scylladb.com/upgrade/upgrade-monitor/>
+   User Guide <use-monitoring/index>
+   Download and Install <install/index>
+   Procedures <procedures/index>
+   Troubleshooting <troubleshooting/index>
+   Reference <reference/index>
 
 .. include:: /_common/monitor-description.rst
 
-For older versions of Scylla Monitoring Stack see `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
 
 .. image:: monitor.png
     :width: 400pt
@@ -39,18 +25,12 @@ The Scylla Monitoring Stack consists of three components, wrapped in Docker cont
 
 **Choose a topic to get started**:
 
-* :doc:`Install Scylla Monitoring Stack <monitoring_stack>`
-* :doc:`The start-all.sh script <start_all>`
-* :doc:`Running using Docker Compose <docker_compose>`
-* :doc:`Scylla Monitoring Stack Interfaces <monitoring_apis>`
-* :doc:`Deploy Scylla Monitoring Stack Without Docker <monitor_without_docker>`
-* :doc:`Troubleshoot Scylla Monitoring Stack <monitor_troubleshoot>`
-* `Troubleshooting Guide for Scylla Manager and Scylla Monitoring Stack Integration <https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/>`_
-* `Upgrade Guide for Scylla Monitoring Stack <https://docs.scylladb.com/upgrade/upgrade-monitor/>`_
-* :doc:`Scylla Monitoring Stack Advisor <advisor/index>`
-* :doc:`Adding and Modifying Dashboards <updating_dashboard>`
-* :doc:`Alerting <alerting>`
-* :doc:`Using Thanos <thanos>`
-* :doc:`Scylla Monitoring Stack Support Matrix <matrix>`
+* :doc:`User Guide <use-monitoring/index>`
+* :doc:`Download and Install <install/index>`
+* :doc:`Procedures <procedures/index>`
+* :doc:`Troubleshooting <troubleshooting/index>`
+* :doc:`Reference <reference/index>`
 * `Scylla Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on Scylla University
 
+
+For older versions of Scylla Monitoring Stack Documentation see `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
