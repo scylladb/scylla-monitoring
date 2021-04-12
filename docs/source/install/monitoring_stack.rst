@@ -30,15 +30,19 @@ Prerequisites
    * - Scylla Monitoring Stack Version
      - Prometheus Version
      - Grafana Version
-   * - 3.4
-     - 2.18.1
-     - 6.7.3
-   * - 3.5
-     - 2.18.1
-     - 7.1.5
+
+   * - 3.7
+     - 2.25.2
+     - 7.4.0
    * - 3.6
      - 2.18.1
      - 7.3.5
+   * - 3.5
+     - 2.18.1
+     - 7.1.5
+   * - 3.4
+     - 2.18.1
+     - 6.7.3
 
 Docker Post Installation
 ------------------------
