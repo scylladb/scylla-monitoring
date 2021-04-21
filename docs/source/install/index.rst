@@ -23,4 +23,4 @@ Choose a topic to begin:
 * :doc:`Deploy Scylla Monitoring Stack Without Docker <monitor_without_docker>`
 * :doc:`Running using Docker Compose <docker_compose>`
 * :doc:`Using Thanos <thanos>`
-* `Integrate Scylla with Ansible <https://github.com/scylladb/scylla-ansible-roles/wiki/Deploying-Scylla-Monitoring-and-connecting-it-to-a-Scylla-Cluster>`_
+* `Install Scylla with Ansible <https://github.com/scylladb/scylla-ansible-roles/wiki/Deploying-Scylla-Monitoring-and-connecting-it-to-a-Scylla-Cluster>`_
