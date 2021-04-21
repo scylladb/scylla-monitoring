@@ -21,6 +21,7 @@ Prerequisites
 
 * Follow the Installation Guide and install `docker`_ on the Scylla Monitoring Stack Server. This server can be the same server that is running Scylla Manager. Alternatively, you can `Deploy Scylla Monitoring Stack Without Docker <monitor_without_docker>`_ .
 * If you have Prometheus or Grafana installed, confirm that your version is supported by the Scylla Monitoring Stack version you want to install. Refer to the table below.
+
 .. _`docker`: https://docs.docker.com/install/
 
 .. list-table:: Scylla Monitoring Stack Compatibility Matrix
