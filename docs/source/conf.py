@@ -178,15 +178,17 @@ notfound_urls_prefix = ''
 # -- Options for multiversion --------------------------------------------
 
 # Whitelist pattern for tags (set to None to ignore all tags)
-TAGS = ['scylla-monitoring-3.4.2', 'scylla-monitoring-3.5', 'scylla-monitoring-3.5.\d+', 'scylla-monitoring-3.6.0', 'scylla-monitoring-3.6.3', 'scylla-monitoring-3.7.0']
+TAGS = []
 smv_tag_whitelist = multiversion_regex_builder(TAGS)
+# Whitelist pattern for branches (set to None to ignore all branches)
+BRANCHES = ['branch-3.4', 'branch-3.5', 'branch-3.6', 'branch-3.7']
+smv_branch_whitelist = multiversion_regex_builder(BRANCHES)
 # Defines which version is considered to be the latest stable version.
 # Must be listed in smv_tag_whitelist or smv_branch_whitelist.
-smv_latest_version = 'scylla-monitoring-3.6.3'
+smv_latest_version = 'branch-3.6'
 smv_rename_latest_version = 'stable'
-# Whitelist pattern for branches (set to None to ignore all branches)
-BRANCHES = []
-smv_branch_whitelist = multiversion_regex_builder(BRANCHES)
+# Part of the branch name to skip.
+branch_substring_removed = 'branch-'
 # Whitelist pattern for remotes (set to None to use local branches only)
 smv_remote_whitelist = r"^origin$"
 # Pattern for released versions
