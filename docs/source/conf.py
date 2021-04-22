@@ -182,7 +182,7 @@ TAGS = ['scylla-monitoring-3.4.2', 'scylla-monitoring-3.5', 'scylla-monitoring-3
 smv_tag_whitelist = multiversion_regex_builder(TAGS)
 # Defines which version is considered to be the latest stable version.
 # Must be listed in smv_tag_whitelist or smv_branch_whitelist.
-smv_latest_version = 'scylla-monitoring-3.6.3'
+smv_latest_version = 'scylla-monitoring-3.7.0'
 smv_rename_latest_version = 'stable'
 # Whitelist pattern for branches (set to None to ignore all branches)
 BRANCHES = []
