@@ -33,10 +33,48 @@ if [ ! -z "$is_podman" ]; then
     group_args+=(--userns=keep-id)
 fi
 
+function usage {
+  __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer]
 
+Options:
+  -h print this help and exit
+  --version print the current monitoring version and the supported versions and exit.
+  -e
+  -d path/to/Prometheus/data/dir - Set an external data directory for the Prometheus data
+  -L ip                          - Resolve the servers from a Scylla Manager running on the given address.
+  -G path/to/Grafana/data-dir    - Set an external data directory for the Grafana data.
+  -s path/to/scylla-target-file  - Read Scylla's target from the given file.
+  -n path/to/node-target-file    - Override scylla target file for node_exporter.
+  -l                             - If Set use the local host network, especially useful when a container needs
+                                   to access the local host.
+  -v comma separated versions    - Specify one or more Scylla versions, check --version for the supported versions.
+  -j additional dashboard        - List additional dashboards to load to Grafana, multiple params are supported.
+  -c grafana_environment         - Grafana environment variable, multiple params are supported.
+  -b Prometheus command          - Prometheus command line options.
+  -g grafana port                - Override the default Grafana port.
+  -p prometheus port             - Override the default Prometheus port.
+  -a admin password              - Set Grafna's Admin password.
+  -m alertmanager port           - Override the default Prometheus port.
+  -M scylla-manager version      - Override the default Scylla Manager version to use.
+  -D docker param                - Encapsulate docker param, the parameter will be used by all containers.
+  -r alert-manager-config        - Override the default alert-manager configuration file.
+  -R prometheus-alert-file       - Override the default Prometheus alerts configuration file.
+  -N path/to/manager/target file - Set the location of the target file for Scylla Manager.
+  -A bind-to-ip-address          - Bind to a specific interface.
+  -C alertmanager commands       - Pass the command to the alertmanager.
+  -Q Grafana anonymous role      - Set the Grafana anonymous role to one of Admin/Editor/Viewer.
+  -S dashbards-list              - Override the default set of dashboards with the spcefied one.
+  -T path/to/prometheus-targets  - Adds additional Prometheus target files.
+  --no-loki                      - If set, do not run Loki and promtail.
+  --auto-restart                 - If set, auto restarts the containers on failure.
+  --no-renderer                  - If set, do not run the Grafana renderer container.
+
+The script starts Scylla Monitoring stack.
+"
+  echo "$__usage"
+}
 PROMETHEUS_RULES="$PWD/prometheus/prometheus.rules.yml"
 VERSIONS=$DEFAULT_VERSION
-usage="$(basename "$0") [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer] -- starts Grafana and Prometheus Docker instances"
 PROMETHEUS_VERSION=v2.25.2
 
 SCYLLA_TARGET_FILES=($PWD/prometheus/scylla_servers.yml $PWD/scylla_servers.yml)
@@ -71,7 +109,7 @@ done
 
 while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:T:' option; do
   case "$option" in
-    h) echo "$usage"
+    h) usage
        exit
        ;;
     v) VERSIONS=$OPTARG
