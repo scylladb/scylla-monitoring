@@ -10,10 +10,10 @@ fi
 FORMAT_COMAND=""
 FORCEUPDATE=""
 SPECIFIC_SOLUTION=""
-
+PRODUCTS=()
 usage="$(basename "$0") [-h] [-v comma separated versions ]  [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] [-F force update] [-S start with a system specific dashboard set] -- Generates the grafana dashboards and their load files"
 
-while getopts ':htv:j:M:S:F' option; do
+while getopts ':htv:j:M:S:P:F' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -28,6 +28,9 @@ while getopts ':htv:j:M:S:F' option; do
        ;;
     F) FORCEUPDATE="1"
        ;;
+    P) PRODUCTS+=(-P)
+       PRODUCTS+=($OPTARG)
+       ;;
     S) SPECIFIC_SOLUTION="$OPTARG"
        ;;
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
@@ -37,6 +40,11 @@ while getopts ':htv:j:M:S:F' option; do
 done
 if [[ -z "$TEST_ONLY" ]]; then
     mkdir -p grafana/build
+fi
+
+CURRENT_VERSION="master"
+if [ -f CURRENT_VERSION.sh ]; then
+    CURRENT_VERSION=`cat CURRENT_VERSION.sh`
 fi
 
 mkdir -p grafana/provisioning/dashboards
@@ -65,15 +73,13 @@ else
     set_loader $v "" "$VERDIR_NAME"
 fi
 
-CURRENT_VERSION=`cat CURRENT_VERSION.sh`
-
 for f in "${DASHBOARDS[@]}"; do
-    if [ -e grafana/$f.$v.template.json ]
+    if [ -e grafana/$f.template.json ]
     then
-        if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.$v.template.json" ] || [ ! -z "$FORCEUPDATE" ]; then
+        if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.template.json" ] || [ ! -z "$FORCEUPDATE" ]; then
             if [[ -z "$TEST_ONLY" ]]; then
                 echo "updating dashboard grafana/$f.$v.template.json"
-               ./make_dashboards.py -af $VERDIR -t grafana/types.json -d grafana/$f.$v.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"
+               ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"  -R "__SCYLLA_VERSION_DOT__=$v" -V $v
            fi
         fi
     else
@@ -85,17 +91,17 @@ for f in "${DASHBOARDS[@]}"; do
 done
 done
 
-if [ -e grafana/scylla-manager.$MANAGER_VERSION.template.json ]
+if [ -e grafana/scylla-manager.template.json ]
 then
     VERDIR="grafana/build/manager_$MANAGER_VERSION"
     mkdir -p $VERDIR
     set_loader "manager_$MANAGER_VERSION" "" "manager_$MANAGER_VERSION"
-    if [ ! -f "$VERDIR/scylla-manager.$MANAGER_VERSION.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/scylla-manager.$MANAGER_VERSION.template.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
+    if [ ! -f "$VERDIR/scylla-manager.$MANAGER_VERSION.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/scylla-manager.template.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
         if [[ -z "$TEST_ONLY" ]]; then
            echo "updating grafana/scylla-manager.$MANAGER_VERSION.template.json"
-           ./make_dashboards.py -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.$MANAGER_VERSION.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"
+           ./make_dashboards.py ${PRODUCTS[@]}  -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$MANAGER_VERSION" -V $MANAGER_VERSION
         else
-           echo "notice: grafana/scylla-manager.$MANAGER_VERSION.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
+           echo "notice: grafana/scylla-manager.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
         fi
     fi
 fi
@@ -110,7 +116,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         if [ ! -f $VERDIR/$val1.json ] || [ $VERDIR/$val1.json -ot $val ] || [ ! -z "$FORCEUPDATE" ]; then
             if [[ -z "$TEST_ONLY" ]]; then
                 echo "updating $val"
-               ./make_dashboards.py -af $VERDIR -t grafana/types.json -d $val -R "__MONITOR_VERSION__=$CURRENT_VERSION"
+               ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d $val -R "__MONITOR_VERSION__=$CURRENT_VERSION"
             fi
         fi
     else
