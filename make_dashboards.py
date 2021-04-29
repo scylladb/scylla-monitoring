@@ -36,6 +36,8 @@ parser.add_argument('-G', '--grafana4', action='store_true', default=False, help
 parser.add_argument('-h', '--help', action='store_true', default=False, help='Print help information')
 parser.add_argument('-kt', '--key-tips', action='store_true', default=False, help='Add key tips when there are conflict values between the template and the value')
 parser.add_argument('-af', '--as-file', type=str, default="", help='Make the dashboard ready to be loaded as files and not with http, when not empty, state the directory the file will be written to')
+parser.add_argument('-V', '--dash-version', type=str, default="", help='When set, create a dashboard for a specific version, looking at the dashversion tags')
+parser.add_argument('-P', '--product', action='append', default=[], help='when added will look at the dahsproduct tag')
 
 def help(args):
     parser.print_help()
@@ -92,7 +94,47 @@ Template example:
 When creating templates, the -kt is useful to find conflicts.
     """
     )
-    
+
+#TRACE=["version", "version-reject"]
+TRACE=[]
+
+def trace(part, *str):
+    if part in TRACE:
+        print(*str)
+def is_version_bigger(version, cmp_version):
+    cmp_op = 0
+    m = re.match(r"([^\d]+)\s*([\d\.]+)\s*", cmp_version)
+    trace("version",cmp_version)
+    if m:
+        cmp_version = m.group(2)
+        if m.group(1) == ">":
+            cmp_op = 1
+        elif m.group(1) == "<":
+            cmp_op = -1
+    cmp = cmp_version.split('.')
+    if len(cmp) == 0 or (version[0] > 1900) != (int(cmp[0]) > 1900):
+        trace("version","wrong type returning false", cmp_version, version, cmp_op, cmp[0], version[0] > 1900, int(cmp[0]) > 1900)
+        return False
+    ln = min(len(cmp), len(version))
+    for i in range(ln):
+        if (cmp_op == 0 and version[i] != int(cmp[i])) or (cmp_op > 0 and version[i] < int(cmp[i])) or (cmp_op < 0 and version[i] > int(cmp[i])):
+            trace("version","not bigger/smaller, returning False", cmp_version, version, cmp[i], cmp_op, version[i])
+            return False
+        if (cmp_op >0 and version[i] > int(cmp[i])) or (cmp_op < 0 and version[i] > int(cmp[i])):
+            return True
+    # If we got here version=cmp_version
+    trace("version","all is equal", cmp_version, version, cmp[i], version[i], cmp_op)
+    return cmp_op >= 0
+
+def should_version_reject(version, obj):
+    if not version or "dashversion" not in obj:
+        return False
+    if isinstance(obj["dashversion"], list):
+        for v in obj["dashversion"]:
+            if is_version_bigger(version, v):
+                return False
+        return True
+    return not is_version_bigger(version, obj["dashversion"])
 
 def get_type(name, types):
     if name not in types:
@@ -117,6 +159,8 @@ def write_json(name, obj, replace_strings=[]):
     y = json.dumps(obj, sort_keys = True, separators=(',', ': '), indent = 4)
     for r in replace_strings:
         y = y.replace(r[0], r[1])
+        if r[0].endswith('_DOT__'):
+            y = y.replace(r[0].replace('_DOT__','_DASHED__'), r[1].replace('.', '-'))
     with open(name, 'w') as outfile:
         outfile.write(y)
 
@@ -133,7 +177,10 @@ def make_replace_strings(replace):
             results.append(v.split('=', 1))
     return results
 
-def update_object(obj, types):
+def should_product_reject(products, obj):
+    return ("dahsproduct" in obj) and (obj["dahsproduct"] == "" and len(products)>0 or obj["dahsproduct"] != "" and obj["dahsproduct"] not in products)
+
+def update_object(obj, types, version, products):
     global id
     if not isinstance(obj, dict):
         return obj
@@ -142,14 +189,17 @@ def update_object(obj, types):
         for key in extra:
             if key not in obj:
                 obj[key] = extra[key]
+    if (version and should_version_reject(version, obj)) or should_product_reject(products, obj):
+        trace("version-reject", "rejecting obj", obj)
+        return None
     for v in obj:
         if v == "id" and obj[v] == "auto":
             obj[v] = id
             id = id + 1
         elif isinstance(obj[v], list):
-            obj[v] = [update_object(o, types) for o in obj[v]]
+            obj[v] = [m for m in [update_object(o, types, version, products) for o in obj[v]] if m != None]
         elif isinstance(obj[v], dict):
-            obj[v] = update_object(obj[v], types)
+            obj[v] = update_object(obj[v], types, version, products)
     return obj
 
 def compact_obj(obj, types, args):
