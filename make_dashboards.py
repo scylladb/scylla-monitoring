@@ -69,21 +69,21 @@ Template example:
 
 {
     "dashboard": {
-        "class": "dashboard", 
+        "class": "dashboard",
         "rows": [
             {
-                "class": "small_row", 
+                "class": "small_row",
                 "panels": [
                     {
-                        "class": "text_panel", 
-                        "content": "<img src=\"http://www.scylladb.com/wp-content/uploads/logo-scylla-white-simple.png\" height=\"70\">\n<hr style=\"border-top: 3px solid #5780c1;\">", 
-                        "id": "auto", 
+                        "class": "text_panel",
+                        "content": "<img src=\"http://www.scylladb.com/wp-content/uploads/logo-scylla-white-simple.png\" height=\"70\">\n<hr style=\"border-top: 3px solid #5780c1;\">",
+                        "id": "auto",
                     }
-                ], 
+                ],
                 "title": "New row"
-            }, 
+            },
             {
-                "class": "row" 
+                "class": "row"
             }
         ]
     }
@@ -105,7 +105,6 @@ def get_type(name, types):
         if k not in result:
             result[k] = cls[k]
     return result
-    
 
 def get_json_file(name):
     try:
@@ -120,7 +119,7 @@ def write_json(name, obj, replace_strings=[]):
         y = y.replace(r[0], r[1])
     with open(name, 'w') as outfile:
         outfile.write(y)
-    
+
 def merge_json_files(files):
     results = {}
     for name in files:
@@ -286,30 +285,39 @@ def make_grafna_5(results, args):
 def write_as_file(name_path, result, dir, replace_strings):
     name = os.path.basename(name_path)
     write_json(os.path.join(dir, name), result["dashboard"], replace_strings)
-
+def parse_version(v):
+    if v == 'master':
+        return 666
+    return int(v)
 def get_dashboard(name, types, args, replace_strings):
     global id
     id = 1
-    new_name = name.replace("grafana/", "grafana/build/").replace(".template.json", ".json")
+    version_name = ""
+    version = []
+    if args.dash_version != "":
+        version_name =  "." + args.dash_version
+        version = [parse_version(v) for v in args.dash_version.split('.')]
+    new_name = name.replace("grafana/", "grafana/build/").replace(".template.json", version_name + ".json")
     result = get_json_file(name)
     for r in args.add_row:
         [row_number, row_name] = r.split(",")
         row = get_json_file(row_name)
         result["dashboard"]["rows"].insert(int(row_number), row)
-    update_object(result, types)
+
+    update_object(result, types, version, args.product)
     if not args.grafana4:
         make_grafna_5(result, args)
     if args.as_file:
         write_as_file(new_name, result, args.as_file, replace_strings)
     else:
         write_json(new_name, result, replace_strings)
-    
+
 def compact_dashboard(name, type, args):
     new_name = name.replace(".json", ".template.json")
     result = get_json_file(name)
     result = compact_obj(result, types, args)
     write_json(new_name, result)
-    
+
 args = parser.parse_args()
 if args.help:
     help(args)
