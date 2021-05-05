@@ -1,0 +1,1607 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "uid": "detailed-__SCYLLA_VERSION_DASHED__",
+        "rows": [
+            {
+                "class": "logo_row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "percent_panel",
+                        "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Load"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) + $func(rate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Amount of requests served as the coordinator. Imbalances here represent dispersion at the connection level, not your data model.",
+                        "title": "Requests Served per [[by]] - Coordinator"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_database_total_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads per [[by]] - Replica"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_database_total_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes per [[by]] - Replica"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Reads and Writes - Coordinator</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "200px",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_foreground_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Foreground writes are writes that weren't acknowledged yet to the application. For instance, if a single replica responded and two are needed due to the consistency level. This metric represents a queue size, not a rate. High values here correlate with increased write latencies.",
+                        "title": "Foreground Writes per [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_foreground_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Foreground reads are reads that weren't acknowledged yet to the application. For instance, if a single replica responded and two are needed due to the consistency level. This metric represents a queue size, not a rate. High values here correlate with increased read latencies.",
+                        "title": "Foreground Reads per [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Average write latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Average read latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "95th percentile write latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "99th percentile write latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "95th percentile read latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "99th percentile read latency by [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "200px",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_background_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Background writes are writes that are already acknowledged to the application but have additional work to be done. For instance, if a replica responded and only one is needed, this request is still listed as a background request until all replicas respond. This metric represents a queue size, not a rate. High values here correlate with increased write latencies.",
+                        "title": "Background Writes per [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_background_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "description": "Background reads are reads that are already acknowledged to the application but have additional work to be done. For instance, if a replica responded and only one is needed, this request is still listed as a background request until all replicas respond. This metric represents a queue size, not a rate. High values here correlate with increased read latencies.",
+                        "title": "Background Reads per [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "200px",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_hints_manager_written{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Hints Written per [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_hints_manager_sent{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "title": "Hints sent per [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_speculative_digest_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "description" : "Number of times a digest read was done on behalf of a speculative retry.\n\nSpeculative retry is a mechanism that causes the client or server to speculate that a request may fail, and send a new request.\n\nspeculative retry may reduce latency in exchange for system load, but only if there is little activity.\n\nA lot of speculative retries increases load and can harm latency more than helping.",
+                        "title": "Speculative Digest Reads By [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_speculative_data_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "description" : "Number of times a read was done on behalf of a speculative retry.\n\nSpeculative retry is a mechanism that causes the client or server to speculate that a request may fail, and send a new request.\n\nspeculative retry may reduce latency in exchange for system load, but only if there is little activity.\n\nA lot of speculative retries increases load and can harm latency more than helping.",
+                        "title": "Speculative Data Reads By [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Timeouts and Errors - Coordinator</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "title": "Write Timeouts/Seconds per [[by]]"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Requests that Scylla did not even try to write because replicas that were needed to execute this write were unavailable. Unavailable writes are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "title": "Write Unavailable/Seconds per [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]) + rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])+rate(scylla_storage_proxy_coordinator_range_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "title": "Read Timeouts/Seconds per [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 4
+                            }
+                        ],
+                        "description": "Requests that Scylla did not even try to read because replicas that were needed to execute this write were unavailable. Unavailable reads are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "title": "Read Unavailable/Seconds per [[by]]"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Replica</h1>"
+                    }
+                 ]
+            },
+            {
+                "class": "row",
+                "height": "auto",
+                "panels": [
+                    {
+                        "class": "reads_panel",
+                        "description" : "The number of currently active read operations",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_database_active_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Active sstable reads"
+                    },
+                    {
+                        "class": "reads_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_database_queued_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "number of currently queued read operations",
+                        "title": "Queued sstable reads"
+                    },
+                    {
+                        "class": "writes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_database_requests_blocked_memory_current{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description" :"The current number of requests blocked due to reaching the memory quota. Non-zero value indicates that our bottleneck is memory",
+                        "title": "Writes currently blocked on dirty"
+                    },
+                    {
+                        "class": "writes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_commitlog_pending_allocations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description" :"number of currently pending allocations. A non-zero value indicates that we have a bottleneck in the disk write flow.",
+                        "title": "Writes currently blocked on commitlog"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "clamp_max(1 + sum(rate(scylla_cache_row_hits[1m])) by ([[by]])/(sum(rate(scylla_cache_row_misses[1m])) by ([[by]]) + 0.00001),100)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description" :"Reciprocal Miss Rate is a score in the range of 1 to 100 that is used to decide the fraction of read requests to send to each replica - a replica with twice the RMR value of another replica will serve twice the number of read requests.\n\nRMR is calculated on a table level, this is an aggregate estimation of that score.",
+                        "title": "Reciprocal Miss Rate (HWLB)"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_database_total_reads_failed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads failed"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_database_requests_blocked_memory{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes blocked on dirty"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_commitlog_requests_blocked_memory{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes blocked on commitlog"
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "",
+                        "mode": "markdown",
+                        "span": 3
+                    },
+                    {
+                        "class": "text_panel",
+                        "content": "",
+                        "mode": "markdown",
+                        "span": 3
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_database_total_writes_failed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes failed"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_database_total_writes_timedout{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes timed out"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Cache - Replica</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]) - rate(scylla_cache_reads_with_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads with no misses"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_reads_with_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads with misses"
+                    }
+                ]
+            },
+            {
+                "class" : "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_row_hits{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Hits"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_partition_hits{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Hits"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_row_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Misses"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_partition_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Misses"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_row_insertions{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Insertions"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_partition_insertions{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Insertions"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_row_evictions{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Evictions"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_partition_evictions{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Evictions"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_rows_merged_from_memtable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Merges"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_partition_merges{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Merges"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_row_removals{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Row Removals"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_partition_removals{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partition Removals"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_cache_rows{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Rows"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_cache_partitions{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Partitions"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_cache_bytes_used{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Used Bytes"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_cache_bytes_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Total Bytes"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Materialized Views - Replica</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_database_total_view_updates_pushed_local{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "View Local Update",
+                        "description" : "Number of view update locally"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_database_total_view_updates_pushed_remote{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "View Remote Update",
+                        "description" : "Number of view update remotely"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_database_view_update_backlog{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "View Update Backlog",
+                        "description" : "Size in bytes of the view update backlog at each base replica."
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_database_dropped_view_updates{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Dropped View Updates",
+                        "description" : "Number of dropped view updates due to an excessive view update backlog."
+                    }                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_hints_for_views_manager_sent{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Hints for view",
+                        "description" : "Number of hints sent for view."
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_current_throttled_base_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Throttled Base Writes",
+                        "description" : "Currently throttled base writes, as a consequence of the respective view update backlog."
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">LWT - Coordinator</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Reads",
+                        "description" : "LWT read rate."
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_cas_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Avrage Read latency",
+                        "description" : "LWT Avrage Read latency."
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "95% latency",
+                        "description" : "LWT 95% Read latency."
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Read Timeouts",
+                        "description" : "LWT Read Timeouts"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Writes",
+                        "description" : "LWT write rate."
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_cas_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Avrage Write latency",
+                        "description" : "LWT Avrage Write latency."
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "95% latency",
+                        "description" : "LWT 95% write latency."
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Write Timeouts",
+                        "description" : "LWT Write Timeouts"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "dashversion":[">4.2", ">2021.1"],
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_total_operations{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Paxos operations",
+                        "description" : "A single Read/Write LWT will result in multiple paxos operations"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_cas_foreground{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Paxos Foreground operations",
+                        "description" : "How many paxos operations that did not yet produce a result are running"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_cas_background{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Paxos Background operations",
+                        "description" : "How many paxos operations are still running after a result was alredy returned"
+                    },
+                    {
+                        "class": "text_panel",
+                        "span": 3,
+                        "options": {
+                            "content": "# "
+                        }
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_condition_not_met{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Condition-Not-Met",
+                        "description" : "An LWT INSERT, UPDATE or DELETE command that involves a condition will be rejected if the condition is not met.\n\nWhile it is ok, a high value may indicate that there is a potential problem with data distribution"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_contention_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Write Contention",
+                        "description" : "Number of times some INSERT, UPDATE or DELETE request with conditions had to retry because there was a concurrent conditional statement against the same key. Each retry is performed after a randomized sleep interval, so it can lead to statement timing out completely.\n\nIt can indicates contention over a hot row or key"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_read_contention_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]]) - $func(rate(scylla_storage_proxy_coordinator_cas_read_contention_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", le=\"1.000000\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Read Contention",
+                        "description" : "Number of times some SELECT with SERIAL consistency had to retry because there was a concurrent conditional statement against the same key. Each retry is performed after a randomized sleep interval, so it can lead to statement timing out completely.\n\nIt can indicates contention over a hot row or key"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_timeout_due_to_uncertainty{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Write Timeout Due to Uncertainty",
+                        "description" : "Number of partially succeeded conditional statements. These statements were not committed by the coordinator, due to some replicas responding with errors or timing out. The coordinator had to propagate the error to the client. However, the statement succeeded on a minority of replicas, so may later be propagated to the rest during repair."
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Write Unavailable",
+                        "description" : "Number of times a INSERT, UPDATE, or DELETE with conditions failed after being unable to contact enough replicas to match the consistency level"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_read_unavailable{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Read Unavailable",
+                        "description" : "Number of times a SELECT with SERIAL consistency failed after being unable to contact enough replicas to match the consistency level"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_write_unfinished_commit{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Write Unfinished - Repair Attempts",
+                        "description" : "Number of Paxos-repairs of INSERT, UPDATE, or DELETE with conditions.\n\nA repair is necessary when a previous Paxos statement was partialy successful. A subsequent statement then may not proceed before completing the work of its predecessor. A repair is not guaranteed to succeed, the metric indicates the number of repair attempts made"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_read_unfinished_commit{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Read Unfinished - Repair Attempts",
+                        "description" : "Number of Paxos-repairs of SELECT statement with SERIAL consistency.\n\nA repair is necessary when a previous Paxos statement was partialy successful. A subsequent statement then may not proceed before completing the work of its predecessor. A repair is not guaranteed to succeed, the metric indicates the number of repair attempts made"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_failed_read_round_optimization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Failed Read-Round Optimization",
+                        "description" : "Normally, a PREPARE Paxos-round piggy-backs the previous value along with the PREPARE response. When the coordinator is unable to obtain the previous value (or its digest) from some of the participants, or when the digests did not match, a separate repair round has to be performed.\n\nThis indicates that some Paxos queries did not run successfully to completion, e.g. because some node is overloaded, down, or there was contention around a key."
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_prune{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Prune",
+                        "description" : "Number of pruning requests.\n\nA successful conditional statement deletes the intermediate state from system.paxos table using PRUNE command."
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_cas_dropped_prune{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "LWT Dropped Prune",
+                        "description" : "Number of Dropped pruning requests.\n\nA successful conditional statement deletes the intermediate state from system.paxos table using PRUNE command. If the system is busy it may not keep up with the PRUNE requests, so such requests are dropped.\n\nHigh value suggests the system is overloaded and also that system.paxos table is taking up space. If a prune is dropped, system.paxos table key and value for respective LWT transaction  will stay around until next transaction against the same key or until the gc_grace_period, when it's removed by compaction."
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">CDC - Replica</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cdc_operations_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "CDC Operations",
+                        "description" : "The rate of CDC operations."
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cdc_operations_failed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_cas_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Failed CDC operations",
+                        "description" : "The rate of failed CDC operations."
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Memory - Replica</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bytes_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_lsa_total_space_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "LSA total memory"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_lsa_non_lsa_used_space_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Non-LSA used memory"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "text_panel",
+                        "content": "<h1 style=\"color:#5881c2; border-bottom: 3px solid #5881c2;\">Compaction - Replica</h1>",
+                        "style": {}
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel_int",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_compaction_manager_compactions{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Running Compactions"
+                    },
+                    {
+                        "class": "percent_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "($func(rate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", group=\"compaction\"}[$__rate_interval])) by ([[by]]))/10",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "yaxes": [
+                            {
+                              "format": "percent",
+                              "logBase": 1,
+                              "max": null,
+                              "min": 0,
+                              "show": true,
+                              "decimals": 0
+                            },
+                            {
+                              "format": "short",
+                              "logBase": 1,
+                              "max": null,
+                              "min": null,
+                              "show": true
+                            }
+                          ],
+                        "description": "Percentage of CPU time used by compaction",
+                        "title": "Compactions CPU Runtime"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "refId": "A",
+                                "expr": "avg(scylla_scheduler_shares{group=\"compaction\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "format": "time_series"
+                            }
+                        ],
+                        "description": "Shares assigned to the compaction",
+                        "title": "Compactions Shares"
+                    }
+
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "user_panel_row_header"
+            },
+            {
+                "class": "user_panels_row"
+            },
+            {
+                "class": "monitoring_version_row"
+            }
+        ],
+        "templating": {
+            "list": [
+                {
+                    "class":"by_template_var"
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "shard",
+                    "name": "shard",
+                    "query": "label_values(scylla_reactor_utilization,shard)",
+                    "sort": 3
+                },
+                {
+                    "class": "aggregation_function"
+                },
+                {
+                    "class": "adhoc_filter"
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "__SCYLLA_VERSION_DOT__",
+                        "value": "__SCYLLA_VERSION_DOT__"
+                    },
+                    "name": "scylla_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "__SCYLLA_VERSION_DOT__",
+                            "value": "__SCYLLA_VERSION_DOT__"
+                        }
+                    ],
+                    "query": "__SCYLLA_VERSION_DOT__"
+                },
+                {
+                    "class": "monitor_version_var"
+                }
+            ]
+        },
+		"tags": [
+			"__SCYLLA_VERSION_DOT__"
+		],
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Detailed",
+        "overwrite": true,
+        "version": 5
+    }
+}

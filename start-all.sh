@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 
-CURRENT_VERSION=`cat CURRENT_VERSION.sh`
+CURRENT_VERSION="master"
+if [ -f CURRENT_VERSION.sh ]; then
+    CURRENT_VERSION=`cat CURRENT_VERSION.sh`
+fi
+
 if [ "$CURRENT_VERSION" = "master" ]; then
     echo ""
     echo "*****************************************************"
     echo "* WARNING: You are using the unstable master branch *"
     echo "* Check the README.md file for the stable releases  *"
     echo "*****************************************************"
+    echo ""
+    echo "Make sure you run generate-dashboards.sh to generate your dashboards."
+    echo 'For example to use Scylla 2021.1 run `./generate-dashboards.sh -F -v 2021.1`'
     echo ""
 fi
 
