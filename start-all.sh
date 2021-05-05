@@ -5,6 +5,25 @@ if [ -f CURRENT_VERSION.sh ]; then
     CURRENT_VERSION=`cat CURRENT_VERSION.sh`
 fi
 
+if [ "$1" = "-e" ]; then
+. enterprise_versions.sh
+else
+. versions.sh
+fi
+BRANCH_VERSION=$CURRENT_VERSION
+if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
+    BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
+fi
+DEFAULT_VERSION=${DEFAULT_VERSION[$BRANCH_VERSION]}
+MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
+
+if [ "$1" = "--version" ]; then
+    echo "Scylla-Monitoring Stack version: $CURRENT_VERSION"
+    echo "Supported versions:" ${SUPPORTED_VERSIONS[$BRANCH_VERSION]}
+    echo "Manager supported versions:" ${MANAGER_SUPPORTED_VERSIONS[$BRANCH_VERSION]}
+    exit
+fi
+
 if [ "$CURRENT_VERSION" = "master" ]; then
     echo ""
     echo "*****************************************************"
@@ -17,16 +36,6 @@ if [ "$CURRENT_VERSION" = "master" ]; then
     echo ""
 fi
 
-if [ "$1" = "--version" ]; then
-    cat CURRENT_VERSION.sh
-    exit
-fi
-
-if [ "$1" = "-e" ]; then
-. enterprise_versions.sh
-else		
-. versions.sh
-fi
 if [ "`id -u`" -eq 0 ]; then
     echo "Running as root is not advised, please check the documentation on how to run as non-root user"
 else
