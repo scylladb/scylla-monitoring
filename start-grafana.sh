@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
+CURRENT_VERSION="master"
+if [ -f CURRENT_VERSION.sh ]; then
+    CURRENT_VERSION=`cat CURRENT_VERSION.sh`
+fi
+
+. versions.sh
+
+BRANCH_VERSION=$CURRENT_VERSION
+if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
+    BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
+fi
 
 if [ "$1" = "-e" ]; then
-. enterprise_versions.sh
-else
-. versions.sh
+    DEFAULT_VERSION=${DEFAULT_ENTERPRISE_VERSION[$BRANCH_VERSION]}
 fi
-VERSIONS=$DEFAULT_VERSION
-
-GRAFANA_VERSION=7.4.0
+MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
 LOCAL=""
 GRAFANA_ADMIN_PASSWORD="admin"
 GRAFANA_AUTH=false

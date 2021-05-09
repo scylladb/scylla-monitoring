@@ -5,16 +5,16 @@ if [ -f CURRENT_VERSION.sh ]; then
     CURRENT_VERSION=`cat CURRENT_VERSION.sh`
 fi
 
-if [ "$1" = "-e" ]; then
-. enterprise_versions.sh
-else
 . versions.sh
+
+if [ "$1" = "-e" ]; then
+    DEFAULT_VERSION=${DEFAULT_ENTERPRISE_VERSION[$BRANCH_VERSION]}
 fi
 BRANCH_VERSION=$CURRENT_VERSION
 if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
     BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
 fi
-DEFAULT_VERSION=${DEFAULT_VERSION[$BRANCH_VERSION]}
+
 MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
 
 if [ "$1" = "--version" ]; then
@@ -91,7 +91,6 @@ The script starts Scylla Monitoring stack.
 }
 PROMETHEUS_RULES="$PWD/prometheus/prometheus.rules.yml"
 VERSIONS=$DEFAULT_VERSION
-PROMETHEUS_VERSION=v2.25.2
 
 SCYLLA_TARGET_FILES=($PWD/prometheus/scylla_servers.yml $PWD/scylla_servers.yml)
 SCYLLA_MANGER_TARGET_FILES=($PWD/prometheus/scylla_manager_servers.yml $PWD/scylla_manager_servers.yml $PWD/prometheus/scylla_manager_servers.example.yml)

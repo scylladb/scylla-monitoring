@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 is_podman="$(docker --help | grep -o podman)"
+. versions.sh
 VERSIONS=$DEFAULT_VERSION
 LOKI_RULE_DIR=$PWD/loki/rules
 LOKI_CONF_DIR=$PWD/loki/conf
 PROMTAIL_CONFIG=$PWD/loki/promtail/promtail_config.yml
-LOKI_VERSION="2.1.0"
 DOCKER_PARAM=""
 BIND_ADDRESS=""
 LOKI_COMMANDS=""

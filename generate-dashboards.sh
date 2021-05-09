@@ -1,8 +1,22 @@
 #!/usr/bin/env bash
 
+CURRENT_VERSION="master"
+if [ -f CURRENT_VERSION.sh ]; then
+    CURRENT_VERSION=`cat CURRENT_VERSION.sh`
+fi
+
 . versions.sh
+
+BRANCH_VERSION=$CURRENT_VERSION
+if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
+    BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
+fi
+MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
+if [ "$1" = "-e" ]; then
+    DEFAULT_VERSION=${DEFAULT_ENTERPRISE_VERSION[$BRANCH_VERSION]}
+fi
+
 . dashboards.sh
-VERSIONS=$DEFAULT_VERSION
 if [ -f setenv.sh ]; then
     . setenv.sh
 fi
@@ -40,11 +54,6 @@ while getopts ':htv:j:M:S:P:F' option; do
 done
 if [[ -z "$TEST_ONLY" ]]; then
     mkdir -p grafana/build
-fi
-
-CURRENT_VERSION="master"
-if [ -f CURRENT_VERSION.sh ]; then
-    CURRENT_VERSION=`cat CURRENT_VERSION.sh`
 fi
 
 mkdir -p grafana/provisioning/dashboards
