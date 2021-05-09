@@ -1,14 +1,8 @@
 #!/usr/bin/env bash
 
-if [ "$1" = "-e" ]; then
-. enterprise_versions.sh
-else
 . versions.sh
-fi
 is_podman="$(docker --help | grep -o podman)"
-VERSIONS=$DEFAULT_VERSION
 RULE_FILE=$PWD/prometheus/rule_config.yml
-ALERT_MANAGER_VERSION="v0.20.0"
 DOCKER_PARAM=""
 BIND_ADDRESS=""
 ALERTMANAGER_COMMANDS=""
