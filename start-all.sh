@@ -192,7 +192,6 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:T:' option; do
 done
 
 if [ -z "$CONSUL_ADDRESS" ]; then
-
     for f in ${SCYLLA_TARGET_FILES[@]}; do
         if [ -f $f ]; then
             SCYLLA_TARGET_FILE=$f
@@ -233,6 +232,20 @@ else
     SCYLLA_TARGET_FILE=""
     SCYLLA_MANGER_TARGET_FILE=""
     NODE_TARGET_FILE=""
+fi
+
+if [ -z $DATA_DIR ]
+then
+    USER_PERMISSIONS=""
+    echo "Warning: without an external Prometheus directory, Prometheus data will be deleted on shutdown, use the -d command line flag for data persistence."
+else
+    if [ -d $DATA_DIR ]; then
+        echo "Loading prometheus data from $DATA_DIR"
+    else
+        echo "Creating data directory $DATA_DIR"
+        mkdir -p $DATA_DIR
+    fi
+    DATA_DIR="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
 fi
 
 if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
@@ -293,19 +306,6 @@ done
 
 if [ -z $HOST_NETWORK ]; then
     PORT_MAPPING="-p $BIND_ADDRESS$PROMETHEUS_PORT:9090"
-fi
-
-if [ -z $DATA_DIR ]
-then
-    USER_PERMISSIONS=""
-else
-    if [ -d $DATA_DIR ]; then
-        echo "Loading prometheus data from $DATA_DIR"
-    else
-        echo "Creating data directory $DATA_DIR"
-        mkdir -p $DATA_DIR
-    fi
-    DATA_DIR="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
 fi
 
 docker run -d $DOCKER_PARAM $USER_PERMISSIONS \
