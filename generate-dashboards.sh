@@ -25,9 +25,9 @@ FORMAT_COMAND=""
 FORCEUPDATE=""
 SPECIFIC_SOLUTION=""
 PRODUCTS=()
-usage="$(basename "$0") [-h] [-v comma separated versions ]  [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] [-F force update] [-S start with a system specific dashboard set] -- Generates the grafana dashboards and their load files"
+usage="$(basename "$0") [-h] [-v comma separated versions ]  [-D] [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] [-F force update] [-S start with a system specific dashboard set] -- Generates the grafana dashboards and their load files"
 
-while getopts ':htv:j:M:S:P:F' option; do
+while getopts ':htDv:j:M:S:P:F' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -46,6 +46,13 @@ while getopts ':htv:j:M:S:P:F' option; do
        PRODUCTS+=($OPTARG)
        ;;
     S) SPECIFIC_SOLUTION="$OPTARG"
+       ;;
+    D) VERSIONS=${SUPPORTED_VERSIONS[$BRANCH_VERSION]}
+       FORMAT_COMAND="$FORMAT_COMAND -v $VERSIONS"
+       MANAGER_VERSION=${MANAGER_SUPPORTED_VERSIONS[$BRANCH_VERSION]}
+       echo $BRANCH_VERSION
+       echo $VERSIONS
+       echo $MANAGER_VERSION
        ;;
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
        FORMAT_COMAND="$FORMAT_COMAND -j $OPTARG"
@@ -100,20 +107,22 @@ for f in "${DASHBOARDS[@]}"; do
 done
 done
 
+IFS=',' ;for v in $MANAGER_VERSION; do
 if [ -e grafana/scylla-manager.template.json ]
 then
-    VERDIR="grafana/build/manager_$MANAGER_VERSION"
+    VERDIR="grafana/build/manager_$v"
     mkdir -p $VERDIR
-    set_loader "manager_$MANAGER_VERSION" "" "manager_$MANAGER_VERSION"
-    if [ ! -f "$VERDIR/scylla-manager.$MANAGER_VERSION.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/scylla-manager.template.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
+    set_loader "manager_$v" "" "manager_$v"
+    if [ ! -f "$VERDIR/scylla-manager.$v.json" ] || [ "$VERDIR/scylla-manager.$v.json" -ot "grafana/scylla-manager.template.json" ] || [ "$VERDIR/scylla-manager.$v.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
         if [[ -z "$TEST_ONLY" ]]; then
-           echo "updating grafana/scylla-manager.$MANAGER_VERSION.template.json"
-           ./make_dashboards.py ${PRODUCTS[@]}  -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$MANAGER_VERSION" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -V $MANAGER_VERSION
+           echo "updating grafana/scylla-manager.$v.template.json"
+           ./make_dashboards.py ${PRODUCTS[@]}  -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -V $v
         else
            echo "notice: grafana/scylla-manager.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
         fi
     fi
 fi
+done
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
     VERDIR="grafana/build/default"
