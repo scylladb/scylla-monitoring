@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-VERSION="2.0.0"
+. versions.sh
+VERSION="$GRAFANA_RENDERER_VERSION"
 DOCKER_PARAM=""
 GRAFANA_NAME="agrafrender"
 BIND_ADDRESS=""
