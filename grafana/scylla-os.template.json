@@ -399,6 +399,91 @@
                 "title": "New row"
             },
             {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "title": "CPU and Memory",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bps_panel",
+                        "span": 4,
+                        "description": "The available memory, note that in a production environment we expect this to be low, Scylla would use most of the available memory when possible",
+                        "targets": [
+                            {
+                                "expr": "sum(node_memory_MemAvailable_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Available memory"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 4,
+                        "description": "Percent of available memory, note that in a production environment we expect this to be low, Scylla would use most of the available memory when possible",
+                        "fieldConfig": {
+                            "defaults": {
+                              "links": [],
+                              "unit": "percentunit"
+                            },
+                            "overrides": []
+                        },
+                        "targets": [
+                            {
+                                "expr": "sum(node_memory_MemAvailable_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}) by ([[by]])/sum(node_memory_MemTotal_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Available memory"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 4,
+                        "description": "Percent of CPU used, note that in production Scylla would try to use most of the CPU and this is not a problem",
+                        "fieldConfig": {
+                            "defaults": {
+                              "links": [],
+                              "unit": "percentunit"
+                            },
+                            "overrides": []
+                        },
+                        "targets": [
+                            {
+                                "expr": "1-sum(rate(node_cpu_seconds_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", mode=\"idle\"}[3m])) by ([[by]])/count(node_cpu_seconds_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", mode=\"idle\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "CPU used"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
                 "class": "monitoring_version_row"
             }
         ],
