@@ -152,6 +152,16 @@ groups:
     annotations:
       description: 'Some operation failed due to consistency level'
       summary: Consistency Level error
+  - alert: preparedCacheEviction
+    expr: sum(rate(scylla_cql_prepared_cache_evictions[2m])) by (cluster) + sum(rate(scylla_cql_authorized_prepared_statements_cache_evictions[2m])) by (cluster) > 100
+    for: 5m
+    labels:
+      severity: "1"
+      advisor: "preparedEviction"
+      dashboard: "scylla-detailed"
+    annotations:
+      description: 'The prepared-statement cache is being continuously evicted, which could indicate a problem in your prepared-statement usage logic.'
+      summary: Prepared cache eviction
   - alert: InstanceDown
     expr: up{job="scylla"} == 0
     for: 30s
