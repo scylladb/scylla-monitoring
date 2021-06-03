@@ -6,14 +6,14 @@ if [ -f CURRENT_VERSION.sh ]; then
 fi
 
 . versions.sh
-
-BRANCH_VERSION=$CURRENT_VERSION
+VERSION_FOR_DEFAULTS=$CURRENT_VERSION
+BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
 if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
-    BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
+    VERSION_FOR_DEFAULTS=$BRANCH_VERSION
 fi
-MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
+MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$VERSION_FOR_DEFAULTS]}
 if [ "$1" = "-e" ]; then
-    DEFAULT_VERSION=${DEFAULT_ENTERPRISE_VERSION[$BRANCH_VERSION]}
+    DEFAULT_VERSION=${DEFAULT_ENTERPRISE_VERSION[$VERSION_FOR_DEFAULTS]}
 fi
 
 . dashboards.sh
@@ -88,7 +88,7 @@ for f in "${DASHBOARDS[@]}"; do
         if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.template.json" ] || [ ! -z "$FORCEUPDATE" ]; then
             if [[ -z "$TEST_ONLY" ]]; then
                 echo "updating dashboard grafana/$f.$v.template.json"
-               ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"  -R "__SCYLLA_VERSION_DOT__=$v" -V $v
+               ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"  -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -V $v
            fi
         fi
     else
@@ -108,7 +108,7 @@ then
     if [ ! -f "$VERDIR/scylla-manager.$MANAGER_VERSION.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/scylla-manager.template.json" ] || [ "$VERDIR/scylla-manager.$MANAGER_VERSION.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
         if [[ -z "$TEST_ONLY" ]]; then
            echo "updating grafana/scylla-manager.$MANAGER_VERSION.template.json"
-           ./make_dashboards.py ${PRODUCTS[@]}  -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$MANAGER_VERSION" -V $MANAGER_VERSION
+           ./make_dashboards.py ${PRODUCTS[@]}  -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$MANAGER_VERSION" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -V $MANAGER_VERSION
         else
            echo "notice: grafana/scylla-manager.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
         fi
@@ -125,7 +125,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         if [ ! -f $VERDIR/$val1.json ] || [ $VERDIR/$val1.json -ot $val ] || [ ! -z "$FORCEUPDATE" ]; then
             if [[ -z "$TEST_ONLY" ]]; then
                 echo "updating $val"
-               ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d $val -R "__MONITOR_VERSION__=$CURRENT_VERSION"
+               ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d $val -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION"
             fi
         fi
     else
