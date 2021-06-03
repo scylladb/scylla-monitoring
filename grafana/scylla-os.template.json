@@ -481,7 +481,7 @@
                 "panels": [
                     {
                         "class": "bps_panel",
-                        "span": 4,
+                        "span": 3,
                         "description": "The available memory, note that in a production environment we expect this to be low, Scylla would use most of the available memory when possible",
                         "targets": [
                             {
@@ -497,7 +497,7 @@
                     },
                     {
                         "class": "graph_panel",
-                        "span": 4,
+                        "span": 3,
                         "description": "Percent of available memory, note that in a production environment we expect this to be low, Scylla would use most of the available memory when possible",
                         "fieldConfig": {
                             "defaults": {
@@ -520,7 +520,7 @@
                     },
                     {
                         "class": "graph_panel",
-                        "span": 4,
+                        "span": 3,
                         "description": "Percent of CPU used, note that in production Scylla would try to use most of the CPU and this is not a problem",
                         "fieldConfig": {
                             "defaults": {
@@ -540,6 +540,44 @@
                             }
                         ],
                         "title": "CPU used"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "description": "CPU frequency should be set for performance.\n\n The current frequency should match the max frequency. If that is not the case, check your host configuration.",
+                        "targets": [
+                            {
+                                "expr": "max(node_cpu_frequency_max_hertz{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"})",
+                                "intervalFactor": 1,
+                                "legendFormat": "Max",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "min(node_cpu_frequency_hertz{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "seriesOverrides": [
+                            {
+                              "$$hashKey": "object:211",
+                              "alias": "Max",
+                              "color": "#F2495C"
+                            }
+                        ],
+                        "fieldConfig": {
+                            "defaults": {
+                              "links": [],
+                              "unit": "hertz"
+                            },
+                            "overrides": []
+                          },
+                        "title": "CPU Frequency"
                     }
                 ],
                 "title": "New row"
