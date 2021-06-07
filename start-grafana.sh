@@ -5,7 +5,7 @@ if [ -f CURRENT_VERSION.sh ]; then
 fi
 
 . versions.sh
-
+. UA.sh
 BRANCH_VERSION=$CURRENT_VERSION
 if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
     BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
@@ -167,7 +167,7 @@ docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
      -v $PWD/grafana/provisioning:/var/lib/grafana/provisioning:z $EXTERNAL_VOLUME \
      -e "GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning" \
      -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
-     -e "GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID=UA-43975320-9" \
+     -e "GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID=$UA_ANALTYICS" \
      -e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource" \
      -e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/ver_$VERSION/scylla-overview.$VERSION.json" \
      $GRAFANA_ENV_COMMAND \
