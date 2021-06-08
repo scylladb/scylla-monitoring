@@ -8,15 +8,17 @@ groups:
   - record: cql:all_rate1m
     expr: sum(cql:all_shardrate1m) by (cluster, dc, instance)
   - record: cql:non_token_aware
-    expr: (sum(cql:all_rate1m) by (cluster) >bool 10) * (1-(sum(rate(scylla_storage_proxy_coordinator_reads_local_node{}[60s])) by (cluster) + sum(rate(scylla_storage_proxy_coordinator_total_write_attempts_local_node{}[60s])) by (cluster)) / sum(cql:all_rate1m) by (cluster))
+    expr: (sum(cql:all_rate1m) by (cluster) >bool 100) * (1-(sum(rate(scylla_storage_proxy_coordinator_reads_local_node{}[60s])) by (cluster) + sum(rate(scylla_storage_proxy_coordinator_total_write_attempts_local_node{}[60s])) by (cluster)) / sum(cql:all_rate1m) by (cluster))
   - record: cql:non_system_prepared1m
     expr: clamp_min(sum(rate(scylla_query_processor_statements_prepared[1m])) by (cluster, dc, instance, shard) - cql:all_system_shardrate1m, 0)
   - record: cql:non_prepared
-    expr: (sum(cql:non_system_prepared1m) by (cluster) >bool 10) * (sum(cql:non_system_prepared1m) by (cluster) / clamp_min(sum(cql:all_rate1m) - sum(cql:all_system_shardrate1m) by (cluster), 0.001))
-  - record: cql:non_paged_no_system
+    expr: (sum(cql:non_system_prepared1m) by (cluster) >bool 100) * (sum(cql:non_system_prepared1m) by (cluster) / clamp_min(sum(cql:all_rate1m) - sum(cql:all_system_shardrate1m) by (cluster), 0.001))
+  - record: cql:non_paged_no_system1m
     expr: clamp_min(sum(rate(scylla_cql_unpaged_select_queries[60s])) by (cluster, dc, instance) - sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks="system"}[60s])) by (cluster, dc, instance), 0)
+  - record: cql:non_paged_no_system
+    expr: (sum(cql:non_paged_no_system1m) by (cluster, dc, instance) >bool 100) * sum(cql:non_paged_no_system) by (cluster, dc, instance)/clamp_min(sum(rate(scylla_cql_reads[60s]))by (cluster, dc, instance) - sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks="system"}[60s])) by (cluster, dc, instance), 0.01)
   - record: cql:non_paged
-    expr: sum(rate(scylla_cql_unpaged_select_queries[60s])) by (cluster)/sum(rate(scylla_cql_reads{}[60s])) by (cluster)
+    expr: (sum(cql:non_paged_no_system1m) by (cluster) >bool 100) * sum(cql:non_paged_no_system1m) by (cluster)/clamp_min(sum(rate(scylla_cql_reads[60s]))by (cluster) - sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks="system"}[60s])) by (cluster), 0.01)
   - record: cql:reverse_queries
     expr: sum(rate(scylla_cql_reverse_queries[60s])) by (cluster)/ sum(rate(scylla_cql_reads[60s])) by (cluster)
   - record: cql:allow_filtering
@@ -50,7 +52,7 @@ groups:
     annotations:
       description: 'Some queries are non-prepared'
       summary: non prepared statments
-  - alert: cqlNonPaged
+  - alert: cql:non_paged_no_system
     expr: cql:non_paged > 0
     for: 10s
     labels:
@@ -188,30 +190,30 @@ groups:
       summary: Instance {{ $labels.instance }} down
   - alert: DiskFull
     expr: node_filesystem_avail_bytes{mountpoint="/var/lib/scylla"} / node_filesystem_size_bytes{mountpoint="/var/lib/scylla"}
-      * 100 < 25
+      * 100 < 35
     for: 30s
     labels:
       severity: "2"
+    annotations:
+      description: '{{ $labels.instance }} has less than 35% free disk space.'
+      summary: Instance {{ $labels.instance }} low disk space
+  - alert: DiskFull
+    expr: node_filesystem_avail_bytes{mountpoint="/var/lib/scylla"} / node_filesystem_size_bytes{mountpoint="/var/lib/scylla"}
+      * 100 < 25
+    for: 30s
+    labels:
+      severity: "3"
     annotations:
       description: '{{ $labels.instance }} has less than 25% free disk space.'
       summary: Instance {{ $labels.instance }} low disk space
   - alert: DiskFull
     expr: node_filesystem_avail_bytes{mountpoint="/var/lib/scylla"} / node_filesystem_size_bytes{mountpoint="/var/lib/scylla"}
-      * 100 < 10
-    for: 30s
-    labels:
-      severity: "3"
-    annotations:
-      description: '{{ $labels.instance }} has less than 10% free disk space.'
-      summary: Instance {{ $labels.instance }} low disk space
-  - alert: DiskFull
-    expr: node_filesystem_avail_bytes{mountpoint="/var/lib/scylla"} / node_filesystem_size_bytes{mountpoint="/var/lib/scylla"}
-      * 100 < 1
+      * 100 < 15
     for: 30s
     labels:
       severity: "4"
     annotations:
-      description: '{{ $labels.instance }} has less than 1% free disk space.'
+      description: '{{ $labels.instance }} has less than 15% free disk space.'
       summary: Instance {{ $labels.instance }} low disk space
   - alert: DiskFull
     expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}
