@@ -41,3 +41,4 @@ Each Advisor issue is explained in detail:
 * :doc:`I/O Errors can indicate a node with a faulty disk <nodeIOErrors>`
 * :doc:`Some operations failed on the replica side <nodeLocalErrors>`
 * :doc:`CQL queries are not balanced among shards  <nonBalancedcqlTraffic>`
+* :doc:`Prepared statements cache eviction <preparedCacheEviction.rst>`
