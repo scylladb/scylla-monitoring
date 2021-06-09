@@ -139,7 +139,7 @@ For example:
 
 .. note:: If you want to add your managed cluster to Scylla Monitoring Stack, add the IPs of the nodes as well as the cluster name you used when you `added the cluster`_ to Scylla Manager. It is important that the label ``cluster name`` and the cluster name in Scylla Manager match.
 
-..  _`added the cluster`: https://scylladb.github.io/scylla-manager/2.2/add-a-cluster.html
+..  _`added the cluster`: https://manager.docs.scylladb.com/stable/add-a-cluster.html
 
 *Using IPV6*
 
