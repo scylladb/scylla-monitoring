@@ -89,7 +89,8 @@ The script starts Scylla Monitoring stack.
 "
   echo "$__usage"
 }
-PROMETHEUS_RULES="$PWD/prometheus/prometheus.rules.yml"
+PROMETHEUS_RULES="$PWD/prometheus/prom_rules/"
+PROMETHEUS_RULES="$PWD/prometheus/prom_rules/:/etc/prometheus/prom_rules/"
 VERSIONS=$DEFAULT_VERSION
 
 SCYLLA_TARGET_FILES=($PWD/prometheus/scylla_servers.yml $PWD/scylla_servers.yml)
@@ -143,7 +144,11 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:T:' option; do
        ;;
     r) ALERT_MANAGER_RULE_CONFIG="-r $OPTARG"
        ;;
-    R) PROMETHEUS_RULES=`readlink -m $OPTARG`
+    R) if [[ -d "$OPTARG" ]]; then
+        PROMETHEUS_RULES=`readlink -m $OPTARG`":/etc/prometheus/prom_rules/"
+       else
+        PROMETHEUS_RULES=`readlink -m $OPTARG`":/etc/prometheus/prometheus.rules.yml"
+       fi
        ;;
     g) GRAFANA_PORT="-g $OPTARG"
        ;;
@@ -315,7 +320,7 @@ docker run -d $DOCKER_PARAM $USER_PERMISSIONS \
      $DATA_DIR_CMD \
      "${group_args[@]}" \
      -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-     -v $PROMETHEUS_RULES:/etc/prometheus/prometheus.rules.yml:Z \
+     -v $PROMETHEUS_RULES:z \
      $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
      $NODE_TARGET_FILE \
