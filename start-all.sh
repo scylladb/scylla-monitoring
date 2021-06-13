@@ -1,21 +1,27 @@
 #!/usr/bin/env bash
 
+if [ -f  env.sh ]; then
+    . env.sh
+fi
+
 CURRENT_VERSION="master"
 if [ -f CURRENT_VERSION.sh ]; then
     CURRENT_VERSION=`cat CURRENT_VERSION.sh`
 fi
 
 . versions.sh
-
 if [ "$1" = "-e" ]; then
     DEFAULT_VERSION=${DEFAULT_ENTERPRISE_VERSION[$BRANCH_VERSION]}
 fi
-BRANCH_VERSION=$CURRENT_VERSION
+if [ -z "$BRANCH_VERSION" ]; then
+  BRANCH_VERSION=$CURRENT_VERSION
+fi
 if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
     BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
 fi
-
-MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
+if [ -z "$MANAGER_VERSION" ];then
+  MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
+fi
 
 if [ "$1" = "--version" ]; then
     echo "Scylla-Monitoring Stack version: $CURRENT_VERSION"
@@ -84,32 +90,74 @@ Options:
   --no-loki                      - If set, do not run Loki and promtail.
   --auto-restart                 - If set, auto restarts the containers on failure.
   --no-renderer                  - If set, do not run the Grafana renderer container.
+  --thanos-sc                    - If set, run thanos side car with the Prometheus server.
 
 The script starts Scylla Monitoring stack.
 "
   echo "$__usage"
 }
-PROMETHEUS_RULES="$PWD/prometheus/prom_rules/"
-PROMETHEUS_RULES="$PWD/prometheus/prom_rules/:/etc/prometheus/prom_rules/"
-VERSIONS=$DEFAULT_VERSION
 
-SCYLLA_TARGET_FILES=($PWD/prometheus/scylla_servers.yml $PWD/scylla_servers.yml)
-SCYLLA_MANGER_TARGET_FILES=($PWD/prometheus/scylla_manager_servers.yml $PWD/scylla_manager_servers.yml $PWD/prometheus/scylla_manager_servers.example.yml)
-GRAFANA_ADMIN_PASSWORD=""
-ALERTMANAGER_PORT=""
-DOCKER_PARAM=""
-DATA_DIR=""
-DATA_DIR_CMD=""
-CONSUL_ADDRESS=""
-PROMETHEUS_TARGETS=""
-BIND_ADDRESS=""
-BIND_ADDRESS_CONFIG=""
-GRAFNA_ANONYMOUS_ROLE=""
-SPECIFIC_SOLUTION=""
-LDAP_FILE=""
-RUN_RENDERER="-E"
-RUN_LOKI=1
-RUN_THANOS_SC=1
+if [ -z "$PROMETHEUS_RULES" ]; then
+  PROMETHEUS_RULES="$PWD/prometheus/prom_rules/:/etc/prometheus/prom_rules/"
+fi
+
+if [ -z "$VERSIONS" ]; then
+  VERSIONS=$DEFAULT_VERSION
+fi
+
+if [ -z "$SCYLLA_TARGET_FILES" ]; then
+  SCYLLA_TARGET_FILES=($PWD/prometheus/scylla_servers.yml $PWD/scylla_servers.yml)
+fi
+if [ -z "$SCYLLA_MANGER_TARGET_FILES" ]; then
+  SCYLLA_MANGER_TARGET_FILES=($PWD/prometheus/scylla_manager_servers.yml $PWD/scylla_manager_servers.yml $PWD/prometheus/scylla_manager_servers.example.yml)
+fi
+if [ -z "$GRAFANA_ADMIN_PASSWORD" ]; then
+  GRAFANA_ADMIN_PASSWORD=""
+fi
+
+if [ -z "$ALERTMANAGER_PORT" ]; then
+  ALERTMANAGER_PORT=""
+fi
+
+if [ -z "$DOCKER_PARAM" ]; then
+  DOCKER_PARAM=""
+fi
+if [ -z "$DATA_DIR" ]; then
+  DATA_DIR=""
+fi
+if [ -z "$DATA_DIR_CMD" ]; then
+  DATA_DIR_CMD=""
+fi
+if [ -z "$CONSUL_ADDRESS" ]; then
+  CONSUL_ADDRESS=""
+fi
+if [ -z "$PROMETHEUS_TARGETS" ]; then
+  PROMETHEUS_TARGETS=""
+fi
+if [ -z "$BIND_ADDRESS" ]; then
+  BIND_ADDRESS=""
+fi
+if [ -z "$BIND_ADDRESS_CONFIG" ]; then
+  BIND_ADDRESS_CONFIG=""
+fi
+if [ -z "$GRAFNA_ANONYMOUS_ROLE" ]; then
+  GRAFNA_ANONYMOUS_ROLE=""
+fi
+if [ -z "$SPECIFIC_SOLUTION" ]; then
+  SPECIFIC_SOLUTION=""
+fi
+if [ -z "$LDAP_FILE" ]; then
+  LDAP_FILE=""
+fi
+if [ -z "$RUN_RENDERER" ]; then
+  RUN_RENDERER="-E"
+fi
+if [ -z "$RUN_LOKI" ]; then
+  RUN_LOKI=1
+fi
+if [ -z "$RUN_THANOS_SC" ]; then
+  RUN_THANOS_SC=0
+fi
 for arg; do
 	shift
 	case $arg in
@@ -117,7 +165,7 @@ for arg; do
             ;;
         (--no-renderer) RUN_RENDERER=""
             ;;
-        (--no-thanos-sc) RUN_THANOS_SC=0
+        (--thanos-sc) RUN_THANOS_SC=1
             ;;
         (--auto-restart) DOCKER_PARAM="--restart=on-failure"
             ;;
