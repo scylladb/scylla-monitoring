@@ -2234,8 +2234,18 @@
             "format":"table"
          },
          {
-            "expr":"sum(errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0",
+            "expr":"min(scylla_node_maintenance_operations_repair_finished_percentage{cluster=~\"$cluster\", dc=~\"$dc\"}) by(instance)< 1 + 2*(sum(errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0)",
             "legendFormat":"",
+            "dashversion":["<4.5", "<2021.1"],
+            "interval":"",
+            "refId":"D",
+            "instant":true,
+            "format":"table"
+         },
+         {
+            "expr":"(min(scylla_node_ops_finished_percentage{ops=\"repair\", cluster=~\"$cluster\", dc=~\"$dc\"}) by(instance)< 1) or 2*(sum(errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0)",
+            "legendFormat":"",
+            "dashversion":[">4.5", ">2021.1"],
             "interval":"",
             "refId":"D",
             "instant":true,
@@ -2611,7 +2621,7 @@
                      "id":"links",
                      "value":[
                         {
-                           "title":"Cordinator and Replica node errors",
+                           "title":"Coordinator and Replica node errors",
                            "url":"./d/detailed-[[dash_version]]/Detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}"
                         }
                      ]
@@ -2637,11 +2647,19 @@
                         },
                         {
                            "id":2,
-                           "type":1,
-                           "from":"",
+                           "type":2,
+                           "from":"0.0001",
+                           "to":"1",
+                           "text":"Repair",
+                           "value":""
+                        },
+                        {
+                           "id":2,
+                           "type":2,
+                           "from":"1",
                            "to":"",
                            "text":"Errors",
-                           "value":"1"
+                           "value":""
                         }
                      ]
                   },
@@ -2655,8 +2673,12 @@
                               "value":null
                            },
                            {
-                              "color":"dark-orange",
+                              "color":"green",
                               "value":0.001
+                           },
+                           {
+                              "color":"dark-orange",
+                              "value":1
                            }
                         ]
                      }

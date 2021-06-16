@@ -120,7 +120,7 @@ def is_version_bigger(version, cmp_version):
         if (cmp_op == 0 and version[i] != int(cmp[i])) or (cmp_op > 0 and version[i] < int(cmp[i])) or (cmp_op < 0 and version[i] > int(cmp[i])):
             trace("version","not bigger/smaller, returning False", cmp_version, version, cmp[i], cmp_op, version[i])
             return False
-        if (cmp_op >0 and version[i] > int(cmp[i])) or (cmp_op < 0 and version[i] > int(cmp[i])):
+        if (cmp_op >0 and version[i] > int(cmp[i])) or (cmp_op < 0 and version[i] < int(cmp[i])):
             return True
     # If we got here version=cmp_version
     trace("version","all is equal", cmp_version, version, cmp[i], version[i], cmp_op)
