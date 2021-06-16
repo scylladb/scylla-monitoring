@@ -1,12 +1,16 @@
 Scylla Monitoring Stack
 =======================
 
+.. image:: scylla-monitor.png
+   :scale: 60%
+
 .. toctree::
    :maxdepth: 1
    :hidden:
 
-   User Guide <use-monitoring/index>
+   Introduction <intro>
    Download and Install <install/index>
+   User Guide <use-monitoring/index>
    Procedures <procedures/index>
    Troubleshooting <troubleshooting/index>
    Reference <reference/index>
@@ -14,23 +18,91 @@ Scylla Monitoring Stack
 .. include:: /_common/monitor-description.rst
 
 
-.. image:: monitor.png
-    :width: 400pt
+.. raw:: html
 
-The Scylla Monitoring Stack consists of three components, wrapped in Docker containers:
+  <div class="topics-grid">
 
-* `prometheus` - collects and stores metrics
-* `alertmanager` - handles alerts
-* `grafana` - dashboard server
+.. topic-box::
+  :title: Introduction to Scylla Monitoring Stack
+  :link: /intro/
+  :icon: fa fa-power-off
+  :icon_color: rgba(95,113,180,1)
+  :icon_bg: rgba(95,113,180,0.1)
+  :class: my-box
 
-**Choose a topic to get started**:
+  Brief overview of the Scylla Monitoring stack
 
-* :doc:`User Guide <use-monitoring/index>`
-* :doc:`Download and Install <install/index>`
-* :doc:`Procedures <procedures/index>`
-* :doc:`Troubleshooting <troubleshooting/index>`
-* :doc:`Reference <reference/index>`
-* `Scylla Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on Scylla University
+.. topic-box::
+  :title: Installation Guide
+  :link: /install/
+  :icon: fa fa-clipboard
+  :icon_color: rgba(95,113,180,1)
+  :icon_bg: rgba(95,113,180,0.1)
+  :class: my-box
+
+  Contains download and installation instructions with and without Docker.
+
+.. topic-box::
+  :title: User Guide
+  :link: /use-monitoring/
+  :icon: fa fa-leanpub
+  :icon_color: rgba(95,113,180,1)
+  :icon_bg: rgba(95,113,180,0.1)
+  :class: my-box
+
+  Contains information on using the Grafana Dashboards and the Scylla Monitoring Stack Advisor
+
+.. topic-box::
+  :title: Procedures
+  :link: /procedures/
+  :icon: fa fa-leanpub
+  :icon_color: rgba(95,113,180,1)
+  :icon_bg: rgba(95,113,180,0.1)
+  :class: my-box
+
+  Contains reference information on Using the Grafana Dashboards and the Scylla Monitoring Stack Advisor
+
+.. topic-box::
+  :title: Reference Guide
+  :link: /reference/
+  :icon: fa fa-leanpub
+  :icon_color: rgba(95,113,180,1)
+  :icon_bg: rgba(95,113,180,0.1)
+  :class: my-box
+
+  Contains reference information on interfaces and compatibility
+
+.. topic-box::
+  :title: Troubleshooting
+  :link: /troubleshooting/
+  :icon: fa fa-leanpub
+  :icon_color: rgba(95,113,180,1)
+  :icon_bg: rgba(95,113,180,0.1)
+  :class: my-box
+
+  Contains troubleshooting information
 
 
-For older versions of Scylla Monitoring Stack Documentation see `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
+.. topic-box::
+  :title: GitHub Project
+  :link: https://github.com/scylladb/scylla-monitoring
+  :icon: fa fa-power-off
+  :icon_color: rgba(95,113,180,1)
+  :icon_bg: rgba(95,113,180,0.1)
+  :class: my-box
+
+  Navigate to the Scylla Monitoring Stack Project on GitHub
+
+.. topic-box::
+  :title: Download
+  :link: https://www.scylladb.com/download/#monitor
+  :icon: fa fa-power-off
+  :icon_color: rgba(95,113,180,1)
+  :icon_bg: rgba(95,113,180,0.1)
+  :class: my-box
+
+  Navigate to the Scylla Download Center
+
+.. raw:: html
+
+  </div>
