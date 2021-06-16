@@ -927,7 +927,7 @@
                                 "id": "links",
                                 "value": [
                                     {
-                                        "title": "Cordinator and Replica node errors",
+                                        "title": "Coordinator and Replica node errors",
                                         "url": "./d/detailed-[[dash_version]]/Detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}"
                                     }
                                 ]
@@ -952,12 +952,20 @@
                                         "value": "0"
                                     },
                                     {
-                                        "from": "",
+                                        "from": "0.0001",
+                                        "id": 2,
+                                        "text": "Repair",
+                                        "to": "1",
+                                        "type": 2,
+                                        "value": ""
+                                    },
+                                    {
+                                        "from": "1",
                                         "id": 2,
                                         "text": "Errors",
                                         "to": "",
-                                        "type": 1,
-                                        "value": "1"
+                                        "type": 2,
+                                        "value": ""
                                     }
                                 ]
                             },
@@ -971,8 +979,12 @@
                                             "value": null
                                         },
                                         {
-                                            "color": "dark-orange",
+                                            "color": "green",
                                             "value": 0.001
+                                        },
+                                        {
+                                            "color": "dark-orange",
+                                            "value": 1
                                         }
                                     ]
                                 }
@@ -1053,7 +1065,11 @@
                     "refId": "C"
                 },
                 {
-                    "expr": "sum(errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0",
+                    "dashversion": [
+                        "<4.5",
+                        "<2021.1"
+                    ],
+                    "expr": "min(scylla_node_maintenance_operations_repair_finished_percentage{cluster=~\"$cluster\", dc=~\"$dc\"}) by(instance)< 1 + 2*(sum(errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0)",
                     "format": "table",
                     "instant": true,
                     "interval": "",
@@ -4974,7 +4990,7 @@
             "links": [],
             "mode": "html",
             "options": {
-                "content": "<div style=\"color:#5881c2; border-bottom: 0px solid #5881c2;\">Scylla Monitoring version - master</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_dash_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1000&height=2500\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
+                "content": "<div style=\"color:#5881c2; border-bottom: 0px solid #5881c2;\">Scylla Monitoring version - 3.8.0</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1000&height=2500\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
                 "mode": "html"
             },
             "span": 12,
@@ -5269,7 +5285,7 @@
                 "includeAll": false,
                 "label": null,
                 "multi": false,
-                "name": "scylla_dash_version",
+                "name": "scylla_version",
                 "options": [
                     {
                         "selected": true,
@@ -5285,8 +5301,8 @@
                 "allValue": null,
                 "class": "monitor_version_var",
                 "current": {
-                    "text": "master",
-                    "value": "master"
+                    "text": "3.8.0",
+                    "value": "3.8.0"
                 },
                 "error": null,
                 "hide": 2,
@@ -5297,11 +5313,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "master",
-                        "value": "master"
+                        "text": "3.8.0",
+                        "value": "3.8.0"
                     }
                 ],
-                "query": "master",
+                "query": "3.8.0",
                 "skipUrlSync": false,
                 "type": "custom"
             },

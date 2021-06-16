@@ -329,7 +329,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "$func(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) + $func(rate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                    "expr": "$func(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) + ($func(rate(scylla_thrift_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) or max(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by([[by]])*0)",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "metric": "",
@@ -875,7 +875,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1)",
+                    "expr": "wlatencya{by=\"[[by]]\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A",
@@ -979,7 +979,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1)",
+                    "expr": "rlatencya{by=\"[[by]]\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A",
@@ -1083,7 +1083,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                    "expr": "wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "metric": "",
@@ -1188,7 +1188,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                    "expr": "wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "metric": "",
@@ -1293,7 +1293,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                    "expr": "rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "metric": "",
@@ -1398,7 +1398,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le))",
+                    "expr": "rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "metric": "",
@@ -6441,7 +6441,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by ([[by]], le))",
+                    "expr": "casrlatencyp95{by=\"[[by]]\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A",
@@ -6857,7 +6857,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by ([[by]], le))",
+                    "expr": "caswlatencyp95{by=\"[[by]]\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A",
@@ -9203,7 +9203,7 @@
             "links": [],
             "mode": "html",
             "options": {
-                "content": "<div style=\"color:#5881c2; border-bottom: 0px solid #5881c2;\">Scylla Monitoring version - master</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_dash_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1000&height=2500\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
+                "content": "<div style=\"color:#5881c2; border-bottom: 0px solid #5881c2;\">Scylla Monitoring version - 3.8.0</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1000&height=2500\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
                 "mode": "html"
             },
             "span": 12,
@@ -9458,7 +9458,7 @@
                 "includeAll": false,
                 "label": null,
                 "multi": false,
-                "name": "scylla_dash_version",
+                "name": "scylla_version",
                 "options": [
                     {
                         "selected": true,
@@ -9474,8 +9474,8 @@
                 "allValue": null,
                 "class": "monitor_version_var",
                 "current": {
-                    "text": "master",
-                    "value": "master"
+                    "text": "3.8.0",
+                    "value": "3.8.0"
                 },
                 "error": null,
                 "hide": 2,
@@ -9486,11 +9486,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "master",
-                        "value": "master"
+                        "text": "3.8.0",
+                        "value": "3.8.0"
                     }
                 ],
-                "query": "master",
+                "query": "3.8.0",
                 "skipUrlSync": false,
                 "type": "custom"
             }

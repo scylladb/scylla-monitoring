@@ -1640,8 +1640,8 @@
             "type": "text"
         },
         {
-            "class": "enterprise_advisor_table",
-            "dashversion": ">2019.1",
+            "class": "advisor_table",
+            "dashversion": ">4.1",
             "datasource": "alertmanager",
             "fieldConfig": {
                 "defaults": {
@@ -1837,6 +1837,9 @@
                                 "advisor",
                                 "dashboard",
                                 "description",
+                                "severity",
+                                "alertname",
+                                "summary",
                                 "Time"
                             ]
                         }
@@ -1847,10 +1850,11 @@
                     "options": {
                         "excludeByName": {},
                         "indexByName": {
-                            "Time": 0,
-                            "advisor": 1,
-                            "dashboard": 2,
-                            "description": 3
+                            "Time": 1,
+                            "advisor": 2,
+                            "dashboard": 3,
+                            "severity": 0,
+                            "summary": 4
                         },
                         "renameByName": {}
                     }
@@ -3645,10 +3649,10 @@
                 },
                 {
                     "dashversion": [
-                        "<4.5",
-                        "<2021.1"
+                        ">4.5",
+                        ">2021.1"
                     ],
-                    "expr": "min(scylla_node_maintenance_operations_repair_finished_percentage{cluster=~\"$cluster\", dc=~\"$dc\"}) by(instance)< 1 + 2*(sum(errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0)",
+                    "expr": "(min(scylla_node_ops_finished_percentage{ops=\"repair\", cluster=~\"$cluster\", dc=~\"$dc\"}) by(instance)< 1) or 2*(sum(errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0)",
                     "format": "table",
                     "instant": true,
                     "interval": "",
@@ -4316,7 +4320,7 @@
     "schemaVersion": 26,
     "style": "dark",
     "tags": [
-        "2020.1"
+        "4.5"
     ],
     "templating": {
         "list": [
@@ -4576,8 +4580,8 @@
                 "allValue": null,
                 "class": "template_variable_custom",
                 "current": {
-                    "text": "2020-1",
-                    "value": "2020-1"
+                    "text": "4-5",
+                    "value": "4-5"
                 },
                 "error": null,
                 "hide": 2,
@@ -4588,11 +4592,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "2020-1",
-                        "value": "2020-1"
+                        "text": "4-5",
+                        "value": "4-5"
                     }
                 ],
-                "query": "2020-1",
+                "query": "4-5",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -4665,8 +4669,8 @@
                 "allValue": null,
                 "class": "template_variable_custom",
                 "current": {
-                    "text": "2020.1",
-                    "value": "2020.1"
+                    "text": "4.5",
+                    "value": "4.5"
                 },
                 "error": null,
                 "hide": 2,
@@ -4677,11 +4681,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "2020.1",
-                        "value": "2020.1"
+                        "text": "4.5",
+                        "value": "4.5"
                     }
                 ],
-                "query": "2020.1",
+                "query": "4.5",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -4743,6 +4747,6 @@
     },
     "timezone": "utc",
     "title": "Overview",
-    "uid": "overview-2020-1",
+    "uid": "overview-4-5",
     "version": 1
 }
