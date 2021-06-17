@@ -116,7 +116,7 @@ html_theme_options = {
     ('Scylla University', 'https://university.scylladb.com/'),
     ('ScyllaDB Home', 'https://www.scylladb.com/')],
     'github_issues_repository': 'scylladb/scylla-monitoring',
-    'show_sidebar_index': False,
+    'show_sidebar_index': True,
 }
 
 extlinks = {
