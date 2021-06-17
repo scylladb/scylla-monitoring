@@ -103,8 +103,7 @@ rst_prolog = """
 # a list of builtin themes.
 #
 html_theme = 'sphinx_scylladb_theme'
-
-html_style = ''
+html_static_path = ['_static']
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -117,7 +116,7 @@ html_theme_options = {
     ('Scylla University', 'https://university.scylladb.com/'),
     ('ScyllaDB Home', 'https://www.scylladb.com/')],
     'github_issues_repository': 'scylladb/scylla-monitoring',
-    'show_sidebar_index': True,
+    'show_sidebar_index': False,
 }
 
 extlinks = {

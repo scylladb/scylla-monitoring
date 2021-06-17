@@ -1,8 +1,18 @@
-Scylla Monitoring Stack
-=======================
+.. title:: Scylla Monitoring Stack
 
-.. image:: scylla-monitor.png
-   :scale: 60%
+.. raw:: html
+
+  <div class="full-contents">
+
+.. raw:: html
+
+  <div class="main-title">
+    <img class="main-title-logo" src="_static/img/scylla-monitor.png" />
+    <div class="main-title-header">
+      <h1>Scylla Monitoring Stack</h1>
+      <h3>A full stack solution for Scylla monitoring and alerting. </h3>
+    </div>
+  </div>
 
 .. toctree::
    :maxdepth: 1
@@ -15,8 +25,6 @@ Scylla Monitoring Stack
    Troubleshooting <troubleshooting/index>
    Reference <reference/index>
 
-
-
 .. raw:: html
 
   <div class="topics-grid">
@@ -24,7 +32,7 @@ Scylla Monitoring Stack
 .. topic-box::
   :title: Introduction to Scylla Monitoring Stack
   :link: /intro/
-  :icon: fa fa-power-off
+  :icon: fa fa-desktop
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
   :class: my-box
@@ -34,7 +42,7 @@ Scylla Monitoring Stack
 .. topic-box::
   :title: Installation Guide
   :link: /install/
-  :icon: fa fa-clipboard
+  :icon: fa fa-power-off
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
   :class: my-box
@@ -44,7 +52,7 @@ Scylla Monitoring Stack
 .. topic-box::
   :title: User Guide
   :link: /use-monitoring/
-  :icon: fa fa-leanpub
+  :icon: fa fa-book
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
   :class: my-box
@@ -54,7 +62,7 @@ Scylla Monitoring Stack
 .. topic-box::
   :title: Procedures
   :link: /procedures/
-  :icon: fa fa-leanpub
+  :icon: fa fa-list-ol
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
   :class: my-box
@@ -64,7 +72,7 @@ Scylla Monitoring Stack
 .. topic-box::
   :title: Reference Guide
   :link: /reference/
-  :icon: fa fa-leanpub
+  :icon: fa fa-search
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
   :class: my-box
@@ -74,7 +82,7 @@ Scylla Monitoring Stack
 .. topic-box::
   :title: Troubleshooting
   :link: /troubleshooting/
-  :icon: fa fa-leanpub
+  :icon: fa fa-life-ring
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
   :class: my-box
@@ -85,7 +93,7 @@ Scylla Monitoring Stack
 .. topic-box::
   :title: GitHub Project
   :link: https://github.com/scylladb/scylla-monitoring
-  :icon: fa fa-power-off
+  :icon: fa fa-github
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
   :class: my-box
@@ -95,7 +103,7 @@ Scylla Monitoring Stack
 .. topic-box::
   :title: Download
   :link: https://www.scylladb.com/download/#monitor
-  :icon: fa fa-power-off
+  :icon: fa fa-download
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
   :class: my-box
@@ -104,4 +112,4 @@ Scylla Monitoring Stack
 
 .. raw:: html
 
-  </div>
+  </div></div>
