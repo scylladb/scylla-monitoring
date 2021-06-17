@@ -15,7 +15,6 @@ Scylla Monitoring Stack
    Troubleshooting <troubleshooting/index>
    Reference <reference/index>
 
-.. include:: /_common/monitor-description.rst
 
 
 .. raw:: html
