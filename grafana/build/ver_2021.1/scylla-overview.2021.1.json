@@ -643,7 +643,7 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "wlatencya{by=\"cluster\", cluster=~\"$cluster|^$\"}",
+                    "expr": "wlatencya{by=\"cluster\", cluster=~\"$cluster|^$\"} or on() (sum(rate(scylla_storage_proxy_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s]))/(sum(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) + 1))",
                     "instant": true,
                     "intervalFactor": 1,
                     "legendFormat": "",
@@ -706,7 +706,7 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "wlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\"}",
+                    "expr": "wlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\"} or on() (histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[60s])) by (le)))",
                     "instant": true,
                     "intervalFactor": 1,
                     "legendFormat": "",
@@ -769,7 +769,7 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "rlatencya{by=\"cluster\", cluster=~\"$cluster|^$\"}",
+                    "expr": "rlatencya{by=\"cluster\", cluster=~\"$cluster|^$\"} or on() (sum(rate(scylla_storage_proxy_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s]))/(sum(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) + 1))",
                     "instant": true,
                     "intervalFactor": 1,
                     "legendFormat": "",
@@ -832,7 +832,7 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "rlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\"}",
+                    "expr": "rlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\"} or on() (histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[60s])) by (le)))",
                     "instant": true,
                     "intervalFactor": 1,
                     "legendFormat": "",
@@ -1293,14 +1293,14 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "wlatencyp95{by=\"cluster\", cluster=~\"$cluster|$^\"}",
+                    "expr": "wlatencyp95{by=\"cluster\", cluster=~\"$cluster|$^\"} or on() histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (le))",
                     "intervalFactor": 1,
                     "legendFormat": "95%",
                     "refId": "A",
                     "step": 1
                 },
                 {
-                    "expr": "wlatencyp99{by=\"cluster\", cluster=~\"$cluster|$^\"}",
+                    "expr": "wlatencyp99{by=\"cluster\", cluster=~\"$cluster|$^\"} or on() histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (le))",
                     "intervalFactor": 1,
                     "legendFormat": "99%",
                     "refId": "B",
@@ -1511,14 +1511,14 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "rlatencyp95{by=\"cluster\", cluster=~\"$cluster|$^\"}",
+                    "expr": "rlatencyp95{by=\"cluster\", cluster=~\"$cluster|$^\"} or on() histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (le))",
                     "intervalFactor": 1,
                     "legendFormat": "95%",
                     "refId": "A",
                     "step": 1
                 },
                 {
-                    "expr": "rlatencyp99{by=\"cluster\", cluster=~\"$cluster|$^\"}",
+                    "expr": "rlatencyp99{by=\"cluster\", cluster=~\"$cluster|$^\"} or on() histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (le))",
                     "intervalFactor": 1,
                     "legendFormat": "99%",
                     "refId": "B",
@@ -2139,12 +2139,12 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "(max(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"})-scalar(avg(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"})))/(scalar(stddev(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"}))+100)-3",
+                    "expr": "((max(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"})-scalar(avg(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"})))/(scalar(stddev(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"}))+100)-3) or on() (max(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance, le)) -scalar(avg(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance,le))>0)))/ scalar(stddev(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance,le))>0)+100)-3)",
                     "legendFormat": "",
                     "refId": "A"
                 },
                 {
-                    "expr": "(max(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"})-scalar(avg(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"})))/(scalar(stddev(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"}))+100)-3",
+                    "expr": "((max(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"})-scalar(avg(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"})))/(scalar(stddev(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\"}))+100)-3) or on() (max(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance, le)) -scalar(avg(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance,le))>0)))/ scalar(stddev(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance,le))>0)+100)-3)",
                     "legendFormat": "",
                     "refId": "B"
                 }
@@ -2237,12 +2237,12 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "(max(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"})-scalar(avg(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"})))/(scalar(stddev(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"}))+100)-3",
+                    "expr": "((max(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"})-scalar(avg(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"})))/(scalar(stddev(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"}))+100)-3) or on() (max(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance,shard, le)) -scalar(avg(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance,shard,le))>0)))/ scalar(stddev(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance,shard, le))>0)+100)-3)",
                     "legendFormat": "",
                     "refId": "A"
                 },
                 {
-                    "expr": "(max(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"})-scalar(avg(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"})))/(scalar(stddev(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"}))+100)-3",
+                    "expr": "((max(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"})-scalar(avg(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"})))/(scalar(stddev(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\"}))+100)-3) or on() (max(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance,shard, le)) -scalar(avg(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance,shard,le))>0)))/ scalar(stddev(histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by (instance,shard, le))>0)+100)-3)",
                     "legendFormat": "",
                     "refId": "B"
                 }
@@ -2846,14 +2846,14 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
+                    "expr": "wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} or on() (histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by ([[by]], le)))",
                     "intervalFactor": 1,
                     "legendFormat": "95% {{[[by]]}}",
                     "refId": "A",
                     "step": 1
                 },
                 {
-                    "expr": "wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
+                    "expr": "wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} or on() (histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by ([[by]], le)))",
                     "intervalFactor": 1,
                     "legendFormat": "99% {{[[by]]}}",
                     "refId": "B",
@@ -3090,14 +3090,14 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
+                    "expr": "rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} or on() (histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by ([[by]], le)))",
                     "intervalFactor": 1,
                     "legendFormat": "95% {{[[by]]}}",
                     "refId": "A",
                     "step": 1
                 },
                 {
-                    "expr": "rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
+                    "expr": "rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} or on() (histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval])) by ([[by]], le)))",
                     "intervalFactor": 1,
                     "legendFormat": "99% {{[[by]]}}",
                     "refId": "B",
@@ -3656,7 +3656,7 @@
                     "refId": "D"
                 },
                 {
-                    "expr": "(sum(cql:non_system_prepared1m{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 1) + (sum(rate(scylla_cql_reverse_queries{cluster=~\"$cluster\", dc=~\"$dc\"}[60s])) by(instance) >bool 1) + (sum(cql:non_paged_no_system{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 1)",
+                    "expr": "(sum(cql:non_system_prepared1m{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 1) + (sum(rate(scylla_cql_reverse_queries{cluster=~\"$cluster\", dc=~\"$dc\"}[60s])) by(instance) >bool 1) + (sum(cql:non_paged_no_system1m{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 1)",
                     "format": "table",
                     "instant": true,
                     "interval": "",
