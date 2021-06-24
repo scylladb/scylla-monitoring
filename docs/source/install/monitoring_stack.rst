@@ -30,6 +30,9 @@ Prerequisites
    * - Scylla Monitoring Stack Version
      - Prometheus Version
      - Grafana Version
+   * - 3.8
+     - 2.27.1
+     - 7.5.7
    * - 3.7
      - 2.25.2
      - 7.4.0
@@ -96,7 +99,7 @@ As an alternative, you can clone and use the Git repository directly.
 
    git clone https://github.com/scylladb/scylla-monitoring.git
    cd scylla-monitoring
-   git checkout branch-3.7
+   git checkout branch-3.8
 
 2. Start Docker service if needed
 
