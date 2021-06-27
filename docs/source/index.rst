@@ -22,6 +22,7 @@
    Download and Install <install/index>
    User Guide <use-monitoring/index>
    Procedures <procedures/index>
+   Upgrade <upgrade/index>
    Troubleshooting <troubleshooting/index>
    Reference <reference/index>
 
