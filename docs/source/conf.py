@@ -95,7 +95,7 @@ def setup(sphinx):
 
 rst_prolog = """
 .. |version| replace:: 3.7.0
-.. |mon_root| replace::  `Scylla Monitoring Stack <https://monitoring.docs.scylladb.com>`__
+.. |mon_root| replace::  `Scylla Monitoring Stack </>`__
 """
 
 # -- Options for HTML output ----------------------------------------------
