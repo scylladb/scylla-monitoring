@@ -8,6 +8,7 @@ Scylla Monitoring Stack
    User Guide <use-monitoring/index>
    Download and Install <install/index>
    Procedures <procedures/index>
+   Upgrade <upgrade/index>
    Troubleshooting <troubleshooting/index>
    Reference <reference/index>
 
