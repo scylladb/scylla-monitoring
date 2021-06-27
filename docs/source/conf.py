@@ -184,7 +184,7 @@ BRANCHES = ['branch-3.4', 'branch-3.5', 'branch-3.6', 'branch-3.7', 'branch-3.8'
 smv_branch_whitelist = multiversion_regex_builder(BRANCHES)
 # Defines which version is considered to be the latest stable version.
 # Must be listed in smv_tag_whitelist or smv_branch_whitelist.
-smv_latest_version = 'branch-3.7'
+smv_latest_version = 'branch-3.8'
 smv_rename_latest_version = 'stable'
 # Part of the branch name to skip.
 branch_substring_removed = 'branch-'
