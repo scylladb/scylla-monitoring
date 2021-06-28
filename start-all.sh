@@ -102,7 +102,7 @@ if [ -z "$PROMETHEUS_RULES" ]; then
 fi
 
 if [ -z "$VERSIONS" ]; then
-  VERSIONS=$DEFAULT_VERSION
+  VERSIONS=${DEFAULT_VERSION[$BRANCH_VERSION]}
 fi
 
 if [ -z "$SCYLLA_TARGET_FILES" ]; then
