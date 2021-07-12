@@ -74,6 +74,15 @@
             },
             {
                 "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "reads and writes"
+                    }
+                ]
+            },
+            {
+                "class": "row",
                 "height": "25px",
                 "gridPos": {"h": 2},
                 "panels": [
@@ -104,6 +113,21 @@
                         "title": "Foreground Writes per [[by]]"
                     },
                     {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_storage_proxy_coordinator_background_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Background writes are writes that are already acknowledged to the application but have additional work to be done. For instance, if a replica responded and only one is needed, this request is still listed as a background request until all replicas respond. This metric represents a queue size, not a rate. High values here correlate with increased write latencies.",
+                        "title": "Background Writes per [[by]]"
+                    },
+                    {
                         "class": "rps_panel",
                         "span": 3,
                         "targets": [
@@ -118,116 +142,6 @@
                         ],
                         "description": "Foreground reads are reads that weren't acknowledged yet to the application. For instance, if a single replica responded and two are needed due to the consistency level. This metric represents a queue size, not a rate. High values here correlate with increased read latencies.",
                         "title": "Foreground Reads per [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} or on() ($func(rate(scylla_storage_proxy_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Average write latency by [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} or on() ($func(rate(scylla_storage_proxy_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "Average read latency by [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"} or on() (histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le)))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "95th percentile write latency by [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} or on() (histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le)))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "99th percentile write latency by [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} or on() (histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le)))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "95th percentile read latency by [[by]]"
-                    },
-                    {
-                        "class": "us_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} or on() (histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]], le)))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "99th percentile read latency by [[by]]"
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-                "class": "row",
-                "height": "200px",
-                "panels": [
-                    {
-                        "class": "wps_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(scylla_storage_proxy_coordinator_background_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "description": "Background writes are writes that are already acknowledged to the application but have additional work to be done. For instance, if a replica responded and only one is needed, this request is still listed as a background request until all replicas respond. This metric represents a queue size, not a rate. High values here correlate with increased write latencies.",
-                        "title": "Background Writes per [[by]]"
                     },
                     {
                         "class": "rps_panel",
@@ -314,6 +228,15 @@
             },
             {
                 "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Timeouts and Errors"
+                    }
+                ]
+            },
+            {
+                "class": "row",
                 "height": "25px",
                 "gridPos": {"h": 2},
                 "panels": [
@@ -387,6 +310,15 @@
                         ],
                         "description": "Requests that Scylla did not even try to read because replicas that were needed to execute this write were unavailable. Unavailable reads are counted in the node that received the request (the coordinator), not at the replicas.",
                         "title": "Read Unavailable/Seconds per [[by]]"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Replica"
                     }
                 ]
             },
@@ -563,6 +495,15 @@
                     }
                 ],
                 "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Cache"
+                    }
+                ]
             },
             {
                 "class": "row",
@@ -858,6 +799,16 @@
             },
             {
                 "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "collapsed": true,
+                        "title": "Materialized Views"
+                    }
+                ]
+            },
+            {
+                "class": "row",
                 "height": "25px",
                 "gridPos": {"h": 2},
                 "panels": [
@@ -965,6 +916,16 @@
                         ],
                         "title": "Throttled Base Writes",
                         "description" : "Currently throttled base writes, as a consequence of the respective view update backlog."
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "collapsed": true,
+                        "title": "LWT"
                     }
                 ]
             },
@@ -1351,6 +1312,16 @@
             },
             {
                 "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "collapsed": true,
+                        "title": "CDC"
+                    }
+                ]
+            },
+            {
+                "class": "row",
                 "height": "25px",
                 "gridPos": {"h": 2},
                 "panels": [
@@ -1394,6 +1365,15 @@
                         ],
                         "title": "Failed CDC operations",
                         "description" : "The rate of failed CDC operations."
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Memory"
                     }
                 ]
             },
@@ -1443,6 +1423,15 @@
                     }
                 ],
                 "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Compaction"
+                    }
+                ]
             },
             {
                 "class": "row",
@@ -1527,6 +1516,147 @@
                 "title": "New row"
             },
             {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "repeat":"scheduling_group",
+                        "collapsed": true,
+                        "title": "Latencies - $scheduling_group"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"} or on() ($func(rate(scylla_storage_proxy_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Average write latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group|$\"} or on() (histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[60s])) by ([[by]], le)))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "95th percentile write latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"} or on() (histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[60s])) by ([[by]], le)))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "99th percentile write latency by [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"} or on() ($func(rate(scylla_storage_proxy_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Average read latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"} or on() (histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[60s])) by ([[by]], le)))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "95th percentile read latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"} or on() (histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[60s])) by ([[by]], le)))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "99th percentile read latency by [[by]]"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": ""
+                    }
+                ]
+            },
+            {
                 "class": "user_panel_row_header"
             },
             {
@@ -1564,6 +1694,42 @@
                     "label": "shard",
                     "name": "shard",
                     "query": "label_values(scylla_reactor_utilization,shard)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "SG",
+                    "dashversion":[">2019.1"],
+                    "current": {
+                      "selected": true,
+                      "tags": [],
+                      "text": [
+                        "service_level_sg_0"
+                      ],
+                      "value": [
+                        "service_level_sg_0"
+                      ]
+                    },
+                    "name": "scheduling_group",
+                    "query": "label_values(scylla_storage_proxy_coordinator_read_latency_bucket,scheduling_group_name)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "sc_group",
+                    "dashversion":[">4.3"],
+                    "current": {
+                      "selected": true,
+                      "tags": [],
+                      "text": [
+                        "statement"
+                      ],
+                      "value": [
+                        "statement"
+                      ]
+                    },
+                    "name": "SG",
+                    "query": "label_values(scylla_storage_proxy_coordinator_read_latency_bucket,scheduling_group_name)",
                     "sort": 3
                 },
                 {
