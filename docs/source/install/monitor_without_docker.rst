@@ -1,16 +1,32 @@
+================================================
 Deploying Scylla Monitoring Stack Without Docker
 ================================================
-
+Introduction
+------------
 The following instructions will help to deploy `Scylla Monitoring Stack <monitoring_stack>`_ in cases where you can not use the recommended Docker version.
 
 Please note, Scylla recommends you use the Docker version as it will provide you with most updated, current Scylla Monitoring system.
 
+Scylla Monitoring uses the following components:
+
+* Alertmanager
+* Grafana Loki
+* Prometheus
+* Grafana
+
+The common scenario for users who use their own standalone installation, is they already have such a server and would like to consolidate.
+We assume that that you already have Prometheus and Grafana running but we will add minimal installation instruction for all componenents.
+
+We suggest that you follow the installation instruction of each of those products from their official documentation. It is also recommended that all servers will run as a service.
+
+ 
+  
 .. include:: min-prod-hw.rst
 
 The main item to set an alert on is the available disk space in the monitoring system. Data is indefinitely accrued on the Prometheus data directory.
 The current monitoring solution does not churn data.
 
-.. note:: Confirm before installing, that your Grafana and Prometheus versions are supported by the Scylla Monitoring Stack version you want to install. See the `Scylla Monitoring Stack Compatibility Matrix </install/monitoring_stack/#prerequisites>`_.
+.. note:: Confirm before installing, that your Grafana and Prometheus versions are supported by the Scylla Monitoring Stack version you want to install. Scylla-Monitoring follows the latest Prometheus and Grafana releases tightly. See the `Scylla Monitoring Stack Compatibility Matrix </install/monitoring_stack/#prerequisites>`_.
 
 Install Scylla Monitoring Stack
 -------------------------------
@@ -19,17 +35,17 @@ The following procedure uses a ``CentOS 7`` based instance
 
 1. Download the latest Scylla Monitoring Stack release.
 
-``wget https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-3.5.tar.gz``
+``wget https://github.com/scylladb/scylla-monitoring/archive/refs/tags/scylla-monitoring-3.8.0.tar.gz``
 
 
 2. Open the tar
 
-``tar -xvf scylla-monitoring-3.5.tar.gz``
+``tar -xvf scylla-monitoring-*.tar.gz``
 
 Install Alertmanager
 --------------------
 
-Tested with alertmanager 0.20.0 version
+Tested with alertmanager 0.22.2 version
 
 1. Install `alertmanager`_
 
@@ -37,8 +53,8 @@ Tested with alertmanager 0.20.0 version
 
 .. code-block:: shell
 
-   wget https://github.com/prometheus/alertmanager/releases/download/v0.20.0/alertmanager-0.20.0.linux-amd64.tar.gz
-   tar -xvf alertmanager-0.20.0.linux-amd64.tar.gz
+   wget https://github.com/prometheus/alertmanager/releases/download/v0.22.2/alertmanager-0.22.2.linux-amd64.tar.gz
+   tar -xvf alertmanager-*.linux-amd64.tar.gz
 
 
 2. Copy the following file: ``rule_config.yml`` from ``scylla-monitoring-scylla-monitoring-3.5/prometheus`` directory to ``alertmanager.yml`` in the alertmanager installation directory.
@@ -47,7 +63,7 @@ For example:
 
 .. code-block:: shell
 
-   cp -p /home/centos/scylla-monitoring-scylla-monitoring-3.5/prometheus/rule_config.yml /home/centos/alertmanager-0.20.0.linux-amd64/alertmanager.yml
+   cp -p /home/centos/scylla-monitoring-scylla-monitoring-3.8.0/prometheus/rule_config.yml alertmanager-0.22.2.linux-amd64/alertmanager.yml
 
 3. Start the Alertmanager
 
@@ -55,7 +71,7 @@ For example:
 
 .. code-block:: shell
 
-   cd alertmanager-0.20.0.linux-amd64
+   cd alertmanager-0.22.2.linux-amd64
    ./alertmanager
 
 
@@ -69,11 +85,53 @@ For example:
 
 .. image:: alertmanager.png
 
+Install Grafana Loki 
+--------------------
+
+Loki is a log aggregation system inspired by Prometheus. Scylla Monitoring uses Loki for alerts and metrics generation. It does not replaces your centralized logging server, but it can, check
+Loki-Grafana `documentation`_ if you want to use it for centralized log collection.
+
+.. _`documentation` : https://grafana.com/docs/loki/latest/
+
+We recomand using Loki with containers, but you can install it locally as described in `Loki installation <https://grafana.com/docs/loki/latest/installation/local/>`_
+
+You will need to run both Loki and Promtail. Loki responsible for log parsing and acts as a Grafana and Proemtheus data-source and Generate alerts that are sent to the Alertmanager.
+
+Promtail load logs into Loki, there are multiple ways of doing that, we suggest to use of rsyslog, this way you can add Promtail (and Loki) as a second log collection server.
+
+**Loki Related files** 
+
+
+Loki has a configuration file and a rule file. You need to copy and modify the configuration.
+
+.. code-block:: shell
+
+   mkdir -p /etc/loki/rules
+   mkdir -p /etc/loki/config
+   cp loki/rules/* /etc/loki/rules
+   cp loki/conf/loki-config.template.yaml /etc/loki/config/loki-config.yaml
+
+Edit ``/etc/loki/config/loki-config.yaml`` and replace ``ALERTMANAGER`` with the alertmanager ip:port (i.e. localhost:9093) 
+
+**Promtail Related files**
+
+Promtail has a configuration file. You need to copy and modify the configuration.
+
+.. code-block:: shell
+
+   mkdir -p /etc/promtail/
+   loki/promtail/promtail_config.template.yml /etc/promtail/config.yml
+
+Edit ``/etc/promtail/config.yml`` and replace ``LOKI_IP`` with Loki's ip:port (i.e. localhost:3100)
 
 Install Prometheus
 ------------------
 
-Tested with Prometheus version 2.18.1
+Tested with Prometheus version 2.27.1
+
+.. note::
+   If you already have a prometheus server, beside the expected scrap jobs, make sure you take the Prometheus rules directory.
+   The files not only contains important alerts, they are containing recording rules, without it different asspects of the dashboards will not work.
 
 1. Install `Prometheus`_
 
@@ -81,10 +139,18 @@ Tested with Prometheus version 2.18.1
 
 .. code-block:: shell
 
-   wget https://github.com/prometheus/prometheus/releases/download/v2.18.1/prometheus-2.18.1.linux-amd64.tar.gz
-   tar -xvf prometheus-2.18.1.linux-amd64.tar.gz
+   wget https://github.com/prometheus/prometheus/releases/download/v2.27.1/prometheus-2.27.1.linux-amd64.tar.gz
+   tar -xvf prometheus-*.linux-amd64.tar.gz
 
-2. Copy the following files: ``scylla_servers.yml``, ``prometheus.rules.yml`` from ``scylla-monitoring-scylla-monitoring-3.5/prometheus`` directory to Prometheus installation directory.
+2. Create Data and Config directories
+.. code-block:: shell
+
+   mkdir -p /prometheus/data
+   mkdir -p /etc/prometheus/prom_rules/
+   mkdir -p /etc/scylla.d/prometheus/
+
+
+3. Copy the following files: ``scylla_servers.yml``, ``prometheus.rules.yml`` from ``scylla-monitoring-scylla-monitoring-3.7.0/prometheus`` directory to Prometheus installation directory.
 
 Copy ``prometheus/prometheus.yml.template`` to ``prometheus.yml``
 
@@ -92,17 +158,17 @@ For example:
 
 .. code-block:: shell
 
-   cp scylla-monitoring-scylla-monitoring-3.5/prometheus/*.yml prometheus-2.18.1.linux-amd64
-   cp scylla-monitoring-scylla-monitoring-3.5/prometheus/prometheus.yml.template prometheus-2.18.1.linux-amd64/prometheus.yml
+   cp scylla-monitoring-scylla-monitoring-3.7.0/prometheus/prom_rules/*.yml/etc/prometheus/prom_rules/
+   cp scylla-monitoring-scylla-monitoring-3.7.0/prometheus/prometheus.yml.template /etc/prometheus/prometheus.yml
 
 
-3. Edit the ``prometheus.yml`` file to point to the correct static data sources.
+4. Edit the ``prometheus.yml`` file to point to the correct static data sources.
 
 .. note:: Make sure to include the ``honor_labels: false`` parameter in the prometheus.yml file.
 
 .. code-block:: shell
 
-   vi prometheus-2.18.1.linux-amd64/prometheus.yml
+   vi /etc/prometheus/prometheus.yml
 
 Set the alertmanger address and port by replacing ``AM_ADDRESS`` in the file.
 
@@ -137,7 +203,7 @@ For example the scrape config for Scylla:
      honor_labels: false
      file_sd_configs:
        - files:
-         - scylla_servers.yml
+         - /etc/scylla.d/prometheus/scylla_servers.yml
      relabel_configs:
        - source_labels: [__address__]
          regex:  '([^:]+)'
@@ -150,7 +216,7 @@ For example the scrape config for Scylla:
          replacement: '${1}'
 
 
-4. Create and set ``scylla_servers.yml`` file point to your Scylla nodes and ``scylla_manager_server.yml`` file to point to your Scylla Manager.
+5. Create and set ``scylla_servers.yml`` file point to your Scylla nodes and ``scylla_manager_server.yml`` file to point to your Scylla Manager.
 
 .. note::
    There is no need to configure ``node_exporter_server``. Instead, in the Prometheus scrape config of the node_exporter
@@ -197,16 +263,7 @@ For example:
 .. code-block:: shell
 
    - targets:
-     - 127.0.0.1:56090
-
-5. Create a data directory for Prometheus to store the metrics data
-
-For example:
-
-.. code-block:: shell
-
-   mkdir prometheus-2.18.1.linux-amd64/mydata
-
+     - 127.0.0.1:5090
 
 6. Start Prometheus server:
 
@@ -214,10 +271,10 @@ For example:
 
 .. code-block:: shell
 
-   cd prometheus-2.18.1.linux-amd64
-   ./prometheus --config.file=prometheus.yml --storage.tsdb.path mydata
+   cd scylla-monitoring-scylla-monitoring-3.7.0/
+   ./prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path /prometheus/data
 
-Data should start accumulate on: ./mydata
+Data should start accumulate on: /prometheus/data
 
 7. Verify that Prometheus is up and running, point your browser to the Prometheus IP:Port
 
@@ -247,22 +304,19 @@ And
 
 At this point Scylla is emitting the metrics and Prometheus is able to store them.
 
-
 Install Grafana
 ---------------
 
-Tested with Grafna 6.7.3
+Tested with Grafna 7.5.7
 
-1. Install Grafana based on the instructions `here`_ make sure to use version 6.7.0 or higher
-
-..  _`here` : http://docs.grafana.org/installation/
+1. Install Grafana based on the instructions `here <http://docs.grafana.org/installation/>`_
 
 Depends if you installed Grafana from a repository (yum install), or if you downloaded the zip version, the directory structure will be
 different in the rest of the steps.
 
 2. Access Scylla-Grafana-monitoring directory
 
-``cd scylla-monitoring-scylla-monitoring-3.5/``
+``cd scylla-monitoring-scylla-monitoring-3.7.0/``
 
 3. Copy the plugins to the grafana plugins directory (by default ``/var/lib/grafana/``)
 
@@ -277,11 +331,11 @@ For example:
 
 .. code-block:: shell
 
-   cp -r grafana/plugins ../grafana-6.7.3/public/app
+   cp -r grafana/plugins ../grafana-7.5.7/public/app
 
-4. Provision the Dashboard them
+4. Provision the Dashboards
 
-For example Scylla version 4.0 and Scylla manager version 2.0
+For example Scylla Open-source version 4.5 and Scylla manager version 2.4
 
 For Grafana installed with ``yum install``
 
@@ -295,12 +349,14 @@ For Grafana installed from packages
 
 .. code-block:: shell
 
-   cp -p -r grafana/build/* ../grafana-6.7.3/public/build/
-   cp -p grafana/load.yaml ../grafana-6.7.3/conf/provisioning/dashboards/load.4.0.yaml
-   cp -p grafana/load.yaml ../grafana-6.7.3/conf/provisioning/dashboards/load.manager_2.0.yaml
+   cp -p -r grafana/build/* ../grafana-7.5.7/public/build/
+   cp -p grafana/load.yaml ../grafana-7.5.7/conf/provisioning/dashboards/load.4.5.yaml
+   cp -p grafana/load.yaml ../grafana-7.5.7/conf/provisioning/dashboards/load.manager_2.4.yaml
 
-Edit the ``load.*``  files in ``/home/centos/grafana-6.7.3/conf/provisioning/dashboards/`` for the correct path,
-for example ``load.4.0.yaml`` would point to: ``/home/centos/grafana-6.7.3/public/build/ver_4.0`` and the FOLDER will be ``4.0``
+Edit the ``load.*``  files in ``/home/centos/grafana-7.5.7/conf/provisioning/dashboards/`` for the correct path,
+for example ``load.4.5.yaml`` would point to: ``/home/centos/grafana-7.5.7/public/build/ver_4.5``.
+
+.. note:: A note about using folders, if you provision multiple Scylla versions, use the version as a folder name. Otherwise, no need to configure a FOLDER.
 
 
 5. Set the data source by copy ``datasource.yml`` and edit it
@@ -313,7 +369,7 @@ For Grafana installed from packages
 
 .. code-block:: shell
 
-   cp -p grafana/datasource.yml /home/centos/grafana-6.7.3/conf/provisioning/datasources/
+   cp -p grafana/datasource.yml /home/centos/grafana-7.5.7/conf/provisioning/datasources/
 
 You should set the Prometheus and the alertmanager IP and port.
 
@@ -355,23 +411,23 @@ For Grafana installed with `yum install`
 
 For Grafana installed from packages:
 
-``cp -p /home/centos/grafana-6.7.3/conf/sample.ini /home/centos/grafana-6.7.3/conf/scylla.ini``
+``cp -p /home/centos/grafana-7.5.7/conf/sample.ini /home/centos/grafana-7.5.7/conf/scylla.ini``
 
 Edit scylla.ini to reflect the right paths in the paths section of the file.
 
 
 .. code-block:: shell
 
-    plugins = /home/centos/grafana-6.7.3/data/plugins
-    provisioning = /home/centos/grafana-6.7.3/conf/provisioning
+    plugins = /home/centos/grafana-7.5.7/data/plugins
+    provisioning = /home/centos/grafana-7.5.7/conf/provisioning
 
 
 Start the server:
 
 .. code-block:: shell
 
-    cd /home/centos/grafana-6.7.3/
-    ./bin/grafana-server -config /home/centos/grafana-6.7.3/conf/scylla.ini
+    cd /home/centos/grafana-7.5.7/
+    ./bin/grafana-server -config /home/centos/grafana-7.5.7/conf/scylla.ini
 
 7. Make sure Grafana is running
 
