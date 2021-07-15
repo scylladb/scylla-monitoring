@@ -116,6 +116,7 @@ html_theme_options = {
     ('Scylla Cloud', 'https://docs.scylladb.com/scylla-cloud/'),
     ('Scylla University', 'https://university.scylladb.com/'),
     ('ScyllaDB Home', 'https://www.scylladb.com/')],
+    'hide_version_dropdown': ['master'],
     'github_issues_repository': 'scylladb/scylla-monitoring',
     'show_sidebar_index': True,
 }
@@ -181,7 +182,7 @@ notfound_urls_prefix = ''
 TAGS = []
 smv_tag_whitelist = multiversion_regex_builder(TAGS)
 # Whitelist pattern for branches (set to None to ignore all branches)
-BRANCHES = ['branch-3.4', 'branch-3.5', 'branch-3.6', 'branch-3.7', 'branch-3.8']
+BRANCHES = ['master', 'branch-3.4', 'branch-3.5', 'branch-3.6', 'branch-3.7', 'branch-3.8']
 smv_branch_whitelist = multiversion_regex_builder(BRANCHES)
 # Defines which version is considered to be the latest stable version.
 # Must be listed in smv_tag_whitelist or smv_branch_whitelist.
