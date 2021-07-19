@@ -14,7 +14,7 @@ groups:
   - record: cql:non_system_prepared1m
     expr: clamp_min(sum(rate(scylla_query_processor_statements_prepared[1m])) by (cluster, dc, instance, shard) - cql:all_system_shardrate1m, 0)
   - record: cql:non_prepared
-    expr: (sum(cql:non_system_prepared1m) by (cluster) >bool 100) * (sum(cql:non_system_prepared1m) by (cluster) / clamp_min(sum(cql:all_rate1m) - sum(cql:all_system_shardrate1m) by (cluster), 0.001))
+    expr: (sum(cql:non_system_prepared1m) by (cluster) >bool 100) * (sum(cql:non_system_prepared1m) by (cluster) / clamp_min(sum(cql:all_rate1m) by (cluster)- sum(cql:all_system_shardrate1m) by (cluster), 0.001))
   - record: cql:non_paged_no_system1m
     expr: clamp_min(sum(rate(scylla_cql_unpaged_select_queries[60s])) by (cluster, dc, instance) - sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks="system"}[60s])) by (cluster, dc, instance), 0)
   - record: cql:non_paged_no_system
