@@ -79,7 +79,7 @@
                 "class": "row",
                 "panels": [
                     {
-                        "class": "graph_panel",
+                        "class": "percentunit_panel",
                         "span": 3,
                         "targets": [
                             {
@@ -91,24 +91,8 @@
                                 "step": 1
                             }
                         ],
-                          "yaxes":[
-                             {
-                                "format":"percentunit",
-                                "logBase":1,
-                                "max":1.01,
-                                "min":0,
-                                "show":true
-                             },
-                             {
-                                "format":"short",
-                                "logBase":1,
-                                "max":null,
-                                "min":null,
-                                "show":true
-                             }
-                          ],
                         "title": "Used disk by $by"
-                    },                   
+                    },
                     {
                         "class": "bytes_panel",
                         "span": 3,
@@ -496,16 +480,9 @@
                         "title": "Available memory"
                     },
                     {
-                        "class": "graph_panel",
+                        "class": "percentunit_panel",
                         "span": 3,
                         "description": "Percent of available memory, note that in a production environment we expect this to be low, Scylla would use most of the available memory when possible",
-                        "fieldConfig": {
-                            "defaults": {
-                              "links": [],
-                              "unit": "percentunit"
-                            },
-                            "overrides": []
-                        },
                         "targets": [
                             {
                                 "expr": "sum(node_memory_MemAvailable_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}) by ([[by]])/sum(node_memory_MemTotal_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}) by ([[by]])",
@@ -519,16 +496,9 @@
                         "title": "Available memory"
                     },
                     {
-                        "class": "graph_panel",
+                        "class": "percentunit_panel",
                         "span": 3,
                         "description": "Percent of CPU used, note that in production Scylla would try to use most of the CPU and this is not a problem",
-                        "fieldConfig": {
-                            "defaults": {
-                              "links": [],
-                              "unit": "percentunit"
-                            },
-                            "overrides": []
-                        },
                         "targets": [
                             {
                                 "expr": "1-sum(rate(node_cpu_seconds_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", mode=\"idle\"}[3m])) by ([[by]])/count(node_cpu_seconds_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", mode=\"idle\"}) by ([[by]])",
