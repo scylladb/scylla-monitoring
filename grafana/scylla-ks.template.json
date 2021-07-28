@@ -1,0 +1,239 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "uid": "ks-__SCYLLA_VERSION_DASHED__",
+        "rows": [
+            {
+                "class": "logo_row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "repeat":"table",
+                        "collapsed": true,
+                        "title": "Latencies - $ks:$table"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_column_family_write_latency_count{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Writes by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "wlatencyaks{ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Average write latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "wlatencyp95ks{ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group|$\"} ",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "95th percentile write latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "wlatencyp99ks{ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} ",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "99th percentile write latency by [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_column_family_read_latency_count{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Reads by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "rlatencyaks{ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Average read latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "rlatencyp95ks{ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} ",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "95th percentile read latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "rlatencyp99ks{ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} ",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "99th percentile read latency by [[by]]"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": ""
+                    }
+                ]
+            },
+            {
+                "class": "user_panel_row_header"
+            },
+            {
+                "class": "user_panels_row"
+            },
+            {
+                "class": "monitoring_version_row"
+            }
+        ],
+        "templating": {
+            "list": [
+                {
+                    "class":"by_template_var"
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "node",
+                    "name": "node",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "shard",
+                    "name": "shard",
+                    "query": "label_values(scylla_reactor_utilization,shard)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "ks",
+                    "name": "ks",
+                    "query": "label_values(scylla_column_family_write_latency_count{cluster=~\"$cluster|$^\"},ks)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "table",
+                    "name": "table",
+                    "query": "label_values(scylla_column_family_write_latency_count{cluster=~\"$cluster|$^\", ks=\"$ks\"},cf)",
+                    "sort": 3
+                },
+                {
+                    "class": "aggregation_function"
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "__SCYLLA_VERSION_DOT__",
+                        "value": "__SCYLLA_VERSION_DOT__"
+                    },
+                    "name": "scylla_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "__SCYLLA_VERSION_DOT__",
+                            "value": "__SCYLLA_VERSION_DOT__"
+                        }
+                    ],
+                    "query": "__SCYLLA_VERSION_DOT__"
+                },
+                {
+                    "class": "monitor_version_var"
+                }
+            ]
+        },
+		"tags": [
+			"__SCYLLA_VERSION_DOT__"
+		],
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Keyspace",
+        "overwrite": true,
+        "version": 5
+    }
+}
