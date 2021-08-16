@@ -355,7 +355,12 @@ then
 fi
 
 for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
-    PROMETHEUS_COMMAND_LINE_OPTIONS+=" -$val"
+    if [[ $val = "--"* ]]; then
+        PROMETHEUS_COMMAND_LINE_OPTIONS+=" $val"
+    else
+        echo "Using single hyphen is depricated and will be removed in future version use -$val instead"
+        PROMETHEUS_COMMAND_LINE_OPTIONS+=" -$val"
+    fi
 done
 
 ./prometheus-config.sh -m $AM_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS
