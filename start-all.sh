@@ -56,7 +56,7 @@ if [ ! -z "$is_podman" ]; then
 fi
 
 function usage {
-  __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer]
+  __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
 
 Options:
   -h print this help and exit
@@ -80,6 +80,7 @@ Options:
   -M scylla-manager version      - Override the default Scylla Manager version to use.
   -D docker param                - Encapsulate docker param, the parameter will be used by all containers.
   -r alert-manager-config        - Override the default alert-manager configuration file.
+  -f path/to/alertmanager/data   - If set, the alertmanager would store its data in the given directory. 
   -R prometheus-alert-file       - Override the default Prometheus alerts configuration file.
   -N path/to/manager/target file - Set the location of the target file for Scylla Manager.
   -A bind-to-ip-address          - Bind to a specific interface.
@@ -158,6 +159,9 @@ fi
 if [ -z "$RUN_THANOS_SC" ]; then
   RUN_THANOS_SC=0
 fi
+if [ -z "$ALERT_MANAGER_DIR" ]; then
+  ALERT_MANAGER_DIR=""
+fi
 for arg; do
 	shift
 	case $arg in
@@ -174,7 +178,7 @@ for arg; do
     esac
 done
 
-while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:T:' option; do
+while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:' option; do
   case "$option" in
     h) usage
        exit
@@ -235,6 +239,8 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:P:S:T:' option; do
     S) SPECIFIC_SOLUTION="-S $OPTARG"
        ;;
     E) RUN_RENDERER="-E"
+       ;;
+    f) ALERT_MANAGER_DIR="-f $OPTARG"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -317,8 +323,7 @@ for val in "${ALERTMANAGER_COMMANDS[@]}"; do
 done
 
 echo "Wait for alert manager container to start"
-
-AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT -D "$DOCKER_PARAM" $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
+AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
 if [ $? -ne 0 ]; then
     echo "$AM_ADDRESS"
     exit 1
