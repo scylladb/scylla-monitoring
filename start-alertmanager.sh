@@ -6,9 +6,15 @@ RULE_FILE=$PWD/prometheus/rule_config.yml
 DOCKER_PARAM=""
 BIND_ADDRESS=""
 ALERTMANAGER_COMMANDS=""
-usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param] [-C alertmanager commands] [-r rule-file]"
+ALERT_MANAGER_DIR=""
+USER_PERMISSIONS=""
+usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param] [-C alertmanager commands] [-r rule-file] [-f alertmanager-dir]"
+if [ "`id -u`" -ne 0 ]; then
+    GROUPID=`id -g`
+    USER_PERMISSIONS="-u $UID:$GROUPID"
+fi
 
-while getopts ':hlp:r:D:C:A:' option; do
+while getopts ':hlp:r:D:C:f:A:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -17,7 +23,8 @@ while getopts ':hlp:r:D:C:A:' option; do
        ;;
     r) RULE_FILE=`readlink -m $OPTARG`
        ;;
-
+    f) ALERT_MANAGER_DIR="$USER_PERMISSIONS -v $(readlink -m $OPTARG):/alertmanager/data:z"
+       ;;
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
     D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
@@ -56,6 +63,7 @@ fi
 
 docker run -d $DOCKER_PARAM -i $PORT_MAPPING \
 	 -v $RULE_FILE:/etc/alertmanager/config.yml:z \
+	 $ALERT_MANAGER_DIR \
      --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION $ALERTMANAGER_COMMANDS --log.level=debug --config.file=/etc/alertmanager/config.yml >& /dev/null
 
 
