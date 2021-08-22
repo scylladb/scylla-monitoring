@@ -94,7 +94,7 @@ def setup(sphinx):
 # Adds version variables for monitoring and manager versions when used in inline text
 
 rst_prolog = """
-.. |version| replace:: 3.8.0
+.. |version| replace:: 3.8.2
 .. |mon_root| replace::  `Scylla Monitoring Stack </>`__
 """
 
