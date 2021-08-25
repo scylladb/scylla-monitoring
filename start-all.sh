@@ -98,6 +98,20 @@ The script starts Scylla Monitoring stack.
   echo "$__usage"
 }
 
+is_local () {
+    for var in "$@"; do
+        if grep -q '127.' $1; then
+            echo "Local host found in $1"
+            grep '127.' $1
+            return 0
+        fi
+        if grep -q 'localhost' $1; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 if [ -z "$PROMETHEUS_RULES" ]; then
   PROMETHEUS_RULES="$PWD/prometheus/prom_rules/:/etc/prometheus/prom_rules/"
 fi
@@ -253,6 +267,14 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:' option; 
   esac
 done
 
+if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
+    if [ ! -z "$ALERTMANAGER_PORT" ] || [ ! -z "$GRAFANA_PORT" ] || [ ! -z $PROMETHEUS_PORT ]; then
+        echo "Port mapping is not supported with host network, remove the -l flag from the command line"
+        exit 1
+    fi
+    HOST_NETWORK=1
+fi
+
 if [ -z "$CONSUL_ADDRESS" ]; then
     for f in ${SCYLLA_TARGET_FILES[@]}; do
         if [ -f $f ]; then
@@ -286,6 +308,14 @@ if [ -z "$CONSUL_ADDRESS" ]; then
         echo "Scylla-Manager target file '${SCYLLA_MANGER_TARGET_FILES}' does not exist, you can use prometheus/scylla_manager_servers.example.yml as an example."
         exit 1
     fi
+    if [ -z "$HOST_NETWORK" ]; then
+        if  is_local $SCYLLA_TARGET_FILE $SCYLLA_MANGER_TARGET_FILE $NODE_TARGET_FILE; then
+            echo "Warning: It seems that you are trying to connect to localhost (either localhost or IP on the 127.x.x.x range)."
+            echo "  For example, maybe Scylla Manager is running on the localhost."
+            echo "If that is the case, you should set your Docker to use the host network. You can do that with the -l flag."
+            echo ""
+        fi
+    fi
 
     SCYLLA_TARGET_FILE="-v "$(readlink -m $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_servers.yml:Z"
     SCYLLA_MANGER_TARGET_FILE="-v "$(readlink -m $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z"
@@ -310,13 +340,6 @@ else
     DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
 fi
 
-if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
-    if [ ! -z "$ALERTMANAGER_PORT" ] || [ ! -z "$GRAFANA_PORT" ] || [ ! -z $PROMETHEUS_PORT ]; then
-        echo "Port mapping is not supported with host network, remove the -l flag from the command line"
-        exit 1
-    fi
-    HOST_NETWORK=1
-fi
 ALERTMANAGER_COMMAND=""
 for val in "${ALERTMANAGER_COMMANDS[@]}"; do
     ALERTMANAGER_COMMAND="$ALERTMANAGER_COMMAND -C $val"
