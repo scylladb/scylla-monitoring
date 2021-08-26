@@ -2059,6 +2059,29 @@
             "expr":"0*scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode{cluster=~\"$cluster|$^\", dc=~\"$dc\"}",
             "legendFormat":"",
             "interval":"",
+            "dashversion":["<4.5", "<2021.1"],
+            "format":"table",
+            "instant":true,
+            "intervalFactor":1,
+            "refId":"A",
+            "hide":false
+         },
+         {
+            "expr":"0*scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode{cluster=~\"$cluster|$^\", dc=~\"$dc\"} +  on () group_left() (10*(min(scylla_node_ops_finished_percentage{ops=\"repair\", cluster=~\"$cluster|$^\", dc=~\"$dc\"}) by (instance)<bool 1) or on() vector(0))",
+            "legendFormat":"",
+            "interval":"",
+            "dashversion":[">4.5"],
+            "format":"table",
+            "instant":true,
+            "intervalFactor":1,
+            "refId":"A",
+            "hide":false
+         },
+         {
+            "expr":"0*scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode{cluster=~\"$cluster|$^\", dc=~\"$dc\"} +  on () group_left() (10*(min(scylla_node_maintenance_operations_repair_finished_percentage{cluster=~\"$cluster|$^\", dc=~\"$dc\"}) by (instance)<bool 1) or on() vector(0))",
+            "legendFormat":"",
+            "interval":"",
+            "dashversion":[">2021.1"],
             "format":"table",
             "instant":true,
             "intervalFactor":1,
@@ -2222,6 +2245,10 @@
                            {
                               "color":"red",
                               "value":4
+                           },
+                           {
+                              "value":3,
+                              "color":"rgba(0, 0, 0, 0)"
                            }
                         ]
                      }
@@ -2296,6 +2323,17 @@
                            "to":"",
                            "text":"Moving",
                            "value":"8"
+                        },
+                        {
+                          "type": "range",
+                           "options": {
+                           "from": 10,
+                            "to": 20,
+                            "result": {
+                              "text": "Repair",
+                              "index": 8
+                            }
+                          }
                         }
                      ]
                   }
