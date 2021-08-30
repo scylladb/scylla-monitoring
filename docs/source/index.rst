@@ -32,8 +32,8 @@
 
 .. topic-box::
   :title: Introduction to Scylla Monitoring Stack
-  :link: /intro/
-  :icon: fa fa-desktop
+  :link: intro
+  :icon: fa fa-chart-bar
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
   :class: my-box
@@ -42,7 +42,7 @@
 
 .. topic-box::
   :title: Installation Guide
-  :link: /install/
+  :link: install
   :icon: fa fa-power-off
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
@@ -52,7 +52,7 @@
 
 .. topic-box::
   :title: User Guide
-  :link: /use-monitoring/
+  :link: use-monitoring
   :icon: fa fa-book
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
@@ -62,7 +62,7 @@
 
 .. topic-box::
   :title: Procedures
-  :link: /procedures/
+  :link: procedures
   :icon: fa fa-list-ol
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
@@ -72,7 +72,7 @@
 
 .. topic-box::
   :title: Reference Guide
-  :link: /reference/
+  :link: reference
   :icon: fa fa-search
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
@@ -82,7 +82,7 @@
 
 .. topic-box::
   :title: Troubleshooting
-  :link: /troubleshooting/
+  :link: troubleshooting
   :icon: fa fa-life-ring
   :icon_color: rgba(95,113,180,1)
   :icon_bg: rgba(95,113,180,0.1)
