@@ -13,6 +13,7 @@ Scylla Monitoring Stack
    Upgrade <upgrade/index>
    Troubleshooting <troubleshooting/index>
    Reference <reference/index>
+   GitHub Project <https://github.com/scylladb/scylla-monitoring/>
 
 .. include:: /_common/monitor-description.rst
 
@@ -36,6 +37,6 @@ The Scylla Monitoring Stack consists of three components, wrapped in Docker cont
 * :doc:`Upgrade <upgrade/index>`
 
 * `Scylla Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on Scylla University
-
+* `Scylla Monitoring Stack GitHub Project <https://github.com/scylladb/scylla-monitoring/>`_
 
 For older versions of Scylla Monitoring Stack Documentation see `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
