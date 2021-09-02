@@ -453,7 +453,7 @@ if [ $RUN_THANOS_SC -eq 1 ]; then
     if [ -z $DATA_DIR ]; then
         echo "You must use external prometheus directory to use the thanos side cart"
     else
-        ./start-thanos-sc.sh -d $DATA_DIR -a $DB_ADDRESS
+        ./start-thanos-sc.sh -d $DATA_DIR -a $DB_ADDRESS $BIND_ADDRESS_CONFIG
     fi
 fi
 
