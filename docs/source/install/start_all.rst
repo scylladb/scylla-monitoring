@@ -86,7 +86,7 @@ Prometheus storage configuration is covered here_.
 
 .. _here: https://prometheus.io/docs/prometheus/latest/storage/#operational-aspects
 
-For example to set the retention time to 30 days add ``-b "-storage.tsdb.retention.time=30d"`` to the ``start-all.sh`` command
+For example to set the retention time to 30 days add ``-b "--storage.tsdb.retention.time=30d"`` to the ``start-all.sh`` command
 
 Alert Manager 
 -------------
