@@ -9,9 +9,14 @@ PROMTAIL_CONFIG=$PWD/loki/promtail/promtail_config.yml
 DOCKER_PARAM=""
 BIND_ADDRESS=""
 LOKI_COMMANDS=""
+LOKI_DIR=""
 usage="$(basename "$0") [-h] [-l] [-D encapsulate docker param] [-m alert_manager address]"
+if [ "`id -u`" -ne 0 ]; then
+    GROUPID=`id -g`
+    USER_PERMISSIONS="-u $UID:$GROUPID"
+fi
 
-while getopts ':hlp:D:m:A:' option; do
+while getopts ':hlp:D:m:A:k:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -27,6 +32,12 @@ while getopts ':hlp:D:m:A:' option; do
     C) LOKI_COMMANDS="$LOKI_COMMANDS $OPTARG"
        ;;
     A) BIND_ADDRESS="$OPTARG:"
+       ;;
+    k) LOKI_DIR=`readlink -m $OPTARG`
+       if [ ! -d $LOKI_DIR ]; then
+           mkdir -p $LOKI_DIR
+       fi
+       LOKI_DIR="-v $LOKI_DIR:/tmp/loki:z"
        ;;
     m) ALERT_MANAGER_ADDRESS=$OPTARG
        ;;
@@ -47,6 +58,10 @@ else
     LOKI_NAME=loki-$LOKI_PORT
 fi
 
+if [[ $LOKI_DIR = "" ]]; then
+  USER_PERMISSIONS=""
+fi
+
 docker container inspect $LOKI_NAME > /dev/null 2>&1
 if [ $? -eq 0 ]; then
     printf "\nSome of the monitoring docker instances ($LOKI_NAME) exist. Make sure all containers are killed and removed. You can use kill-all.sh for that\n"
@@ -64,8 +79,10 @@ fi
 sed "s/ALERTMANAGER/$ALERT_MANAGER_ADDRESS/" loki/conf/loki-config.template.yaml > loki/conf/loki-config.yaml
 
 docker run -d $DOCKER_PARAM -i $PORT_MAPPING \
+     $USER_PERMISSIONS \
 	 -v $LOKI_RULE_DIR:/etc/loki/rules:z \
 	 -v $LOKI_CONF_DIR:/mnt/config:z \
+	 $LOKI_DIR \
      --name $LOKI_NAME grafana/loki:$LOKI_VERSION $LOKI_COMMANDS --config.file=/mnt/config/loki-config.yaml >& /dev/null
 
 if [ $? -ne 0 ]; then
