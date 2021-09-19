@@ -88,6 +88,7 @@ Options:
   -Q Grafana anonymous role      - Set the Grafana anonymous role to one of Admin/Editor/Viewer.
   -S dashbards-list              - Override the default set of dashboards with the spcefied one.
   -T path/to/prometheus-targets  - Adds additional Prometheus target files.
+  -k path/to/loki/storage        - When set, will use the given directory for Loki's data
   --no-loki                      - If set, do not run Loki and promtail.
   --auto-restart                 - If set, auto restarts the containers on failure.
   --no-renderer                  - If set, do not run the Grafana renderer container.
@@ -176,6 +177,9 @@ fi
 if [ -z "$ALERT_MANAGER_DIR" ]; then
   ALERT_MANAGER_DIR=""
 fi
+if [ -z "$LOKI_DIR" ]; then
+  LOKI_DIR=""
+fi
 for arg; do
 	shift
 	case $arg in
@@ -192,7 +196,7 @@ for arg; do
     esac
 done
 
-while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:' option; do
+while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option; do
   case "$option" in
     h) usage
        exit
@@ -255,6 +259,8 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:' option; 
     E) RUN_RENDERER="-E"
        ;;
     f) ALERT_MANAGER_DIR="-f $OPTARG"
+       ;;
+    k) LOKI_DIR="-k $OPTARG"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -354,7 +360,7 @@ fi
 echo "Wait for Loki container to start."
 LOKI_ADDRESS="127.0.0.1"
 if [ $RUN_LOKI -eq 1 ]; then
-	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG -D "$DOCKER_PARAM" -m $AM_ADDRESS`
+	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR -D "$DOCKER_PARAM" -m $AM_ADDRESS`
 	if [ $? -ne 0 ]; then
 	    echo "$LOKI_ADDRESS"
 	    exit 1
