@@ -97,6 +97,14 @@ if [ -z $GRAFANA_PORT ]; then
     fi
 fi
 VERSION=`echo $VERSIONS|cut -d',' -f1`
+if [ "$VERSION" = "latest" ]; then
+    if [ -z "$BRANCH_VERSION" ] || [ "$BRANCH_VERSION" = "master" ]; then
+        echo "Default versions (-v latest) is not supported on the master branch, use specific version instead"
+        exit 1
+    fi
+    VERSION=${DEFAULT_VERSION[$BRANCH_VERSION]}
+    echo "The use of -v latest is deprecated. Use a specific version instead."
+fi
 if [ -z $GRAFANA_NAME ]; then
     GRAFANA_NAME=agraf-$GRAFANA_PORT
 fi
