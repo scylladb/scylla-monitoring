@@ -50,9 +50,6 @@ while getopts ':htDv:j:M:S:P:F' option; do
     D) VERSIONS=${SUPPORTED_VERSIONS[$BRANCH_VERSION]}
        FORMAT_COMAND="$FORMAT_COMAND -v $VERSIONS"
        MANAGER_VERSION=${MANAGER_SUPPORTED_VERSIONS[$BRANCH_VERSION]}
-       echo $BRANCH_VERSION
-       echo $VERSIONS
-       echo $MANAGER_VERSION
        ;;
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
        FORMAT_COMAND="$FORMAT_COMAND -j $OPTARG"
@@ -72,6 +69,14 @@ function set_loader {
 
 IFS=',' ;for v in $VERSIONS; do
 
+if [ $v = "latest" ]; then
+    if [ -z "$BRANCH_VERSION" ] || [ "$BRANCH_VERSION" = "master" ]; then
+        echo "Default versions (-v latest) is not supported on the master branch, use specific version instead"
+        exit 1
+    fi
+    v=${DEFAULT_VERSION[$BRANCH_VERSION]}
+    echo "The use of -v latest is deprecated. Use a specific version instead."
+fi
 if [[ -z "$SPECIFIC_SOLUTION" ]]; then
     VERDIR_NAME="ver_$v"
 else
@@ -89,22 +94,22 @@ else
     set_loader $v "" "$VERDIR_NAME"
 fi
 
-for f in "${DASHBOARDS[@]}"; do
-    if [ -e grafana/$f.template.json ]
-    then
-        if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.template.json" ] || [ ! -z "$FORCEUPDATE" ]; then
-            if [[ -z "$TEST_ONLY" ]]; then
-                echo "updating dashboard grafana/$f.$v.template.json"
-               ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"  -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -V $v
-           fi
-        fi
-    else
-        if [ -f grafana/$f.$v.json ]
+    for f in "${DASHBOARDS[@]}"; do
+        if [ -e grafana/$f.template.json ]
         then
-            cp grafana/$f.$v.json $VERDIR
+            if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.template.json" ] || [ ! -z "$FORCEUPDATE" ]; then
+                if [[ -z "$TEST_ONLY" ]]; then
+                    echo "updating dashboard grafana/$f.$v.template.json"
+                   ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"  -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -V $v
+               fi
+            fi
+        else
+            if [ -f grafana/$f.$v.json ]
+            then
+                cp grafana/$f.$v.json $VERDIR
+            fi
         fi
-    fi
-done
+    done
 done
 
 IFS=',' ;for v in $MANAGER_VERSION; do
