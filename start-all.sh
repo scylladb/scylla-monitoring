@@ -346,6 +346,19 @@ else
     DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
 fi
 
+if [ "$VERSIONS" = "latest" ]; then
+    if [ -z "$BRANCH_VERSION" ] || [ "$BRANCH_VERSION" = "master" ]; then
+        echo "Default versions (-v latest) is not supported on the master branch, use specific version instead"
+        exit 1
+    fi
+    VERSIONS=${DEFAULT_VERSION[$BRANCH_VERSION]}
+    echo "The use of -v latest is deprecated. Use a specific version instead."
+else
+    if [ "$VERSIONS" = "all" ]; then
+        VERSIONS=$ALL
+    fi
+fi
+
 ALERTMANAGER_COMMAND=""
 for val in "${ALERTMANAGER_COMMANDS[@]}"; do
     ALERTMANAGER_COMMAND="$ALERTMANAGER_COMMAND -C $val"
@@ -417,13 +430,6 @@ if [ $? -ne 0 ]; then
     echo "Error: Prometheus container failed to start"
     echo "For more information use: docker logs $PROMETHEUS_NAME"
     exit 1
-fi
-if [ "$VERSIONS" = "latest" ]; then
-	VERSIONS=$LATEST
-else
-	if [ "$VERSIONS" = "all" ]; then
-		VERSIONS=$ALL
-	fi
 fi
 
 # Number of retries waiting for a Docker container to start
