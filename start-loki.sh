@@ -15,7 +15,29 @@ if [ "`id -u`" -ne 0 ]; then
     GROUPID=`id -g`
     USER_PERMISSIONS="-u $UID:$GROUPID"
 fi
-
+LIMITS=""
+for arg; do
+    shift
+    if [ -z "$LIMIT" ]; then
+        case $arg in
+            (--limit)
+                LIMIT="1"
+                ;;
+            (*) set -- "$@" "$arg"
+                ;;
+        esac
+    else
+        DOCR=`echo $arg|cut -d',' -f1`
+        VALUE=`echo $arg|cut -d',' -f2-|sed 's/#/ /g'`
+        NOSPACE=`echo $arg|sed 's/ /#/g'`
+        if [ -z ${DOCKER_LIMITS[$DOCR]} ]; then
+            DOCKER_LIMITS[$DOCR]=""
+        fi
+        DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} $VALUE"
+        LIMITS="$LIMITS --limit $NOSPACE"
+        unset LIMIT
+    fi
+done
 while getopts ':hlp:D:m:A:k:' option; do
   case "$option" in
     h) echo "$usage"
@@ -78,7 +100,7 @@ fi
 
 sed "s/ALERTMANAGER/$ALERT_MANAGER_ADDRESS/" loki/conf/loki-config.template.yaml > loki/conf/loki-config.yaml
 
-docker run -d $DOCKER_PARAM -i $PORT_MAPPING \
+docker run ${DOCKER_LIMITS["loki"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
      $USER_PERMISSIONS \
 	 -v $LOKI_RULE_DIR:/etc/loki/rules:z \
 	 -v $LOKI_CONF_DIR:/mnt/config:z \
