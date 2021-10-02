@@ -13,7 +13,29 @@ if [ "`id -u`" -ne 0 ]; then
     GROUPID=`id -g`
     USER_PERMISSIONS="-u $UID:$GROUPID"
 fi
-
+LIMITS=""
+for arg; do
+    shift
+    if [ -z "$LIMIT" ]; then
+        case $arg in
+            (--limit)
+                LIMIT="1"
+                ;;
+            (*) set -- "$@" "$arg"
+                ;;
+        esac
+    else
+        DOCR=`echo $arg|cut -d',' -f1`
+        VALUE=`echo $arg|cut -d',' -f2-|sed 's/#/ /g'`
+        NOSPACE=`echo $arg|sed 's/ /#/g'`
+        if [ -z ${DOCKER_LIMITS[$DOCR]} ]; then
+            DOCKER_LIMITS[$DOCR]=""
+        fi
+        DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} $VALUE"
+        LIMITS="$LIMITS --limit $NOSPACE"
+        unset LIMIT
+    fi
+done
 while getopts ':hlp:r:D:C:f:A:' option; do
   case "$option" in
     h) echo "$usage"
@@ -60,8 +82,7 @@ if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
     PORT_MAPPING="-p $BIND_ADDRESS$ALERTMANAGER_PORT:9093"
 fi
 
-
-docker run -d $DOCKER_PARAM -i $PORT_MAPPING \
+docker run ${DOCKER_LIMITS["alertmanager"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
 	 -v $RULE_FILE:/etc/alertmanager/config.yml:z \
 	 $ALERT_MANAGER_DIR \
      --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION $ALERTMANAGER_COMMANDS --log.level=debug --config.file=/etc/alertmanager/config.yml >& /dev/null
