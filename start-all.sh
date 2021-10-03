@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+. versions.sh
 if [ -f  env.sh ]; then
     . env.sh
 fi
@@ -9,7 +10,6 @@ if [ -f CURRENT_VERSION.sh ]; then
     CURRENT_VERSION=`cat CURRENT_VERSION.sh`
 fi
 
-. versions.sh
 if [ "$1" = "-e" ]; then
     DEFAULT_VERSION=${DEFAULT_ENTERPRISE_VERSION[$BRANCH_VERSION]}
 fi
@@ -93,7 +93,8 @@ Options:
   --auto-restart                 - If set, auto restarts the containers on failure.
   --no-renderer                  - If set, do not run the Grafana renderer container.
   --thanos-sc                    - If set, run thanos side car with the Prometheus server.
-
+  --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
+                                   prometheus, grafana, alertmanager, loki, sidecar, grafanarender
 The script starts Scylla Monitoring stack.
 "
   echo "$__usage"
@@ -180,20 +181,36 @@ fi
 if [ -z "$LOKI_DIR" ]; then
   LOKI_DIR=""
 fi
+LIMITS=""
 for arg; do
 	shift
-	case $arg in
-        (--no-loki) RUN_LOKI=0
-            ;;
-        (--no-renderer) RUN_RENDERER=""
-            ;;
-        (--thanos-sc) RUN_THANOS_SC=1
-            ;;
-        (--auto-restart) DOCKER_PARAM="--restart=on-failure"
-            ;;
-        (*) set -- "$@" "$arg"
-            ;;
-    esac
+    if [ -z "$LIMIT" ]; then
+       case $arg in
+            (--no-loki) RUN_LOKI=0
+                ;;
+            (--no-renderer) RUN_RENDERER=""
+                ;;
+            (--thanos-sc) RUN_THANOS_SC=1
+                ;;
+            (--auto-restart) DOCKER_PARAM="--restart=on-failure"
+                ;;
+            (--limit)
+                LIMIT="1"
+                ;;
+            (*) set -- "$@" "$arg"
+                ;;
+        esac
+    else
+        DOCR=`echo $arg|cut -d',' -f1`
+        VALUE=`echo $arg|cut -d',' -f2-|sed 's/#/ /g'`
+        NOSPACE=`echo $arg|sed 's/ /#/g'`
+        if [ -z ${DOCKER_LIMITS[$DOCR]} ]; then
+            DOCKER_LIMITS[$DOCR]=""
+        fi
+        DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} $VALUE"
+        LIMITS="$LIMITS --limit $NOSPACE"
+        unset LIMIT
+    fi
 done
 
 while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option; do
@@ -365,7 +382,7 @@ for val in "${ALERTMANAGER_COMMANDS[@]}"; do
 done
 
 echo "Wait for alert manager container to start"
-AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
+AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $LIMITS $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
 if [ $? -ne 0 ]; then
     echo "$AM_ADDRESS"
     exit 1
@@ -373,7 +390,7 @@ fi
 echo "Wait for Loki container to start."
 LOKI_ADDRESS="127.0.0.1"
 if [ $RUN_LOKI -eq 1 ]; then
-	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR -D "$DOCKER_PARAM" -m $AM_ADDRESS`
+	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR -D "$DOCKER_PARAM" $LIMITS -m $AM_ADDRESS`
 	if [ $? -ne 0 ]; then
 	    echo "$LOKI_ADDRESS"
 	    exit 1
@@ -416,7 +433,7 @@ if [ -z $HOST_NETWORK ]; then
     PORT_MAPPING="-p $BIND_ADDRESS$PROMETHEUS_PORT:9090"
 fi
 
-docker run -d $DOCKER_PARAM $USER_PERMISSIONS \
+docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
      $DATA_DIR_CMD \
      "${group_args[@]}" \
      -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
@@ -465,7 +482,7 @@ if [ $RUN_THANOS_SC -eq 1 ]; then
     if [ -z $DATA_DIR ]; then
         echo "You must use external prometheus directory to use the thanos side cart"
     else
-        ./start-thanos-sc.sh -d $DATA_DIR -a $DB_ADDRESS $BIND_ADDRESS_CONFIG
+        ./start-thanos-sc.sh -d $DATA_DIR -a $DB_ADDRESS $LIMITS $BIND_ADDRESS_CONFIG
     fi
 fi
 
@@ -477,4 +494,4 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 
-./start-grafana.sh $LDAP_FILE -L $LOKI_ADDRESS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
+./start-grafana.sh $LDAP_FILE -L $LOKI_ADDRESS $LIMITS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD

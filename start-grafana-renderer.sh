@@ -8,7 +8,29 @@ BIND_ADDRESS=""
 GRAFANA_RENDPORT="8081"
 
 usage="$(basename "$0") [-h] [-D encapsulate docker param] -- Start the grafana render container"
-
+LIMITS=""
+for arg; do
+    shift
+    if [ -z "$LIMIT" ]; then
+        case $arg in
+            (--limit)
+                LIMIT="1"
+                ;;
+            (*) set -- "$@" "$arg"
+                ;;
+        esac
+    else
+        DOCR=`echo $arg|cut -d',' -f1`
+        VALUE=`echo $arg|cut -d',' -f2-|sed 's/#/ /g'`
+        NOSPACE=`echo $arg|sed 's/ /#/g'`
+        if [ -z ${DOCKER_LIMITS[$DOCR]} ]; then
+            DOCKER_LIMITS[$DOCR]=""
+        fi
+        DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} $VALUE"
+        LIMITS="$LIMITS --limit $NOSPACE"
+        unset LIMIT
+    fi
+done
 while getopts ':hlg:D:' option; do
   case "$option" in
     h) echo "$usage"
@@ -38,5 +60,5 @@ if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
     PORT_MAPPING="-p $GRAFANA_RENDPORT:8081"
 fi
 
-docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
+docker run ${DOCKER_LIMITS["grafanarender"]} -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
      --name $GRAFANA_NAME grafana/grafana-image-renderer:$VERSION

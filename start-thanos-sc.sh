@@ -29,7 +29,29 @@ is_podman="$(docker --help | grep -o podman)"
 if [ ! -z "$is_podman" ]; then
     group_args+=(--userns=keep-id)
 fi
-
+LIMITS=""
+for arg; do
+    shift
+    if [ -z "$LIMIT" ]; then
+        case $arg in
+            (--limit)
+                LIMIT="1"
+                ;;
+            (*) set -- "$@" "$arg"
+                ;;
+        esac
+    else
+        DOCR=`echo $arg|cut -d',' -f1`
+        VALUE=`echo $arg|cut -d',' -f2-|sed 's/#/ /g'`
+        NOSPACE=`echo $arg|sed 's/ /#/g'`
+        if [ -z ${DOCKER_LIMITS[$DOCR]} ]; then
+            DOCKER_LIMITS[$DOCR]=""
+        fi
+        DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} $VALUE"
+        LIMITS="$LIMITS --limit $NOSPACE"
+        unset LIMIT
+    fi
+done
 while getopts ':hl:p:a:d:A:n:' option; do
   case "$option" in
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
@@ -83,7 +105,7 @@ if [ -z $HOST_NETWORK ]; then
 fi
 
 echo "Starting Thanos sidecar"
-docker run -d $DOCKER_PARAM $USER_PERMISSIONS \
+docker run ${DOCKER_LIMITS["sidecar"]} -d $DOCKER_PARAM $USER_PERMISSIONS \
      $DATA_DIR \
      -i $PORT_MAPPING --name sidecar$NAME thanosio/thanos:$THANOS_VERSION \
         "sidecar" \

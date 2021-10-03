@@ -27,7 +27,29 @@ SPECIFIC_SOLUTION=""
 LDAP_FILE=""
 
 DATA_SOURCES=""
-
+LIMITS=""
+for arg; do
+    shift
+    if [ -z "$LIMIT" ]; then
+        case $arg in
+            (--limit)
+                LIMIT="1"
+                ;;
+            (*) set -- "$@" "$arg"
+                ;;
+        esac
+    else
+        DOCR=`echo $arg|cut -d',' -f1`
+        VALUE=`echo $arg|cut -d',' -f2-|sed 's/#/ /g'`
+        NOSPACE=`echo $arg|sed 's/ /#/g'`
+        if [ -z ${DOCKER_LIMITS[$DOCR]} ]; then
+            DOCKER_LIMITS[$DOCR]=""
+        fi
+        DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} $VALUE"
+        LIMITS="$LIMITS --limit $NOSPACE"
+        unset LIMIT
+    fi
+done
 usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana enviroment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
 while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:' option; do
@@ -158,12 +180,12 @@ if [ ! -z $RUN_RENDERER ]; then
 	else
 		DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
 	fi
-    RENDERING_SERVER_URL=`./start-grafana-renderer.sh -D "$DOCKER_PARAM"`
+    RENDERING_SERVER_URL=`./start-grafana-renderer.sh $LIMITS  -D "$DOCKER_PARAM"`
     GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_RENDERING_SERVER_URL=http://$DOCKER_HOST:8081/render -e GF_RENDERING_CALLBACK_URL=http://$DOCKER_HOST:$GRAFANA_PORT/"
 fi
 
 
-docker run -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
+docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PORT_MAPPING \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
      -e "GF_AUTH_ANONYMOUS_ORG_ROLE=$ANONYMOUS_ROLE" \
