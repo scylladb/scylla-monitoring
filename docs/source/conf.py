@@ -111,14 +111,12 @@ html_static_path = ['_static']
 # documentation.
 #
 html_theme_options = {
-    'header_links': [
-    ('Scylla Monitoring Stack', 'https://scylladb.github.io/scylla-monitoring/'),
-    ('Scylla Cloud', 'https://docs.scylladb.com/scylla-cloud/'),
-    ('Scylla University', 'https://university.scylladb.com/'),
-    ('ScyllaDB Home', 'https://www.scylladb.com/')],
     'hide_version_dropdown': ['master'],
     'github_issues_repository': 'scylladb/scylla-monitoring',
-    'show_sidebar_index': True,
+    'github_repository': 'scylladb/scylla-monitoring',
+    'hide_sidebar_index': 'true',
+    'hide_edit_this_page_button': 'false',
+    'site_description': 'Scylla Monitoring Stack is a full stack for Scylla monitoring and alerting. The stack contains open source tools including Prometheus and Grafana, as well as custom Scylla dashboards and tooling.',
 }
 
 extlinks = {
