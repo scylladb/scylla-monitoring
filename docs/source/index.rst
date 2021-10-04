@@ -13,8 +13,7 @@
   :button_text: Scylla Monitoring Stack Project
 
   Welcome to Scylla Monitoring Stack Documentation!
-  Scylla Monitoring Stack is a full stack for Scylla monitoring and alerting.
-  Older versions of Scylla Monitoring Stack Documentation are available `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
+  A full stack for Scylla monitoring and alerting
 
 .. raw:: html
 
