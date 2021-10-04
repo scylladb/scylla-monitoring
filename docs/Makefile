@@ -82,3 +82,4 @@ test: setup
 	$(SPHINXBUILD) -b dirhtml $(TESTSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
+	TESTSPHINXOPTS  = $(ALLSPHINXOPTS) -W --keep-going

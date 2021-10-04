@@ -30,6 +30,7 @@
     :icon: fa fa-download
     :link: /install/
     :anchor: Get Started
+    :class: large-6
 
     Get Started with Scylla Monitoring Stack.
 
@@ -38,6 +39,7 @@
     :icon: fa fa-tachometer-alt
     :link: /use-monitoring/
     :anchor: Learn More
+    :class: large-6
 
     Scylla Monitoring Stack Dashboard Reference Guide
 
@@ -46,6 +48,7 @@
     :icon: fa fa-list-ol
     :link: /procedures/
     :anchor: Deep Dive
+    :class: large-6
 
     Scylla Monitoring Stack Dashboard Reference Guide
 
@@ -54,6 +57,7 @@
     :icon: fa fa-arrow-alt-circle-up
     :link: /upgrade/
     :anchor: Upgrade
+    :class: large-6
 
     Upgrade the Scylla Monitoring Stack Version
 
@@ -62,6 +66,7 @@
     :icon: fa fa-book
     :link: /reference/
     :anchor: Reference
+    :class: large-6
 
     Reference guides with additional information
 
@@ -70,6 +75,7 @@
     :icon: fa fa-life-ring
     :link: /troubleshooting/
     :anchor: Troubleshooting
+    :class: large-6
 
     Troubleshoot Scylla Monitoring Stack Issues
 
