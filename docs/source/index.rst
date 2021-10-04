@@ -29,7 +29,7 @@
 .. topic-box::
     :title: Download and Install
     :icon: fa fa-download
-    :link: /install/
+    :link: install
     :anchor: Get Started
     :class: large-6
 
@@ -38,7 +38,7 @@
 .. topic-box::
     :title: Dashboard Guide
     :icon: fa fa-tachometer-alt
-    :link: /use-monitoring/
+    :link: use-monitoring
     :anchor: Learn More
     :class: large-6
 
@@ -47,7 +47,7 @@
 .. topic-box::
     :title: Directions and Reference Guides
     :icon: fa fa-list-ol
-    :link: /procedures/
+    :link: procedures
     :anchor: Deep Dive
     :class: large-6
 
@@ -56,7 +56,7 @@
 .. topic-box::
     :title: Upgrade Scylla Monitoring Stack
     :icon: fa fa-arrow-alt-circle-up
-    :link: /upgrade/
+    :link: upgrade
     :anchor: Upgrade
     :class: large-6
 
@@ -65,7 +65,7 @@
 .. topic-box::
     :title: Reference Guides
     :icon: fa fa-book
-    :link: /reference/
+    :link: reference
     :anchor: Reference
     :class: large-6
 
@@ -74,7 +74,7 @@
 .. topic-box::
     :title: Troubleshooting Guide
     :icon: fa fa-life-ring
-    :link: /troubleshooting/
+    :link: troubleshooting
     :anchor: Troubleshooting
     :class: large-6
 
