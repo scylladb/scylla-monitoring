@@ -12,7 +12,9 @@
   :button_url: https://github.com/scylladb/scylla-monitoring
   :button_text: Scylla Monitoring Stack Project
 
-  .. include:: /_common/monitor-description.rst
+  Welcome to Scylla Monitoring Stack Documentation!
+  Scylla Monitoring Stack is a full stack for Scylla monitoring and alerting.
+  Choose a topic below to begin.
   Older versions of Scylla Monitoring Stack Documentation are available `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
 
 .. raw:: html
