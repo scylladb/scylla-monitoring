@@ -4,10 +4,6 @@ Upgrade Guide - Scylla Monitoring 3.x to Scylla Monitoring 3.y
 
 This document is a step by step procedure for upgrading `Scylla Monitoring Stack </operating-scylla/monitoring/3.0>`_ from version 3.x to 3.y, for example, between 3.0 to 3.0.1.
 
-.. contents::
-   :local:
-
-
 Upgrade Procedure
 =================
 

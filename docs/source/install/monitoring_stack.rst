@@ -2,10 +2,6 @@
 Install Scylla Monitoring Stack
 ===============================
 
-.. contents::
-   :depth: 2
-   :local:
-
 This document describes the setup of Scylla Monitoring Stack, based on `Scylla Prometheus API`_.
 
 The Scylla Monitoring Stack needs to be installed on a dedicated server, external to the Scylla cluster. Make sure the Scylla Monitoring Stack server has access to the Scylla nodes so that it can pull the metrics over the Prometheus API.
