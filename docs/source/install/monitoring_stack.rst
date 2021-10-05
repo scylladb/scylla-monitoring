@@ -2,15 +2,13 @@
 Install Scylla Monitoring Stack
 ===============================
 
-This document describes the setup of Scylla Monitoring Stack, based on `Scylla Prometheus API`_.
+This document describes the setup of Scylla Monitoring Stack, based on :ref:`Scylla Prometheus API <prometheus>`.
 
 The Scylla Monitoring Stack needs to be installed on a dedicated server, external to the Scylla cluster. Make sure the Scylla Monitoring Stack server has access to the Scylla nodes so that it can pull the metrics over the Prometheus API.
 
 For evaluation, you can run Scylla Monitoring Stack on any server (or laptop) that can handle three Docker instances at the same time. For production, see recommendations below.
 
 .. include:: min-prod-hw.rst
-
-.. _`Scylla Prometheus API`: /reference/monitoring_apis#prometheus
 
 Prerequisites
 -------------
