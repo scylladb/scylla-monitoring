@@ -7,4 +7,4 @@ Using consistency level ANY allows a write query to be acknowledged after storin
 
 Link to Scylla university
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-https://university.scylladb.com/courses/scylla-essentials-overview/lessons/high-availability/topic/consistency-level/#:~:text=Some%20of%20the%20most%20common,availability%20with%20the%20lowest%20consistency.
+`Lesson on Consistency <https://university.scylladb.com/courses/scylla-essentials-overview/lessons/high-availability/topic/consistency-level/#:~:text=Some%20of%20the%20most%20common,availability%20with%20the%20lowest%20consistency.>`_

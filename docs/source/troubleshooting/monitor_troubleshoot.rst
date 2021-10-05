@@ -9,10 +9,6 @@ This document describes steps that need to be done to troubleshoot monitoring pr
 Problem
 ~~~~~~~
 
-.. contents::
-   :depth: 1
-   :local:
-
 Scylla-Manager 2.2 with Duplicate information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

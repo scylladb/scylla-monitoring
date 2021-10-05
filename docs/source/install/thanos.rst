@@ -48,7 +48,7 @@ A docker command looks like:
     -p 10912:10912 \
     -p 10911:10911
 
-After you run the sidecar you should be able to reach it from your browser at: http://{ip}:10912
+After you run the sidecar you should be able to reach it from your browser at: ``http://{ip}:10912``
 
 Thanos query
 ^^^^^^^^^^^^
@@ -70,7 +70,7 @@ Start the container  by running:
       --query.replica-label=prometheus \
       --store={ip1}:10911 --store={ip2}:10911
 
-After you run Thanos query, you can connect to its HTTP server, in the above example at http://{ip}:10903
+After you run Thanos query, you can connect to its HTTP server, in the above example at ``http://{ip}:10903``
 
 Update Scylla Data source
 ^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -4,9 +4,6 @@ Upgrade Guide - Scylla Monitoring 2.x to Scylla Monitoring 3.x
 
 This document is a step by step procedure for upgrading |mon_root| from version 2.x to 3.x
 
-.. contents::
-   :local:
-
 Switching from Scylla Monitoring 2.x to Scylla Monitoring 3.x is not fully backward compatible.
 The changes affect dashboards' names and metrics.
 

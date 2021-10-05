@@ -4,8 +4,7 @@ Upgrade Guide - Scylla Monitoring 1.x to Scylla Monitoring 2.x
 
 This document is a step by step procedure for upgrading |mon_root| from version 1.x to 2.x
 
-.. contents::
-   :local:
+
 
 Scylla monitoring stack uses `Prometheus <https://prometheus.io>`_ as its metrics database. The main differences between Scylla Monitoring 1.x and 2.x are moving from Prometheus version 1.x to Prometheus 2.x.
 Since Prometheus is not backward compatible between these two versions, the upgrade procedure consists of running the two monitoring stack, old and new, in **parallel**, allowing the new stack to read metrics from the old one. This procedure will enable you to migrate your Scylla monitoring stack without losing historical metric data in the process.
