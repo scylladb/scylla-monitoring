@@ -131,7 +131,7 @@ sitemap_url_scheme = "{link}"
 html_extra_path = ['robots.txt']
 
 # Add ExpertRec Search
-html_js_files = ['expertrec.js']
+# html_js_files = ['expertrec.js']
 
 # If not None, a 'Last updated on:' timestamp is inserted at every page
 # bottom, using the given strftime format.
