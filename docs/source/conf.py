@@ -114,7 +114,7 @@ html_theme_options = {
     'hide_version_dropdown': ['master'],
     'github_issues_repository': 'scylladb/scylla-monitoring',
     'github_repository': 'scylladb/scylla-monitoring',
-    'hide_sidebar_index': 'true',
+    'hide_sidebar_index': 'false',
     'hide_edit_this_page_button': 'false',
     'site_description': 'Scylla Monitoring Stack is a full stack for Scylla monitoring and alerting. The stack contains open source tools including Prometheus and Grafana, as well as custom Scylla dashboards and tooling.',
 }
