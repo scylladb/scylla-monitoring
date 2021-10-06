@@ -182,8 +182,10 @@ if [ -z "$LOKI_DIR" ]; then
   LOKI_DIR=""
 fi
 LIMITS=""
+VOLUMES=""
+PARAMS=""
 for arg; do
-	shift
+    shift
     if [ -z "$LIMIT" ]; then
        case $arg in
             (--no-loki) RUN_LOKI=0
@@ -197,6 +199,14 @@ for arg; do
             (--limit)
                 LIMIT="1"
                 ;;
+            (--volume)
+                LIMIT="1"
+                VOLUME="1"
+                ;;
+            (--param)
+                LIMIT="1"
+                PARAM="1"
+                ;;
             (*) set -- "$@" "$arg"
                 ;;
         esac
@@ -204,11 +214,29 @@ for arg; do
         DOCR=`echo $arg|cut -d',' -f1`
         VALUE=`echo $arg|cut -d',' -f2-|sed 's/#/ /g'`
         NOSPACE=`echo $arg|sed 's/ /#/g'`
-        if [ -z ${DOCKER_LIMITS[$DOCR]} ]; then
-            DOCKER_LIMITS[$DOCR]=""
+        if [ "$PARAM" = "1" ]; then
+            if [ -z "${DOCKER_PARAMS[$DOCR]}" ]; then
+                DOCKER_PARAMS[$DOCR]=""
+            fi
+            DOCKER_PARAMS[$DOCR]="${DOCKER_PARAMS[$DOCR]} $VALUE"
+            PARAMS="$PARAMS --param $NOSPACE"
+            unset PARAM
+        else
+            if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
+                DOCKER_LIMITS[$DOCR]=""
+            fi
+            if [ "$VOLUME" = "1" ]; then
+                SRC=`echo $VALUE|cut -d':' -f1`
+                DST=`echo $VALUE|cut -d':' -f2-`
+                SRC=$(readlink -m $SRC)
+                DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} -v $SRC:$DST"
+                VOLUMES="$VOLUMES --volume $NOSPACE"
+                unset VOLUME
+            else
+                DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} $VALUE"
+                LIMITS="$LIMITS --limit $NOSPACE"
+            fi
         fi
-        DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} $VALUE"
-        LIMITS="$LIMITS --limit $NOSPACE"
         unset LIMIT
     fi
 done
@@ -382,7 +410,7 @@ for val in "${ALERTMANAGER_COMMANDS[@]}"; do
 done
 
 echo "Wait for alert manager container to start"
-AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $LIMITS $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
+AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
 if [ $? -ne 0 ]; then
     echo "$AM_ADDRESS"
     exit 1
@@ -390,7 +418,7 @@ fi
 echo "Wait for Loki container to start."
 LOKI_ADDRESS="127.0.0.1"
 if [ $RUN_LOKI -eq 1 ]; then
-	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR -D "$DOCKER_PARAM" $LIMITS -m $AM_ADDRESS`
+	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS`
 	if [ $? -ne 0 ]; then
 	    echo "$LOKI_ADDRESS"
 	    exit 1
@@ -441,7 +469,9 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
      $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
      $NODE_TARGET_FILE \
-     $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION  --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS
+     $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION \
+     --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
+     ${DOCKER_PARAMS["prometheus"]}
 
 if [ $? -ne 0 ]; then
     echo "Error: Prometheus container failed to start"
@@ -482,7 +512,7 @@ if [ $RUN_THANOS_SC -eq 1 ]; then
     if [ -z $DATA_DIR ]; then
         echo "You must use external prometheus directory to use the thanos side cart"
     else
-        ./start-thanos-sc.sh -d $DATA_DIR -a $DB_ADDRESS $LIMITS $BIND_ADDRESS_CONFIG
+        ./start-thanos-sc.sh -d $DATA_DIR -a $DB_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG
     fi
 fi
 
@@ -494,4 +524,4 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 
-./start-grafana.sh $LDAP_FILE -L $LOKI_ADDRESS $LIMITS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
+./start-grafana.sh $LDAP_FILE -L $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
