@@ -6,6 +6,10 @@ fi
 
 . versions.sh
 . UA.sh
+if [ -f  env.sh ]; then
+    . env.sh
+fi
+
 BRANCH_VERSION=$CURRENT_VERSION
 if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
     BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
@@ -28,12 +32,22 @@ LDAP_FILE=""
 
 DATA_SOURCES=""
 LIMITS=""
+VOLUMES=""
+PARAMS=""
 for arg; do
     shift
     if [ -z "$LIMIT" ]; then
         case $arg in
             (--limit)
                 LIMIT="1"
+                ;;
+            (--volume)
+                LIMIT="1"
+                VOLUME="1"
+                ;;
+            (--param)
+                LIMIT="1"
+                PARAM="1"
                 ;;
             (*) set -- "$@" "$arg"
                 ;;
@@ -42,11 +56,29 @@ for arg; do
         DOCR=`echo $arg|cut -d',' -f1`
         VALUE=`echo $arg|cut -d',' -f2-|sed 's/#/ /g'`
         NOSPACE=`echo $arg|sed 's/ /#/g'`
-        if [ -z ${DOCKER_LIMITS[$DOCR]} ]; then
-            DOCKER_LIMITS[$DOCR]=""
+        if [ "$PARAM" = "1" ]; then
+            if [ -z "${DOCKER_PARAMS[$DOCR]}" ]; then
+                DOCKER_PARAMS[$DOCR]=""
+            fi
+            DOCKER_PARAMS[$DOCR]="${DOCKER_PARAMS[$DOCR]} $VALUE"
+            PARAMS="$PARAMS --param $NOSPACE"
+            unset PARAM
+        else
+            if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
+                DOCKER_LIMITS[$DOCR]=""
+            fi
+            if [ "$VOLUME" = "1" ]; then
+                SRC=`echo $VALUE|cut -d':' -f1`
+                DST=`echo $VALUE|cut -d':' -f2-`
+                SRC=$(readlink -m $SRC)
+                DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} -v $SRC:$DST"
+                VOLUMES="$VOLUMES --volume $NOSPACE"
+                unset VOLUME
+            else
+                DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} $VALUE"
+                LIMITS="$LIMITS --limit $NOSPACE"
+            fi
         fi
-        DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} $VALUE"
-        LIMITS="$LIMITS --limit $NOSPACE"
         unset LIMIT
     fi
 done
@@ -180,7 +212,7 @@ if [ ! -z $RUN_RENDERER ]; then
 	else
 		DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
 	fi
-    RENDERING_SERVER_URL=`./start-grafana-renderer.sh $LIMITS  -D "$DOCKER_PARAM"`
+    RENDERING_SERVER_URL=`./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS  -D "$DOCKER_PARAM"`
     GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_RENDERING_SERVER_URL=http://$DOCKER_HOST:8081/render -e GF_RENDERING_CALLBACK_URL=http://$DOCKER_HOST:$GRAFANA_PORT/"
 fi
 
@@ -202,7 +234,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
      -e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/ver_$VERSION/scylla-overview.$VERSION.json" \
      $GRAFANA_ENV_COMMAND \
      "${proxy_args[@]}" \
-     --name $GRAFANA_NAME grafana/grafana:$GRAFANA_VERSION >& /dev/null
+     --name $GRAFANA_NAME grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]} >& /dev/null
 
 if [ $? -ne 0 ]; then
     echo "Error: Grafana container failed to start"
