@@ -137,7 +137,7 @@ fi
 echo "Starting Thanos sidecar"
 docker run ${DOCKER_LIMITS["sidecar"]} -d $DOCKER_PARAM $USER_PERMISSIONS \
      $DATA_DIR \
-     -i $PORT_MAPPING --name sidecar$NAME thanosio/thanos:$THANOS_VERSION \
+     -i $PORT_MAPPING --name sidecar$NAME docker.io/thanosio/thanos:$THANOS_VERSION \
         "sidecar" \
        "--debug.name=$NAME" \
        ${DOCKER_PARAMS["sidecar"]} \

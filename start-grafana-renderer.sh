@@ -93,5 +93,5 @@ if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
 fi
 
 docker run ${DOCKER_LIMITS["grafanarender"]} -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
-     --name $GRAFANA_NAME grafana/grafana-image-renderer:$VERSION \
+     --name $GRAFANA_NAME docker.io/grafana/grafana-image-renderer:$VERSION \
      ${DOCKER_PARAMS["grafanarender"]}

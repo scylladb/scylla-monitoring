@@ -469,7 +469,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
      $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
      $NODE_TARGET_FILE \
-     $PORT_MAPPING --name $PROMETHEUS_NAME prom/prometheus:$PROMETHEUS_VERSION \
+     $PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
      --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
      ${DOCKER_PARAMS["prometheus"]}
 

@@ -234,7 +234,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
      -e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/ver_$VERSION/scylla-overview.$VERSION.json" \
      $GRAFANA_ENV_COMMAND \
      "${proxy_args[@]}" \
-     --name $GRAFANA_NAME grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]} >& /dev/null
+     --name $GRAFANA_NAME docker.io/grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]} >& /dev/null
 
 if [ $? -ne 0 ]; then
     echo "Error: Grafana container failed to start"
