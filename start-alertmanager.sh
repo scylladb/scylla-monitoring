@@ -117,7 +117,7 @@ fi
 docker run ${DOCKER_LIMITS["alertmanager"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
 	 -v $RULE_FILE:/etc/alertmanager/config.yml:z \
 	 $ALERT_MANAGER_DIR \
-     --name $ALERTMANAGER_NAME prom/alertmanager:$ALERT_MANAGER_VERSION \
+     --name $ALERTMANAGER_NAME docker.io/prom/alertmanager:$ALERT_MANAGER_VERSION \
      $ALERTMANAGER_COMMANDS --log.level=debug --config.file=/etc/alertmanager/config.yml ${DOCKER_PARAMS["alertmanager"]}  >& /dev/null
 
 

@@ -106,7 +106,7 @@ while getopts ':hl:p:S:' option; do
   esac
 done
 
-docker run ${DOCKER_LIMITS["thanos"]} -d $DOCKER_PARAM -i --name thanos -- thanosio/thanos:$THANOS_VERSION \
+docker run ${DOCKER_LIMITS["thanos"]} -d $DOCKER_PARAM -i --name thanos -- docker.io/thanosio/thanos:$THANOS_VERSION \
        query \
       "--debug.name=query0" \
       "--grpc-address=0.0.0.0:10903" \
