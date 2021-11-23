@@ -155,6 +155,11 @@ if [ -z $GRAFANA_PORT ]; then
     fi
 fi
 VERSION=`echo $VERSIONS|cut -d',' -f1`
+if [ "$VERSION" = "" ]; then
+    echo "Scylla-version was not not found, add the -v command-line with a specific version (i.e. -v 2021.1)"
+    exit 1
+fi
+
 if [ "$VERSION" = "latest" ]; then
     if [ -z "$BRANCH_VERSION" ] || [ "$BRANCH_VERSION" = "master" ]; then
         echo "Default versions (-v latest) is not supported on the master branch, use specific version instead"
