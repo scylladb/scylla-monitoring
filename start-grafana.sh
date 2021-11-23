@@ -96,6 +96,10 @@ while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:' option; do
     g) GRAFANA_PORT=$OPTARG
        ;;
     G) EXTERNAL_VOLUME="-v "`readlink -m $OPTARG`":/var/lib/grafana"
+       if [ ! -d $OPTARG ]; then
+         echo "Creating grafana external directory $OPTARG"
+         mkdir -p $OPTARG
+       fi
        ;;
     n) GRAFANA_NAME=$OPTARG
        ;;
@@ -199,11 +203,6 @@ done
 
 if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
     PORT_MAPPING="-p $BIND_ADDRESS$GRAFANA_PORT:3000"
-fi
-
-if [ ! -d $EXTERNAL_VOLUME ]; then
-    echo "Creating grafana directory directory $EXTERNAL_VOLUME"
-    mkdir -p $EXTERNAL_VOLUME
 fi
 
 if [ ! -z $RUN_RENDERER ]; then
