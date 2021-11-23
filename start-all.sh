@@ -120,6 +120,10 @@ fi
 
 if [ -z "$VERSIONS" ]; then
   VERSIONS=${DEFAULT_VERSION[$BRANCH_VERSION]}
+  if [ "$VERSION" = "" ]; then
+    echo "Scylla-version was not not found, add the -v command-line with a specific version (i.e. -v 2021.1)"
+    exit 1
+  fi
 fi
 
 if [ -z "$SCYLLA_TARGET_FILES" ]; then
