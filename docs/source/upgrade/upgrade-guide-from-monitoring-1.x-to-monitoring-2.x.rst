@@ -65,7 +65,7 @@ a. Set the old system
 The following steps will stop the **old** monitoring stack from reading new metrics while exposing an API for the **new** monitoring stack to read historical metrics from.
 
 * In the **old** Prometheus `prometheus.yml.template` file, remove the ``alerting``, ``scrape_configs``, and ``rule_files`` sections, keeping only the ``external_labels`` section.
-* Restart the **old** montioring stack with, ``kill-all.sh`` followed by ``start-all.sh`` with command line flag ``-b "-web.listen-address=:9111"``.
+* Restart the **old** monitoring stack with, ``kill-all.sh`` followed by ``start-all.sh`` with command line flag ``-b "-web.listen-address=:9111"``.
 
 .. note::
    After this phase, the **old** monitoring stack will not be updated with new metrics. It will only serve as a data source of historical data for the **new** stack
