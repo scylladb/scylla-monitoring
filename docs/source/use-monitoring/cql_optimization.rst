@@ -2,7 +2,7 @@
 The CQL Optimization
 ====================
 
-The CQL Optimization is part of the CQL Dashboard and is a tool to help identify potentials issues with queries, data model and driver.
+The CQL Optimization is part of the CQL Dashboard and is a tool to help identify potential issues with queries, data model and driver.
 
 .. figure:: cql_optimization_master.png
 
