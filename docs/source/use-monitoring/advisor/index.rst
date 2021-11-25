@@ -9,7 +9,7 @@ Scylla Monitoring Stack Advisor
 
    *
 
-The Scylla Monitoring Stack Advisor is an element of the Scylla Monitoring Stack that recognize bad practices, bad configurations, and potential problems and advises on how to solve them.
+The Scylla Monitoring Stack Advisor is an element of the Scylla Monitoring Stack that recognizes bad practices, bad configurations, and potential problems and advises on how to solve them.
 
 The Advisor section
 ^^^^^^^^^^^^^^^^^^^^
