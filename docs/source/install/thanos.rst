@@ -2,7 +2,7 @@ Using Thanos as Data Source With Scylla Monitoring Stack
 ========================================================
 
 Scylla-Monitoring uses `Prometheus <https://prometheus.io/>`_ for metrics collection, which works out-of-the-box, but Prometheus does have limitations.
-`Thanos <https://thanos.io/>`_  is an opensource solution which when used on top of Prometheus, provides additiuonal functionalities such as:
+`Thanos <https://thanos.io/>`_  is an opensource solution which when used on top of Prometheus, provides additional functionalities such as:
 
 * High-availability.
 * Horizontal scaling.
