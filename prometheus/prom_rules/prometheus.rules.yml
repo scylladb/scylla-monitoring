@@ -297,6 +297,16 @@ groups:
     annotations:
       description: 'The prepared-statement cache is being continuously evicted, which could indicate a problem in your prepared-statement usage logic.'
       summary: Prepared cache eviction
+  - alert: heavyCompaction
+    expr: max(scylla_scheduler_shares{group="compaction"}) by (cluster) >= 1000
+    for: 5m
+    labels:
+      severity: "1"
+      advisor: "heavyCompaction"
+      dashboard: "scylla-detailed"
+    annotations:
+      description: 'Compaction load increases to a level it can interfere with the system behaviour. If this persists set the compaction share to a static level.'
+      summary: Heavy compaction load
   - alert: InstanceDown
     expr: up{job="scylla"} == 0
     for: 30s
