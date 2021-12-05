@@ -12,7 +12,7 @@ LOKI_CONF_DIR=$PWD/loki/conf
 PROMTAIL_CONFIG=$PWD/loki/promtail/promtail_config.yml
 DOCKER_PARAM=""
 BIND_ADDRESS=""
-LOKI_COMMANDS=""
+LOKI_COMMANDS="--ingester.wal-enabled=false"
 LOKI_DIR=""
 usage="$(basename "$0") [-h] [-l] [-D encapsulate docker param] [-m alert_manager address]"
 if [ "`id -u`" -ne 0 ]; then
