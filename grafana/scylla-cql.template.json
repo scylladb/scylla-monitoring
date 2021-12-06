@@ -894,6 +894,38 @@
                 "panels": [
                     {
                         "class": "gauge_errors_panel",
+                        "description": "Range scans should typically by pass the cache.\n\n Add BYPASS CACHE to your select queries.",
+                        "targets": [
+                            {
+                                "expr": "floor(100 *sum(rate(scylla_cql_select_partition_range_scan_no_bypass_cache{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))/(sum(rate(scylla_cql_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) - sum(rate(scylla_cql_reads_per_ks{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", who=\"internal\"}[$__rate_interval])) )) OR vector(0)",
+                                "format": "time_series",
+                                "hide": false,
+                                "instant": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "Range Scans"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Range scans should typically by pass the cache.\n\n Add BYPASS CACHE to your select queries.",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_cql_select_partition_range_scan_no_bypass_cache{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 2,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "Range Scans Without BYPASS CACHE "
+                    },
+                    {
+                        "class": "gauge_errors_panel",
                         "description": "Using consistency level ANY in a query may hurt persistency, if the node receiving the request will fail the data may be lost",
                         "targets": [
                             {
