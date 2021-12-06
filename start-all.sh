@@ -194,7 +194,7 @@ for arg; do
                 ;;
             (--thanos-sc) RUN_THANOS_SC=1
                 ;;
-            (--auto-restart) DOCKER_PARAM="--restart=on-failure"
+            (--auto-restart) DOCKER_PARAM="--restart=unless-stopped"
                 ;;
             (--limit)
                 LIMIT="1"
