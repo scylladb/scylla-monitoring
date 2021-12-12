@@ -953,6 +953,68 @@
                     {
                         "class": "collapsible_row_panel",
                         "collapsed": true,
+                        "dashversion":[">4.6", ">2021.1"],
+                        "title": "Tombstones"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "dashversion":[">4.6", ">2021.1"],
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_cache_range_tombstone_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Cache Range Tombstones",
+                        "description" : "Amount of range tombstones processed during read."
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_sstables_range_tombstone_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Range Tombstones reads",
+                        "description" : "Amount of range tombstones processed during read."
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_sstables_tombstone_writes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Range Tombstones writes",
+                        "description" : "Amount of range tombstones writes."
+                    }
+                 ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "collapsed": true,
                         "title": "LWT"
                     }
                 ]
