@@ -4,7 +4,7 @@ System Overload
 There could be multiple indications that a system is overloaded:
 
 * Timeouts
-* Requests shed - Requests are shed when the system cannot process the requests fast enough.
+* Requests shed - Requests are shed (dropped) when the system cannot process requests fast enough.
 * CPU at 100% when no background process (like compaction or repair) is running.
 * Ques are getting filled.
 
