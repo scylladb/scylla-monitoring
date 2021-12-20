@@ -7,7 +7,7 @@ if [ -f  env.sh ]; then
 fi
 
 VERSIONS=$DEFAULT_VERSION
-LOKI_RULE_DIR=$PWD/loki/rules
+LOKI_RULE_DIR=$PWD/loki/rules/scylla
 LOKI_CONF_DIR=$PWD/loki/conf
 PROMTAIL_CONFIG=$PWD/loki/promtail/promtail_config.yml
 DOCKER_PARAM=""
@@ -134,7 +134,7 @@ sed "s/ALERTMANAGER/$ALERT_MANAGER_ADDRESS/" loki/conf/loki-config.template.yaml
 
 docker run ${DOCKER_LIMITS["loki"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
      $USER_PERMISSIONS \
-	 -v $LOKI_RULE_DIR:/etc/loki/rules:z \
+	 -v $LOKI_RULE_DIR:/etc/loki/rules/fake:z \
 	 -v $LOKI_CONF_DIR:/mnt/config:z \
 	 $LOKI_DIR \
      --name $LOKI_NAME docker.io/grafana/loki:$LOKI_VERSION $LOKI_COMMANDS --config.file=/mnt/config/loki-config.yaml ${DOCKER_PARAMS["loki"]} >& /dev/null
