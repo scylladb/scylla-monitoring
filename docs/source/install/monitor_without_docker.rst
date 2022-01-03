@@ -19,8 +19,8 @@ We assume that that you already have Prometheus and Grafana running but we will 
 
 We suggest that you follow the installation instruction of each of those products from their official documentation. It is also recommended that all servers will run as a service.
 
- 
-  
+
+
 .. include:: min-prod-hw.rst
 
 The main item to set an alert on is the available disk space in the monitoring system. Data is indefinitely accrued on the Prometheus data directory.
@@ -85,7 +85,7 @@ For example:
 
 .. image:: alertmanager.png
 
-Install Grafana Loki 
+Install Grafana Loki
 --------------------
 
 Loki is a log aggregation system inspired by Prometheus. Scylla Monitoring uses Loki for alerts and metrics generation. It does not replaces your centralized logging server, but it can, check
@@ -99,7 +99,7 @@ You will need to run both Loki and Promtail. Loki responsible for log parsing an
 
 Promtail load logs into Loki, there are multiple ways of doing that, we suggest to use of rsyslog, this way you can add Promtail (and Loki) as a second log collection server.
 
-**Loki Related files** 
+**Loki Related files**
 
 
 Loki has a configuration file and a rule file. You need to copy and modify the configuration.
@@ -111,7 +111,7 @@ Loki has a configuration file and a rule file. You need to copy and modify the c
    cp loki/rules/* /etc/loki/rules
    cp loki/conf/loki-config.template.yaml /etc/loki/config/loki-config.yaml
 
-Edit ``/etc/loki/config/loki-config.yaml`` and replace ``ALERTMANAGER`` with the alertmanager ip:port (i.e. localhost:9093) 
+Edit ``/etc/loki/config/loki-config.yaml`` and replace ``ALERTMANAGER`` with the alertmanager ip:port (i.e. localhost:9093)
 
 **Promtail Related files**
 
@@ -365,6 +365,8 @@ for example ``load.4.5.yaml`` would point to: ``/home/centos/grafana-7.5.7/publi
 
    sudo cp grafana/datasource.yml /etc/grafana/provisioning/datasources/
 
+.. note:: Scylla uses a plugin to read from some system tables see the section below about using it.
+
 For Grafana installed from packages
 
 .. code-block:: shell
@@ -434,4 +436,59 @@ Start the server:
 Point your browser to the Grafana server port 3000, the assumption is that Grafana and Prometheus are collocated on the same server.
 
 .. image:: grafana.png
+
+
+Using Scylla Plugin with Grafana
+--------------------------------
+
+Scylla Monitoring uses a plugin to read from some of the System tables. For the plugin to work it needs to be installed, configured and there should be a CQL connectivity between the Scylla Monitoring and the Scylla servers.
+
+Because the plugin gives access to the Scylla tables, we strongly encourage you to add a user with read-only access restricted to the system keyspace and configure the plugin to use that user.
+
+Setting a monitoring user
+.........................
+
+This part is optional, but is highly recommended. The instruction at `enable authorization`_ covers all the following items in details.  
+
+.. _`enable authorization`: https://docs.scylladb.com/operating-scylla/security/enable-authorization/ 
+
+* If you have not done so, `enable authorization`_ first.
+* Add a new ROLL for the scylla monitoring: ``CREATE ROLE scylla_monitoring WITH PASSWORD = 'scylla_monitoring' AND LOGIN = true;`` make sure to give it a proper password.
+* Add SELECT permissions to the new user: ``GRANT SELECT on KEYSPACE system TO scylla_monitoring``;
+
+
+
+Installing the Plugin
+.....................
+
+Grafana reads plugins from its plugin directory, copy Scylla Plugin from  'grafana/plugins/scylla-datasource' as described in the Grafana installation section.
+
+Configure the Plugin
+....................
+
+Add an entry to the datasource.yml file
+
+.. code-block:: shell
+
+ - name: scylla-datasource
+   type: scylladb-scylla-datasource
+   orgId: 1
+   isDefault:
+   jsonData:
+   host: ''
+ #  secureJsonData:
+ #    user: 'scylla_monitoring'
+ #    password: 'scylla_monitoring'
+
+As mentioned previously it is safer to use a dedicated user/password for the monitoring with limited access privileges. Un-comment the relevant section if you do so, note that the username/password are only visible in the file.
+
+Enable the Plugin
+.................
+
+Grafana will not load unsigned plugins, for that you will need to enable it with Grafana. Edit Grafana ``grafana.ini`` file and add
+the line ``allow_loading_unsigned_plugins: scylladb-scylla-datasource``.
+
+See more about it the `Grafana configurtion`_.
+
+.. _`grafana configurtion`: https://grafana.com/docs/grafana/latest/administration/configuration/#allow_loading_unsigned_plugins
 
