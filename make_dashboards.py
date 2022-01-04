@@ -37,7 +37,7 @@ parser.add_argument('-h', '--help', action='store_true', default=False, help='Pr
 parser.add_argument('-kt', '--key-tips', action='store_true', default=False, help='Add key tips when there are conflict values between the template and the value')
 parser.add_argument('-af', '--as-file', type=str, default="", help='Make the dashboard ready to be loaded as files and not with http, when not empty, state the directory the file will be written to')
 parser.add_argument('-V', '--dash-version', type=str, default="", help='When set, create a dashboard for a specific version, looking at the dashversion tags')
-parser.add_argument('-P', '--product', action='append', default=[], help='when added will look at the dahsproduct tag')
+parser.add_argument('-P', '--product', action='append', default=[], help='when added will look at the dashproduct tag')
 
 def help(args):
     parser.print_help()
@@ -177,10 +177,10 @@ def make_replace_strings(replace):
             results.append(v.split('=', 1))
     return results
 
-def should_product_reject(products, obj):
-    return ("dahsproduct" in obj) and (obj["dahsproduct"] == "" and len(products)>0 or obj["dahsproduct"] != "" and obj["dahsproduct"] not in products)
+def should_product_reject(products, products_reject, obj):
+    return ("dashproduct" in obj) and (obj["dashproduct"] == "" and len(products)>0 or obj["dashproduct"] != "" and obj["dashproduct"] not in products) or ("dashproductreject" in obj and obj["dashproductreject"] in products_reject)
 
-def update_object(obj, types, version, products):
+def update_object(obj, types, version, products, products_reject):
     global id
     if not isinstance(obj, dict):
         return obj
@@ -189,7 +189,7 @@ def update_object(obj, types, version, products):
         for key in extra:
             if key not in obj:
                 obj[key] = extra[key]
-    if (version and should_version_reject(version, obj)) or should_product_reject(products, obj):
+    if (version and should_version_reject(version, obj)) or should_product_reject(products, products_reject, obj):
         trace("version-reject", "rejecting obj", obj)
         return None
     for v in obj:
@@ -197,9 +197,9 @@ def update_object(obj, types, version, products):
             obj[v] = id
             id = id + 1
         elif isinstance(obj[v], list):
-            obj[v] = [m for m in [update_object(o, types, version, products) for o in obj[v]] if m != None]
+            obj[v] = [m for m in [update_object(o, types, version, products, products_reject) for o in obj[v]] if m != None]
         elif isinstance(obj[v], dict):
-            obj[v] = update_object(obj[v], types, version, products)
+            obj[v] = update_object(obj[v], types, version, products, products_reject)
     return obj
 
 def compact_obj(obj, types, args):
@@ -339,6 +339,13 @@ def parse_version(v):
     if v == 'master':
         return 666
     return int(v)
+
+def make_reject(projects):
+    return [p for p in projects if p.startswith("no-")]
+
+def make_projects(projects):
+    return [p for p in projects if not p.startswith("no-")]
+
 def get_dashboard(name, types, args, replace_strings):
     global id
     id = 1
@@ -354,7 +361,7 @@ def get_dashboard(name, types, args, replace_strings):
         row = get_json_file(row_name)
         result["dashboard"]["rows"].insert(int(row_number), row)
 
-    update_object(result, types, version, args.product)
+    update_object(result, types, version, make_projects(args.product), make_reject(args.product))
     if not args.grafana4:
         make_grafna_5(result, args)
     if args.as_file:
