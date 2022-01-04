@@ -17,14 +17,15 @@ if [ "$1" = "-e" ]; then
 fi
 
 . dashboards.sh
-if [ -f setenv.sh ]; then
-    . setenv.sh
-fi
 
 FORMAT_COMAND=""
 FORCEUPDATE=""
 SPECIFIC_SOLUTION=""
 PRODUCTS=()
+if [ -f setenv.sh ]; then
+    . setenv.sh
+fi
+
 usage="$(basename "$0") [-h] [-v comma separated versions ]  [-D] [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] [-F force update] [-S start with a system specific dashboard set] -- Generates the grafana dashboards and their load files"
 
 while getopts ':htDv:j:M:S:P:F' option; do
