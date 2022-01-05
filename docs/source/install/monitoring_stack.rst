@@ -97,10 +97,11 @@ Install Scylla Monitoring Stack
 As an alternative, you can clone and use the Git repository directly.
 
 .. code-block:: sh
+   :substitutions:
 
    git clone https://github.com/scylladb/scylla-monitoring.git
    cd scylla-monitoring
-   git checkout branch-3.9
+   git checkout |branch_version|
 
 2. Start Docker service if needed
 
