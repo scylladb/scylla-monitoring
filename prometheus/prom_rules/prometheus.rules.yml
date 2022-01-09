@@ -15,12 +15,12 @@ groups:
     expr: clamp_min(sum(rate(scylla_query_processor_statements_prepared[1m])) by (cluster, dc, instance, shard) - scylla_cql:all_system_shardrate1m, 0)
   - record: scylla_cql:non_prepared
     expr: (sum(scylla_cql:non_system_prepared1m) by (cluster) >bool 100) * (sum(cql:non_system_prepared1m) by (cluster) / clamp_min(sum(scylla_cql:all_rate1m) by (cluster)- sum(scylla_cql:all_system_shardrate1m) by (cluster), 0.001))
-  - record: scylla_cql:non_paged_no_system1m
+  - record: scylla_scylla_scylla_cql:non_paged_no_system1m
     expr: clamp_min(sum(rate(scylla_cql_unpaged_select_queries[60s])) by (cluster, dc, instance) - sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks="system"}[60s])) by (cluster, dc, instance), 0)
-  - record: scylla_cql:non_paged_no_system
-    expr: (sum(scylla_cql:non_paged_no_system1m) by (cluster, dc, instance) >bool 100) * sum(cql:non_paged_no_system) by (cluster, dc, instance)/clamp_min(sum(rate(scylla_cql_reads[60s]))by (cluster, dc, instance) - sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks="system"}[60s])) by (cluster, dc, instance), 0.01)
+  - record: scylla_scylla_cql:non_paged_no_system
+    expr: (sum(scylla_scylla_scylla_cql:non_paged_no_system1m) by (cluster, dc, instance) >bool 100) * sum(cql:non_paged_no_system) by (cluster, dc, instance)/clamp_min(sum(rate(scylla_cql_reads[60s]))by (cluster, dc, instance) - sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks="system"}[60s])) by (cluster, dc, instance), 0.01)
   - record: scylla_cql:non_paged
-    expr: (sum(scylla_cql:non_paged_no_system1m) by (cluster) >bool 100) * sum(cql:non_paged_no_system1m) by (cluster)/clamp_min(sum(rate(scylla_cql_reads[60s]))by (cluster) - sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks="system"}[60s])) by (cluster), 0.01)
+    expr: (sum(scylla_scylla_scylla_cql:non_paged_no_system1m) by (cluster) >bool 100) * sum(cql:non_paged_no_system1m) by (cluster)/clamp_min(sum(rate(scylla_cql_reads[60s]))by (cluster) - sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks="system"}[60s])) by (cluster), 0.01)
   - record: scylla_cql:reverse_queries
     expr: sum(rate(scylla_cql_reverse_queries[60s])) by (cluster)/ sum(rate(scylla_cql_reads[60s])) by (cluster)
   - record: scylla_cql:allow_filtering
@@ -185,7 +185,7 @@ groups:
     annotations:
       description: 'Some queries are non-prepared'
       summary: non prepared statments
-  - alert: scylla_cql:non_paged_no_system
+  - alert: scylla_scylla_cql:non_paged_no_system
     expr: scylla_cql:non_paged > 0
     for: 10s
     labels:
