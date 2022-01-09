@@ -27,7 +27,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx_multiversion',
-    'recommonmark'   
+    'recommonmark'
 ]
 
 # Add Markdown support
@@ -60,12 +60,18 @@ def setup(sphinx):
     }, True)
     sphinx.add_transform(AutoStructify)
 
-
+current_version = "3.1.0"
+res = ""
+if os.path.isfile('../../CURRENT_VERSION.sh'):
+    with open('../../CURRENT_VERSION.sh', 'r') as file:
+        current_version = file.read().replace('\n', '')
+current_branch = 'branch-' + '.'.join(current_version.split('.')[:2])
 # Adds version variables for monitoring and manager versions when used in inline text
 rst_prolog = """
-.. |version| replace:: 3.10.0
+.. |version| replace:: {current_version}
+.. |branch_version| replace:: {current_branch}
 .. |mon_root| replace::  `Scylla Monitoring Stack </>`__
-"""
+""".format(current_version=current_version, current_branch=current_branch)
 
 # -- Options for not found extension -------------------------------------------
 
@@ -143,7 +149,7 @@ html_sidebars = {'**': ['side-nav.html']}
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'ScyllaMonitorDocumentationdoc'
 
-# URL which points to the root of the HTML documentation. 
+# URL which points to the root of the HTML documentation.
 html_baseurl = 'https://monitoring.docs.scylladb.com'
 
 # Dictionary of values to pass into the template engine’s context for all pages

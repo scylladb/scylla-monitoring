@@ -35,7 +35,10 @@ The following procedure uses a ``CentOS 7`` based instance
 
 1. Download the latest Scylla Monitoring Stack release.
 
-``wget https://github.com/scylladb/scylla-monitoring/archive/refs/tags/scylla-monitoring-3.10.0.tar.gz``
+.. code-block:: sh
+   :substitutions:
+
+   wget https://github.com/scylladb/scylla-monitoring/archive/refs/tags/scylla-monitoring-|version|.tar.gz
 
 
 2. Open the tar
@@ -57,13 +60,14 @@ Tested with alertmanager 0.22.2 version
    tar -xvf alertmanager-*.linux-amd64.tar.gz
 
 
-2. Copy the following file: ``rule_config.yml`` from ``scylla-monitoring-scylla-monitoring-3.10.0/prometheus`` directory to ``alertmanager.yml`` in the alertmanager installation directory.
+2. Copy the following file: ``rule_config.yml`` from ``prometheus/`` directory to ``alertmanager.yml`` in the alertmanager installation directory.
 
 For example:
 
 .. code-block:: shell
-
-   cp -p /home/centos/scylla-monitoring-scylla-monitoring-3.10.0/prometheus/rule_config.yml alertmanager-0.22.2.linux-amd64/alertmanager.yml
+   :substitutions:
+   
+   cp -p /home/centos/scylla-monitoring-scylla-monitoring-|version|/prometheus/rule_config.yml alertmanager-0.22.2.linux-amd64/alertmanager.yml
 
 3. Start the Alertmanager
 
@@ -150,16 +154,17 @@ Tested with Prometheus version 2.27.1
    mkdir -p /etc/scylla.d/prometheus/
 
 
-3. Copy the following files: ``scylla_servers.yml``, ``prometheus.rules.yml`` from ``scylla-monitoring-scylla-monitoring-3.10.0/prometheus`` directory to Prometheus installation directory.
+3. Copy the following files: ``scylla_servers.yml``, ``prometheus.rules.yml`` from ``prometheus/`` directory to Prometheus installation directory.
 
 Copy ``prometheus/prometheus.yml.template`` to ``prometheus.yml``
 
 For example:
 
 .. code-block:: shell
+   :substitutions:
 
-   cp scylla-monitoring-scylla-monitoring-3.10.0/prometheus/prom_rules/*.yml/etc/prometheus/prom_rules/
-   cp scylla-monitoring-scylla-monitoring-3.10.0/prometheus/prometheus.yml.template /etc/prometheus/prometheus.yml
+   cp scylla-monitoring-scylla-monitoring-|version|/prometheus/prom_rules/*.yml/etc/prometheus/prom_rules/
+   cp scylla-monitoring-scylla-monitoring-|version|/prometheus/prometheus.yml.template /etc/prometheus/prometheus.yml
 
 
 4. Edit the ``prometheus.yml`` file to point to the correct static data sources.
@@ -270,8 +275,9 @@ For example:
 For example:
 
 .. code-block:: shell
+   :substitutions:
 
-   cd scylla-monitoring-scylla-monitoring-3.10.0/
+   cd scylla-monitoring-scylla-monitoring-|version|/
    ./prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path /prometheus/data
 
 Data should start accumulate on: /prometheus/data
@@ -316,7 +322,10 @@ different in the rest of the steps.
 
 2. Access Scylla-Grafana-monitoring directory
 
-``cd scylla-monitoring-scylla-monitoring-3.10.0/``
+.. code-block:: shell
+   :substitutions:
+
+   cd scylla-monitoring-scylla-monitoring-|version|/
 
 3. Copy the plugins to the grafana plugins directory (by default ``/var/lib/grafana/``)
 
