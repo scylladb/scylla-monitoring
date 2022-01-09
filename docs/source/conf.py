@@ -60,7 +60,7 @@ def setup(sphinx):
     }, True)
     sphinx.add_transform(AutoStructify)
 
-current_version = "3.1.0"
+current_version = "3.10.0"
 res = ""
 if os.path.isfile('../../CURRENT_VERSION.sh'):
     with open('../../CURRENT_VERSION.sh', 'r') as file:
@@ -92,11 +92,11 @@ notfound_urls_prefix = ''
 TAGS = []
 smv_tag_whitelist = multiversion_regex_builder(TAGS)
 # Whitelist pattern for branches (set to None to ignore all branches)
-BRANCHES = ['master', 'branch-3.4', 'branch-3.5', 'branch-3.6', 'branch-3.7', 'branch-3.8', 'branch-3.9']
+BRANCHES = ['master', 'branch-3.4', 'branch-3.5', 'branch-3.6', 'branch-3.7', 'branch-3.8', 'branch-3.9', 'branch-3.10']
 smv_branch_whitelist = multiversion_regex_builder(BRANCHES)
 # Defines which version is considered to be the latest stable version.
 # Must be listed in smv_tag_whitelist or smv_branch_whitelist.
-smv_latest_version = 'branch-3.9'
+smv_latest_version = 'branch-3.10'
 smv_rename_latest_version = 'stable'
 # Part of the branch name to skip.
 branch_substring_removed = 'branch-'
