@@ -2,9 +2,9 @@
 Adding and Modifying Dashboards
 *******************************
 
-The following document explains how to update or create Grafana dashboards for the Scylla Monitoring Stack.
+This document explains how to update or create Grafana dashboards for the Scylla Monitoring Stack.
 
-It will explain about Scylla Monitoring Stack dashboard templates and how to modify them.
+It covers dashboard templates and how to modify them.
 
 .. contents::
    :depth: 2
@@ -14,33 +14,30 @@ It will explain about Scylla Monitoring Stack dashboard templates and how to mod
 General Limitations
 ###################
 Scylla Monitoring Stack uses Grafana for its dashboards.
-The dashboards are provisioned from files and are stored in Grafana internal storage.
-There are consistency issues here, between restarts and between upgrades.
+The dashboards are provisioned from files and are stored in the Grafana internal storage.
+There are two potential consistency issues, covered below.
 
-consistency between restarts
+Consistency Between Restarts
 ****************************
+By default, the Grafana internal storage is within the container. That means that whenever you restart the Scylla Monitoring Stack (explicitly when restarting Grafana) any local changes will not be persisted.
+If you are making changes and saving changes from the GUI make sure to configure an external directory for Grafana.
 
-By default, Grafana internal storage is inside the container. That means whenever you restart the Scylla Monitoring Stack (explicitly when restarting Grafana) any local changes will be gone.
- If you are doing and saving changes from the GUI make sure to configure an external directory for Grafana.
-
-consistency between upgrades
+Consistency Between Upgrades
 ****************************
-As mentioned earlier, the dashboards are provisioned from files, this means that when the files are changed, any changes stored locally will be overridden.For this reason, do not make permanent changes to a dashboard, or your changes eventually will be lost.
+As mentioned earlier, the dashboards are provisioned from files, this means that when the files are changed, any changes stored locally will be overridden. For this reason, do not make permanent changes to a dashboard, or your changes eventually will be lost.
 
-.. note::  You can save a dashboard change you made from the GUI, but it can be overridden and should be avoided.
+.. note::  You can save a dashboard change you made from the GUI, but it can be overridden. This should be avoided.
 
-At large, we suggest maintaining your dashboards as files, as Scylla Monitor does.
+At large, we suggest maintaining your dashboards as files, as Scylla Monitoring does.
 
 
-Using templated Dashboards
+Using Templated Dashboards
 ##########################
-Why does Scylla Monitor use dashboard templates?
+Scylla Monitoring uses dashboard templates as we found the Grafana dashboards in JSON format to be too verbose to be maintainable.
 
-We found the Grafana dashboards Json format too verbose to be maintainable.
+Each element in the dashboard file (Each JSON  object) contains all of its attributes and values.
 
-Each element in the dashboard file (Each Json  object) contains all of its attributes and values.
-
-For example a typical graph panel would look like:
+For example a typical graph panel would look like this:
 
 .. code-block:: json
 
@@ -131,16 +128,16 @@ For example a typical graph panel would look like:
 
 As you can imagine, most panels would have similar values.
 
-To reduce the redundancy of Grafana JSON format, we added dashboard templates.
+To reduce the redundancy of the Grafana JSON format, we added dashboard templates.
 
-The template class system
+The Template Class System
 ***************************
 
-Scylla Monitoring Stack dashboard templates use ``class`` attribute that can be added to any JSON object in a template file.
+The Scylla Monitoring Stack dashboard templates use a ``class`` attribute that can be added to any JSON object in a template file.
 The different classes are defined in a file.
 
 The ``class`` system resembles CSS classes. It is hierarchical, so a ``class`` type definition can have a ``class`` attribute and
-it would inherit that class attributes, the inherit class can add or override inherited attributes.
+it would inherit that class attributes, the inherited class can add or override inherited attributes.
 
 In the template file, you can also add or override attributes.
 
@@ -148,7 +145,7 @@ The Scylla Monitor generation script, uses the `types.json` file and a template 
 
 When generating dashboards, each class will be replaced by its definition.
 
-For example row in the `type.json` defined
+For example, a row in the `type.json` is defined as:
 
 .. code-block:: json
 
@@ -163,7 +160,7 @@ For example row in the `type.json` defined
     }
     }
 
-In a Template it will be used like
+Will be used like in a template:
 
 .. code-block:: json
 
@@ -174,7 +171,7 @@ In a Template it will be used like
         ]
    }
 
-The output will be
+And the output will be:
 
 .. code-block:: json
 
@@ -189,13 +186,13 @@ The output will be
    }
 
 
-We can see that the template added the ``panels`` attribute and override the ``height`` attribute.
+We can see that the template added the ``panels`` attribute and that it overrides the ``height`` attribute.
 
 
-Panel example
+Panel Example
 *************
 
-Look at the following example that defines a row inside a dashboard with a graph
+Consider the following example that defines a row inside a dashboard with a graph
 panel for the available disk size.
 
 .. code-block:: json
@@ -221,10 +218,10 @@ panel for the available disk size.
         ]
    }
 
-In the example, we used the `bytes_panel` class that generate a graph with bytes as units (that would mean that your
-`Y` axis unit would adjust themselves to make the graph readable (i.e. GB, MB, bytes, etc')
+In the example, the `bytes_panel` class generates a graph with bytes as units (that would mean that your
+`Y` axis units would adjust themselves to make the graph readable (i.e. GB, MB, bytes, etc').
 
-You can also see that we override the `span` attribute to set the panel size.
+You can also see that the `span` attribute is overridden to set the panel size.
 
 To get a grasp of the difference, take a look at the Grafana panel example and see how it looks originally.
 
@@ -235,8 +232,8 @@ The Grafana layout used to be based on rows, where each row contained multiple p
 Each row would have a total of 12 panels and if the total span of the panels was larger than 12, it would
 break them into multiple lines. This is no longer the case.
 
-Starting from  Grafana version 5.0 and later, rows are no longer supported, it was replaced with a layout that uses
-absolute positions (ie. X,Y, height, width).
+Starting from  Grafana version 5.0 and later, rows were no longer supported, they were replaced with a layout that uses
+absolute positions (i.e. X,Y, height, width).
 
 The server should be backward compatible, but we've found it had issues with parsing it correctly.
 More so, absolute positions are impossible to get right when done by hand.
@@ -246,7 +243,7 @@ In the transition, rows will be replaced with a calculated absolute position.
 
 The panel's height will be taken from their row. The `span` attribute is still supported as is row height.
 
-you can use the `gridPos` attribute which is a Grafana 5.0 format, but unlike Grafana, you can use partial attributes.
+You can use the `gridPos` attribute which is a Grafana 5.0 format, but unlike Grafana, you can use partial attributes.
 
 `gridPos` has the following attributes:
 
@@ -291,12 +288,12 @@ For example, if you are changing a dashboard in Scylla Enterprise version 2020.1
 
 ``.\generate-dashboards.sh -v 2020.1``
 
-.. note::  generate-dashboards.sh will update the dashboards in place, no need for a restart for the changes to take effect, just refresh the dashboard.
+.. note::  generate-dashboards.sh will update the dashboards in place, there is no need for a restart for the changes to take effect, just refresh the dashboard.
 
 
 Validation
 **********
-After making changes to a template, run the ``generate_generate-dashboards.sh`` you should see that it run without any errors.
+After making changes to a template, run the ``generate_generate-dashboards.sh`` and make sure that it ran without any errors.
 
 Refresh your browser for changes to take effect.
 Make sure that your panels contain data, if not, maybe there is something wrong with your ``expr`` attribute.
