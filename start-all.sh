@@ -102,9 +102,9 @@ The script starts Scylla Monitoring stack.
 
 is_local () {
     for var in "$@"; do
-        if grep -q '127.' $1; then
+        if grep -q '\s127.' $1; then
             echo "Local host found in $1"
-            grep '127.' $1
+            grep '\s127.' $1
             return 0
         fi
         if grep -q 'localhost' $1; then
