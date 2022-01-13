@@ -307,8 +307,8 @@ groups:
     annotations:
       description: 'Compaction load increases to a level it can interfere with the system behaviour. If this persists set the compaction share to a static level.'
       summary: Heavy compaction load
-  - alert: heavyCompaction
-    expr: max(sum(rate(scylla_transport_requests_shed[60s])) by (instance,cluster)/sum(rate(scylla_transport_requests_served{}[60s])) by (instance, cluster)) by(cluster) > 0.1
+  - alert: shedRequests
+    expr: max(sum(rate(scylla_transport_requests_shed[60s])) by (instance,cluster)/sum(rate(scylla_transport_requests_served{}[60s])) by (instance, cluster)) by(cluster) > 0.01
     for: 5m
     labels:
       severity: "1"
