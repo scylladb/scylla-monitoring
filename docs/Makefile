@@ -1,5 +1,5 @@
 # You can set these variables from the command line.
-POETRY        = $(HOME)/.poetry/bin/poetry
+POETRY        = $(HOME)/.local/bin/poetry
 SPHINXOPTS    =
 SPHINXBUILD   = $(POETRY) run sphinx-build
 PAPER         =
@@ -13,6 +13,7 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(S
 
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SOURCEDIR)
+TESTSPHINXOPTS  = $(ALLSPHINXOPTS) -W --keep-going
 
 .PHONY: all
 all: dirhtml
@@ -23,7 +24,8 @@ pristine: clean
 
 .PHONY: setup
 setup:
-	./_utils/setup.sh
+	$(POETRY) install
+	$(POETRY) update
 
 .PHONY: clean
 clean:
@@ -69,19 +71,16 @@ linkcheck: setup
 
 .PHONY: multiversion
 multiversion: setup
-	@mkdir -p $(HOME)/.cache/pypoetry/virtualenvs
 	$(POETRY) run sphinx-multiversion $(SOURCEDIR) $(BUILDDIR)/dirhtml
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
 
 .PHONY: multiversionpreview
 multiversionpreview: multiversion
-	$(POETRY) run python3 -m http.server 5500 --directory $(BUILDDIR)/dirhtml
+	$(POETRY) run python -m http.server 5500 --directory $(BUILDDIR)/dirhtml
 
 .PHONY: test
 test: setup
 	$(SPHINXBUILD) -b dirhtml $(TESTSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
-
-TESTSPHINXOPTS  = $(ALLSPHINXOPTS) -W --keep-going
