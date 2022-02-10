@@ -317,7 +317,16 @@ groups:
     annotations:
       description: 'More than 1% of the requests got shed, this is an indication of an overload, consider system resize.'
       summary: System is overloaded
-
+  - alert: cappedTombstone
+    expr: changes(scylla_sstables_capped_tombstone_deletion_time[1h]) > 0
+    for: 1m
+    labels:
+      severity: "1"
+      advisor: "cappedTombstone"
+      dashboard: "scylla-detailed"
+    annotations:
+      description: 'Tombstone delete time was set too far in the future and was capped'
+      summary: Tobmstone delete time is capped
   - alert: InstanceDown
     expr: up{job="scylla"} == 0
     for: 30s
