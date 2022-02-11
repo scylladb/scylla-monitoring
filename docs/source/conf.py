@@ -3,9 +3,6 @@ import os
 import sys
 from datetime import date
 
-import recommonmark
-from recommonmark.transform import AutoStructify
-
 from sphinx_scylladb_theme.utils import multiversion_regex_builder
 
 sys.path.insert(0, os.path.abspath(".."))
@@ -30,12 +27,9 @@ extensions = [
     'recommonmark'
 ]
 
-# Add Markdown support
-# https://www.sphinx-doc.org/en/master/usage/markdown.html
-source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
-}
+# The suffix(es) of source filenames.
+source_suffix = [".rst", ".md"]
+
 # The master toctree document.
 master_doc = 'index'
 
@@ -49,23 +43,13 @@ exclude_patterns = ['_build', '_utils']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-# If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = True
-
-# Setup Sphinx
-def setup(sphinx):
-    sphinx.add_config_value('recommonmark_config', {
-        'enable_eval_rst': True,
-        'enable_auto_toc_tree': False,
-    }, True)
-    sphinx.add_transform(AutoStructify)
-
 current_version = "3.10.0"
 res = ""
 if os.path.isfile('../../CURRENT_VERSION.sh'):
     with open('../../CURRENT_VERSION.sh', 'r') as file:
         current_version = file.read().replace('\n', '')
 current_branch = 'branch-' + '.'.join(current_version.split('.')[:2])
+
 # Adds version variables for monitoring and manager versions when used in inline text
 rst_prolog = """
 .. |version| replace:: {current_version}
@@ -122,7 +106,6 @@ html_static_path = ['_static']
 html_theme_options = {
     'conf_py_path': 'docs/source/',
     'hide_version_dropdown': ['master'],
-    'hide_sidebar_index': 'false',
     'hide_edit_this_page_button': 'false',
     'github_issues_repository': 'scylladb/scylla-monitoring',
     'github_repository': 'scylladb/scylla-monitoring',
