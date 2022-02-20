@@ -3,22 +3,6 @@ CURRENT_VERSION="master"
 if [ -f CURRENT_VERSION.sh ]; then
     CURRENT_VERSION=`cat CURRENT_VERSION.sh`
 fi
-
-. versions.sh
-. UA.sh
-if [ -f  env.sh ]; then
-    . env.sh
-fi
-
-BRANCH_VERSION=$CURRENT_VERSION
-if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
-    BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
-fi
-
-if [ "$1" = "-e" ]; then
-    DEFAULT_VERSION=${DEFAULT_ENTERPRISE_VERSION[$BRANCH_VERSION]}
-fi
-MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
 LOCAL=""
 GRAFANA_ADMIN_PASSWORD="admin"
 GRAFANA_AUTH=false
@@ -34,6 +18,22 @@ DATA_SOURCES=""
 LIMITS=""
 VOLUMES=""
 PARAMS=""
+DEFAULT_THEME="light"
+. versions.sh
+. UA.sh
+if [ -f  env.sh ]; then
+    . env.sh
+fi
+
+BRANCH_VERSION=$CURRENT_VERSION
+if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
+    BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
+fi
+
+if [ "$1" = "-e" ]; then
+    DEFAULT_VERSION=${DEFAULT_ENTERPRISE_VERSION[$BRANCH_VERSION]}
+fi
+MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
 for arg; do
     shift
     if [ -z "$LIMIT" ]; then
@@ -196,8 +196,13 @@ fi
 
 for val in "${GRAFANA_ENV_ARRAY[@]}"; do
         GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e $val"
+        if [[ $val = "GF_USERS_DEFAULT_THEME=.*" ]]; then
+            DEFAULT_THEME=""
+        fi
 done
-
+if [[ $DEFAULT_THEME != "" ]]; then
+    GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_USERS_DEFAULT_THEME=$DEFAULT_THEME"
+fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
