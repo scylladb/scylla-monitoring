@@ -50,22 +50,53 @@
                 "panels": [
                     {
                         "class": "seconds_panel",
-                        "span": 4,
+                        "span": 3,
                         "targets": [
                             {
                                 "expr": "max(rate(scylla_io_queue_total_delay_sec{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]]) or on() max(scylla_io_queue_delay{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "IO queue {{[[by]]}}",
                                 "metric": "seastar_io_queue_delay",
                                 "refId": "A",
+                                "step": 30
+                            },
+                            {
+                                "expr": "max(rate(scylla_io_queue_total_exec_sec{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]]) or on() max(scylla_io_queue_delay{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Disk {{[[by]]}}",
+                                "metric": "scylla_io_queue_total_exec_sec",
+                                "refId": "B",
                                 "step": 30
                             }
                         ],
                         "title": "$classes I/O Queue delay by [[by]]"
                     },
                     {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "max(scylla_io_queue_queue_length{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "queue length {{[[by]]}}",
+                                "metric": "seastar_io_queue_delay",
+                                "refId": "A",
+                                "step": 30
+                            },
+                            {
+                                "expr": "max(scylla_io_queue_disk_queue_length{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "disk queue length {{[[by]]}}",
+                                "metric": "scylla_io_queue_disk_queue_length",
+                                "refId": "B",
+                                "step": 30
+                            }
+                        ],
+                        "title": "$classes Queue length by [[by]]"
+                    },
+                    {
                         "class": "bps_panel",
-                        "span": 4,
+                        "span": 3,
                         "targets": [
                             {
                                 "expr": "sum(rate(scylla_io_queue_total_bytes{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
@@ -80,7 +111,7 @@
                     },
                     {
                         "class": "iops_panel",
-                        "span": 4,
+                        "span": 3,
                         "targets": [
                             {
                                 "expr": "sum(rate(scylla_io_queue_total_operations{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
