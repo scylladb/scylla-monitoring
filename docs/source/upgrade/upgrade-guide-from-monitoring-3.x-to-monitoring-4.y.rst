@@ -135,7 +135,7 @@ Rollback to version 3.x
 To rollback during the testing mode, follow `Killing the new 4.y Monitoring stack in testing mode`_ as explained previously
 and the system will continue to operate normally.
 
-To rollback to version 3.x after you completed moving to version 4.y (as shown above).
+To rollback to version 3.x after you completed moving to version 4.y (as shown above), run:
 run:
 
 .. code-block:: bash
