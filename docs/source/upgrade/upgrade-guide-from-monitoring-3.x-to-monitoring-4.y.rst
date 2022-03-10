@@ -264,7 +264,7 @@ Copy the data files to the Prometheus directory:
 
                 cp data/* .
 
-The rules will be evaluated next time Prometheus will perform compaction. You can force it by restart the server using ``docker restart aprom``
+The rules will be evaluated next time Prometheus will perform compaction. You can force it by restarting the server using ``docker restart aprom``
 
 Follow the logs ``docker logs aprom`` to see that the process works as expected. If there are no errors, you should now be able to
 see the latency graphs over your entire retention time.
