@@ -60,7 +60,7 @@ We need to use different ports to run two monitoring stacks in parallel (i.e., t
 
                 ./start-all.sh -p 9091 -g 3001 -m 9095
 
-Browse to ``http://{ip}:9091`` and check the Grafana dashboard
+Browse to ``http://{ip}:9091`` and check the Grafana dashboard.
 
 Note that we are using different port numbers for Grafana, Prometheus, and the Alertmanager.
 
