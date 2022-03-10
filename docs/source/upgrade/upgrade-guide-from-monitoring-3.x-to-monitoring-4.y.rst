@@ -190,7 +190,7 @@ When you run the backfilling process you need to determine the start time and en
 Determine the start time
 ^^^^^^^^^^^^^^^^^^^^^^^^
 The start time is your Prometheus retention time, by default it is set to 15 days. if you are not sure what Prometheus retention time is, you can check by
-login into your Prometheus server: `http://{ip}:9090/status`.
+logging in to your Prometheus server: `http://{ip}:9090/status`.
 
 If you are running Scylla Monitoring version 3.8 or newer for longer than the retention period, you are done! You can skip the rest of this section.
 
