@@ -214,7 +214,7 @@ Backfilling Process
 backup
 ^^^^^^
 If you have a long retention period you are using an external directory that holds the Prometheus data, back it up, in case
-something would go wrong in the process you can revert the process.
+If you have a long retention period, you are using an external directory that holds the Prometheus data back it up; if something goes wrong in the process, you can revert the process.
 
 To complete the process you will need to restart the monitoring stack at least once. If you are not using an external directory (The ``-d``
 command-line option) You cannot complete it.
