@@ -227,7 +227,7 @@ You need to stop the monitoring stack and run the ``stat-all.sh`` command with a
 
 Create the data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-We are going to use the promtool utility, if you are using the docker container, it's already installed for you.
+We will use the Promtool utility; it's already installed for you if you are using the docker container. 
 You will need the start time and end time for the process, in our example the start time is 360 days ago and the end time is 90 days ago.
 
 The start and end times are in epoc, so you will need to translate the times to epoc.  There are many ways to do this - for example, from the command line.
