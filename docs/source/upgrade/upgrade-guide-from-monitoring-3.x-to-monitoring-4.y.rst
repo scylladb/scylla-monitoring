@@ -136,7 +136,6 @@ To rollback during the testing mode, follow `Killing the new 4.y Monitoring stac
 and the system will continue to operate normally.
 
 To rollback to version 3.x after you completed moving to version 4.y (as shown above), run:
-run:
 
 .. code-block:: bash
 
