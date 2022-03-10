@@ -83,7 +83,7 @@ Use the following command to kill the containers:
 
                 ./kill-all.sh -p 9091 -g 3001 -m 9095
 
-You can start and stop the new 3.y version while testing.
+You can start and stop the new 4.y version while testing.
 
 Migrating
 =========
