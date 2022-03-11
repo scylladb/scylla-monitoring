@@ -177,10 +177,10 @@ def make_replace_strings(replace):
             results.append(v.split('=', 1))
     return results
 
-def should_product_reject(products, products_reject, obj):
-    return ("dashproduct" in obj) and (obj["dashproduct"] == "" and len(products)>0 or obj["dashproduct"] != "" and obj["dashproduct"] not in products) or ("dashproductreject" in obj and obj["dashproductreject"] in products_reject)
+def should_product_reject(products, obj):
+    return ("dashproduct" in obj) and (obj["dashproduct"] == "" and len(products)>0 or obj["dashproduct"] != "" and obj["dashproduct"] not in products) or ("dashproductreject" in obj and obj["dashproductreject"] in products)
 
-def update_object(obj, types, version, products, products_reject):
+def update_object(obj, types, version, products):
     global id
     if not isinstance(obj, dict):
         return obj
@@ -189,7 +189,7 @@ def update_object(obj, types, version, products, products_reject):
         for key in extra:
             if key not in obj:
                 obj[key] = extra[key]
-    if (version and should_version_reject(version, obj)) or should_product_reject(products, products_reject, obj):
+    if (version and should_version_reject(version, obj)) or should_product_reject(products, obj):
         trace("version-reject", "rejecting obj", obj)
         return None
     for v in obj:
@@ -197,9 +197,9 @@ def update_object(obj, types, version, products, products_reject):
             obj[v] = id
             id = id + 1
         elif isinstance(obj[v], list):
-            obj[v] = [m for m in [update_object(o, types, version, products, products_reject) for o in obj[v]] if m != None]
+            obj[v] = [m for m in [update_object(o, types, version, products) for o in obj[v]] if m != None]
         elif isinstance(obj[v], dict):
-            obj[v] = update_object(obj[v], types, version, products, products_reject)
+            obj[v] = update_object(obj[v], types, version, products)
     return obj
 
 def compact_obj(obj, types, args):
@@ -340,12 +340,6 @@ def parse_version(v):
         return 666
     return int(v)
 
-def make_reject(projects):
-    return [p for p in projects if p.startswith("no-")]
-
-def make_projects(projects):
-    return [p for p in projects if not p.startswith("no-")]
-
 def get_dashboard(name, types, args, replace_strings):
     global id
     id = 1
@@ -361,7 +355,7 @@ def get_dashboard(name, types, args, replace_strings):
         row = get_json_file(row_name)
         result["dashboard"]["rows"].insert(int(row_number), row)
 
-    update_object(result, types, version, make_projects(args.product), make_reject(args.product))
+    update_object(result, types, version, args.product)
     if not args.grafana4:
         make_grafna_5(result, args)
     if args.as_file:
