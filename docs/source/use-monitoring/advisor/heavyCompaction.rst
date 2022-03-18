@@ -1,13 +1,16 @@
 Compaction takes lots of memory and CPU
 ---------------------------------------
-Scylla runs compaction periodically as a background process. While running compaction is important, there are situations that
-the compaction takes too much CPU.
-In those cases the compaction would impact the overall system performance.
+ScyllaDB runs compaction periodically as a background process. While running compaction is important, there are situations when
+compaction takes too much CPU.
+As a result, compaction impacts the overall system performance.
 
-When facing this problem, you can statically limit the compaction shares with one of two options:
+If this is the case, you can do one of the following:
 
-1. Change ``scylla.yml`` to have ``compaction_static_shares: 100`` 
+* Statically limit the compaction shares with the ``compaction_static_shares`` option by setting a value between 50 and 1000:
 
-or
+    * In the ``scylla.yml`` configuration file: ``compaction_static_shares: 100``
+    * In the command line when starting ScyllDB: ``--compaction-static-shares 100``
+* Enforce ``min_threshold`` by setting ``compaction_enforce_min_threshold: true`` in the ``scylla.yml`` configuration file.
+  As a result, ScyllaDB will compact only the buckets that contain the number of SSTables specified with ``min_treshold``
+  or more. See `STCS options <https://docs.scylladb.com/getting-started/compaction/#stcs-options>`_ for details.
 
-2. Start scylla with ``--compaction-static-shares 100``
