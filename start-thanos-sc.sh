@@ -6,6 +6,7 @@ fi
 
 PROM_ADRESS=`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' aprom`:9090
 DATADIR="/prometheus-data/"
+DOCKER_PARAM=""
 NAME="1"
 if [ "`id -u`" -eq 0 ]; then
     echo "Running as root is not advised, please check the documentation on how to run as non-root user"
@@ -82,7 +83,7 @@ for arg; do
         unset LIMIT
     fi
 done
-while getopts ':hl:p:a:d:A:n:' option; do
+while getopts ':hl:p:a:D:d:A:n:' option; do
   case "$option" in
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
@@ -98,6 +99,8 @@ while getopts ':hl:p:a:d:A:n:' option; do
 	p) THANOS_SC_PORT=$OPTARG
        ;;
     A) BIND_ADDRESS="$OPTARG:"
+       ;;
+    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -137,6 +140,7 @@ fi
 echo "Starting Thanos sidecar"
 docker run ${DOCKER_LIMITS["sidecar"]} -d $DOCKER_PARAM $USER_PERMISSIONS \
      $DATA_DIR \
+     $DOCKER_PARAM \
      -i $PORT_MAPPING --name sidecar$NAME docker.io/thanosio/thanos:$THANOS_VERSION \
         "sidecar" \
        "--debug.name=$NAME" \
