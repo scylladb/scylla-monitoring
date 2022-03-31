@@ -183,7 +183,6 @@ is_podman="$(docker --help | grep -o podman)"
 if [ ! -z "$is_podman" ]; then
     group_args+=(--userns=keep-id)
 fi
-
 if [ "`id -u`" -ne 0 ]; then
     GROUPID=`id -g`
     USER_PERMISSIONS="-u $UID:$GROUPID"
@@ -208,6 +207,10 @@ done
 
 if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
     PORT_MAPPING="-p $BIND_ADDRESS$GRAFANA_PORT:3000"
+fi
+
+if [[ "$HOME_DASHBOARD" = "" ]]; then
+    HOME_DASHBOARD="/var/lib/grafana/dashboards/ver_$VERSION/scylla-overview.$VERSION.json"
 fi
 
 if [ ! -z $RUN_RENDERER ]; then
@@ -235,7 +238,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
      -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
      -e "GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID=$UA_ANALTYICS" \
      -e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource,camptocamp-prometheus-alertmanager-datasource" \
-     -e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/ver_$VERSION/scylla-overview.$VERSION.json" \
+     -e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=$HOME_DASHBOARD" \
      $GRAFANA_ENV_COMMAND \
      "${proxy_args[@]}" \
      --name $GRAFANA_NAME docker.io/grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]} >& /dev/null
