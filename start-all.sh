@@ -80,7 +80,7 @@ Options:
   -M scylla-manager version      - Override the default Scylla Manager version to use.
   -D docker param                - Encapsulate docker param, the parameter will be used by all containers.
   -r alert-manager-config        - Override the default alert-manager configuration file.
-  -f path/to/alertmanager/data   - If set, the alertmanager would store its data in the given directory. 
+  -f path/to/alertmanager/data   - If set, the alertmanager would store its data in the given directory.
   -R prometheus-alert-file       - Override the default Prometheus alerts configuration file.
   -N path/to/manager/target file - Set the location of the target file for Scylla Manager.
   -A bind-to-ip-address          - Bind to a specific interface.
@@ -93,6 +93,7 @@ Options:
   --auto-restart                 - If set, auto restarts the containers on failure.
   --no-renderer                  - If set, do not run the Grafana renderer container.
   --thanos-sc                    - If set, run thanos side car with the Prometheus server.
+  --thanos                       - If set, run thanos query as a Grafana datasource.
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
                                    prometheus, grafana, alertmanager, loki, sidecar, grafanarender
 The script starts Scylla Monitoring stack.
@@ -175,6 +176,9 @@ fi
 if [ -z "$RUN_THANOS_SC" ]; then
   RUN_THANOS_SC=0
 fi
+if [ -z "$RUN_THANOS" ]; then
+  RUN_THANOS=0
+fi
 if [ -z "$ALERT_MANAGER_DIR" ]; then
   ALERT_MANAGER_DIR=""
 fi
@@ -193,6 +197,8 @@ for arg; do
             (--no-renderer) RUN_RENDERER=""
                 ;;
             (--thanos-sc) RUN_THANOS_SC=1
+                ;;
+            (--thanos) RUN_THANOS=1
                 ;;
             (--auto-restart) DOCKER_PARAM="--restart=unless-stopped"
                 ;;
@@ -508,7 +514,7 @@ fi
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
 DB_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME):9090"
 
-if [ ! -z "$is_podman" ] && [ "$DB_ADDRESS" = ":9090" ]; then
+if [ "$DB_ADDRESS" = ":9090" ]; then
     HOST_IP=`hostname -I | awk '{print $1}'`
     DB_ADDRESS="$HOST_IP:9090"
 fi
@@ -517,8 +523,12 @@ if [ $RUN_THANOS_SC -eq 1 ]; then
     if [ -z $DATA_DIR ]; then
         echo "You must use external prometheus directory to use the thanos side cart"
     else
-        ./start-thanos-sc.sh -d $DATA_DIR -a $DB_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG
+        ./start-thanos-sc.sh -d $DATA_DIR -D "$DOCKER_PARAM" -a $DB_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG
     fi
+fi
+
+if [ $RUN_THANOS -eq 1 ]; then
+    ./start-thanos.sh -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG
 fi
 
 for val in "${GRAFANA_ENV_ARRAY[@]}"; do
