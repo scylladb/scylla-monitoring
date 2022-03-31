@@ -18,7 +18,11 @@ The script starts Thanos query, it connect to external Thanos side carts and act
 }
 
 function update_data_source {
-  THANOS_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' thanos):10904"
+  THANOS_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' thanos)"
+  if [[ $THANOS_ADDRESS = "" ]]; then
+      THANOS_ADDRESS=`hostname -I | awk '{print $1}'`
+  fi
+  THANOS_ADDRESS="$THANOS_ADDRESS:10904"
   __datasource="# config file version
 apiVersion: 1
 datasources:
@@ -83,7 +87,8 @@ for arg; do
 done
 SIDECAR=()
 
-while getopts ':hl:p:S:' option; do
+DOCKER_PARAM=""
+while getopts ':hlp:S:D:' option; do
   case "$option" in
     l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
        ;;
@@ -95,6 +100,8 @@ while getopts ':hl:p:S:' option; do
          SIDECAR+=(--store=$s)
 	   done
 	   ;;
+    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+       ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
        exit 1
