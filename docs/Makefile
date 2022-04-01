@@ -67,7 +67,7 @@ epub3: setup
 
 .PHONY: multiversion
 multiversion: setup
-	$(POETRY) run sphinx-multiversion source $(BUILDDIR)/dirhtml
+	$(POETRY) run sphinx-multiversion $(SOURCEDIR) $(BUILDDIR)/dirhtml
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
 
