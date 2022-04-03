@@ -22,8 +22,8 @@ FORMAT_COMAND=""
 FORCEUPDATE=""
 SPECIFIC_SOLUTION=""
 PRODUCTS=()
-if [ -f setenv.sh ]; then
-    . setenv.sh
+if [ -f env.sh ]; then
+    . env.sh
 fi
 
 usage="$(basename "$0") [-h] [-v comma separated versions ]  [-D] [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] [-F force update] [-S start with a system specific dashboard set] -- Generates the grafana dashboards and their load files"
