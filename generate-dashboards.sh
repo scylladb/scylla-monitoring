@@ -27,8 +27,8 @@ if [ -f env.sh ]; then
 fi
 
 usage="$(basename "$0") [-h] [-v comma separated versions ]  [-D] [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] [-F force update] [-S start with a system specific dashboard set] -- Generates the grafana dashboards and their load files"
-
-while getopts ':htDv:j:M:S:P:F' option; do
+BASE_DASHBOARD_DIR="grafana/provisioning/dashboards"
+while getopts ':htDv:j:M:S:B:P:F' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -52,6 +52,8 @@ while getopts ':htDv:j:M:S:P:F' option; do
        FORMAT_COMAND="$FORMAT_COMAND -v $VERSIONS"
        MANAGER_VERSION=${MANAGER_SUPPORTED_VERSIONS[$BRANCH_VERSION]}
        ;;
+    B) BASE_DASHBOARD_DIR=$OPTARG
+       ;;
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
        FORMAT_COMAND="$FORMAT_COMAND -j $OPTARG"
        ;;
@@ -61,11 +63,11 @@ if [[ -z "$TEST_ONLY" ]]; then
     mkdir -p grafana/build
 fi
 
-mkdir -p grafana/provisioning/dashboards
-rm -f grafana/provisioning/dashboards/load.*.yaml
+mkdir -p $BASE_DASHBOARD_DIR
+rm -f $BASE_DASHBOARD_DIR/load.*.yaml
 
 function set_loader {
-    sed "s/NAME/$1/" grafana/load.yaml | sed "s/FOLDER/$2/" | sed "s/VERSION/$3/" > "grafana/provisioning/dashboards/load.$1.yaml"
+    sed "s/NAME/$1/" grafana/load.yaml | sed "s/FOLDER/$2/" | sed "s/VERSION/$3/" > "$BASE_DASHBOARD_DIR/load.$1.yaml"
 }
 
 IFS=',' ;for v in $VERSIONS; do
