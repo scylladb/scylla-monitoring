@@ -166,7 +166,7 @@ Prometheus fails to fetch metrics from ``node_exporter``.
 Solution
 .........
 
-1. Make sure that ``node_exporter`` is running on each Scylla server (by login to the machine and running ``ps -ef |gre node_exporter``). ``node_exporter`` is installed with ``scylla_setup``.
+1. Make sure that ``node_exporter`` is running on each Scylla server (by login to the machine and running ``ps -ef |grep node_exporter``). ``node_exporter`` is installed with ``scylla_setup``.
 to check that ``node_exporter`` is installed, run ``node_exporter --version``, If it is not, make sure to install and run it.
 
 2. If it is running, use ``curl http://<scylla_node>:9100/metrics`` (where <scylla_node> is a Scylla server IP) to fetch metric data from Scylla.  If curl does not return data, the problem is the connectivity between Scylla Monitoring Stack and Scylla server. Please check your IPs and firewalls.
