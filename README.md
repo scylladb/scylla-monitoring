@@ -189,7 +189,7 @@ ___
 ___
 
 #### Prometheus Command Line Options and Retention Period
-Check the documentation for a full list of command line option for [start-all.sh](http://scylladb.github.io/scylla-monitoring/master/start_all.html)
+Check the documentation for a full list of command line option for [start-all.sh](https://monitoring.docs.scylladb.com/stable/install/start_all.html)
 Prometheus retention time is set to two weeks by default, you can override it as well as other Prometheus configuration with the `-b` flag.
 
 For example:
