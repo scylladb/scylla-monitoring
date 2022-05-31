@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath(".."))
 TAGS = []
 BRANCHES = ['master', 'branch-3.4', 'branch-3.5', 'branch-3.6', 'branch-3.7', 'branch-3.8', 'branch-3.9', 'branch-3.10', 'branch-4.0']
 # Set the latest version.
-LATEST_VERSION = 'branch-3.10'
+LATEST_VERSION = 'branch-4.0'
 # Set which versions are not released yet.
 UNSTABLE_VERSIONS = ['master']
 # Set which versions are deprecated
@@ -51,7 +51,7 @@ exclude_patterns = ['_build', '_utils', '**/_common/*']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-current_version = "3.10.0"
+current_version = "4.0.0"
 res = ""
 if os.path.isfile('../../CURRENT_VERSION.sh'):
     with open('../../CURRENT_VERSION.sh', 'r') as file:
