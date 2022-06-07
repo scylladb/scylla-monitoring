@@ -195,7 +195,7 @@ fi
 
 for val in "${GRAFANA_ENV_ARRAY[@]}"; do
         GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e $val"
-        if [[ $val =~ GF_USERS_DEFAULT_THEME=.* ]]; then
+        if [[ $val == GF_USERS_DEFAULT_THEME=* ]]; then
             DEFAULT_THEME=""
         fi
 done
