@@ -2774,7 +2774,7 @@
    "annotation_restart":{
       "datasource":"prometheus",
       "enable":true,
-      "expr":"resets(scylla_gossip_heart_beat[1m])>0",
+      "expr":"resets(scylla_gossip_heart_beat[$__rate_interval])>0",
       "hide":false,
       "iconColor":"rgba(255, 96, 96, 1)",
       "limit":100,
@@ -2788,14 +2788,14 @@
    "annotation_schema_changed":{
       "class":"annotation_restart",
       "enable":false,
-      "expr":"changes(scylla_database_schema_changed[30s])>0",
+      "expr":"changes(scylla_database_schema_changed[$__rate_interval])>0",
       "name":"Schema Changed",
       "titleFormat":"schema changed"
    },
    "annotation_stall":{
       "datasource":"prometheus",
       "enable":false,
-      "expr":"changes(scylla_stall_detector_reported[1m])>0",
+      "expr":"changes(scylla_stall_detector_reported[$__rate_interval])>0",
       "hide":false,
       "iconColor":"rgba(255, 96, 96, 1)",
       "limit":100,
@@ -2822,14 +2822,14 @@
    },
    "annotation_hints_writes":{
       "class":"annotation_schema_changed",
-      "expr":"changes(scylla_hints_manager_written[60s])>0",
+      "expr":"changes(scylla_hints_manager_written[$__rate_interval])>0",
       "iconColor":"rgb(255, 176, 0, 128)",
       "name":"Hints Write",
       "titleFormat":"Hints write"
    },
    "annotation_hints_sent":{
       "class":"annotation_schema_changed",
-      "expr":"changes(scylla_hints_manager_written[60s])>0",
+      "expr":"changes(scylla_hints_manager_written[$__rate_interval])>0",
       "iconColor":"rgb(50, 176, 0, 128)",
       "name":"Hints Sent",
       "titleFormat":"Hints Sent"
@@ -2900,7 +2900,7 @@
    "annotation_manager_task_failed":{
       "datasource":"prometheus",
       "enable":true,
-      "expr":"sum(changes(scylla_manager_task_run_total{status=\"ERROR\", cluster=~\"$cluster|$^\"}[1m])) by(type)>0",
+      "expr":"sum(changes(scylla_manager_task_run_total{status=\"ERROR\", cluster=~\"$cluster|$^\"}[$__rate_interval])) by(type)>0",
       "hide":false,
       "iconColor":"#73BF69",
       "limit":100,
