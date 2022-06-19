@@ -1,7 +1,7 @@
-The start-all.sh command
+The start-all.sh Command
 ========================
 
-Scylla Monitoring Stack is container-based, the simplest way to configure and start the monitoring is with the `start-all.sh` command.
+Scylla Monitoring Stack is container-based. The simplest way to configure and start the monitoring is with the `start-all.sh` command.
 
 The `start-all.sh` script is a small utility that sets the dashboards and starts the containers with the appropriate configuration.
 
@@ -12,14 +12,14 @@ General Options
 
 **--version** print the current Scylla-Monitoring stack version, and exit.
 
-**-l** local. Use the host network. This is important when one of the containers need access to an application that runs on the host.
+**-l** local. Use the host network. This is important when one of the containers needs access to an application that runs on the host.
 For example, when Scylla Manager runs on the localhost next to the monitoring.
-Because the monitoring applications run inside containers by default their local IP address (127.0.0.1) is the container local IP address.
+Because the monitoring applications run inside containers by default, their local IP address (127.0.0.1) is the container's local IP address.
 You cannot use port mapping when using the ``-l`` flag
 
 **-A bind-to-ip-address** Bind the listening-address to an explicit IP address.
 
-**-D encapsulate docker param** Allows passing additional parameters to all the docker containers.
+**-D encapsulate docker param** Allows passing additional parameters to all the docker containers. For example, to start the monitoring containers with a specific network driver use -D "--net=network_name".
 
 **--auto-restart** When set, Docker will automatically restart all the services inside the containers in case of a failure.
 
@@ -27,23 +27,23 @@ Grafana Related Commands
 ------------------------
 
 **-G path/to/grafana data-dir** Use an external directory for the Grafana database. 
-This flag places the Grafana data directory outside of its container and by doing that makes it persistent. 
-This is only important if you are creating your own dashboards using the grafana GUI and wish to keep them. 
-If not used, each run of the containers will clear all of Grafana information.
+This flag places the Grafana data directory outside of its container and, by doing that, makes it persistent. 
+This is only important if you are creating your own dashboards using the Grafana GUI and wish to keep them. 
+If not used, each run of the containers will clear all of Grafana's information.
 
 **-v comma-separated versions** Each Scylla version comes with its own set of dashboards. By default, Grafana starts with the two latest versions. The ``-v`` flag allows specifying a specific version or versions.
 
 **-M scylla-manager version** Each Scylla-Manager version has its own dashboard. By default, Grafana starts with the latest Scylla Manager version.  The ``-M`` flag allows specifying a specific version.
 
-**-j dashboard** Allows adding dashboards to Grafana, multiple parameters are supported.
+**-j dashboard** Allows adding dashboards to Grafana. Multiple parameters are supported.
 
-**-c grafana environment variable** Use this parameter to override Grafana's configuration settings.  The ``-c`` flag allows adding an environment variable to Grafana and by doing so alters its configuration.
+**-c Grafana environment variable** Use this parameter to override Grafana's configuration settings.  The ``-c`` flag allows adding an environment variable to Grafana and, by doing so, alters its configuration.
 
-**-g grafana port** Override the default grafana port, this is done using port mapping, note that port mapping does not work when using the host network.
+**-g Grafana port** Override the default Grafana port. This is done using port mapping. Note that port mapping does not work when using the host network.
 
 **-a admin password** Allows specifying the admin password.
 
-**-Q Grafana anonymous role** By default, anonymous users have admin privileges. That means they can create and edit dashboards. The ``-Q`` flag changes this behavior  by setting the role privileges to one of Admin, Editor, or Viewer.
+**-Q Grafana anonymous role** By default, anonymous users have admin privileges. That means they can create and edit dashboards. The ``-Q`` flag changes this behavior by setting the role privileges to one of Admin, Editor, or Viewer.
 
 Grafana LDAP support
 ^^^^^^^^^^^^^^^^^^^^
@@ -66,7 +66,7 @@ This flag places the Prometheus data directory outside of its container and by d
 
 **-p prometheus-port** Override the default Prometheus port, this is done using port mapping, note that port mapping does not work when using the host network.
 
-**-b command-line options** Allows adding command-line options that will be passed to the Prometheus server.
+**-b command-line options** Allow adding command-line options that will be passed to the Prometheus server.
 
 **-s scylla-target-file** Specify the location of the Scylla target files. This file contains the IP addresses of the Scylla nodes.
 
@@ -80,8 +80,8 @@ This flag places the Prometheus data directory outside of its container and by d
 
 Prometheus Retention Period
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Prometheus retention period is set for 2 weeks by default. A common request is how to set it to something else.
-It is also an opportunity to demonstrates how to set a Prometheus specific command line option.
+Prometheus retention period is set for two weeks by default. A common request is how to set it to something else.
+It is also an opportunity to demonstrate how to set a Prometheus specific command line option.
 Prometheus storage configuration is covered here_.
 
 .. _here: https://prometheus.io/docs/prometheus/latest/storage/#operational-aspects
@@ -91,7 +91,7 @@ For example to set the retention time to 30 days add ``-b "--storage.tsdb.retent
 Alert Manager 
 -------------
 
-alertmanager handles the alerts and takes the following parameters:
+The Alertmanager handles the alerts and takes the following parameters:
 
 **-m alertmanager-port** Override the default Alertmanager port, this is done using port mapping, note that port mapping does not work when using the host network.
 
