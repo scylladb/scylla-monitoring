@@ -99,8 +99,7 @@ We assume that you are using external volume to store the metrics data.
 Backup
 ^^^^^^
 
-We suggest to copy the Prometheus external directory first and use the copy as the data directory for the new monitoring stack.
-Newer Monitoring stack uses newer Promethues versions, and keeping a backup of the prometheus dir would allow you to rollback.
+A copy of the Prometheus external directory should be made first and used as the data directory for the new monitoring stack. The new monitoring stack uses newer versions of Prometheus and keeping a backup would enable you to rollback to a previous version of Prometheus.
 
 Kill all containers
 ^^^^^^^^^^^^^^^^^^^
@@ -210,10 +209,11 @@ The point in time that the graphs start will be your back-filling end time. Chec
 
 Backfilling Process
 -------------------
-backup
+Backup
 ^^^^^^
-If you have a long retention period you are using an external directory that holds the Prometheus data, back it up, in case
-If you have a long retention period, you are using an external directory that holds the Prometheus data back it up; if something goes wrong in the process, you can revert the process.
+Backup any external directory containing Prometheus data; if something goes wrong, you can revert the changes.
+
+The monitoring stack will need to be restarted at least once. This process cannot be completed without an external directory when using the -d command-line option.
 
 To complete the process you will need to restart the monitoring stack at least once. If you are not using an external directory (The ``-d``
 command-line option) You cannot complete it.
@@ -226,13 +226,9 @@ You need to stop the monitoring stack and run the ``stat-all.sh`` command with a
 
 Create the data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-We will use the Promtool utility; it's already installed for you if you are using the docker container. 
-You will need the start time and end time for the process, in our example the start time is 360 days ago and the end time is 90 days ago.
+We will create the data files using the Promtool utility, which has been installed in the docker container. In order to run the utility, the start time and end times must be passed in epoch format. For example, suppose the start and end times are 360 and 90 days back, then the following commands can be used to transform those numbers to epoch: ``echo $((`date +%s` - 3600*24*90))`` and ``echo $((`date +%s` - 3600*24*360))``
 
-The start and end times are in epoc, so you will need to translate the times to epoc.  There are many ways to do this - for example, from the command line.
-Run the following command to get the epoc time for 90 days ago: : ``echo $((`date +%s` - 3600*24*90))``
-
-Log in to your docker container and run the following (``start`` and ``end`` should be the start and end in epoc time):
+Log in to your docker container and run the following (``start`` and ``end`` should be in epoch format):
 
 .. code-block:: bash
 
@@ -244,24 +240,21 @@ Log in to your docker container and run the following (``start`` and ``end`` sho
                 --url http://localhost:9090 \
                 /etc/prometheus/prom_rules/back_fill/3.8/rules.1.yml
 
-It will create a ``data`` directory in the directory where you run it.
-The reason to run it under the ``/prometheus/data/`` is you can be sure Prometheus has write privileges there.
+A ``data`` directory will be created in the directory where you run the previous commands. The reason to run it under the ``/prometheus/data/`` is you can be sure Prometheus has write privileges there.
 
-    .. note::
-       Depending on the time range and the number of cores, the process can take a long time. During testing it took an hour for every week of data,
-       for a cluster with a total of 100 cores. Make sure that the creation process is not inerupt. You can split the time range to smaller durations
-       (e.g. instead of an entire year, do it a weeks at a time).
+    .. note:
+       This process may take a long time depending on the time range and number of cores. For instance, for a cluster with 100 cores, the process took an hour for    every week of data during testing. Hence, please be patient and make sure that the creation process is not interrupted. Please note the time range can be split into smaller intervals (e.g., instead of an entire year, break it down into weeks).
 
 
 Copy the data files
 ^^^^^^^^^^^^^^^^^^^
-Make sure that the process is completed successfully - don't start this section before you complete the previous sections.
+You should not start this section until all the previous sections have been completed. To copy the data files from the Docker Host to the Prometheus directory in the Docker container, run the following command:
 
 Copy the data files to the Prometheus directory:
 
 .. code-block:: bash
 
-                cp data/* .
+                docker cp {options} SRC_PATH aprom:/prometheus/data
 
 The rules will be evaluated next time Prometheus will perform compaction. You can force it by restarting the server using ``docker restart aprom``
 
