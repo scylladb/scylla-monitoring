@@ -211,7 +211,7 @@ Backfilling Process
 -------------------
 Backup
 ^^^^^^
-Backup any external directory containing Prometheus data; if something goes wrong, you can revert the changes.
+Backup the external directory containing Prometheus data - if something goes wrong, you can revert the changes.
 
 The monitoring stack will need to be restarted at least once. This process cannot be completed without an external directory when using the -d command-line option.
 
