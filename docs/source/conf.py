@@ -42,7 +42,7 @@ source_suffix = [".rst", ".md"]
 master_doc = 'index'
 
 # General information about the project.
-project = u'Scylla Monitoring'
+project = u'ScyllaDB Monitoring'
 copyright = str(date.today().year) + ', ScyllaDB. All rights reserved.'
 author = u'Scylla Project Contributors'
 
