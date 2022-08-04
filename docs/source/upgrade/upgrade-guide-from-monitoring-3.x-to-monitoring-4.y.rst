@@ -36,13 +36,13 @@ Copy the ``scylla_servers.yml`` and ``scylla_manager_servers.yml`` from the vers
 Validate the new version is running the correct version
 -------------------------------------------------------
 
-run:
+Run the following command to validate the Scylla-Monitoring version:
 
 .. code-block:: bash
 
                 ./start-all.sh --version
 
-To validate the Scylla-Monitoring version.
+
 
 Running in test mode
 ====================
@@ -66,7 +66,7 @@ Note that we are using different port numbers for Grafana, Prometheus, and the A
 
 .. caution::
 
-   Important: do not use the local dir flag when testing!
+   Important: Do not use the local dir flag when testing!
 
 When you are satisfied with the data in the dashboard, you can shut down the containers.
 
@@ -91,7 +91,7 @@ Migrating
 Move to version 4.y (the new version)
 -------------------------------------
 
-Note: migrating will cause a few seconds of blackout in the system.
+Note: Migrating will cause a few seconds of blackout in the system.
 
 We assume that you are using external volume to store the metrics data.
 
@@ -99,7 +99,7 @@ We assume that you are using external volume to store the metrics data.
 Backup
 ^^^^^^
 
-We suggest making a copy of Prometheus's external directory to use as the data directory for the new version of Monitoring Stack. The new version of Monitoring Stack uses the new version of Prometheus. If you keep a backup of Prometheus's external directory, you can roll back to the previous Prometheus version.
+We suggest to make a copy of Prometheus' external directory and use it as the data directory for the new monitoring stack. The new monitoring stack uses newer versions of Prometheus and keeping a backup would enable you to rollback to the previous version of Prometheus.
 
 Kill all containers
 ^^^^^^^^^^^^^^^^^^^
@@ -109,7 +109,7 @@ At this point you have two monitoring stacks installed with the older version ru
 If you run the new version in testing mode kill it by following the instructions on how to `Killing the new 4.y Monitoring stack in testing mode`_
 in the previous section.
 
-kill the older 3.x version containers by running:
+Kill the older 3.x version containers by running:
 
 .. code-block:: bash
 
@@ -134,7 +134,7 @@ Rollback to version 3.x
 To rollback during the testing mode, follow `Killing the new 4.y Monitoring stack in testing mode`_ as explained previously
 and the system will continue to operate normally.
 
-To rollback to version 3.x after you completed moving to version 4.y (as shown above), run:
+Run the following commands after you have completed moving to version 4.y (as shown above) if you wish to rollback to version 3.x:
 
 .. code-block:: bash
 
@@ -188,7 +188,7 @@ When you run the backfilling process you need to determine the start time and en
 
 Determine the start time
 ^^^^^^^^^^^^^^^^^^^^^^^^
-The start time is your Prometheus retention time, by default it is set to 15 days. if you are not sure what Prometheus retention time is, you can check by
+The start time is your Prometheus retention time, by default it is set to 15 days. If you are not sure what Prometheus retention time is, you can check by
 logging in to your Prometheus server: `http://{ip}:9090/status`.
 
 If you are running Scylla Monitoring version 3.8 or newer for longer than the retention period, you are done! You can skip the rest of this section.
@@ -201,9 +201,7 @@ Typically, you need to back-fill the recording rules when you are using a long r
 and you upgraded to Scylla Monitoring 3.8 about three months ago.
 
 If you open the Overview dashboard and look at your entire retention time (in our example 1 year) you will see that while most of the graphs do
-show the data, the latency graphs have a missing period, in our example - from the entire year, the latency graph will only show the last three months.
-
-That nine months gap (12 months minus 3) is what we want to fill with back-filling.
+display the data, the latency graphs are missing a period of time.  The latency graph will only show the last three months in our example from the entire year. That nine months gap (12 months minus 3) is what we want to fill with back-filling.
 
 The point in time that the graphs start will be your back-filling end time. Check in the graph for the exact time.
 
@@ -211,7 +209,7 @@ Backfilling Process
 -------------------
 Backup
 ^^^^^^
-Backup the external directory containing Prometheus data - if something goes wrong, you can revert the changes.
+Backup the external directory containing Prometheus data; if something goes wrong, you can revert the changes.
 
 To complete the process, you must restart Monitoring Stack at least once. You cannot complete the process without providing the path to the external directory with Prometheus data using the ``-d`` command line option. 
 
@@ -242,7 +240,7 @@ Log in to your docker container and run the following (``start`` and ``end`` sho
                 --url http://localhost:9090 \
                 /etc/prometheus/prom_rules/back_fill/3.8/rules.1.yml
 
-A ``data`` directory will be created in the directory where you run the previous commands. The reason to run it under the ``/prometheus/data/`` is you can be sure Prometheus has write privileges there.
+The previous bash script will create a ``data`` directory in the directory where it is executed. The reason to run the bash script under the ``/prometheus/data/`` is to ensure Prometheus has write privileges to the directory.
 
     .. note:
        This process may take a long time, depending on the time range and number of cores. For instance, for a cluster with 100 cores, the process took an hour for every week of data during testing. Please be patient and make sure that the creation process is not interrupted. Note that the time range can be split into smaller intervals (e.g., instead of an entire year, break it down into weeks).
@@ -250,13 +248,11 @@ A ``data`` directory will be created in the directory where you run the previous
 
 Copy the data files
 ^^^^^^^^^^^^^^^^^^^
-You should not start this section until all the previous sections have been completed. To copy the data files from the Docker Host to the Prometheus directory in the Docker container, run the following command:
-
-Copy the data files to the Prometheus directory:
+You should not start this section until all the previous sections have been completed. Using the following command, copy the data files to the Prometheus directory:
 
 .. code-block:: bash
 
-                docker cp {options} SRC_PATH aprom:/prometheus/data
+                cp data/* .
 
 The rules will be evaluated next time Prometheus will perform compaction. You can force it by restarting the server using ``docker restart aprom``
 
