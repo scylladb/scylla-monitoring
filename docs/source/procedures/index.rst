@@ -1,5 +1,5 @@
 =========================================
-Scylla Monitoring Stack Procedures
+ScyllaDB Monitoring Stack Procedures
 =========================================
 
 .. toctree::

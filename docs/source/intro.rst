@@ -1,6 +1,6 @@
-=======================
-Scylla Monitoring Stack
-=======================
+==========================
+ScyllaDB Monitoring Stack
+==========================
 
 .. include:: /_common/monitor-description.rst
 
@@ -8,7 +8,7 @@ Scylla Monitoring Stack
 .. image:: monitor.png
     :width: 400pt
 
-The Scylla Monitoring Stack consists of multiple components, wrapped in Docker containers:
+The ScyllaDB Monitoring Stack consists of multiple components, wrapped in Docker containers:
 
 * `prometheus` - Collects and stores metrics
 * `grafan-loki` - Parses logs and generates metrics and alerts 
@@ -26,14 +26,14 @@ High Level Architecture
 .. image:: monitoring_stack.png
     :width: 400pt
 
-We use Prometheus for metrics collection and storage, and to generate alerts. Prometheus collects Scylla’s metrics from Scylla and the
-host metrics from the `node_exporter` agent that runs on the Scylla server.
+We use Prometheus for metrics collection and storage, and to generate alerts. Prometheus collects Scylla’s metrics from ScyllaDB and the
+host metrics from the `node_exporter` agent that runs on the ScyllaDB server.
 
-We use Loki for metrics and alerts generation based on logs, Loki gets the logs from rsyslog agents that run on each of the Scylla servers.
+We use Loki for metrics and alerts generation based on logs, Loki gets the logs from rsyslog agents that run on each of the DB servers.
 
 The alertmanager, receives alerts from Prometheus and Loki and distributes them to other systems like email and slack.
 
-We use Grafana to display the dashboards. Grafana gets its data from Prometheus, the alertmanager and directly from Scylla using CQL.
+We use Grafana to display the dashboards. Grafana gets its data from Prometheus, the alertmanager and directly from ScyllaDB using CQL.
    
 
 **Choose a topic to get started**:
@@ -43,7 +43,7 @@ We use Grafana to display the dashboards. Grafana gets its data from Prometheus,
 * :doc:`Procedures <procedures/index>`
 * :doc:`Troubleshooting <troubleshooting/index>`
 * :doc:`Reference <reference/index>`
-* `Scylla Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on Scylla University
+* `ScyllaDB Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on ScyllaDB University
 
 
-For older versions of Scylla Monitoring Stack Documentation see `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
+For older versions of ScyllaDB Monitoring Stack Documentation see `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
