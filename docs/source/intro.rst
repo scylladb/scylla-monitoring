@@ -45,5 +45,3 @@ We use Grafana to display the dashboards. Grafana gets its data from Prometheus,
 * :doc:`Reference <reference/index>`
 * `ScyllaDB Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on ScyllaDB University
 
-
-For older versions of ScyllaDB Monitoring Stack Documentation see `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
