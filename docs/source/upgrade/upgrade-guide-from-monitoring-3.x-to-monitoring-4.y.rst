@@ -218,7 +218,7 @@ To complete the process, you must restart Monitoring Stack at least once. You ca
 
 Restart the monitoring stack
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-You need to stop the monitoring stack and run the ``stat-all.sh`` command with an additional flag:
+You need to stop the monitoring stack and run the ``start-all.sh`` command with an additional flag:
 
 ``-b "--storage.tsdb.allow-overlapping-blocks"``
 
