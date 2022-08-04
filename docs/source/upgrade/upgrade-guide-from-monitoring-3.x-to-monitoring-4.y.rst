@@ -247,7 +247,7 @@ Log in to your docker container and run the following (``start`` and ``end`` sho
 A ``data`` directory will be created in the directory where you run the previous commands. The reason to run it under the ``/prometheus/data/`` is you can be sure Prometheus has write privileges there.
 
     .. note:
-       This process may take a long time depending on the time range and number of cores. For instance, for a cluster with 100 cores, the process took an hour for    every week of data during testing. Hence, please be patient and make sure that the creation process is not interrupted. Please note the time range can be split into smaller intervals (e.g., instead of an entire year, break it down into weeks).
+       This process may take a long time, depending on the time range and number of cores. For instance, for a cluster with 100 cores, the process took an hour for every week of data during testing. Please be patient and make sure that the creation process is not interrupted. Note that the time range can be split into smaller intervals (e.g., instead of an entire year, break it down into weeks).
 
 
 Copy the data files
