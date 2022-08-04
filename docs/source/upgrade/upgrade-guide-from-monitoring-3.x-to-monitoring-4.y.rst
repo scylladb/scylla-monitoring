@@ -226,7 +226,11 @@ You need to stop the monitoring stack and run the ``stat-all.sh`` command with a
 
 Create the data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-We will create the data files using the Promtool utility, which has been installed in the docker container. In order to run the utility, the start time and end times must be passed in epoch format. For example, suppose the start and end times are 360 and 90 days back, then the following commands can be used to transform those numbers to epoch: ``echo $((`date +%s` - 3600*24*90))`` and ``echo $((`date +%s` - 3600*24*360))``
+We will create the data files using the Promtool utility, which has been installed in the Docker container. To run the utility, you must pass the start time and end time in the epoch format. The following example shows one of the ways to convert the times to epoch when the start time is 360 and the end time is 90 days ago:
+
+``echo $((`date +%s` - 3600*24*360))``
+
+``echo $((`date +%s` - 3600*24*90))``
 
 Log in to your docker container and run the following (``start`` and ``end`` should be in epoch format):
 
