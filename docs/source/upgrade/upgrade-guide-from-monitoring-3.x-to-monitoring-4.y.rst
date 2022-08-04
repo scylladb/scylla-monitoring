@@ -215,8 +215,6 @@ Backup the external directory containing Prometheus data - if something goes wro
 
 To complete the process, you must restart Monitoring Stack at least once. You cannot complete the process without providing the path to the external directory with Prometheus data using the ``-d`` command line option. 
 
-To complete the process you will need to restart the monitoring stack at least once. If you are not using an external directory (The ``-d``
-command-line option) You cannot complete it.
 
 Restart the monitoring stack
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
