@@ -99,7 +99,7 @@ We assume that you are using external volume to store the metrics data.
 Backup
 ^^^^^^
 
-A copy of the Prometheus external directory should be made first and used as the data directory for the new monitoring stack. The new monitoring stack uses newer versions of Prometheus and keeping a backup would enable you to rollback to a previous version of Prometheus.
+We suggest making a copy of Prometheus's external directory to use as the data directory for the new version of Monitoring Stack. The new version of Monitoring Stack uses the new version of Prometheus. If you keep a backup of Prometheus's external directory, you can roll back to the previous Prometheus version.
 
 Kill all containers
 ^^^^^^^^^^^^^^^^^^^
