@@ -134,7 +134,7 @@ Rollback to version 3.x
 To rollback during the testing mode, follow `Killing the new 4.y Monitoring stack in testing mode`_ as explained previously
 and the system will continue to operate normally.
 
-Run the following commands after you have completed moving to version 4.y (as shown above) if you wish to rollback to version 3.x:
+To rollback to version 3.x, run the following commands after you have completed moving to version 4.y (as shown above):
 
 .. code-block:: bash
 
@@ -216,9 +216,9 @@ To complete the process, you must restart Monitoring Stack at least once. You ca
 
 Restart the monitoring stack
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-You need to stop the monitoring stack and run the ``start-all.sh`` command with an additional flag:
+You need to stop the monitoring stack and run the ``start-all.sh`` command with an additional flag (The 365d retention time used here is used only as an example):
 
-``-b "--storage.tsdb.allow-overlapping-blocks"``
+``start-all.sh -d data_dir -b "--storage.tsdb.allow-overlapping-blocks --storage.tsdb.retention.time=365d"``
 
 Create the data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -228,7 +228,7 @@ We will create the data files using the Promtool utility, which has been install
 
 ``echo $((`date +%s` - 3600*24*90))``
 
-Log in to your docker container and run the following (``start`` and ``end`` should be in epoch format):
+Log in to your Docker container and run the following (``start`` and ``end`` should be in epoch format):
 
 .. code-block:: bash
 
@@ -248,7 +248,7 @@ The previous bash script will create a ``data`` directory in the directory where
 
 Copy the data files
 ^^^^^^^^^^^^^^^^^^^
-You should not start this section until all the previous sections have been completed. Using the following command, copy the data files to the Prometheus directory:
+You should not start this section until all the previous sections have been completed. Copy the data files to the Prometheus directory using the following command:
 
 .. code-block:: bash
 
