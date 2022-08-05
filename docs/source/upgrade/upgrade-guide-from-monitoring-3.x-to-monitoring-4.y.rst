@@ -222,7 +222,7 @@ You need to stop the monitoring stack and run the ``start-all.sh`` command with 
 
 Create the data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-We will create the data files using the Promtool utility, which has been installed in the Docker container. To run the utility, you must pass the start time and end time in the epoch format. The following example shows one of the ways to convert the times to epoch when the start time is 360 and the end time is 90 days ago:
+We will create the data files using the Promtool utility, which is installed in the Prometheus Docker container. To run the utility, you must pass the start time and end time in the epoch format. The following example shows one of the ways to convert the times to epoch when the start time is 360 and the end time is 90 days ago:
 
 ``echo $((`date +%s` - 3600*24*360))``
 
