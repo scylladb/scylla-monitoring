@@ -403,6 +403,176 @@
                 "panels": [
                     {
                         "class": "collapsible_row_panel",
+                        "title": "Commit Log"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "height": "25px",
+                "gridPos": {"h": 2},
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Commit log Information</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_commitlog_disk_total_bytes{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Avg reserved disk space by [[by]]",
+                        "description": "Holds the size of disk space in bytes reserved for data so far. A too high value indicates that we have some bottleneck in the writing to sstables path"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_commitlog_disk_active_bytes{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Avg used disk space by [[by]]",
+                        "description": "Holds the size of disk space in bytes used for data so far. A too high value indicates that we have some bottleneck in the writing to sstables path"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(rate(scylla_commitlog_flush{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Avg flush by [[by]]",
+                        "description": "Counts a number of times the flush() method was called for a file"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_commitlog_segments{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Segments by [[by]]",
+                        "description": "Holds the current number of segments"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(rate(scylla_commitlog_flush_limit_exceeded{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Avg flush limit exceeded by [[by]]",
+                        "description": "Counts a number of times a flush limit was exceeded. A non-zero value indicates that there are too many pending flush operations (see pending_flushes) and some of them will be blocked till the total amount of pending flush operations drops below 5."
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_commitlog_pending_allocations{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Pending allocations by [[by]]",
+                        "description": "Holds the number of currently pending allocations. A non-zero value indicates that we have a bottleneck in the disk write flow."
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_commitlog_pending_flushes{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Pending flush by [[by]]",
+                        "description": "Counts a number of requests blocked due to memory pressure. A non-zero value indicates that the commitlog memory quota is not enough to serve the required amount of requests."
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_commitlog_unused_segments{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Unused segments by [[by]]",
+                        "description": "Holds the current number of unused segments. A non-zero value indicates that the disk write path became temporary slow."
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_commitlog_allocating_segments{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Allocating segments by [[by]]",
+                        "description": "Holds the number of not closed segments that still have some free space. This value should not get too high."
+                    }
+                 ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
                         "title": "Your panels"
                     }
                 ]
