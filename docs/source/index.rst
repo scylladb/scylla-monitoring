@@ -1,6 +1,6 @@
-========================
-Scylla Monitoring Stack
-========================
+===========================
+ScyllaDB Monitoring Stack
+===========================
 
 .. toctree::
    :maxdepth: 1
@@ -21,7 +21,7 @@ Scylla Monitoring Stack
 .. image:: monitor.png
     :width: 400pt
 
-The Scylla Monitoring Stack consists of three components, wrapped in Docker containers:
+The ScyllaDB Monitoring Stack consists of three components, wrapped in Docker containers:
 
 * `prometheus` - collects and stores metrics
 * `alertmanager` - handles alerts
@@ -36,7 +36,5 @@ The Scylla Monitoring Stack consists of three components, wrapped in Docker cont
 * :doc:`Reference <reference/index>`
 * :doc:`Upgrade <upgrade/index>`
 
-* `Scylla Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on Scylla University
-* `Scylla Monitoring Stack GitHub Project <https://github.com/scylladb/scylla-monitoring/>`_
-
-For older versions of Scylla Monitoring Stack Documentation see `here <https://docs.scylladb.com/operating-scylla/monitoring/>`_.
+* `ScyllaDB Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on Scylla University
+* `ScyllaDB Monitoring Stack GitHub Project <https://github.com/scylladb/scylla-monitoring/>`_

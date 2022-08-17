@@ -1,1 +1,1 @@
-Scylla Monitoring Stack is a full stack for Scylla monitoring and alerting. The stack contains open source tools including Prometheus and Grafana, as well as custom Scylla dashboards and tooling.
+ScyllaDB Monitoring Stack is a full stack for ScyllaDB monitoring and alerting. The stack contains open source tools including Prometheus and Grafana, as well as custom ScyllaDB dashboards and tooling.
