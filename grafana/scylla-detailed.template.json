@@ -1142,10 +1142,17 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "casrlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
+                                "expr": "avg(scylla_storage_proxy_coordinator_cas_read_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by (cluster, dc, instance, shard)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
+                                "step": 10
+                            },
+                            {
+                                "expr": "avg(casrlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by (cluster, dc, instance, shard)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "B",
                                 "step": 10
                             }
                         ],
@@ -1207,10 +1214,17 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "caswlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
+                                "expr": "avg(scylla_storage_proxy_coordinator_cas_write_latency_summary{quantile=\"0.95\",by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by (cluster,dc,instance, shard)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
+                                "step": 10
+                            },
+                            {
+                                "expr": "avg(caswlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by (cluster,dc,instance, shard)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "B",
                                 "step": 10
                             }
                         ],
@@ -1693,10 +1707,17 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"} or on() ($func(rate(scylla_storage_proxy_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1))",
+                                "expr": "avg(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.5\",by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster, dc, instance, shard)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "avg(wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster, dc, instance, shard)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -1707,11 +1728,19 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group|$\"}",
+                                "expr": "avg(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.95\",by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group|$\"}) by (cluster, dc, instance, shard)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "avg(wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group|$\"}) by (cluster, dc, instance, shard)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -1722,11 +1751,19 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}",
+                                "expr": "avg(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.99\",by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster, dc, instance, shard)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "avg(wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster, dc, instance, shard)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -1751,10 +1788,17 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"} or on() ($func(rate(scylla_storage_proxy_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1))",
+                                "expr": "avg(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.5\", by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "avg(rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -1765,11 +1809,19 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}",
+                                "expr": "avg(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.95\",by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "avg(rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -1780,11 +1832,19 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}",
+                                "expr": "avg(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.99\",by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "avg(rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -1856,7 +1916,7 @@
                       ]
                     },
                     "name": "scheduling_group",
-                    "query": "label_values(scylla_storage_proxy_coordinator_read_latency_bucket,scheduling_group_name)",
+                    "query": "label_values(ops_by_scheduling_group{cluster=\"$cluster\"},scheduling_group_name)",
                     "sort": 3
                 },
                 {
@@ -1874,7 +1934,7 @@
                       ]
                     },
                     "name": "scheduling_group",
-                    "query": "label_values(scylla_storage_proxy_coordinator_read_latency_bucket,scheduling_group_name)",
+                    "query": "label_values(ops_by_scheduling_group{cluster=\"$cluster\"},scheduling_group_name)",
                     "sort": 3
                 },
                 {
