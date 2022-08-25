@@ -734,10 +734,27 @@
                     },
                     {
                         "class": "text_panel",
+                        "dashversion":["<5.1", "<2022.2"],
                         "content": "##  ",
                         "mode": "markdown",
                         "span": 4,
                         "style": {}
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "The number of items deleted by their TTL",
+                        "dashversion":[">5.1", ">2022.2"],
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_expiration_items_deleted{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Expired Item Deleted by [[by]]"
                     }
                     ]
             },
