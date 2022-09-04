@@ -7,6 +7,7 @@ ScyllaDB Monitoring Stack Procedures
    :hidden:
 
 
+   Datadog Integration <datadog/index>
    Alert Manager <alerts/index>
    Adding and Modifying Dashboards <updating_dashboard>
    Upgrade Guides </upgrade/index>
