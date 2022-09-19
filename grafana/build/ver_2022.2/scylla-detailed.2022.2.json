@@ -15,7 +15,7 @@
                 "class": "annotation_restart",
                 "datasource": "prometheus",
                 "enable": true,
-                "expr": "resets(scylla_gossip_heart_beat[1m])>0",
+                "expr": "resets(scylla_gossip_heart_beat[$__rate_interval])>0",
                 "hide": false,
                 "iconColor": "rgba(255, 96, 96, 1)",
                 "limit": 100,
@@ -30,7 +30,7 @@
                 "class": "annotation_stall",
                 "datasource": "prometheus",
                 "enable": false,
-                "expr": "changes(scylla_stall_detector_reported[1m])>0",
+                "expr": "changes(scylla_stall_detector_reported[$__rate_interval])>0",
                 "hide": false,
                 "iconColor": "rgba(255, 96, 96, 1)",
                 "limit": 100,
@@ -45,7 +45,7 @@
                 "class": "annotation_schema_changed",
                 "datasource": "prometheus",
                 "enable": false,
-                "expr": "changes(scylla_database_schema_changed[30s])>0",
+                "expr": "changes(scylla_database_schema_changed[$__rate_interval])>0",
                 "hide": false,
                 "iconColor": "rgba(255, 96, 96, 1)",
                 "limit": 100,
@@ -75,7 +75,7 @@
                 "class": "annotation_hints_writes",
                 "datasource": "prometheus",
                 "enable": false,
-                "expr": "changes(scylla_hints_manager_written[60s])>0",
+                "expr": "changes(scylla_hints_manager_written[$__rate_interval])>0",
                 "hide": false,
                 "iconColor": "rgb(255, 176, 0, 128)",
                 "limit": 100,
@@ -90,7 +90,7 @@
                 "class": "annotation_hints_sent",
                 "datasource": "prometheus",
                 "enable": false,
-                "expr": "changes(scylla_hints_manager_written[60s])>0",
+                "expr": "changes(scylla_hints_manager_written[$__rate_interval])>0",
                 "hide": false,
                 "iconColor": "rgb(50, 176, 0, 128)",
                 "limit": 100,
@@ -5553,10 +5553,17 @@
                     "span": 3,
                     "targets": [
                         {
-                            "expr": "casrlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
+                            "expr": "avg(scylla_storage_proxy_coordinator_cas_read_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by (cluster, dc, instance, shard)",
                             "intervalFactor": 1,
                             "legendFormat": "",
                             "refId": "A",
+                            "step": 10
+                        },
+                        {
+                            "expr": "avg(casrlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by (cluster, dc, instance, shard)",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "refId": "B",
                             "step": 10
                         }
                     ],
@@ -5879,10 +5886,17 @@
                     "span": 3,
                     "targets": [
                         {
-                            "expr": "caswlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}",
+                            "expr": "avg(scylla_storage_proxy_coordinator_cas_write_latency_summary{quantile=\"0.95\",by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by (cluster,dc,instance, shard)",
                             "intervalFactor": 1,
                             "legendFormat": "",
                             "refId": "A",
+                            "step": 10
+                        },
+                        {
+                            "expr": "avg(caswlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by (cluster,dc,instance, shard)",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "refId": "B",
                             "step": 10
                         }
                     ],
@@ -7998,10 +8012,17 @@
                     "span": 3,
                     "targets": [
                         {
-                            "expr": "wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"} or on() ($func(rate(scylla_storage_proxy_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1))",
+                            "expr": "avg(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.5\",by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster, dc, instance, shard)",
                             "intervalFactor": 1,
                             "legendFormat": "",
                             "refId": "A",
+                            "step": 1
+                        },
+                        {
+                            "expr": "avg(wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster, dc, instance, shard)",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "refId": "B",
                             "step": 1
                         }
                     ],
@@ -8080,11 +8101,19 @@
                     "span": 3,
                     "targets": [
                         {
-                            "expr": "wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group|$\"}",
+                            "expr": "avg(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.95\",by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group|$\"}) by (cluster, dc, instance, shard)",
                             "intervalFactor": 1,
                             "legendFormat": "",
                             "metric": "",
                             "refId": "A",
+                            "step": 1
+                        },
+                        {
+                            "expr": "avg(wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group|$\"}) by (cluster, dc, instance, shard)",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "metric": "",
+                            "refId": "B",
                             "step": 1
                         }
                     ],
@@ -8163,11 +8192,19 @@
                     "span": 3,
                     "targets": [
                         {
-                            "expr": "wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}",
+                            "expr": "avg(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.99\",by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster, dc, instance, shard)",
                             "intervalFactor": 1,
                             "legendFormat": "",
                             "metric": "",
                             "refId": "A",
+                            "step": 1
+                        },
+                        {
+                            "expr": "avg(wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster, dc, instance, shard)",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "metric": "",
+                            "refId": "B",
                             "step": 1
                         }
                     ],
@@ -8325,10 +8362,17 @@
                     "span": 3,
                     "targets": [
                         {
-                            "expr": "rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"} or on() ($func(rate(scylla_storage_proxy_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[60s])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]]) + 1))",
+                            "expr": "avg(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.5\", by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
                             "intervalFactor": 1,
                             "legendFormat": "",
                             "refId": "A",
+                            "step": 1
+                        },
+                        {
+                            "expr": "avg(rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "refId": "B",
                             "step": 1
                         }
                     ],
@@ -8407,11 +8451,19 @@
                     "span": 3,
                     "targets": [
                         {
-                            "expr": "rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}",
+                            "expr": "avg(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.95\",by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
                             "intervalFactor": 1,
                             "legendFormat": "",
                             "metric": "",
                             "refId": "A",
+                            "step": 1
+                        },
+                        {
+                            "expr": "avg(rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "metric": "",
+                            "refId": "B",
                             "step": 1
                         }
                     ],
@@ -8490,11 +8542,19 @@
                     "span": 3,
                     "targets": [
                         {
-                            "expr": "rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}",
+                            "expr": "avg(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.99\",by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
                             "intervalFactor": 1,
                             "legendFormat": "",
                             "metric": "",
                             "refId": "A",
+                            "step": 1
+                        },
+                        {
+                            "expr": "avg(rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}) by (cluster,dc,instance,shard)",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "metric": "",
+                            "refId": "B",
                             "step": 1
                         }
                     ],
@@ -8723,7 +8783,7 @@
             "links": [],
             "mode": "html",
             "options": {
-                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - 4.0.2</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
+                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - master</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
                 "mode": "html"
             },
             "span": 12,
@@ -8737,7 +8797,7 @@
     "schemaVersion": 26,
     "style": "dark",
     "tags": [
-        "4.6"
+        "2022.2"
     ],
     "templating": {
         "list": [
@@ -8913,14 +8973,14 @@
                     "selected": true,
                     "tags": [],
                     "text": [
-                        "statement"
+                        "service_level_sg_0"
                     ],
                     "value": [
-                        "statement"
+                        "service_level_sg_0"
                     ]
                 },
                 "dashversion": [
-                    ">4.3"
+                    ">2019.1"
                 ],
                 "datasource": "prometheus",
                 "definition": "",
@@ -8931,7 +8991,7 @@
                 "multi": true,
                 "name": "scheduling_group",
                 "options": [],
-                "query": "label_values(scylla_storage_proxy_coordinator_read_latency_bucket,scheduling_group_name)",
+                "query": "label_values(ops_by_scheduling_group{cluster=\"$cluster\"},scheduling_group_name)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,
@@ -8995,8 +9055,8 @@
                 "allValue": null,
                 "class": "template_variable_custom",
                 "current": {
-                    "text": "4.6",
-                    "value": "4.6"
+                    "text": "2022.2",
+                    "value": "2022.2"
                 },
                 "error": null,
                 "hide": 2,
@@ -9007,11 +9067,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "4.6",
-                        "value": "4.6"
+                        "text": "2022.2",
+                        "value": "2022.2"
                     }
                 ],
-                "query": "4.6",
+                "query": "2022.2",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -9019,8 +9079,8 @@
                 "allValue": null,
                 "class": "monitor_version_var",
                 "current": {
-                    "text": "4.0.2",
-                    "value": "4.0.2"
+                    "text": "master",
+                    "value": "master"
                 },
                 "error": null,
                 "hide": 2,
@@ -9031,11 +9091,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "4.0.2",
-                        "value": "4.0.2"
+                        "text": "master",
+                        "value": "master"
                     }
                 ],
-                "query": "4.0.2",
+                "query": "master",
                 "skipUrlSync": false,
                 "type": "custom"
             }
@@ -9073,6 +9133,6 @@
     },
     "timezone": "utc",
     "title": "Detailed",
-    "uid": "detailed-4-6",
+    "uid": "detailed-2022-2",
     "version": 5
 }
