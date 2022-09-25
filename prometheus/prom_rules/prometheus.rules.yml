@@ -47,128 +47,134 @@ groups:
     expr: (max(scylla_manager_task_active_count{type="repair"}) by (cluster) >bool 0)*((max(scylla_manager_repair_token_ranges_total) by(cluster)<= 0)*0 or on(cluster) (sum(scylla_manager_repair_token_ranges_success>=0) by (cluster) + sum(scylla_manager_repair_token_ranges_error>=0) by (cluster))/sum(scylla_manager_repair_token_ranges_total>=0) by (cluster))
   - record: manager:backup_progress
     expr: (max(scylla_manager_task_active_count{type="backup"}) by (cluster) >bool 0)*((max(scylla_manager_backup_files_size_bytes) by(cluster)<= 0)*0 or on(cluster) (sum(scylla_manager_backup_files_uploaded_bytes) by (cluster) + sum(scylla_manager_backup_files_skipped_bytes) by (cluster) + sum(scylla_manager_backup_files_failed_bytes)by(cluster))/sum(scylla_manager_backup_files_size_bytes>=0) by (cluster))
-  - record: scylla_storage_proxy_coordinator_write_latency_summary
+  - record: wlatencyp99
+    expr: histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, dc, instance, shard, scheduling_group_name, le))
+    labels:
+      by: "instance,shard"
+  - record: wlatencyp99
     expr: histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, dc, instance, scheduling_group_name, le))
     labels:
       by: "instance"
-      quantile: "0.99"
-  - record: scylla_storage_proxy_coordinator_write_latency_summary
+  - record: wlatencyp99
     expr: histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, dc, scheduling_group_name, le))
     labels:
       by: "dc"
-      quantile: "0.99"
-  - record: scylla_storage_proxy_coordinator_write_latency_summary
+  - record: wlatencyp99
     expr: histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, scheduling_group_name, le))
     labels:
       by: "cluster"
-      quantile: "0.99"
-  - record: ops_by_scheduling_group
-    expr: sum(scylla_storage_proxy_coordinator_read_latency_count) by (cluster, scheduling_group_name)>0
-  - record: scylla_storage_proxy_coordinator_read_latency_summary
+  - record: rlatencyp99
+    expr: histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{}[60s])) by (cluster, dc, instance, shard, scheduling_group_name, le))
+    labels:
+      by: "instance,shard"
+  - record: rlatencyp99
     expr: histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{}[60s])) by (cluster, dc, instance, scheduling_group_name, le))
     labels:
       by: "instance"
-      quantile: "0.99"
-  - record: scylla_storage_proxy_coordinator_read_latency_summary
+  - record: rlatencyp99
     expr: histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{}[60s])) by (cluster, dc, scheduling_group_name, le))
     labels:
       by: "dc"
-      quantile: "0.99"
-  - record: scylla_storage_proxy_coordinator_read_latency_summary
+  - record: rlatencyp99
     expr: histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{}[60s])) by (cluster, scheduling_group_name, le))
     labels:
       by: "cluster"
-      quantile: "0.99"
-  - record: scylla_storage_proxy_coordinator_write_latency_summary
+  - record: wlatencyp95
+    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, dc, instance, shard, scheduling_group_name, le))
+    labels:
+      by: "instance,shard"
+  - record: wlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, dc, instance, scheduling_group_name, le))
     labels:
       by: "instance"
-      quantile: "0.95"
-  - record: scylla_storage_proxy_coordinator_write_latency_summary
+  - record: wlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, dc, scheduling_group_name, le))
     labels:
       by: "dc"
-      quantile: "0.95"
-  - record: scylla_storage_proxy_coordinator_write_latency_summary
+  - record: wlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, scheduling_group_name, le))
     labels:
       by: "cluster"
-      quantile: "0.95"
-  - record: scylla_storage_proxy_coordinator_read_latency_summary
+  - record: rlatencyp95
+    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{}[60s])) by (cluster, dc, instance, shard, scheduling_group_name, le))
+    labels:
+      by: "instance,shard"
+  - record: rlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{}[60s])) by (cluster, dc, instance, scheduling_group_name, le))
     labels:
       by: "instance"
-      quantile: "0.95"
-  - record: scylla_storage_proxy_coordinator_read_latency_summary
+  - record: rlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{}[60s])) by (cluster, dc, scheduling_group_name, le))
     labels:
       by: "dc"
-      quantile: "0.95"
-  - record: scylla_storage_proxy_coordinator_read_latency_summary
+  - record: rlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{}[60s])) by (cluster, scheduling_group_name, le))
     labels:
       by: "cluster"
-      quantile: "0.95"
-  - record: scylla_storage_proxy_coordinator_write_latency_summary
-    expr: histogram_quantile(0.5, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, dc, instance, scheduling_group_name, le))
+  - record: wlatencya
+    expr: sum(rate(scylla_storage_proxy_coordinator_write_latency_sum{}[60s])) by (cluster, dc, instance,scheduling_group_name, shard)/sum(rate(scylla_storage_proxy_coordinator_write_latency_count{}[60s])) by (cluster, dc, instance, scheduling_group_name, shard)
+    labels:
+      by: "instance,shard"
+  - record: wlatencya
+    expr: sum(rate(scylla_storage_proxy_coordinator_write_latency_sum{}[60s])) by (cluster, dc, instance,scheduling_group_name)/sum(rate(scylla_storage_proxy_coordinator_write_latency_count{}[60s])) by (cluster, dc, scheduling_group_name, instance)
     labels:
       by: "instance"
-      quantile: "0.5"
-  - record: scylla_storage_proxy_coordinator_write_latency_summary
-    expr: histogram_quantile(0.5, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, dc, scheduling_group_name, le))
+  - record: wlatencya
+    expr: sum(rate(scylla_storage_proxy_coordinator_write_latency_sum{}[60s])) by (cluster, dc,scheduling_group_name)/sum(rate(scylla_storage_proxy_coordinator_write_latency_count{}[60s])) by (cluster, scheduling_group_name, dc)
     labels:
       by: "dc"
-      quantile: "0.5"
-  - record: scylla_storage_proxy_coordinator_write_latency_summary
-    expr: histogram_quantile(0.5, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, scheduling_group_name, le))
+  - record: wlatencya
+    expr: sum(rate(scylla_storage_proxy_coordinator_write_latency_sum{}[60s])) by (cluster,scheduling_group_name)/sum(rate(scylla_storage_proxy_coordinator_write_latency_count{}[60s])) by (cluster, scheduling_group_name)
     labels:
       by: "cluster"
-      quantile: "0.5"
-  - record: scylla_storage_proxy_coordinator_read_latency_summary
-    expr: histogram_quantile(0.5, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{}[60s])) by (cluster, dc, instance, scheduling_group_name, le))
+  - record: rlatencya
+    expr: sum(rate(scylla_storage_proxy_coordinator_read_latency_sum{}[60s])) by (cluster, dc, instance, shard,scheduling_group_name)/sum(rate(scylla_storage_proxy_coordinator_read_latency_count{}[60s])) by (cluster, dc, instance, shard, scheduling_group_name)
+    labels:
+      by: "instance,shard"
+  - record: rlatencya
+    expr: sum(rate(scylla_storage_proxy_coordinator_read_latency_sum{}[60s])) by (cluster, dc, instance,scheduling_group_name)/sum(rate(scylla_storage_proxy_coordinator_read_latency_count{}[60s])) by (cluster, dc, instance, scheduling_group_name)
     labels:
       by: "instance"
-      quantile: "0.5"
-  - record: scylla_storage_proxy_coordinator_read_latency_summary
-    expr: histogram_quantile(0.5, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{}[60s])) by (cluster, dc, scheduling_group_name, le))
+  - record: rlatencya
+    expr: sum(rate(scylla_storage_proxy_coordinator_read_latency_sum{}[60s])) by (cluster, dc,scheduling_group_name)/sum(rate(scylla_storage_proxy_coordinator_read_latency_count{}[60s])) by (cluster, dc, scheduling_group_name)
     labels:
       by: "dc"
-      quantile: "0.5"
-  - record: scylla_storage_proxy_coordinator_read_latency_summary
-    expr: histogram_quantile(0.5, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{}[60s])) by (cluster, scheduling_group_name, le))
+  - record: rlatencya
+    expr: sum(rate(scylla_storage_proxy_coordinator_read_latency_sum{}[60s])) by (cluster,scheduling_group_name)/sum(rate(scylla_storage_proxy_coordinator_read_latency_count{}[60s])) by (cluster, scheduling_group_name)
     labels:
       by: "cluster"
-      quantile: "0.5"
-  - record: scylla_storage_proxy_coordinator_cas_read_latency_summary
+  - record: casrlatencyp95
+    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_read_latency_bucket{}[60s])) by (cluster, dc, instance, shard, le, scheduling_group_name))
+    labels:
+      by: "instance,shard"
+  - record: casrlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_read_latency_bucket{}[60s])) by (cluster, dc, instance, le, scheduling_group_name))
     labels:
       by: "instance"
-      quantile: "0.95"
-  - record: scylla_storage_proxy_coordinator_cas_read_latency_summary
+  - record: casrlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_read_latency_bucket{}[60s])) by (cluster, dc, le, scheduling_group_name))
     labels:
       by: "dc"
-      quantile: "0.95"
-  - record: scylla_storage_proxy_coordinator_cas_read_latency_summary
+  - record: casrlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_read_latency_bucket{}[60s])) by (cluster, le, scheduling_group_name))
     labels:
       by: "cluster"
-      quantile: "0.95"
-  - record: scylla_storage_proxy_coordinator_cas_write_latency_summary
+  - record: caswlatencyp95
+    expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_write_latency_bucket{}[60s])) by (cluster, dc, instance, shard, le, scheduling_group_name))
+    labels:
+      by: "instance,shard"
+  - record: caswlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_write_latency_bucket{}[60s])) by (cluster, dc, instance, le, scheduling_group_name))
     labels:
       by: "instance"
-      quantile: "0.95"
-  - record: scylla_storage_proxy_coordinator_cas_write_latency_summary
+  - record: caswlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_write_latency_bucket{}[60s])) by (cluster, dc, le, scheduling_group_name))
     labels:
       by: "dc"
-      quantile: "0.95"
-  - record: scylla_storage_proxy_coordinator_cas_write_latency_summary
+  - record: caswlatencyp95
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_write_latency_bucket{}[60s])) by (cluster, le, scheduling_group_name))
     labels:
       by: "cluster"
-      quantile: "0.95"
   - alert: cqlNonPrepared
     expr: cql:non_prepared > 0
     for: 10s
@@ -390,7 +396,7 @@ groups:
       description: '{{ $labels.host }} has denied CQL connection for more than 30 seconds.'
       summary: Instance {{ $labels.host }} no CQL connection
   - alert: HighLatencies
-    expr: scylla_storage_proxy_coordinator_write_latency_summary{by="instance", quantile="0.95"} > 100000
+    expr: wlatencyp95{by="instance"} > 100000
     for: 5m
     labels:
       severity: "1"
@@ -398,7 +404,7 @@ groups:
       description: '{{ $labels.instance }} has 95% high latency for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} High Write Latency
   - alert: HighLatencies
-    expr: scylla_storage_proxy_coordinator_write_latency_summary{by="instance", quantile="0.5"} >10000
+    expr: wlatencya{by="instance"} >10000
     for: 5m
     labels:
       severity: "1"
@@ -406,7 +412,7 @@ groups:
       description: '{{ $labels.instance }} has average high latency for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} High Write Latency
   - alert: HighLatencies
-    expr: scylla_storage_proxy_coordinator_read_latency_summary{by="instance", quantile="0.95"} > 100000
+    expr: rlatencyp95{by="instance"} > 100000
     for: 5m
     labels:
       severity: "1"
@@ -414,7 +420,7 @@ groups:
       description: '{{ $labels.instance }} has 95% high latency for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} High Read Latency
   - alert: HighLatencies
-    expr: scylla_storage_proxy_coordinator_read_latency_summary{by="instance", quantile="0.5"} >10000
+    expr: rlatencya{by="instance"} >10000
     for: 5m
     labels:
       severity: "1"
