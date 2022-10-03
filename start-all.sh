@@ -97,6 +97,7 @@ Options:
   --thanos                       - If set, run thanos query as a Grafana datasource.
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
                                    prometheus, grafana, alertmanager, loki, sidecar, grafanarender
+  --archive                      - Treat data directory as an archive. This disables Prometheus time-to-live (infinite retention).
 The script starts Scylla Monitoring stack.
 "
   echo "$__usage"
@@ -213,6 +214,9 @@ for arg; do
             (--param)
                 LIMIT="1"
                 PARAM="1"
+                ;;
+            (--archive)
+                PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
                 ;;
             (*) set -- "$@" "$arg"
                 ;;

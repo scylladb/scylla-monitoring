@@ -190,11 +190,17 @@ ___
 
 #### Prometheus Command Line Options and Retention Period
 Check the documentation for a full list of command line option for [start-all.sh](https://monitoring.docs.scylladb.com/stable/install/start_all.html)
-Prometheus retention time is set to two weeks by default, you can override it as well as other Prometheus configuration with the `-b` flag.
+Prometheus retention time is set to two weeks by default, you can override it as well as other Prometheus configuration with the `-b` flag. For loading an archive, you can disable Prometheus TTL with `--archive`.
 
 For example:
 ```
 -b "-storage.tsdb.retention.time=30d"
+```
+
+or
+
+```
+--archive -d /path/to/archived/data
 ```
 
 #### connecting Scylla and the Monitoring locally - the local flag
