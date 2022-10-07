@@ -15,7 +15,7 @@ BRANCHES = ['master', 'branch-3.4', 'branch-3.5', 'branch-3.6', 'branch-3.7', 'b
 # Set the latest version.
 LATEST_VERSION = 'branch-4.0'
 # Set which versions are not released yet.
-UNSTABLE_VERSIONS = ['master']
+UNSTABLE_VERSIONS = ['master', 'branch-4.1']
 # Set which versions are deprecated
 DEPRECATED_VERSIONS = []
 
