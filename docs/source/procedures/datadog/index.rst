@@ -40,6 +40,18 @@ Upload the Dashbaord
 Download the dashboard file :download:`dashboard.json <dashboard.json>`.
 Create a new dashbaord in Datadog and import the json file you downloaded. 
 
+Using the Dashbaord
+===================
+We created a Datadog dashboard that resembles the Grafana dashboards available to Scylla and Scylla-Cloud users.
+
+.. image:: datadog.png
+
+The dashboard contains some specific filtering and perspectives:
+First, you can choose between shard, instance, dc, or cluster view.
+This will aggregate the metrics in the graphs accordingly.
+Second, you can filter to see specific shards, nodes, or DCs.
+
+.. note::  Pay attention that some of the combinations are conflicting. For example, you cannot filter by DC when looking at a cluster view. If no data displayed, remove the filters first.
 
 Adding Monitor
 ==============
