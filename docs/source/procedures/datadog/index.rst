@@ -35,12 +35,12 @@ Post configuration
 Restart the agent based on your installation. Scylla metrics should be visible in Datadog.
 
 
-Upload the Dashbaord
+Upload the Dashboard
 ====================
 Download the dashboard file :download:`dashboard.json <dashboard.json>`.
-Create a new dashbaord in Datadog and import the json file you downloaded. 
+Create a new dashboard in Datadog and import the json file you downloaded. 
 
-Using the Dashbaord
+Using the Dashboard
 ===================
 We created a Datadog dashboard that resembles the Grafana dashboards available to Scylla and Scylla-Cloud users.
 
