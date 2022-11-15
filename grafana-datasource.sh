@@ -35,7 +35,13 @@ else
     done
 fi
 mkdir -p grafana/provisioning/datasources
-sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" | sed "s/LOKI_ADDRESS/$LOKI_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
+rm -f grafana/provisioning/datasources/datasource.yaml
+sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
+if [ -z "$LOKI_ADDRESS" ]; then
+    rm -f grafana/provisioning/datasources/datasource.loki.yaml
+else
+    sed "s/LOKI_ADDRESS/$LOKI_ADDRESS/" grafana/datasource.loki.yml> grafana/provisioning/datasources/datasource.loki.yaml
+fi
 if [ -z "$SCYLLA_USER" ] || [ -z "$SCYLLA_PSSWD" ]; then
     cp grafana/datasource.scylla.yml grafana/provisioning/datasources/datasource.scylla.yml
 else
