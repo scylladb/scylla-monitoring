@@ -36,6 +36,7 @@ you can only do select statements, but any valid select would work.
 ./start-all.sh -s scylla_servers.yml -c "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource"
 
 ```
+### Configure the datasoure from file
 * If you do not want to configure the data source on every restart, edit `grafana/datasource.yml`
 And add:
 ```
@@ -60,6 +61,26 @@ To support user and password add `secureJsonData` to `grafana/datasource.yml`
     user: 'cassandra'
     password: 'cassandra'
 ```
+
+### Configure the Datasource using Grafana API:
+Grafana API allows adding datasource.
+The following will add a data source without a username and password, replace the `ADMIN_PASSWORD`
+with Grafana's Admin password
+
+```
+curl -XPOST -i http://admin:$ADMIN_PASSWORD@localhost:3000/api/datasources \
+     --data-binary '{"name": "scylla-datasource","type": "scylladb-scylla-datasource", \
+     "orgId": 1,"access":"proxy", "jsonData":{"host": ""}}' -H "Content-Type: application/json"
+```
+
+The following example shows how to configure the plugin with username and password
+```
+curl -XPOST -i http://admin:$ADMIN_PASSWORD@localhost:3000/api/datasources \
+     --data-binary '{"name": "scylla-datasource","type": "scylladb-scylla-datasource", "orgId": 1,"access":"proxy", \
+     "jsonData":{"host": ""}, "secureJsonData":{"user": "scylla", "password": "scylla"}}' \
+      -H "Content-Type: application/json"
+```
+
 ## Compiling the data source by yourself
 A data source backend plugin consists of both frontend and backend components.
 
