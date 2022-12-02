@@ -13,9 +13,9 @@ sys.path.insert(0, os.path.abspath(".."))
 TAGS = []
 BRANCHES = ['master', 'branch-3.4', 'branch-3.5', 'branch-3.6', 'branch-3.7', 'branch-3.8', 'branch-3.9', 'branch-3.10', 'branch-4.0', 'branch-4.1']
 # Set the latest version.
-LATEST_VERSION = 'branch-4.0'
+LATEST_VERSION = 'branch-4.1'
 # Set which versions are not released yet.
-UNSTABLE_VERSIONS = ['master', 'branch-4.1']
+UNSTABLE_VERSIONS = ['master']
 # Set which versions are deprecated
 DEPRECATED_VERSIONS = []
 
