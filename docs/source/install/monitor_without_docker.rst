@@ -147,6 +147,7 @@ Tested with Prometheus version 2.27.1
    tar -xvf prometheus-*.linux-amd64.tar.gz
 
 2. Create Data and Config directories
+
 .. code-block:: shell
 
    mkdir -p /prometheus/data
@@ -163,7 +164,7 @@ For example:
 .. code-block:: shell
    :substitutions:
 
-   cp scylla-monitoring-scylla-monitoring-|version|/prometheus/prom_rules/*.yml/etc/prometheus/prom_rules/
+   cp scylla-monitoring-scylla-monitoring-|version|/prometheus/prom_rules/*.yml /etc/prometheus/prom_rules/
    cp scylla-monitoring-scylla-monitoring-|version|/prometheus/prometheus.yml.template /etc/prometheus/prometheus.yml
 
 
