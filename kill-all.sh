@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
-usage="$(basename "$0") [-h] [-g grafana port ] [ -p prometheus port ] [-m alertmanager port] -- kills existing Grafana and Prometheus Docker instances at given ports"
+usage="$(basename "$0") [-h] [-g grafana port ] [ -p prometheus port ] [-m alertmanager port] [-w max wait time for prometheus] -- kills existing Grafana and Prometheus Docker instances at given ports"
 GRAFANA_PORT=""
 PROMETHEUS_PORT=""
 ALERTMANAGER_PORT=""
 PROMETHEUS_NAME="aprom"
-while getopts ':hg:p:m:' option; do
+PROMETHEUS_KILL_WAITTIME="120"
+while getopts ':hg:p:w:m:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -16,6 +17,8 @@ while getopts ':hg:p:m:' option; do
        PROMETHEUS_NAME="aprom-$OPTARG"
        ;;
     m) ALERTMANAGER_PORT="-p $OPTARG"
+       ;;
+    w) PROMETHEUS_KILL_WAITTIME=$OPTARG
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -28,10 +31,10 @@ while getopts ':hg:p:m:' option; do
   esac
 done
 
-docker exec $PROMETHEUS_NAME kill 1
+docker exec $PROMETHEUS_NAME kill 15
 TRIES=0
 OK=0
-until [ $OK -eq 1 ] || [ $TRIES -eq 120 ]; do
+until [ $OK -eq 1 ] || [ $TRIES -eq $PROMETHEUS_KILL_WAITTIME ]; do
     if VAL=`docker logs aprom|&tail -1 |grep 'See you next time'`; then
         if [ -z "$VAL" ]; then
             printf '.'
