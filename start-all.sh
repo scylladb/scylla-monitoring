@@ -204,6 +204,8 @@ for arg; do
                 ;;
             (--auto-restart) DOCKER_PARAM="--restart=unless-stopped"
                 ;;
+            (--victoria-metrics) VICTORIA_METRICS="1"
+                ;;
             (--limit)
                 LIMIT="1"
                 ;;
@@ -404,7 +406,11 @@ else
         echo "Creating data directory $DATA_DIR"
         mkdir -p $DATA_DIR
     fi
-    DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
+    if [[ "$VICTORIA_METRICS" = "1" ]]; then
+        DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/victoria-metrics-data"
+    else
+        DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
+    fi
 fi
 
 if [ "$VERSIONS" = "latest" ]; then
@@ -477,7 +483,17 @@ done
 if [ -z $HOST_NETWORK ]; then
     PORT_MAPPING="-p $BIND_ADDRESS$PROMETHEUS_PORT:9090"
 fi
+if [[ "$VICTORIA_METRICS" = "1" ]]; then
+    echo "Using victoria metrics"
 
+    docker run -d --rm $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
+    -v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml \
+    $SCYLLA_TARGET_FILE \
+     $SCYLLA_MANGER_TARGET_FILE \
+     $NODE_TARGET_FILE \
+    victoriametrics/victoria-metrics:$VICTORIA_METRICS_VERSION $PROMETHEUS_COMMAND_LINE_OPTIONS \
+     ${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090
+else
 docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
      $DATA_DIR_CMD \
      "${group_args[@]}" \
@@ -489,6 +505,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
      $PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
      --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
      ${DOCKER_PARAMS["prometheus"]}
+fi
 
 if [ $? -ne 0 ]; then
     echo "Error: Prometheus container failed to start"
@@ -524,7 +541,19 @@ if [ "$DB_ADDRESS" = ":9090" ]; then
     HOST_IP=`hostname -I | awk '{print $1}'`
     DB_ADDRESS="$HOST_IP:9090"
 fi
+if [[ "$VICTORIA_METRICS" = "1" ]]; then
+     echo "running vmalert"
 
+     docker run -d \
+     --name vmalert \
+     -v $PROMETHEUS_RULES:z \
+     victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
+    -datasource.url=http://$DB_ADDRESS \
+    -notifier.url=http://$AM_ADDRESS \
+    -notifier.url=http://$AM_ADDRESS \
+    -remoteWrite.url=http://$DB_ADDRESS \
+    -remoteRead.url=http://$DB_ADDRESS
+fi
 if [ $RUN_THANOS_SC -eq 1 ]; then
     if [ -z $DATA_DIR ]; then
         echo "You must use external prometheus directory to use the thanos side cart"
