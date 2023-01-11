@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
+CURRENT_VERSION="master"
+if [ -f CURRENT_VERSION.sh ]; then
+    CURRENT_VERSION=`cat CURRENT_VERSION.sh`
+fi
+
 . versions.sh
 . dashboards.sh
 
 VERSIONS=$DEFAULT_VERSION
+BRANCH_VERSION=`echo $CURRENT_VERSION|cut -d'.' -f1,2`
 GRAFANA_HOST="localhost"
 GRAFANA_PORT=3000
 DB_ADDRESS="127.0.0.1:9090"
@@ -48,18 +54,16 @@ fi
 mkdir -p grafana/build
 IFS=',' ;for v in $VERSIONS; do
 for f in "${DASHBOARDS[@]}"; do
-    if [ -e grafana/$f.$v.template.json ]
+    if [ -e grafana/$f.template.json ]
     then
-        if [ ! -f "grafana/build/$f.$v.json" ] || [ "grafana/build/$f.$v.json" -ot "grafana/$f.$v.template.json" ]; then
-            ./make_dashboards.py -t grafana/types.json -d grafana/$f.$v.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"
-        fi
+        ./make_dashboards.py -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -V $v
         curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/build/$f.$v.json -H "Content-Type: application/json"
     else
         if [ -f grafana/$f.$v.json ]
         then
             curl -XPOST -i http://admin:$GRAFANA_ADMIN_PASSWORD@$GRAFANA_HOST:$GRAFANA_PORT/api/dashboards/db --data-binary @./grafana/$f.$v.json -H "Content-Type: application/json"
         else
-            printf "\nDashboard version $v, not found"
+            printf "\nDashboard $f for version $v, not found"
         fi
     fi
 done
