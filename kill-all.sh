@@ -52,6 +52,7 @@ sleep 2
 ./kill-container.sh $GRAFANA_PORT -b agraf
 ./kill-container.sh $ALERTMANAGER_PORT -b aalert
 ./kill-container.sh -b agrafrender
+./kill-container.sh -b vmalert
 ./kill-container.sh -b loki
 ./kill-container.sh -b promtail
 ./kill-container.sh -b sidecar1
