@@ -36,17 +36,17 @@ groups:
   - record: errors:nodes_total
     expr: errors:local_failed + errors:operation_unavailable
   - record: manager:repair_done_ts
-    expr: timestamp(sum(changes(scylla_manager_task_run_total{status="DONE",type="repair"}[60s])) by (cluster) > 0) or on(cluster) manager:repair_done_ts
+    expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="DONE",type="repair"}[60s])) by (cluster) > 0) or on(cluster) manager:repair_done_ts
   - record: manager:backup_done_ts
-    expr: timestamp(sum(changes(scylla_manager_task_run_total{status="DONE",type="backup"}[60s])) by (cluster) > 0) or on(cluster) manager:backup_done_ts
+    expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="DONE",type="backup"}[60s])) by (cluster) > 0) or on(cluster) manager:backup_done_ts
   - record: manager:repair_fail_ts
-    expr: timestamp(sum(changes(scylla_manager_task_run_total{status="ERROR",type="repair"}[60s])) by (cluster) > 0) or on(cluster) manager:repair_fail_ts
+    expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="ERROR",type="repair"}[60s])) by (cluster) > 0) or on(cluster) manager:repair_fail_ts
   - record: manager:backup_fail_ts
-    expr: timestamp(sum(changes(scylla_manager_task_run_total{status="ERROR",type="backup"}[60s])) by (cluster) > 0) or on(cluster) manager:backup_fail_ts
+    expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="ERROR",type="backup"}[60s])) by (cluster) > 0) or on(cluster) manager:backup_fail_ts
   - record: manager:repair_progress
-    expr: (max(scylla_manager_task_active_count{type="repair"}) by (cluster) >bool 0)*((max(scylla_manager_repair_token_ranges_total) by(cluster)<= 0)*0 or on(cluster) (sum(scylla_manager_repair_token_ranges_success>=0) by (cluster) + sum(scylla_manager_repair_token_ranges_error>=0) by (cluster))/sum(scylla_manager_repair_token_ranges_total>=0) by (cluster))
+    expr: (max(scylla_manager_scheduler_run_indicator{type="repair"}) by (cluster) >bool 0)*((max(scylla_manager_repair_token_ranges_total) by(cluster)<= 0)*0 or on(cluster) (sum(scylla_manager_repair_token_ranges_success>=0) by (cluster) + sum(scylla_manager_repair_token_ranges_error>=0) by (cluster))/sum(scylla_manager_repair_token_ranges_total>=0) by (cluster))
   - record: manager:backup_progress
-    expr: (max(scylla_manager_task_active_count{type="backup"}) by (cluster) >bool 0)*((max(scylla_manager_backup_files_size_bytes) by(cluster)<= 0)*0 or on(cluster) (sum(scylla_manager_backup_files_uploaded_bytes) by (cluster) + sum(scylla_manager_backup_files_skipped_bytes) by (cluster) + sum(scylla_manager_backup_files_failed_bytes)by(cluster))/sum(scylla_manager_backup_files_size_bytes>=0) by (cluster))
+    expr: (max(scylla_manager_scheduler_run_indicator{type="backup"}) by (cluster) >bool 0)*((max(scylla_manager_backup_files_size_bytes) by(cluster)<= 0)*0 or on(cluster) (sum(scylla_manager_backup_files_uploaded_bytes) by (cluster) + sum(scylla_manager_backup_files_skipped_bytes) by (cluster) + sum(scylla_manager_backup_files_failed_bytes)by(cluster))/sum(scylla_manager_backup_files_size_bytes>=0) by (cluster))
   - record: wlatencyp99
     expr: histogram_quantile(0.99, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{}[60s])) by (cluster, dc, instance, shard, scheduling_group_name, le))
     labels:
@@ -428,7 +428,7 @@ groups:
       description: '{{ $labels.instance }} has average high latency for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} High Read Latency
   - alert: BackupFailed
-    expr: (sum(scylla_manager_task_run_total{type=~"backup", status="ERROR"}) or vector(0)) - (sum(scylla_manager_task_run_total{type=~"backup", status="ERROR"} offset 3m) or vector(0)) > 0
+    expr: (sum(scylla_manager_scheduler_run_total{type=~"backup", status="ERROR"}) or vector(0)) - (sum(scylla_manager_scheduler_run_total{type=~"backup", status="ERROR"} offset 3m) or vector(0)) > 0
     for: 10s
     labels:
       severity: "1"
@@ -436,7 +436,7 @@ groups:
       description: 'Backup failed'
       summary: Backup task failed
   - alert: RepairFailed
-    expr: (sum(scylla_manager_task_run_total{type=~"repair", status="ERROR"}) or vector(0)) - (sum(scylla_manager_task_run_total{type=~"repair", status="ERROR"} offset 3m) or vector(0)) > 0
+    expr: (sum(scylla_manager_scheduler_run_total{type=~"repair", status="ERROR"}) or vector(0)) - (sum(scylla_manager_scheduler_run_total{type=~"repair", status="ERROR"} offset 3m) or vector(0)) > 0
     for: 10s
     labels:
       severity: "1"
