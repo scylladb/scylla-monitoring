@@ -84,6 +84,11 @@ scrape_configs:
       regex:  '(.*)'
       target_label: __address__
       replacement: '${1}:9100'
+  metric_relabel_configs:
+    - source_labels: [__name__]
+      regex:  'node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total'
+      target_label: level
+      replacement: '1'
 
 - job_name: manager_agent
   honor_labels: false
