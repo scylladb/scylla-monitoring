@@ -6,8 +6,9 @@ The safest way to use Datadog with Scylla is to load the metrics, using a  Datad
 The integration consists of:
 
 1. Installing and configuring the Datadog Agent.
-2. Loading Scylla dashboard to Datadog.
-3. Optionally load Monitor (Alerts).
+2. Add datadog recording rules.
+3. Loading Scylla dashboard to Datadog.
+4. Optionally load Monitor (Alerts).
 
 .. note::  Scylla Cloud users, use and update the proper configuration file.
 
@@ -34,6 +35,10 @@ Post configuration
 ^^^^^^^^^^^^^^^^^^
 Restart the agent based on your installation. Scylla metrics should be visible in Datadog.
 
+
+Add datadog recording rules
+===========================
+Non cloud users, download the rules configuration file :download:`datadog.rules.yml <datadog.rules.yml>` and place it under prometheus/prom_rules/.
 
 Upload the Dashboard
 ====================
