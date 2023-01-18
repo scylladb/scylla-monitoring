@@ -183,7 +183,15 @@ in the `upgrade guide`_.
 
 .. _`upgrade guide`: /upgrade/upgrade-opensource/upgrade-guide-from-2.3-to-3.0/
 
+Reducing the total number of metrics
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Clusters with a high number of cores report a high number of metrics.
 
+Remove interrupts from node_exporter
+....................................
+
+By default, node_exporter reports interrupt metrics. You can disable interrupts reporting by editing
+`/etc/sysconfig/scylla-node-exporter` and remove --collector.interrupts from it.
 
 Working with Wireshark
 ^^^^^^^^^^^^^^^^^^^^^^^
