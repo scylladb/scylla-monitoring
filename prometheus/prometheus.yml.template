@@ -1,6 +1,7 @@
 global:
   scrape_interval: 20s # By default, scrape targets every 20 second.
   scrape_timeout: 15s # Timeout before trying to scape a target again
+  evaluation_interval: 20s
 
   # Attach these labels to any time series or alerts when communicating with
   # external systems (federation, remote storage, Alertmanager).
@@ -63,6 +64,10 @@ scrape_configs:
       regex: '([0-9]+\.[0-9]+)(\.?[0-9]*).*'
       replacement: '$1$2'
       target_label: svr
+    - source_labels: [__name__]
+      regex: '(scylla_node_operation_mode|scylla_storage_proxy_coordinator_read_timeouts|scylla_reactor_utilization|scylla_storage_proxy_coordinator_read_timeouts|scylla_storage_proxy_coordinator_read_unavailable|scylla_storage_proxy_coordinator_write_timeouts|scylla_storage_proxy_coordinator_write_unavailable)'
+      replacement: '1'
+      target_label: level
 
 - job_name: node_exporter
   honor_labels: false
@@ -86,7 +91,7 @@ scrape_configs:
       replacement: '${1}:9100'
   metric_relabel_configs:
     - source_labels: [__name__]
-      regex:  'node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total'
+      regex: '(node_filesystem_size_bytes|node_filesystem_avail_bytes|node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total)'
       target_label: level
       replacement: '1'
 
