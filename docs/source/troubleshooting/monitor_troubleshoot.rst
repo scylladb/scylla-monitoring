@@ -185,7 +185,8 @@ in the `upgrade guide`_.
 
 Reducing the total number of metrics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Clusters with a high number of cores report a high number of metrics.
+In ScyllaDB, metrics are reported per shard (core) per node. A cluster with a high number of nodes and cores reports an increased number of metrics which might overload the Monitoring system like Prometheus or Datadog.
+Below is one way to reduce the number of metrics reported per ScyllaDB Node.
 
 Remove interrupts from node_exporter
 ....................................
