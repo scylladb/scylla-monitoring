@@ -183,7 +183,16 @@ in the `upgrade guide`_.
 
 .. _`upgrade guide`: /upgrade/upgrade-opensource/upgrade-guide-from-2.3-to-3.0/
 
+Reducing the total number of metrics
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+In ScyllaDB, metrics are reported per shard (core) per node. A cluster with a high number of nodes and cores reports an increased number of metrics which might overload the Monitoring system like Prometheus or Datadog.
+Below is one way to reduce the number of metrics reported per ScyllaDB Node.
 
+Remove interrupts from node_exporter
+....................................
+
+By default, node_exporter reports interrupt metrics. You can disable interrupts reporting by editing
+`/etc/sysconfig/scylla-node-exporter` and remove --collector.interrupts from it.
 
 Working with Wireshark
 ^^^^^^^^^^^^^^^^^^^^^^^
