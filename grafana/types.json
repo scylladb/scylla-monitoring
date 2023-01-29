@@ -262,7 +262,7 @@
             "description":"The number of joining and leaving nodes.\nThe number of nodes that are up but not actively part of the cluster, either because they are still joining or because they are leaving.",
             "targets":[
                {
-                  "expr":"count(scylla_node_operation_mode!=3)OR vector(0)",
+                  "expr":"count(scylla_node_operation_mode{cluster=~\"$cluster|$^\"}!=3)OR vector(0)",
                   "intervalFactor":1,
                   "legendFormat":"Offline ",
                   "refId":"A",
@@ -2176,7 +2176,7 @@
             "format":"table"
          },
          {
-            "expr":"sum(scylla_gossip_live)by (instance)",
+            "expr":"sum(scylla_gossip_live{cluster=~\"$cluster|$^\"})by (instance)",
             "legendFormat":"",
             "interval":"",
             "refId":"F",
@@ -2836,7 +2836,7 @@
    "annotation_restart":{
       "datasource":"prometheus",
       "enable":true,
-      "expr":"resets(scylla_gossip_heart_beat[$__rate_interval])>0",
+      "expr":"resets(scylla_gossip_heart_beat{cluster=~\"$cluster|$^\"}[$__rate_interval])>0",
       "hide":false,
       "iconColor":"rgba(255, 96, 96, 1)",
       "limit":100,
@@ -2850,14 +2850,14 @@
    "annotation_schema_changed":{
       "class":"annotation_restart",
       "enable":false,
-      "expr":"changes(scylla_database_schema_changed[$__rate_interval])>0",
+      "expr":"changes(scylla_database_schema_changed{cluster=~\"$cluster|$^\"}[$__rate_interval])>0",
       "name":"Schema Changed",
       "titleFormat":"schema changed"
    },
    "annotation_stall":{
       "datasource":"prometheus",
       "enable":false,
-      "expr":"changes(scylla_stall_detector_reported[$__rate_interval])>0",
+      "expr":"changes(scylla_stall_detector_reported{cluster=~\"$cluster|$^\"}[$__rate_interval])>0",
       "hide":false,
       "iconColor":"rgba(255, 96, 96, 1)",
       "limit":100,
@@ -2884,28 +2884,28 @@
    },
    "annotation_hints_writes":{
       "class":"annotation_schema_changed",
-      "expr":"changes(scylla_hints_manager_written[$__rate_interval])>0",
+      "expr":"changes(scylla_hints_manager_written{cluster=~\"$cluster|$^\"}[$__rate_interval])>0",
       "iconColor":"rgb(255, 176, 0, 128)",
       "name":"Hints Write",
       "titleFormat":"Hints write"
    },
    "annotation_hints_sent":{
       "class":"annotation_schema_changed",
-      "expr":"changes(scylla_hints_manager_written[$__rate_interval])>0",
+      "expr":"changes(scylla_hints_manager_written{cluster=~\"$cluster|$^\"}[$__rate_interval])>0",
       "iconColor":"rgb(50, 176, 0, 128)",
       "name":"Hints Sent",
       "titleFormat":"Hints Sent"
    },
    "mv_building":{
       "class":"annotation_restart",
-      "expr":"sum(scylla_view_builder_builds_in_progress)>0",
+      "expr":"sum(scylla_view_builder_builds_in_progress{cluster=~\"$cluster|$^\"})>0",
       "iconColor":"rgb(50, 176, 0, 128)",
       "name":"MV",
       "titleFormat":"Materialized View built"
    },
    "ops_annotation":{
       "class":"annotation_restart",
-      "expr":"10*min(scylla_node_ops_finished_percentage) by (ops, dc,instance) < 10",
+      "expr":"10*min(scylla_node_ops_finished_percentage{cluster=~\"$cluster|$^\"}) by (ops, dc,instance) < 10",
       "iconColor":"rgb(50, 176, 0, 128)",
       "name":"ops",
       "tagKeys":"ops,dc,instance",
