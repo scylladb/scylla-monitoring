@@ -153,8 +153,6 @@ groups:
     expr: histogram_quantile(0.95, sum(rate(scylla_storage_proxy_coordinator_cas_write_latency_bucket{}[60s])) by (cluster, le, scheduling_group_name))
     labels:
       by: "cluster"
-  - record: all_scheduling_group
-    expr: sum by (cluster, scheduling_group_name) (scylla_storage_proxy_coordinator_write_latency_count + scylla_storage_proxy_coordinator_read_latency_count) > 0
   - record: errors:nodes_total
     expr: sum(rate(scylla_storage_proxy_coordinator_read_errors_local_node[60s])) by (cluster, dc, instance) + sum(rate(scylla_storage_proxy_coordinator_write_errors_local_node[60s])) by (cluster, dc, instance) + sum(rate(scylla_storage_proxy_coordinator_read_unavailable[60s])) by (cluster, dc, instance) + sum(rate(scylla_storage_proxy_coordinator_write_unavailable[60s])) by (cluster, dc, instance) + sum(rate(scylla_storage_proxy_coordinator_range_unavailable[60s])) by (cluster, dc, instance)
   - record: cql:non_system_prepared1m
