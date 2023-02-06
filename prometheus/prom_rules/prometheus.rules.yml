@@ -162,7 +162,7 @@ groups:
       description: '{{ $labels.instance }} has been down for more than 30 seconds.'
       summary: Instance {{ $labels.instance }} down
   - alert: InstanceDown
-    expr: absent(scylla_transport_requests_served{job="scylla", shard="0"})
+    expr: sum(up{job="scylla"}>0)by(instance) unless sum(scylla_transport_requests_served{shard="0"}) by(instance)
     for: 1m
     labels:
       severity: "2"
