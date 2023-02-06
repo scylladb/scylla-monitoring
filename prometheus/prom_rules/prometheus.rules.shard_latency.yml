@@ -2,35 +2,75 @@ groups:
 - name: scylla.rules
   rules:
   - record: wlatencyp99
-    expr: scylla_storage_proxy_coordinator_write_latency_summary{quantile=~"0.990*"}
+    expr: scylla_storage_proxy_coordinator_write_latency_summary{quantile=~"0.990*", scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
+    labels:
+      by: "instance,shard"
+      level: "1"
+  - record: rlatencyp99
+    expr: scylla_storage_proxy_coordinator_read_latency_summary{quantile=~"0.990*", scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
+    labels:
+      by: "instance,shard"
+      level: "1"
+  - record: wlatencyp95
+    expr: scylla_storage_proxy_coordinator_write_latency_summary{quantile=~"0.950*", scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
+    labels:
+      by: "instance,shard"
+      level: "1"
+  - record: rlatencyp95
+    expr: scylla_storage_proxy_coordinator_read_latency_summary{quantile=~"0.950*", scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
+    labels:
+      by: "instance,shard"
+      level: "1"
+  - record: wlatencya
+    expr: scylla_storage_proxy_coordinator_write_latency_summary{quantile=~"0.50*", scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
+    labels:
+      by: "instance,shard"
+      level: "1"
+  - record: rlatencya
+    expr: scylla_storage_proxy_coordinator_read_latency_summary{quantile=~"0.50*", scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
+    labels:
+      by: "instance,shard"
+      level: "1"
+  - record: casrlatencyp95
+    expr: scylla_storage_proxy_coordinator_cas_read_latency_summary{quantile=~"0.950*", scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
+    labels:
+      by: "instance,shard"
+      level: "1"
+  - record: caswlatencyp95
+    expr: scylla_storage_proxy_coordinator_cas_write_latency_summary{quantile=~"0.950*", scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
+    labels:
+      by: "instance,shard"
+      level: "1"
+  - record: wlatencyp99
+    expr: scylla_storage_proxy_coordinator_write_latency_summary{quantile=~"0.990*", scheduling_group_name=~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
     labels:
       by: "instance,shard"
   - record: rlatencyp99
-    expr: scylla_storage_proxy_coordinator_read_latency_summary{quantile=~"0.990*"}
+    expr: scylla_storage_proxy_coordinator_read_latency_summary{quantile=~"0.990*", scheduling_group_name=~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
     labels:
       by: "instance,shard"
   - record: wlatencyp95
-    expr: scylla_storage_proxy_coordinator_write_latency_summary{quantile=~"0.950*"}
+    expr: scylla_storage_proxy_coordinator_write_latency_summary{quantile=~"0.950*", scheduling_group_name=~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
     labels:
       by: "instance,shard"
   - record: rlatencyp95
-    expr: scylla_storage_proxy_coordinator_read_latency_summary{quantile=~"0.950*"}
+    expr: scylla_storage_proxy_coordinator_read_latency_summary{quantile=~"0.950*", scheduling_group_name=~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
     labels:
       by: "instance,shard"
   - record: wlatencya
-    expr: scylla_storage_proxy_coordinator_write_latency_summary{quantile=~"0.50*"}
+    expr: scylla_storage_proxy_coordinator_write_latency_summary{quantile=~"0.50*", scheduling_group_name=~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
     labels:
       by: "instance,shard"
   - record: rlatencya
-    expr: scylla_storage_proxy_coordinator_read_latency_summary{quantile=~"0.50*"}
+    expr: scylla_storage_proxy_coordinator_read_latency_summary{quantile=~"0.50*", scheduling_group_name=~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
     labels:
       by: "instance,shard"
   - record: casrlatencyp95
-    expr: scylla_storage_proxy_coordinator_cas_read_latency_summary{quantile=~"0.950*"}
+    expr: scylla_storage_proxy_coordinator_cas_read_latency_summary{quantile=~"0.950*", scheduling_group_name=~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
     labels:
       by: "instance,shard"
   - record: caswlatencyp95
-    expr: scylla_storage_proxy_coordinator_cas_write_latency_summary{quantile=~"0.950*"}
+    expr: scylla_storage_proxy_coordinator_cas_write_latency_summary{quantile=~"0.950*", scheduling_group_name=~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}
     labels:
       by: "instance,shard"
 
