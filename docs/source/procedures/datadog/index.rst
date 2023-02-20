@@ -36,7 +36,7 @@ Post configuration
 Restart the agent based on your installation. Scylla metrics should be visible in Datadog.
 
 
-.. note::  By default, Datadog will not scrap per-shard metrics. To enable per-shard metrics, edit the conf.yaml file and replace level=~"1" with level=~"1|2"
+.. note::  By default, Datadog will not scrap per-shard metrics. To enable per-shard metrics, edit the conf.yaml file and replace dd=~"1" with dd=~"1|2"
 
 Add datadog recording rules
 ===========================
