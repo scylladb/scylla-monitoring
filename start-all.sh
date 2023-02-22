@@ -104,6 +104,7 @@ Options:
   --no-renderer                  - If set, do not run the Grafana renderer container.
   --thanos-sc                    - If set, run thanos side car with the Prometheus server.
   --thanos                       - If set, run thanos query as a Grafana datasource.
+  --enable-protobuf              - If set, enable the experimental Prometheus Protobuf with Native histograms support.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
                                    the file names should be scylla_server.yml, node_exporter_servers.yml, and  scylla_manager_servers.yml
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
@@ -229,6 +230,9 @@ for arg; do
                 ;;
             (--disable-anonymous)
                 GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --disable-anonymous"
+                ;;
+            (--enable-protobuf)
+                PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--enable-feature=native-histograms)
                 ;;
             (--limit)
                 LIMIT="1"
