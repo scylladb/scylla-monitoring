@@ -25,6 +25,9 @@ Prerequisites
    * - Scylla Monitoring Stack Version
      - Prometheus Version
      - Grafana Version
+   * - 4.3
+     - 2.42.0
+     - 9.3.4
    * - 4.2
      - 2.41.0
      - 9.3.4
@@ -260,19 +263,24 @@ For example:
    If you are running Scylla-Manager on the same host as Scylla-Monitoring you should use -l flag so that the localhost address
    will be available from within the container.
 
-Connecting Scylla-Monitoring to Scylla
-......................................
+Connecting Scylla-Monitoring to ScyllaDB
+........................................
 
-Scylla-Manager version 3.5 and higher can read tables from a Scylla node using CQL. If your Scylla cluster is user/password protected (See `Scylla  Authorization`_) you should assign a user and password for the Scylla-Grafana connection.
+Scylla-Monitoring version 3.5 and higher can read tables from a ScyllaDB node using CQL. If your ScyllaDB cluster is user/password protected (See `Scylla  Authorization`_) you should assign a user and password for the Scylla-Grafana connection.
 
 .. _`Scylla  Authorization`: https://docs.scylladb.com/operating-scylla/security/enable-authorization/
 
 
 You can limit the user to read only, currently it only read table from the system keyspace.
 
-To set a user/password edit `grafana/provisioning/datasources/datasource.yaml`.
+You can set a user and password from a file or environment variables.
 
-Under **scylla-datasource** Uncomment the **secureJsonData** part and set the user and password.
+If the environment variables **SCYLLA_USER** and  **SCYLLA_PSSWD** are set, they will be used.
+
+To set the user and password from a file, edit `grafana/datasource.scylla.yml`. Uncomment the **secureJsonData** part and set the user and password.
+
+.. note:: It is best to use a dedicated user and password with limited privileges.
+ 
 
 Use an external directory for the Prometheus data directory
 ...........................................................
