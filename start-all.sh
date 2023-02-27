@@ -206,6 +206,12 @@ for arg; do
                 ;;
             (--victoria-metrics) VICTORIA_METRICS="1"
                 ;;
+            (--auth)
+                GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --auth"
+                ;;
+            (--disable-anonymous)
+                GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --disable-anonymous"
+                ;;
             (--limit)
                 LIMIT="1"
                 ;;

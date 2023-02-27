@@ -4,13 +4,21 @@ if [ -f CURRENT_VERSION.sh ]; then
     CURRENT_VERSION=`cat CURRENT_VERSION.sh`
 fi
 LOCAL=""
-GRAFANA_ADMIN_PASSWORD="admin"
-GRAFANA_AUTH=false
-GRAFANA_AUTH_ANONYMOUS=true
+if [ -z "$GRAFANA_ADMIN_PASSWORD" ]; then
+    GRAFANA_ADMIN_PASSWORD="admin"
+fi
+if [ -z "$GRAFANA_AUTH" ]; then
+    GRAFANA_AUTH=false
+fi
+if [ -z "$GRAFANA_AUTH_ANONYMOUS" ]; then
+    GRAFANA_AUTH_ANONYMOUS=true
+fi
 DOCKER_PARAM=""
 EXTERNAL_VOLUME=""
 BIND_ADDRESS=""
-ANONYMOUS_ROLE="Admin"
+if [ -z "$ANONYMOUS_ROLE" ]; then
+    ANONYMOUS_ROLE="Admin"
+fi
 SPECIFIC_SOLUTION=""
 LDAP_FILE=""
 
@@ -48,6 +56,12 @@ for arg; do
             (--param)
                 LIMIT="1"
                 PARAM="1"
+                ;;
+            (--auth)
+                GRAFANA_AUTH=true
+                ;;
+            (--disable-anonymous)
+                GRAFANA_AUTH_ANONYMOUS=false
                 ;;
             (*) set -- "$@" "$arg"
                 ;;
@@ -122,8 +136,6 @@ while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:' option; do
     Q) ANONYMOUS_ROLE=$OPTARG
        ;;
     a) GRAFANA_ADMIN_PASSWORD=$OPTARG
-       GRAFANA_AUTH=true
-       GRAFANA_AUTH_ANONYMOUS=false
        ;;
     x) HTTP_PROXY="$OPTARG"
        ;;
@@ -227,7 +239,6 @@ if [ ! -z $RUN_RENDERER ]; then
     RENDERING_SERVER_URL=`./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS  -D "$DOCKER_PARAM"`
     GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_RENDERING_SERVER_URL=http://$DOCKER_HOST:8081/render -e GF_RENDERING_CALLBACK_URL=http://$DOCKER_HOST:$GRAFANA_PORT/"
 fi
-
 
 docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PORT_MAPPING \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
