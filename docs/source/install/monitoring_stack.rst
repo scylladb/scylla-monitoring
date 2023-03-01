@@ -27,7 +27,7 @@ Prerequisites
      - Grafana Version
    * - 4.3
      - 2.42.0
-     - 9.3.4
+     - 9.3.8
    * - 4.2
      - 2.41.0
      - 9.3.4
