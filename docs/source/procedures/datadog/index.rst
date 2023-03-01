@@ -28,7 +28,7 @@ Edit the file. You must replace the cluster id (CLUSTER_ID) and the token (TOKEN
 
 Other Scylla Users
 ^^^^^^^^^^^^^^^^^^
-Other Scylla users, download the configuration file :download:`conf.yaml <conf.yaml>` and replace the ip address of the promemtheus server.
+Other Scylla users, download the configuration file :download:`conf.yaml <conf.yaml>` and replace the ip address of the Prometheus server.
 
 
 Post configuration
