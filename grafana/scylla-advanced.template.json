@@ -201,7 +201,7 @@
                 "panels": [
                     {
                         "class": "percentunit_panel",
-                        "span":4,
+                        "span":3,
                         "pointradius": 1,
                         "targets": [
                             {
@@ -221,7 +221,7 @@
                     },
                     {
                         "class": "percentunit_panel",
-                        "span":4,
+                        "span":3,
                         "pointradius": 1,
                         "targets": [
                             {
@@ -240,8 +240,28 @@
                         "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer. This may cause latency issues"
                     },
                     {
+                        "class": "percentunit_panel",
+                        "span":3,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_scheduler_starvetime_ms{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[1m])/1000) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "options": {
+                            "class":"desc_tooltip_options"
+                        },
+                        "title": "Starvation time by [[by]] - $group",
+                        "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer.\n\n This graph shows the amount of time the group was waiting to get CPU time."
+                    },
+                    {
                         "class": "graph_panel",
-                        "span":4,
+                        "span":3,
                         "pointradius": 1,
                         "targets": [
                             {
