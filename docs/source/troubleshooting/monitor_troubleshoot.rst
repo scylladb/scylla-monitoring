@@ -183,6 +183,22 @@ in the `upgrade guide`_.
 
 .. _`upgrade guide`: /upgrade/upgrade-opensource/upgrade-guide-from-2.3-to-3.0/
 
+Latencies Graphs Are empty
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+Starting from Scylla Monitoring version 3.8, Scylla Monitoring uses Prometheus' recording rules for performance reasons. Recording rules perform some of the calculations when collecting the metrics, instead of when showing the dashboards.
+
+During a transition period, Scylla Monitoring version 3.x has a fallback mechanism that shows data even if the recording rules are not present.
+
+Scylla Monitoring versions 4.0 and newer rely only on recording rules.
+
+If only the latency graphs are missing, it is because of missing recording rules.
+
+This issue can be avoided in a clean installation, so if you are upgrading, it is recommended to perform a clean installation.
+
+If you are using a standalone Prometheus server, make sure to copy the Prometheus configuration and recording rules as describe in `install without docker`_.
+
+.. _`install without docker`: /install/monitor_without_docker#install-prometheus
+
 Reducing the total number of metrics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 In ScyllaDB, metrics are reported per shard (core) per node. A cluster with a high number of nodes and cores reports an increased number of metrics which might overload the Monitoring system like Prometheus or Datadog.

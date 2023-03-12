@@ -163,7 +163,7 @@ For example:
 .. code-block:: shell
    :substitutions:
 
-   cp scylla-monitoring-scylla-monitoring-|version|/prometheus/prom_rules/*.yml/etc/prometheus/prom_rules/
+   cp scylla-monitoring-scylla-monitoring-|version|/prometheus/prom_rules/*.yml /etc/prometheus/prom_rules/
    cp scylla-monitoring-scylla-monitoring-|version|/prometheus/prometheus.yml.template /etc/prometheus/prometheus.yml
 
 
