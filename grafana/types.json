@@ -1531,7 +1531,7 @@
       }
    },
    "advisor_table":{
-      "datasource": "alertmanager",
+      "datasource":"prometheus",
       "id": "auto",
       "gridPos": {
         "h": 6,
@@ -1540,12 +1540,15 @@
       "links": [],
       "targets": [
         {
+          "datasource":"prometheus",
           "annotations": true,
-          "legendFormat": "{{description}}",
+          "legendFormat": "__auto",
           "refId": "A",
           "target": "Query",
           "active": true,
-          "filters": "advisor!=\"\""
+          "range": false,
+          "instant": true,
+          "expr": "ALERTS{advisor!=\"\"}"
         }
       ],
       "title": "",
@@ -1715,8 +1718,11 @@
       "options": {
         "showHeader": true
       },
-      "pluginVersion": "7.3.4",
       "transformations": [
+       {
+          "id": "labelsToFields",
+          "options": {}
+        },
         {
           "id": "filterFieldsByName",
           "options": {
@@ -1752,6 +1758,10 @@
     "enterprise_advisor_table":{
         "class": "advisor_table",
         "transformations": [
+            {
+              "id": "labelsToFields",
+              "options": {}
+            },
             {
               "id": "filterFieldsByName",
               "options": {
