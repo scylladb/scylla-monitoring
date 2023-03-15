@@ -5,7 +5,7 @@ groups:
     expr: cql:non_prepared > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
     annotations:
@@ -15,7 +15,7 @@ groups:
     expr: cql:non_paged > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
       status: "1"
@@ -26,7 +26,7 @@ groups:
     expr: cql:non_token_aware > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
     annotations:
@@ -36,7 +36,7 @@ groups:
     expr: cql:reverse_queries > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
     annotations:
@@ -46,7 +46,7 @@ groups:
     expr: cql:allow_filtering > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
     annotations:
@@ -56,7 +56,7 @@ groups:
     expr: cql:any_queries > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
     annotations:
@@ -66,7 +66,7 @@ groups:
     expr: cql:all_queries > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
     annotations:
@@ -76,7 +76,7 @@ groups:
     expr: abs(rate(scylla_cql_updates{conditional="no"}[1m]) - scalar(avg(rate(scylla_cql_updates{conditional="no"}[1m]))))/scalar(stddev(rate(scylla_cql_updates{conditional="no"}[1m]))+100) > 2
     for: 10s
     labels:
-      severity: "1"
+      severity: "info"
       status: "1"
       advisor: "balanced"
       dashboard: "cql"
@@ -87,7 +87,7 @@ groups:
     expr: sum(errors:local_failed) by (cluster, instance) > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "operationError"
       dashboard: "scylla-detailed"
     annotations:
@@ -97,7 +97,7 @@ groups:
     expr: sum(rate(scylla_reactor_aio_errors[60s])) by (cluster, instance) > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "operationError"
       dashboard: "OS-master"
     annotations:
@@ -107,7 +107,7 @@ groups:
     expr: sum(errors:operation_unavailable) by (cluster) > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "operationError"
       dashboard: "scylla-detailed"
     annotations:
@@ -117,7 +117,7 @@ groups:
     expr: sum(rate(scylla_cql_prepared_cache_evictions[2m])) by (cluster) + sum(rate(scylla_cql_authorized_prepared_statements_cache_evictions[2m])) by (cluster) > 100
     for: 5m
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "preparedEviction"
       dashboard: "scylla-detailed"
     annotations:
@@ -127,7 +127,7 @@ groups:
     expr: max(scylla_scheduler_shares{group="compaction"}) by (cluster) >= 1000
     for: 20m
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "heavyCompaction"
       dashboard: "scylla-detailed"
     annotations:
@@ -137,7 +137,7 @@ groups:
     expr: max(sum(rate(scylla_transport_requests_shed[60s])) by (instance,cluster)/sum(rate(scylla_transport_requests_served{}[60s])) by (instance, cluster)) by(cluster) > 0.01
     for: 5m
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "systemOverload"
       dashboard: "scylla-detailed"
     annotations:
@@ -147,7 +147,7 @@ groups:
     expr: changes(scylla_sstables_capped_tombstone_deletion_time[1h]) > 0
     for: 1m
     labels:
-      severity: "1"
+      severity: "info"
       advisor: "cappedTombstone"
       dashboard: "scylla-detailed"
     annotations:
@@ -157,7 +157,7 @@ groups:
     expr: up{job="scylla"} == 0
     for: 30s
     labels:
-      severity: "2"
+      severity: "error"
     annotations:
       description: '{{ $labels.instance }} has been down for more than 30 seconds.'
       summary: Instance {{ $labels.instance }} down
@@ -165,7 +165,7 @@ groups:
     expr: sum(up{job="scylla"}>0)by(instance) unless sum(scylla_transport_requests_served{shard="0"}) by(instance)
     for: 1m
     labels:
-      severity: "2"
+      severity: "error"
     annotations:
       description: '{{ $labels.instance }} instance is shutting down.'
       summary: Instance {{ $labels.instance }} down
@@ -173,7 +173,7 @@ groups:
     expr: scylla_node_operation_mode > 3
     for: 30s
     labels:
-      severity: "2"
+      severity: "error"
     annotations:
       description: '{{ $labels.instance }} instance is shutting down.'
       summary: Instance {{ $labels.instance }} down
@@ -182,7 +182,7 @@ groups:
       * 100 < 35
     for: 30s
     labels:
-      severity: "2"
+      severity: "error"
     annotations:
       description: '{{ $labels.instance }} has less than 35% free disk space.'
       summary: Instance {{ $labels.instance }} low disk space
@@ -191,7 +191,7 @@ groups:
       * 100 < 25
     for: 30s
     labels:
-      severity: "3"
+      severity: "warn"
     annotations:
       description: '{{ $labels.instance }} has less than 25% free disk space.'
       summary: Instance {{ $labels.instance }} low disk space
@@ -200,7 +200,7 @@ groups:
       * 100 < 15
     for: 30s
     labels:
-      severity: "4"
+      severity: "info"
     annotations:
       description: '{{ $labels.instance }} has less than 15% free disk space.'
       summary: Instance {{ $labels.instance }} low disk space
@@ -209,7 +209,7 @@ groups:
       * 100 < 20
     for: 30s
     labels:
-      severity: "3"
+      severity: "warn"
     annotations:
       description: '{{ $labels.instance }} has less than 20% free disk space on the root partition.'
       summary: Instance {{ $labels.instance }} low disk space
@@ -217,7 +217,7 @@ groups:
     expr: scylla_manager_healthcheck_cql_status == -1
     for: 30s
     labels:
-      severity: "2"
+      severity: "error"
     annotations:
       description: '{{ $labels.host }} has denied CQL connection for more than 30 seconds.'
       summary: Instance {{ $labels.host }} no CQL connection
@@ -225,7 +225,7 @@ groups:
     expr: wlatencyp95{by="instance"} > 100000
     for: 5m
     labels:
-      severity: "1"
+      severity: "critical"
     annotations:
       description: '{{ $labels.instance }} has 95% high latency for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} High Write Latency
@@ -233,7 +233,7 @@ groups:
     expr: wlatencya{by="instance"} >10000
     for: 5m
     labels:
-      severity: "1"
+      severity: "warn"
     annotations:
       description: '{{ $labels.instance }} has average high latency for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} High Write Latency
@@ -241,7 +241,7 @@ groups:
     expr: rlatencyp95{by="instance"} > 100000
     for: 5m
     labels:
-      severity: "1"
+      severity: "warn"
     annotations:
       description: '{{ $labels.instance }} has 95% high latency for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} High Read Latency
@@ -249,7 +249,7 @@ groups:
     expr: rlatencya{by="instance"} >10000
     for: 5m
     labels:
-      severity: "1"
+      severity: "warn"
     annotations:
       description: '{{ $labels.instance }} has average high latency for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} High Read Latency
@@ -257,7 +257,7 @@ groups:
     expr: (sum(scylla_manager_scheduler_run_total{type=~"backup", status="ERROR"}) or vector(0)) - (sum(scylla_manager_scheduler_run_total{type=~"backup", status="ERROR"} offset 3m) or vector(0)) > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "error"
     annotations:
       description: 'Backup failed'
       summary: Backup task failed
@@ -265,7 +265,7 @@ groups:
     expr: (sum(scylla_manager_scheduler_run_total{type=~"repair", status="ERROR"}) or vector(0)) - (sum(scylla_manager_scheduler_run_total{type=~"repair", status="ERROR"} offset 3m) or vector(0)) > 0
     for: 10s
     labels:
-      severity: "1"
+      severity: "error"
     annotations:
       description: 'Repair failed'
       summary: Repair task failed
@@ -273,7 +273,7 @@ groups:
     expr: resets(scylla_gossip_heart_beat[1h])>0
     for: 10s
     labels:
-      severity: "1"
+      severity: "error"
     annotations:
       description: 'Node restarted'
       summary: Instance {{ $labels.instance }} restarted
@@ -281,7 +281,7 @@ groups:
     expr: changes(node_vmstat_oom_kill[1h])>0
     for: 10s
     labels:
-      severity: "2"
+      severity: "error"
     annotations:
       description: 'OOM Kill on {{ $labels.instance }}'
       summary: A process was terminated on Instance {{ $labels.instance }}
