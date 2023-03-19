@@ -12,6 +12,9 @@ for arg; do
         (--compose) COMPOSE=1
             AM_ADDRESS="aalert:9093"
             ;;
+        (--no-cas-cdc) COMPOSE=1
+            NO_CAS_CDC="1"
+            ;;
         (*) set -- "$@" "$arg"
             ;;
     esac
@@ -54,6 +57,10 @@ fi
 if [[ "$EVALUATION_INTERVAL" != "" ]]; then
     sed -i "s/  evaluation_interval: [[:digit:]]*.*/  evaluation_interval: ${EVALUATION_INTERVAL}/g" $PWD/prometheus/build/prometheus.yml
 fi
+if [[ "$NO_CAS_CDC" = "1" ]]; then
+    sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cdc_.*|.*_cas.*)'\\n      action: drop/g" $PWD/prometheus/build/prometheus.yml
+fi
+
 for val in "${PROMETHEUS_TARGETS[@]}"; do
     if [[ ! -f $val ]]; then
         echo "Target file $val does not exists"
