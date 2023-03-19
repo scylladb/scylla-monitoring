@@ -17,7 +17,7 @@ for arg; do
     esac
 done
 
-while getopts ':hL:m:T:' option; do
+while getopts ':hL:m:T:E:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -27,6 +27,8 @@ while getopts ':hL:m:T:' option; do
     T) PROMETHEUS_TARGETS+=("$OPTARG")
        ;;
     m) AM_ADDRESS="$OPTARG"
+       ;;
+    E) EVALUATION_INTERVAL="$OPTARG"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -49,6 +51,9 @@ else
     sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template| sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" > $PWD/prometheus/build/prometheus.yml
 fi
 
+if [[ "$EVALUATION_INTERVAL" != "" ]]; then
+    sed -i "s/  evaluation_interval: [[:digit:]]*.*/  evaluation_interval: ${EVALUATION_INTERVAL}/g" $PWD/prometheus/build/prometheus.yml
+fi
 for val in "${PROMETHEUS_TARGETS[@]}"; do
     if [[ ! -f $val ]]; then
         echo "Target file $val does not exists"
