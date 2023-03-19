@@ -227,6 +227,9 @@ for arg; do
                 LIMIT="1"
                 PARAM="evaluation-interval"
                 ;;
+            (--no-cas-cdc)
+                PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
+                ;;
             (--archive)
                 PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
                 ;;
