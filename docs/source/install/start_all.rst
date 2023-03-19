@@ -78,6 +78,8 @@ This flag places the Prometheus data directory outside of its container and by d
 
 **-L manager-address** Using Scylla Manager **Consul** API to resolve the servers' IP address. When using this option, Prometheus will ignore the target files even if they are explicitly passed in the command line.
 
+**--evaluation-interval duration** Override the default recording rules evaluation-interval.
+
 Prometheus Retention Period
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Prometheus retention period is set for two weeks by default. A common request is how to set it to something else.

@@ -223,6 +223,10 @@ for arg; do
                 LIMIT="1"
                 PARAM="1"
                 ;;
+            (--evaluation-interval)
+                LIMIT="1"
+                PARAM="evaluation-interval"
+                ;;
             (--archive)
                 PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
                 ;;
@@ -239,6 +243,9 @@ for arg; do
             fi
             DOCKER_PARAMS[$DOCR]="${DOCKER_PARAMS[$DOCR]} $VALUE"
             PARAMS="$PARAMS --param $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "evaluation-interval" ]; then
+            PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS -E $NOSPACE"
             unset PARAM
         else
             if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
