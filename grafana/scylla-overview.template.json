@@ -52,14 +52,14 @@
                         "span": 2,
                         "targets": [
                             {
-                                "expr": "avg(wlatencyp95{by=\"cluster\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0)",
+                                "expr": "avg(wlatencyp95{by=\"cluster\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)",
                                 "intervalFactor": 1,
                                 "legendFormat": "95%",
                                 "refId": "A",
                                 "step": 1
                             },
                             {
-                                "expr": "avg(wlatencyp99{by=\"cluster\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0)",
+                                "expr": "avg(wlatencyp99{by=\"cluster\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)",
                                 "intervalFactor": 1,
                                 "legendFormat": "99%",
                                 "refId": "B",
@@ -91,14 +91,14 @@
                         "span": 2,
                         "targets": [
                             {
-                                "expr": "avg(rlatencyp95{by=\"cluster\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0)",
+                                "expr": "avg(rlatencyp95{by=\"cluster\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)",
                                 "intervalFactor": 1,
                                 "legendFormat": "95%",
                                 "refId": "A",
                                 "step": 1
                             },
                             {
-                                "expr": "avg(rlatencyp99{by=\"cluster\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0)",
+                                "expr": "avg(rlatencyp99{by=\"cluster\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)",
                                 "intervalFactor": 1,
                                 "legendFormat": "99%",
                                 "refId": "B",
@@ -252,12 +252,12 @@
                         "title": "Node Latency",
                         "targets": [
                             {
-                              "expr": "((max(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"})-scalar(avg(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0)))/(scalar(stddev(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0))+100)-3)",
+                              "expr": "((max(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"})-scalar(avg(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)))/(scalar(stddev(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0))+100)-3)",
                               "legendFormat": "",
                               "refId": "A"
                             },
                             {
-                              "expr": "((max(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"})-scalar(avg(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0)))/(scalar(stddev(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0))+100)-3)",
+                              "expr": "((max(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"})-scalar(avg(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)))/(scalar(stddev(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0))+100)-3)",
                               "legendFormat": "",
                               "refId": "B"
                             }
@@ -275,12 +275,12 @@
                         "title": "Shard Latency",
                         "targets": [
                             {
-                              "expr": "((max(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"})-scalar(avg(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0)))/(scalar(stddev(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0))+100)-3)",
+                              "expr": "((max(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"})-scalar(avg(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)))/(scalar(stddev(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0))+100)-3)",
                               "legendFormat": "",
                               "refId": "A"
                             },
                             {
-                              "expr": "((max(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"})-scalar(avg(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0)))/(scalar(stddev(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name!=\"streaming\"}>0))+100)-3)",
+                              "expr": "((max(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"})-scalar(avg(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)))/(scalar(stddev(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0))+100)-3)",
                               "legendFormat": "",
                               "refId": "B"
                             }
@@ -487,14 +487,14 @@
                         "span": 2,
                         "targets": [
                             {
-                                "expr": "avg(wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name!=\"streaming\"}>0) by ([[by]])",
+                                "expr": "avg(wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}>0) by ([[by]],sg)",
                                 "intervalFactor": 1,
                                 "legendFormat": "95% {{[[by]]}}",
                                 "refId": "A",
                                 "step": 1
                             },
                             {
-                                "expr": "avg(wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name!=\"streaming\"}>0) by ([[by]])",
+                                "expr": "avg(wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}>0) by ([[by]],sg)",
                                 "intervalFactor": 1,
                                 "legendFormat": "99% {{[[by]]}}",
                                 "refId": "B",
@@ -532,21 +532,21 @@
                         },
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name!=\"streaming\"}[1m])) by ([[by]])",
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "Reads",
                                 "refId": "A",
                                 "step": 1
                             },
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name!=\"streaming\"}[1m] offset 1d))",
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[1m] offset 1d))",
                                 "intervalFactor": 1,
                                 "legendFormat": "1 Day Ago",
                                 "refId": "B",
                                 "step": 1
                             },
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name!=\"streaming\"}[1m] offset 1w))",
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[1m] offset 1w))",
                                 "intervalFactor": 1,
                                 "legendFormat": "1 Week Ago",
                                 "refId": "C",
@@ -579,14 +579,14 @@
                         },
                         "targets": [
                             {
-                                "expr": "avg(rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name!=\"streaming\"}>0) by([[by]])",
+                                "expr": "avg(rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}>0) by([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "95% {{[[by]]}}",
                                 "refId": "A",
                                 "step": 1
                             },
                             {
-                                "expr": "avg(rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name!=\"streaming\"}>0) by([[by]])",
+                                "expr": "avg(rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}>0) by([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "99% {{[[by]]}}",
                                 "refId": "B",
@@ -731,6 +731,44 @@
                     "query": "node_filesystem_avail_bytes",
                     "regex": "/mountpoint=\"([^\"]*)\".*/",
                     "sort": 0
+                },
+                {
+                    "class": "template_variable_single",
+                    "current": {
+                      "selected": true,
+                      "text": [
+                        "statement"
+                      ],
+                      "value": [
+                        "statement"
+                      ]
+                    },
+                    "label": "SG",
+                    "name": "sg",
+                    "includeAll":true,
+                    "multi":true,
+                    "dashversion":[">4.3"],
+                    "query": "label_values(rlatencyp99{cluster=~\"$cluster\", scheduling_group_name!~\"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache\"},scheduling_group_name)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_single",
+                    "dashversion":[">2019.1"],
+                    "current": {
+                      "selected": true,
+                      "text": [
+                        "sl:default"
+                      ],
+                      "value": [
+                        "sl:default"
+                      ]
+                    },
+                    "label": "SG",
+                    "name": "sg",
+                    "includeAll":true,
+                    "multi":true,
+                    "query": "label_values(rlatencyp99{cluster=~\"$cluster\", scheduling_group_name!~\"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache\"},scheduling_group_name)",
+                    "sort": 3
                 },
                 {
                     "class": "aggregation_function"
