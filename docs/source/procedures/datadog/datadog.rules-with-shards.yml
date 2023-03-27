@@ -19,6 +19,12 @@ groups:
       by: "instance"
       level: "1"
       dd: "1"
+  - record: scylla_coordinator_read_count
+    expr: sum(rate(scylla_storage_proxy_coordinator_read_latency_count{scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}[60s])) by (cluster, dc, instance, shard, scheduling_group_name)
+    labels:
+      by: "instance,shard"
+      level: "2"
+      dd: "2"
   - record: scylla_total_requests
     expr: sum(rate(scylla_transport_requests_served{}[60s])) by (cluster)
     labels:
@@ -37,6 +43,12 @@ groups:
       by: "instance"
       level: "1"
       dd: "1"
+  - record: scylla_total_requests
+    expr: sum(rate(scylla_transport_requests_served{}[60s])) by (cluster, dc, instance, shard)
+    labels:
+      by: "instance,shard"
+      level: "2"
+      dd: "2"
   - record: scylla_coordinator_write_count
     expr: sum(rate(scylla_storage_proxy_coordinator_write_latency_count{scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}[60s])) by (cluster, scheduling_group_name)
     labels:
@@ -55,6 +67,12 @@ groups:
       by: "instance"
       level: "1"
       dd: "1"
+  - record: scylla_coordinator_write_count
+    expr: sum(rate(scylla_storage_proxy_coordinator_write_latency_count{scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}[60s])) by (cluster, dc, instance, shard, scheduling_group_name)
+    labels:
+      by: "instance,shard"
+      level: "2"
+      dd: "2"
   - record: scylla_ag_cache_row_hits
     expr: sum(rate(scylla_cache_row_hits{}[60s])) by (cluster)
     labels:
@@ -73,6 +91,12 @@ groups:
       by: "instance"
       level: "1"
       dd: "1"
+  - record: scylla_ag_cache_row_hits
+    expr: sum(rate(scylla_cache_row_hits{}[60s])) by (cluster, dc, instance, shard)
+    labels:
+      by: "instance,shard"
+      level: "2"
+      dd: "2"
   - record: scylla_ag_cache_row_misses
     expr: sum(rate(scylla_cache_row_misses{}[60s])) by (cluster)
     labels:
@@ -91,6 +115,12 @@ groups:
       by: "instance"
       level: "1"
       dd: "1"
+  - record: scylla_ag_cache_row_misses
+    expr: sum(rate(scylla_cache_row_misses{}[60s])) by (cluster, dc, instance, shard)
+    labels:
+      by: "instance,shard"
+      level: "2"
+      dd: "2"
   - record: scylla_node_filesystem_avail_bytes
     expr: avg(node_filesystem_avail_bytes) by (cluster, mountpoint)
     labels:
@@ -157,6 +187,12 @@ groups:
       by: "instance"
       level: "1"
       dd: "1"
+  - record: scylla_ag_cache_bytes_used
+    expr: avg(rate(scylla_cache_bytes_used{}[60s])) by (cluster, dc, instance, shard)
+    labels:
+      by: "instance,shard"
+      level: "2"
+      dd: "2"
   - record: scylla_storage_proxy_coordinator_read_timeouts_ag
     expr: avg(rate(scylla_storage_proxy_coordinator_read_timeouts{scheduling_group_name!~"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache"}[60s])) by (scheduling_group_name, cluster, dc, instance)
     labels:
