@@ -6,7 +6,7 @@ The safest way to use Datadog with Scylla is to load the metrics, using a  Datad
 The integration consists of:
 
 1. Installing and configuring the Datadog Agent.
-2. Add datadog recording rules.
+2. Add Datadog recording rules.
 3. Loading Scylla dashboard to Datadog.
 4. Optionally load Monitor (Alerts).
 
@@ -40,7 +40,10 @@ Restart the agent based on your installation. Scylla metrics should be visible i
 
 Add datadog recording rules
 ===========================
-Non cloud users, download the rules configuration file :download:`datadog.rules.yml <datadog.rules.yml>` and place it under prometheus/prom_rules/.
+Non cloud users, download the rules configuration file :download:`datadog.rules.yml <datadog.rules.yml>` if you need per-shard metrics, download :download:`datadog.rules-with-shards.yml <datadog.rules-with-shards.yml>` and place it under prometheus/prom_rules/.
+Per-shards metrics adds load and cost to both the Prometheus server and Datadog agent and server, so only use it if needed.
+
+Cloud users, skip this step, it's been take care for by the cloud.
 
 Upload the Dashboard
 ====================
