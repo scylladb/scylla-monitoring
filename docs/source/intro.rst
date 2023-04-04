@@ -2,7 +2,7 @@
 ScyllaDB Monitoring Stack
 ==========================
 
-.. include:: /_common/monitor-description.rst
+.. include:: /common/monitor-description.rst
 
 
 .. image:: monitor.png

@@ -46,7 +46,7 @@ project = u'ScyllaDB Monitoring'
 copyright = str(date.today().year) + ', ScyllaDB. All rights reserved.'
 author = u'Scylla Project Contributors'
 
-exclude_patterns = ['_build', '_utils', '**/_common/*']
+exclude_patterns = ['_build', '_utils', '**/common/*']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'

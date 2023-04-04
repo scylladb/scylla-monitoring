@@ -15,7 +15,7 @@ ScyllaDB Monitoring Stack
    Reference <reference/index>
    GitHub Project <https://github.com/scylladb/scylla-monitoring/>
 
-.. include:: /_common/monitor-description.rst
+.. include:: /common/monitor-description.rst
 
 
 .. image:: monitor.png

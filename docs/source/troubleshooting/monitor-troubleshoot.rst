@@ -4,7 +4,7 @@ Troubleshoot Scylla Monitoring Stack
 
 This document describes steps that need to be done to troubleshoot monitoring problems when using `Grafana/Prometheus`_ monitoring tool.
 
-..  _`Grafana/Prometheus`: ../monitoring_apis
+..  _`Grafana/Prometheus`: ../monitoring-apis
 
 Problem
 ~~~~~~~
@@ -56,7 +56,7 @@ Files And Directory Permissions
 The preferred way of running the container is using a non root user.
 See the `monitoring`_ Docker post-installation section.
 
-.. _`monitoring`: ../monitoring_stack#docker-post-installation
+.. _`monitoring`: ../monitoring-stack#docker-post-installation
 
 
 If a container failed to start because of a permission problem, make sure
@@ -112,7 +112,7 @@ For example:
 
 More on start-all.sh `options`_.
 
-..  _`options`: ../monitoring_stack/
+..  _`options`: ../monitoring-stack/
 
 
 Grafana Chart Shows Error (!) Sign
@@ -197,7 +197,7 @@ This issue can be avoided in a clean installation, so if you are upgrading, it i
 
 If you are using a standalone Prometheus server, make sure to copy the Prometheus configuration and recording rules as describe in `install without docker`_.
 
-.. _`install without docker`: /install/monitor_without_docker#install-prometheus
+.. _`install without docker`: /install/monitor-without-docker#install-prometheus
 
 Reducing the total number of metrics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

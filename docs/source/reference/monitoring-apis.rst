@@ -8,7 +8,7 @@ Prometheus
 ----------
 By default, Scylla listens on port 9180 for `Prometheus <https://prometheus.io/>`_ requests. To connect a Prometheus server to Scylla in your prometheus.yaml configuration file, add Scylla as a target with :code:`your-ip:9180`
 
-For more information on monitoring Scylla with Prometheus see :doc:`Scylla Monitoring Stack <../install/monitoring_stack>`.
+For more information on monitoring Scylla with Prometheus see :doc:`Scylla Monitoring Stack <../install/monitoring-stack>`.
 
 You can change the Prometheus listening address and port in scylla.yaml file
 

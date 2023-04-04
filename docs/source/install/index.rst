@@ -6,10 +6,10 @@ Download and Install Scylla Monitoring Stack
    :maxdepth: 2
    :hidden:
 
-   Install <monitoring_stack>
-   The start-all.sh script <start_all>
-   Deploy without Docker <monitor_without_docker>
-   Docker Compose <docker_compose>
+   Install <monitoring-stack>
+   The start-all.sh script <start-all>
+   Deploy without Docker <monitor-without-docker>
+   Docker Compose <docker-compose>
    System Recommendations <min-prod-hw>
    Using Thanos <thanos>
 
@@ -18,8 +18,8 @@ Scylla Monitoring Stack is a full stack for Scylla monitoring and alerting. The 
 
 Choose a topic to begin:
 
-* :doc:`Install Scylla Monitoring Stack <monitoring_stack>`
-* :doc:`The start-all.sh script <start_all>`
-* :doc:`Deploy Scylla Monitoring Stack Without Docker <monitor_without_docker>`
-* :doc:`Running using Docker Compose <docker_compose>`
+* :doc:`Install Scylla Monitoring Stack <monitoring-stack>`
+* :doc:`The start-all.sh script <start-all>`
+* :doc:`Deploy Scylla Monitoring Stack Without Docker <monitor-without-docker>`
+* :doc:`Running using Docker Compose <docker-compose>`
 * :doc:`Using Thanos <thanos>`
