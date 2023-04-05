@@ -238,6 +238,8 @@ for arg; do
             (--no-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cdc"
                 ;;
+            (--help) usage
+                ;;
             (--archive)
                 PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
                 ;;
