@@ -91,6 +91,8 @@ Options:
   -T path/to/prometheus-targets  - Adds additional Prometheus target files.
   -k path/to/loki/storage        - When set, will use the given directory for Loki's data
   --no-loki                      - If set, do not run Loki and promtail.
+  --no-cas                       - If set, Prometheus will drop all cas related metrics while scrapping
+  --no-cdc                       - If set, Prometheus will drop all cdc related metrics while scrapping
   --auto-restart                 - If set, auto restarts the containers on failure.
   --no-renderer                  - If set, do not run the Grafana renderer container.
   --thanos-sc                    - If set, run thanos side car with the Prometheus server.
@@ -229,6 +231,12 @@ for arg; do
                 ;;
             (--no-cas-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
+                ;;
+            (--no-cas)
+                PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas"
+                ;;
+            (--no-cdc)
+                PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cdc"
                 ;;
             (--archive)
                 PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)

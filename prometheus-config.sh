@@ -2,6 +2,10 @@
 usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [--compose] -- Generate grafna's datasource file"
 CONSUL_ADDRESS=""
 COMPOSE=0
+if [ -f  env.sh ]; then
+    . env.sh
+fi
+
 if [ "$1" = "" ]; then
     echo "$usage"
     exit
@@ -12,8 +16,15 @@ for arg; do
         (--compose) COMPOSE=1
             AM_ADDRESS="aalert:9093"
             ;;
-        (--no-cas-cdc) COMPOSE=1
-            NO_CAS_CDC="1"
+        (--no-cas-cdc)
+            NO_CAS="1"
+            NO_CDC="1"
+            ;;
+        (--no-cas)
+            NO_CAS="1"
+            ;;
+        (--no-cdc)
+            NO_CDC="1"
             ;;
         (*) set -- "$@" "$arg"
             ;;
@@ -57,8 +68,12 @@ fi
 if [[ "$EVALUATION_INTERVAL" != "" ]]; then
     sed -i "s/  evaluation_interval: [[:digit:]]*.*/  evaluation_interval: ${EVALUATION_INTERVAL}/g" $PWD/prometheus/build/prometheus.yml
 fi
-if [[ "$NO_CAS_CDC" = "1" ]]; then
+if [ "$NO_CAS" = "1" ] && [ "$NO_CDC" = "1" ]; then
     sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cdc_.*|.*_cas.*)'\\n      action: drop/g" $PWD/prometheus/build/prometheus.yml
+elif [ "$NO_CAS" = "1" ]; then
+    sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cas.*)'\\n      action: drop/g" $PWD/prometheus/build/prometheus.yml
+elif [ "$NO_CDC" = "1" ]; then
+    sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cdc_.*)'\\n      action: drop/g" $PWD/prometheus/build/prometheus.yml
 fi
 
 for val in "${PROMETHEUS_TARGETS[@]}"; do
