@@ -125,216 +125,6 @@
                       },
                       "panels": [],
                       "title": "",
-                      "type": "row"
-                    }
-                ]
-            },
-            {
-                "class": "header_row",
-                "panels": [
-                    {
-                        "class": "plain_text",
-                        "content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Advisor</h1>"
-                    }
-                ],
-                "title": "New row"
-            },
-            {
-            "class":"row",
-            "panels": [
-                {
-                  "type": "text",
-                  "title": "",
-                  "gridPos": {
-                                "h": 2,
-                                "w": 12,
-                                "x": 12,
-                                "y": 14
-                            },
-                  "id": "auto",
-                  "targets": [
-                     {
-                      "refId": "A",
-                      "queryType": "randomWalk"
-                    }
-                  ],
-                  "options": {
-                    "mode": "html",
-                    "content": "<H4>Balance</h4>\nAn Imbalance between shards or nodes may indicates a potential problem"
-                  },
-                  "fieldConfig": {
-                    "defaults": {
-                      "custom": {}
-                    },
-                    "overrides": []
-                  },
-                  "pluginVersion": "7.3.4",
-                  "timeFrom": null,
-                  "timeShift": null,
-                  "datasource": null
-                }]
-            },
-            {
-                "class": "row",
-                "panels": [
-                    {
-                      "class":"advisor_table",
-                      "dashversion":">4.1"
-                    },
-                    {
-                      "class":"enterprise_advisor_table",
-                      "dashversion":">2019.1"
-                    },
-                
-                    {
-                        "class": "small_stat_error",
-                        "description": "",
-                        "title": "Connections",
-                        "targets": [
-                            {
-                              "expr": "max(abs(sum(scylla_transport_current_connections{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by (instance,shard)-scalar(avg(scylla_transport_current_connections{instance=~\"[[node]]\" ,cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"})))) - 8",
-                              "refId": "A",
-                              "hide": false
-                            }
-                        ],
-                        "links": [
-                            {
-                              "title": "The number of connections per shard should be balanced",
-                              "url": "/d/cql-[[dash_version]]/scylla-cql?orgId=1&refresh=30s&var-by=instance,shard&from=$__from&to=$__to"
-                            }
-                          ]
-                    },
-                    {
-                        "class": "small_stat_error",
-                        "description": "",
-                        "title": "CQL OPs",
-                        "targets": [
-                            {
-                              "expr": "max(abs(rate(scylla_cql_updates{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]) - on(dc) group_left avg(rate(scylla_cql_updates{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by (dc))/on(dc) group_left sum(stddev(rate(scylla_cql_updates{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by(dc)+100) by(dc))-3",
-                              "legendFormat": "",
-                              "interval": "",
-                              "refId": "A",
-                              "hide": false,
-                              "format": "time_series"
-                            },
-                            {
-                              "expr": "max(abs(rate(scylla_cql_inserts{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]) - on(dc) group_left avg(rate(scylla_cql_inserts{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by (dc))/on(dc) group_left sum(stddev(rate(scylla_cql_inserts{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by(dc)+100) by(dc))-3",
-                              "legendFormat": "",
-                              "interval": "",
-                              "refId": "B",
-                              "hide": false
-                            },
-                            {
-                              "expr": "max(abs(rate(scylla_cql_reads{instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]) - on(dc) group_left avg(rate(scylla_cql_reads{instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by (dc))/on(dc) group_left sum(stddev(rate(scylla_cql_reads{instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by(dc)+100) by(dc))-3",
-                              "legendFormat": "",
-                              "interval": "",
-                              "refId": "C",
-                              "hide": false
-                            },
-                            {
-                              "expr": "max(abs(rate(scylla_cql_deletes{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]) - on(dc) group_left avg(rate(scylla_cql_deletes{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by (dc))/on(dc) group_left sum(stddev(rate(scylla_cql_deletes{conditional=\"no\", instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by(dc)+100) by(dc))-3",
-                              "legendFormat": "",
-                              "interval": "",
-                              "refId": "D",
-                              "hide": false
-                            }
-                        ],
-                        "links": [
-                            {
-                              "title": "Indicates that the number of CQL operations (inserts, updates, deletes, reads) is not balance between shards in one of the nodes",
-                              "url": "/d/cql-[[dash_version]]/scylla-cql?orgId=1&refresh=30s&var-by=instance,shard&from=$__from&to=$__to"
-                            }
-                          ]
-                    },
-                    {
-                        "class": "small_stat_error",
-                        "description": "",
-                        "title": "Node Latency",
-                        "targets": [
-                            {
-                              "expr": "((max(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"})-scalar(avg(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)))/(scalar(stddev(wlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0))+100)-3)",
-                              "legendFormat": "",
-                              "refId": "A"
-                            },
-                            {
-                              "expr": "((max(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"})-scalar(avg(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)))/(scalar(stddev(rlatencyp99{by=\"instance\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0))+100)-3)",
-                              "legendFormat": "",
-                              "refId": "B"
-                            }
-                        ],
-                        "links": [
-                            {
-                              "title": "A single node with higher latency is an indication for a node related issue",
-                              "url": "/d/cql-[[dash_version]]/scylla-cql?orgId=1&refresh=30s&var-by=instance,shard&from=$__from&to=$__to"
-                            }
-                          ]
-                    },
-                    {
-                        "class": "small_stat_error",
-                        "description": "",
-                        "title": "Shard Latency",
-                        "targets": [
-                            {
-                              "expr": "((max(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"})-scalar(avg(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)))/(scalar(stddev(wlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0))+100)-3)",
-                              "legendFormat": "",
-                              "refId": "A"
-                            },
-                            {
-                              "expr": "((max(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"})-scalar(avg(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0)))/(scalar(stddev(rlatencyp99{by=\"instance,shard\", cluster=~\"$cluster|$^\",scheduling_group_name=~\"$sg\"}>0))+100)-3)",
-                              "legendFormat": "",
-                              "refId": "B"
-                            }
-                        ],
-                        "links": [
-                            {
-                              "title": "A single shard with high latency is an indication of a hot-partition, or a large row/cell/partition",
-                              "url": "/d/cql-[[dash_version]]/scylla-cql?orgId=1&refresh=30s&var-by=instance,shard&from=$__from&to=$__to"
-                            }
-                          ]
-                    },
-                    {
-                        "class": "small_stat_error",
-                        "description": "A shard that reads more from the cache could be an indication for hot partition",
-                        "title": "Cache",
-                        "targets": [
-                            {
-                                "expr": "((rate(scylla_cache_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m]) - rate(scylla_cache_reads_with_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m]))- scalar(avg(rate(scylla_cache_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m]) - rate(scylla_cache_reads_with_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m]))))/scalar(stddev(rate(scylla_cache_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m]) - rate(scylla_cache_reads_with_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m]))+100)-3",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ]
-                    },
-                    {
-                        "class": "small_stat_error",
-                        "description": "A single shard that reads more from sstables, could be that a node is slow",
-                        "title": "SSTable",
-                        "targets": [
-                            {
-                                "expr": "max(abs(scylla_database_active_reads{instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"} - scalar(avg(scylla_database_active_reads{instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})))/scalar(stddev(scylla_database_active_reads{instance=~\"[[node]]\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})+0.001))-3",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "class": "row",
-                "panels": [
-                    {
-                      "collapsed": false,
-                      "datasource": null,
-                      "id": "auto",
-                      "gridPos": {
-                        "h": 1,
-                        "w": 24
-                      },
-                      "panels": [],
-                      "title": "",
                       "repeat": "dc",
                       "type": "row"
                     }
@@ -680,6 +470,46 @@
                             "content": ""
                           }
                         }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "title": "",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "header_row",
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Advisor</h1>"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "class":"advisor_table",
+                      "dashversion":">4.1"
+                    },
+                    {
+                      "class":"enterprise_advisor_table",
+                      "dashversion":">2019.1"
+                    }
                 ]
             },
             {
