@@ -153,7 +153,25 @@
                             "class":"desc_tooltip_options"
                         },
                         "title": "DISK $classes Queue length by [[by]]"
-                    }                    
+                    },
+                    {
+                        "class": "seconds_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_io_queue_starvation_time_sec{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                                "intervalFactor": 1,                                
+                                "metric": "scylla_io_queue_starvation_time_sec",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "options": {
+                            "class":"desc_tooltip_options"
+                        },
+                        "description": "The time the class waited for being dispatched with non-empty software queue.\n\nLarge IO delays coupled with small starvation time denotes that scheduler is doing its job properly, and it's upper layer that overflows disk capacity.\n\nLarge IO delays coupled with large starvation time denotes that there might be some problem on the scheduler level that it cannot deliver IO requests from that class into disk in timely manner or the disk is slow and cannot afford timely dispatching.",
+                        "title": "DISK $classes starvation time by [[by]]"
+                    }
                 ],
                 "title": "New row"
             },
