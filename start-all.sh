@@ -501,26 +501,50 @@ if [ -z $HOST_NETWORK ]; then
 fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
     echo "Using victoria metrics"
+       if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+                docker run -d --platform linux/arm64/v8 --rm $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
+                -v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml \
+                $SCYLLA_TARGET_FILE \
+                $SCYLLA_MANGER_TARGET_FILE \
+                $NODE_TARGET_FILE \
+                victoriametrics/victoria-metrics:$VICTORIA_METRICS_VERSION $PROMETHEUS_COMMAND_LINE_OPTIONS \
+                 ${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090    
+            else
+                docker run -d --rm $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
+                -v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml \
+                $SCYLLA_TARGET_FILE \
+                $SCYLLA_MANGER_TARGET_FILE \
+                $NODE_TARGET_FILE \
+                victoriametrics/victoria-metrics:$VICTORIA_METRICS_VERSION $PROMETHEUS_COMMAND_LINE_OPTIONS \
+                ${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090
+        fi
 
-    docker run -d --rm $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
-    -v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml \
-    $SCYLLA_TARGET_FILE \
-     $SCYLLA_MANGER_TARGET_FILE \
-     $NODE_TARGET_FILE \
-    victoriametrics/victoria-metrics:$VICTORIA_METRICS_VERSION $PROMETHEUS_COMMAND_LINE_OPTIONS \
-     ${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090
 else
-docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
-     $DATA_DIR_CMD \
-     "${group_args[@]}" \
-     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-     -v $PROMETHEUS_RULES:z \
-     $SCYLLA_TARGET_FILE \
-     $SCYLLA_MANGER_TARGET_FILE \
-     $NODE_TARGET_FILE \
-     $PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
-     --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
-     ${DOCKER_PARAMS["prometheus"]}
+   if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+        docker run -d --platform linux/arm64/v8 $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
+        $DATA_DIR_CMD \
+        "${group_args[@]}" \
+        -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+        -v $PROMETHEUS_RULES:z \
+        $SCYLLA_TARGET_FILE \
+        $SCYLLA_MANGER_TARGET_FILE \
+        $NODE_TARGET_FILE \
+        $PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
+        --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
+        ${DOCKER_PARAMS["prometheus"]}
+    else
+        docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
+        $DATA_DIR_CMD \
+        "${group_args[@]}" \
+        -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+        -v $PROMETHEUS_RULES:z \
+        $SCYLLA_TARGET_FILE \
+        $SCYLLA_MANGER_TARGET_FILE \
+        $NODE_TARGET_FILE \
+        $PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
+        --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
+        ${DOCKER_PARAMS["prometheus"]}
+    fi
 fi
 
 if [ $? -ne 0 ]; then
@@ -559,16 +583,27 @@ if [ "$DB_ADDRESS" = ":9090" ]; then
 fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
      echo "running vmalert"
-
-     docker run -d \
-     --name vmalert \
-     -v $PROMETHEUS_RULES:z \
-     victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
-    -datasource.url=http://$DB_ADDRESS \
-    -notifier.url=http://$AM_ADDRESS \
-    -notifier.url=http://$AM_ADDRESS \
-    -remoteWrite.url=http://$DB_ADDRESS \
-    -remoteRead.url=http://$DB_ADDRESS
+       if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+            docker run -d  --platform linux/arm64/v8 \
+            --name vmalert \
+            -v $PROMETHEUS_RULES:z \
+            victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
+            -datasource.url=http://$DB_ADDRESS \
+            -notifier.url=http://$AM_ADDRESS \
+            -notifier.url=http://$AM_ADDRESS \
+            -remoteWrite.url=http://$DB_ADDRESS \
+            -remoteRead.url=http://$DB_ADDRESS
+        else
+            docker run -d \
+            --name vmalert \
+            -v $PROMETHEUS_RULES:z \
+            victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
+            -datasource.url=http://$DB_ADDRESS \
+            -notifier.url=http://$AM_ADDRESS \
+            -notifier.url=http://$AM_ADDRESS \
+            -remoteWrite.url=http://$DB_ADDRESS \
+            -remoteRead.url=http://$DB_ADDRESS
+        fi
 fi
 if [ $RUN_THANOS_SC -eq 1 ]; then
     if [ -z $DATA_DIR ]; then

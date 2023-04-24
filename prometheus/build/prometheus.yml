@@ -1,0 +1,195 @@
+global:
+  scrape_interval: 20s # By default, scrape targets every 20 second.
+  scrape_timeout: 15s # Timeout before trying to scrape a target again
+  evaluation_interval: 60s
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'scylla-monitor'
+rule_files:
+  - /etc/prometheus/prometheus.rules.yml
+  - /etc/prometheus/prom_rules/*.yml
+  - /etc/prometheus/prom_rules/*.yaml
+    #
+# Alerting specifies settings related to the Alertmanager.
+alerting:
+        #  alert_relabel_configs:
+        #    [ - <relabel_config> ... ]
+  alertmanagers:
+  - static_configs:
+    - targets:
+        - 172.17.0.2:9093
+
+scrape_configs:
+- job_name: scylla
+  honor_labels: false
+  file_sd_configs:
+    - files:
+      - /etc/scylla.d/prometheus/scylla_servers.yml
+  relabel_configs:
+    - source_labels: [__address__]
+      regex:  '([^:]+)'
+      target_label: __address__
+      replacement: '${1}:9180'
+
+    - source_labels: [__address__]
+      regex:  '(.*):.+'
+      target_label: instance
+      replacement: '${1}'
+  metric_relabel_configs:
+# FILTER_METRICS
+    - source_labels: [version]
+      regex:  '(.+)'
+      target_label: CPU
+      replacement: 'cpu'
+    - source_labels: [version]
+      regex:  '(.+)'
+      target_label: CQL
+      replacement: 'cql'
+    - source_labels: [version]
+      regex:  '(.+)'
+      target_label: OS
+      replacement: 'os'
+    - source_labels: [version]
+      regex:  '(.+)'
+      target_label: IO
+      replacement: 'io'
+    - source_labels: [version]
+      regex:  '(.+)'
+      target_label: Errors
+      replacement: 'errors'
+    - regex: 'help|exported_instance'
+      action: labeldrop
+    - source_labels: [version]
+      regex: '([0-9]+\.[0-9]+)(\.?[0-9]*).*'
+      replacement: '$1$2'
+      target_label: svr
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_write_latency_summary;0.990*)'
+      target_label: __name__
+      replacement: 'wlatencyp99'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_write_latency_summary;0.950*)'
+      target_label: __name__
+      replacement: 'wlatencyp95'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_write_latency_summary;0.50*)'
+      target_label: __name__
+      replacement: 'wlatencya'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_read_latency_summary;0.990*)'
+      target_label: __name__
+      replacement: 'rlatencyp99'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_read_latency_summary;0.950*)'
+      target_label: __name__
+      replacement: 'rlatencyp95'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_read_latency_summary;0.50*)'
+      target_label: __name__
+      replacement: 'rlatencya'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_cas_write_latency_summary;0.950*)'
+      target_label: __name__
+      replacement: 'caswlatencyp95'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_cas_write_latency_summary;0.990*)'
+      target_label: __name__
+      replacement: 'caswlatencyp99'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_cas_read_latency_summary;0.950*)'
+      target_label: __name__
+      replacement: 'casrlatencyp95'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_cas_read_latency_summary;0.990*)'
+      target_label: __name__
+      replacement: 'casrlatencyp99'
+    - source_labels: [__name__]
+      regex: '(.latency..?.?|cas.latency..?.?)'
+      target_label: by
+      replacement: 'instance,shard'
+    - source_labels: [__name__]
+      regex: '(scylla_storage_proxy_coordinator_read_timeouts|scylla_reactor_utilization|scylla_storage_proxy_coordinator_read_timeouts|scylla_storage_proxy_coordinator_read_unavailable|scylla_storage_proxy_coordinator_write_timeouts|scylla_storage_proxy_coordinator_write_unavailable|.latency..?.?)'
+      replacement: '2'
+      target_label: level
+    - source_labels: [__name__]
+      regex: '(scylla_storage_proxy_coordinator_read_timeouts|scylla_reactor_utilization|scylla_storage_proxy_coordinator_read_timeouts|scylla_storage_proxy_coordinator_read_unavailable|scylla_storage_proxy_coordinator_write_timeouts|scylla_storage_proxy_coordinator_write_unavailable|.latency..?.?)'
+      replacement: '2'
+      target_label: dd
+    - source_labels: [__name__]
+      regex: '(scylla_node_operation_mode)'
+      replacement: '1'
+      target_label: level
+    - source_labels: [__name__]
+      regex: '(scylla_node_operation_mode)'
+      replacement: '1'
+      target_label: dd
+    - source_labels: [scheduling_group_name]
+      regex: '(atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache)'
+      replacement: ''
+      target_label: level
+    - source_labels: [scheduling_group_name]
+      regex: '(atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache)'
+      replacement: ''
+      target_label: dd
+- job_name: node_exporter
+  honor_labels: false
+  scrape_interval: 1m # By default, scrape targets every 20 second.
+  scrape_timeout: 20s # Timeout before trying to scape a target again
+  file_sd_configs:
+    - files:
+      - /etc/scylla.d/prometheus/node_exporter_servers.yml
+  relabel_configs:
+    - source_labels: [__address__]
+      regex:  '(.*):\d+'
+      target_label: instance
+      replacement: '${1}'
+    - source_labels: [__address__]
+      regex:  '([^:]+)'
+      target_label: instance
+      replacement: '${1}'
+    - source_labels: [instance]
+      regex:  '(.*)'
+      target_label: __address__
+      replacement: '${1}:9100'
+  metric_relabel_configs:
+    - source_labels: [__name__]
+      regex: '(node_filesystem_size_bytes|node_filesystem_avail_bytes|node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total)'
+      target_label: level
+      replacement: '1'
+
+- job_name: manager_agent
+  honor_labels: false
+  file_sd_configs:
+    - files:
+      - /etc/scylla.d/prometheus/scylla_servers.yml
+  relabel_configs:
+    - source_labels: [__address__]
+      regex:  '(.*):\d+'
+      target_label: instance
+      replacement: '${1}'
+    - source_labels: [__address__]
+      regex:  '([^:]+)'
+      target_label: instance
+      replacement: '${1}'
+    - source_labels: [instance]
+      regex:  '(.*)'
+      target_label: __address__
+      replacement: '${1}:5090'
+
+- job_name: scylla_manager
+  honor_labels: false
+  file_sd_configs:
+    - files:
+      - /etc/scylla.d/prometheus/scylla_manager_servers.yml
+  metric_relabel_configs:
+    - source_labels: [host]
+      target_label: instance
+
+- job_name: 'prometheus'
+  # Override the global default and scrape targets from this job every 5 seconds.
+  scrape_interval: 5s
+  static_configs:
+    - targets:
+      - localhost:9090

@@ -234,31 +234,57 @@ if [ ! -z $RUN_RENDERER ]; then
 	if [ ! -z "$is_podman" ]; then
 		DOCKER_HOST=`hostname -I | awk '{print $1}'`
 	else
-		DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
-	fi
+        if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then         
+            DOCKER_HOST=$(ipconfig getifaddr en0)
+        else
+		    DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+	    fi  
+    fi
+
     RENDERING_SERVER_URL=`./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS  -D "$DOCKER_PARAM"`
     GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_RENDERING_SERVER_URL=http://$DOCKER_HOST:8081/render -e GF_RENDERING_CALLBACK_URL=http://$DOCKER_HOST:$GRAFANA_PORT/"
 fi
+    if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+        docker run --platform linux/arm64/v8 -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PORT_MAPPING \
+            -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
+            -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
+            -e "GF_AUTH_ANONYMOUS_ORG_ROLE=$ANONYMOUS_ROLE" \
+            -e "GF_PANELS_DISABLE_SANITIZE_HTML=true" \
+            $LDAP_FILE \
+            "${group_args[@]}" \
+            -v $PWD/grafana/build:/var/lib/grafana/dashboards:z \
+            -v $PWD/grafana/plugins:/var/lib/grafana/plugins:z \
+            -v $PWD/grafana/provisioning:/var/lib/grafana/provisioning:z $EXTERNAL_VOLUME \
+            -e "GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning" \
+            -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
+            -e "GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID=$UA_ANALTYICS" \
+            -e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource" \
+            -e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=$HOME_DASHBOARD" \
+            $GRAFANA_ENV_COMMAND \
+            "${proxy_args[@]}" \
+            --name $GRAFANA_NAME docker.io/grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]} >& /dev/null
 
-docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PORT_MAPPING \
-     -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
-     -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
-     -e "GF_AUTH_ANONYMOUS_ORG_ROLE=$ANONYMOUS_ROLE" \
-     -e "GF_PANELS_DISABLE_SANITIZE_HTML=true" \
-     $LDAP_FILE \
-     "${group_args[@]}" \
-     -v $PWD/grafana/build:/var/lib/grafana/dashboards:z \
-     -v $PWD/grafana/plugins:/var/lib/grafana/plugins:z \
-     -v $PWD/grafana/provisioning:/var/lib/grafana/provisioning:z $EXTERNAL_VOLUME \
-     -e "GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning" \
-     -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
-     -e "GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID=$UA_ANALTYICS" \
-     -e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource" \
-     -e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=$HOME_DASHBOARD" \
-     $GRAFANA_ENV_COMMAND \
-     "${proxy_args[@]}" \
-     --name $GRAFANA_NAME docker.io/grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]} >& /dev/null
-
+    else
+        docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PORT_MAPPING \
+            -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
+            -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
+            -e "GF_AUTH_ANONYMOUS_ORG_ROLE=$ANONYMOUS_ROLE" \
+            -e "GF_PANELS_DISABLE_SANITIZE_HTML=true" \
+            $LDAP_FILE \
+            "${group_args[@]}" \
+            -v $PWD/grafana/build:/var/lib/grafana/dashboards:z \
+            -v $PWD/grafana/plugins:/var/lib/grafana/plugins:z \
+            -v $PWD/grafana/provisioning:/var/lib/grafana/provisioning:z $EXTERNAL_VOLUME \
+            -e "GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning" \
+            -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
+            -e "GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID=$UA_ANALTYICS" \
+            -e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource" \
+            -e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=$HOME_DASHBOARD" \
+            $GRAFANA_ENV_COMMAND \
+            "${proxy_args[@]}" \
+            --name $GRAFANA_NAME docker.io/grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]} >& /dev/null
+    
+fi
 if [ $? -ne 0 ]; then
     echo "Error: Grafana container failed to start"
     echo "For more information use: docker logs $GRAFANA_NAME"
