@@ -257,7 +257,7 @@ for arg; do
             if [ "$VOLUME" = "1" ]; then
                 SRC=`echo $VALUE|cut -d':' -f1`
                 DST=`echo $VALUE|cut -d':' -f2-`
-                SRC=$(readlink -m $SRC)
+                SRC=$(readlink -f $SRC)
                 DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} -v $SRC:$DST"
                 VOLUMES="$VOLUMES --volume $NOSPACE"
                 unset VOLUME
@@ -289,9 +289,9 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
     r) ALERT_MANAGER_RULE_CONFIG="-r $OPTARG"
        ;;
     R) if [[ -d "$OPTARG" ]]; then
-        PROMETHEUS_RULES=`readlink -m $OPTARG`":/etc/prometheus/prom_rules/"
+        PROMETHEUS_RULES=`readlink -f $OPTARG`":/etc/prometheus/prom_rules/"
        else
-        PROMETHEUS_RULES=`readlink -m $OPTARG`":/etc/prometheus/prometheus.rules.yml"
+        PROMETHEUS_RULES=`readlink -f $OPTARG`":/etc/prometheus/prometheus.rules.yml"
        fi
        ;;
     g) GRAFANA_PORT="-g $OPTARG"
@@ -402,9 +402,9 @@ if [ -z "$CONSUL_ADDRESS" ]; then
         fi
     fi
 
-    SCYLLA_TARGET_FILE="-v "$(readlink -m $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_servers.yml:Z"
-    SCYLLA_MANGER_TARGET_FILE="-v "$(readlink -m $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z"
-    NODE_TARGET_FILE="-v "$(readlink -m $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/node_exporter_servers.yml:Z"
+    SCYLLA_TARGET_FILE="-v "$(readlink -f $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_servers.yml:Z"
+    SCYLLA_MANGER_TARGET_FILE="-v "$(readlink -f $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z"
+    NODE_TARGET_FILE="-v "$(readlink -f $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/node_exporter_servers.yml:Z"
 else
     SCYLLA_TARGET_FILE=""
     SCYLLA_MANGER_TARGET_FILE=""
@@ -423,9 +423,9 @@ else
         mkdir -p $DATA_DIR
     fi
     if [[ "$VICTORIA_METRICS" = "1" ]]; then
-        DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/victoria-metrics-data"
+        DATA_DIR_CMD="-v "$(readlink -f $DATA_DIR)":/victoria-metrics-data"
     else
-        DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
+        DATA_DIR_CMD="-v "$(readlink -f $DATA_DIR)":/prometheus/data:Z"
     fi
 fi
 
