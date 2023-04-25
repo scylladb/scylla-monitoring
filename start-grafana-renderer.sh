@@ -91,7 +91,11 @@ fi
 if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
     PORT_MAPPING="-p $GRAFANA_RENDPORT:8081"
 fi
-
-docker run ${DOCKER_LIMITS["grafanarender"]} -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
-     --name $GRAFANA_NAME docker.io/grafana/grafana-image-renderer:$VERSION \
-     ${DOCKER_PARAMS["grafanarender"]}
+if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]];
+    docker run --platform linux/arm64/v8 ${DOCKER_LIMITS["grafanarender"]} -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
+        --name $GRAFANA_NAME docker.io/grafana/grafana-image-renderer:$VERSION \
+        ${DOCKER_PARAMS["grafanarender"]}
+else
+    docker run ${DOCKER_LIMITS["grafanarender"]} -d $DOCKER_PARAM -i $USER_PERMISSIONS $PORT_MAPPING \
+        --name $GRAFANA_NAME docker.io/grafana/grafana-image-renderer:$VERSION \
+        ${DOCKER_PARAMS["grafanarender"]}

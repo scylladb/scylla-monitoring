@@ -197,7 +197,11 @@ This issue can be avoided in a clean installation, so if you are upgrading, it i
 
 If you are using a standalone Prometheus server, make sure to copy the Prometheus configuration and recording rules as describe in `install without docker`_.
 
+<<<<<<< HEAD:docs/source/troubleshooting/monitor-troubleshoot.rst
 .. _`install without docker`: /install/monitor-without-docker#install-prometheus
+=======
+.. _`install without docker`: /install/monitor_without_docker#install-prometheus
+>>>>>>> branch-4.3.2-darwin:docs/source/troubleshooting/monitor_troubleshoot.rst
 
 Reducing the total number of metrics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -232,6 +232,7 @@ for arg; do
             (--no-cas-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
                 ;;
+<<<<<<< HEAD
             (--no-cas)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas"
                 ;;
@@ -240,6 +241,8 @@ for arg; do
                 ;;
             (--help) usage
                 ;;
+=======
+>>>>>>> branch-4.3.2-darwin
             (--archive)
                 PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
                 ;;
@@ -267,7 +270,7 @@ for arg; do
             if [ "$VOLUME" = "1" ]; then
                 SRC=`echo $VALUE|cut -d':' -f1`
                 DST=`echo $VALUE|cut -d':' -f2-`
-                SRC=$(readlink -m $SRC)
+                SRC=$(readlink -f $SRC)
                 DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} -v $SRC:$DST"
                 VOLUMES="$VOLUMES --volume $NOSPACE"
                 unset VOLUME
@@ -299,9 +302,9 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
     r) ALERT_MANAGER_RULE_CONFIG="-r $OPTARG"
        ;;
     R) if [[ -d "$OPTARG" ]]; then
-        PROMETHEUS_RULES=`readlink -m $OPTARG`":/etc/prometheus/prom_rules/"
+        PROMETHEUS_RULES=`readlink -f $OPTARG`":/etc/prometheus/prom_rules/"
        else
-        PROMETHEUS_RULES=`readlink -m $OPTARG`":/etc/prometheus/prometheus.rules.yml"
+        PROMETHEUS_RULES=`readlink -f $OPTARG`":/etc/prometheus/prometheus.rules.yml"
        fi
        ;;
     g) GRAFANA_PORT="-g $OPTARG"
@@ -412,9 +415,9 @@ if [ -z "$CONSUL_ADDRESS" ]; then
         fi
     fi
 
-    SCYLLA_TARGET_FILE="-v "$(readlink -m $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_servers.yml:Z"
-    SCYLLA_MANGER_TARGET_FILE="-v "$(readlink -m $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z"
-    NODE_TARGET_FILE="-v "$(readlink -m $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/node_exporter_servers.yml:Z"
+    SCYLLA_TARGET_FILE="-v "$(readlink -f $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_servers.yml:Z"
+    SCYLLA_MANGER_TARGET_FILE="-v "$(readlink -f $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z"
+    NODE_TARGET_FILE="-v "$(readlink -f $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/node_exporter_servers.yml:Z"
 else
     SCYLLA_TARGET_FILE=""
     SCYLLA_MANGER_TARGET_FILE=""
@@ -433,9 +436,9 @@ else
         mkdir -p $DATA_DIR
     fi
     if [[ "$VICTORIA_METRICS" = "1" ]]; then
-        DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/victoria-metrics-data"
+        DATA_DIR_CMD="-v "$(readlink -f $DATA_DIR)":/victoria-metrics-data"
     else
-        DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
+        DATA_DIR_CMD="-v "$(readlink -f $DATA_DIR)":/prometheus/data:Z"
     fi
 fi
 
@@ -511,26 +514,50 @@ if [ -z $HOST_NETWORK ]; then
 fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
     echo "Using victoria metrics"
+       if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+                docker run -d --platform linux/arm64/v8 --rm $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
+                -v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml \
+                $SCYLLA_TARGET_FILE \
+                $SCYLLA_MANGER_TARGET_FILE \
+                $NODE_TARGET_FILE \
+                victoriametrics/victoria-metrics:$VICTORIA_METRICS_VERSION $PROMETHEUS_COMMAND_LINE_OPTIONS \
+                 ${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090    
+            else
+                docker run -d --rm $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
+                -v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml \
+                $SCYLLA_TARGET_FILE \
+                $SCYLLA_MANGER_TARGET_FILE \
+                $NODE_TARGET_FILE \
+                victoriametrics/victoria-metrics:$VICTORIA_METRICS_VERSION $PROMETHEUS_COMMAND_LINE_OPTIONS \
+                ${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090
+        fi
 
-    docker run -d --rm $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
-    -v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml \
-    $SCYLLA_TARGET_FILE \
-     $SCYLLA_MANGER_TARGET_FILE \
-     $NODE_TARGET_FILE \
-    victoriametrics/victoria-metrics:$VICTORIA_METRICS_VERSION $PROMETHEUS_COMMAND_LINE_OPTIONS \
-     ${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090
 else
-docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
-     $DATA_DIR_CMD \
-     "${group_args[@]}" \
-     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
-     -v $PROMETHEUS_RULES:z \
-     $SCYLLA_TARGET_FILE \
-     $SCYLLA_MANGER_TARGET_FILE \
-     $NODE_TARGET_FILE \
-     $PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
-     --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
-     ${DOCKER_PARAMS["prometheus"]}
+   if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+        docker run -d --platform linux/arm64/v8 $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
+        $DATA_DIR_CMD \
+        "${group_args[@]}" \
+        -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+        -v $PROMETHEUS_RULES:z \
+        $SCYLLA_TARGET_FILE \
+        $SCYLLA_MANGER_TARGET_FILE \
+        $NODE_TARGET_FILE \
+        $PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
+        --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
+        ${DOCKER_PARAMS["prometheus"]}
+    else
+        docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
+        $DATA_DIR_CMD \
+        "${group_args[@]}" \
+        -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+        -v $PROMETHEUS_RULES:z \
+        $SCYLLA_TARGET_FILE \
+        $SCYLLA_MANGER_TARGET_FILE \
+        $NODE_TARGET_FILE \
+        $PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
+        --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
+        ${DOCKER_PARAMS["prometheus"]}
+    fi
 fi
 
 if [ $? -ne 0 ]; then
@@ -569,16 +596,27 @@ if [ "$DB_ADDRESS" = ":9090" ]; then
 fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
      echo "running vmalert"
-
-     docker run -d \
-     --name vmalert \
-     -v $PROMETHEUS_RULES:z \
-     victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
-    -datasource.url=http://$DB_ADDRESS \
-    -notifier.url=http://$AM_ADDRESS \
-    -notifier.url=http://$AM_ADDRESS \
-    -remoteWrite.url=http://$DB_ADDRESS \
-    -remoteRead.url=http://$DB_ADDRESS
+       if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+            docker run -d  --platform linux/arm64/v8 \
+            --name vmalert \
+            -v $PROMETHEUS_RULES:z \
+            victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
+            -datasource.url=http://$DB_ADDRESS \
+            -notifier.url=http://$AM_ADDRESS \
+            -notifier.url=http://$AM_ADDRESS \
+            -remoteWrite.url=http://$DB_ADDRESS \
+            -remoteRead.url=http://$DB_ADDRESS
+        else
+            docker run -d \
+            --name vmalert \
+            -v $PROMETHEUS_RULES:z \
+            victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
+            -datasource.url=http://$DB_ADDRESS \
+            -notifier.url=http://$AM_ADDRESS \
+            -notifier.url=http://$AM_ADDRESS \
+            -remoteWrite.url=http://$DB_ADDRESS \
+            -remoteRead.url=http://$DB_ADDRESS
+        fi
 fi
 if [ $RUN_THANOS_SC -eq 1 ]; then
     if [ -z $DATA_DIR ]; then

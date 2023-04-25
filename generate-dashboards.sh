@@ -18,7 +18,7 @@ fi
 
 . dashboards.sh
 
-FORMAT_COMAND=""
+FORMAT_COMAND="" 
 FORCEUPDATE=""
 SPECIFIC_SOLUTION=""
 PRODUCTS=()
