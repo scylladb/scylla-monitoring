@@ -589,7 +589,7 @@ DB_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPA
 
 if [ "$DB_ADDRESS" = ":9090" ]; then
     if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
-        HOST_IP= `ipconfig getifaddr en0 | awk 'NR==1{print $1}'`
+        HOST_IP=`ipconfig getifaddr en0 | awk 'NR==1{print $1}'`
         DB_ADDRESS="$HOST_IP:9090"
 
     else 
