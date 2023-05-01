@@ -169,8 +169,14 @@ fi
 
 LOKI_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $LOKI_NAME):3100"
 if [ "$LOKI_ADDRESS" = ":3100" ]; then
-    HOST_IP=`hostname -I | awk '{print $1}'`
-    LOKI_ADDRESS="$HOST_IP:3100"
+    if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+        HOST_IP= `ipconfig getifaddr en0 | awk 'NR==1{print $1}'`
+        DB_ADDRESS="$HOST_IP:3100"
+
+    else 
+        HOST_IP=`hostname -I | awk '{print $1}'`
+        LOKI_ADDRESS="$HOST_IP:3100"
+    fi
 fi
 
 if [ -z $PROMTAIL_PORT ]; then

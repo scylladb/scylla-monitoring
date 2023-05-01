@@ -143,7 +143,13 @@ fi
 
 AM_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $ALERTMANAGER_NAME):9093"
 if [ "$AM_ADDRESS" = ":9093" ]; then
-    HOST_IP=`hostname -I | awk '{print $1}'`
-    AM_ADDRESS="$HOST_IP:9093"
+    if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+        HOST_IP= `ipconfig getifaddr en0 | awk 'NR==1{print $1}'`
+        DB_ADDRESS="$HOST_IP:9093"
+
+    else 
+        HOST_IP=`hostname -I | awk '{print $1}'`
+        AM_ADDRESS="$HOST_IP:9093"
+    fi
 fi
 echo $AM_ADDRESS
