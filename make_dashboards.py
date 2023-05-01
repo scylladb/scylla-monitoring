@@ -25,10 +25,12 @@ import argparse
 import json
 import re
 import os
+import yaml
 
 parser = argparse.ArgumentParser(description='Dashboards creating tool', conflict_handler="resolve")
 parser.add_argument('-t', '--type', action='append', help='Types file')
-parser.add_argument('-R', '--Replace', action='append', help='Search and replace a value, it should be in a format of old_value=new_value')
+parser.add_argument('-R', '--replace', action='append', help='Search and replace a value, it should be in a format of old_value=new_value')
+parser.add_argument('-rf', '--replace-file', action='append', help='Search and replace a value from file')
 parser.add_argument('-d', '--dashboards', action='append', help='dashbaords file')
 parser.add_argument('-ar', '--add-row', action='append', help='merge a templated row, format number:file', default=[])
 parser.add_argument('-r', '--reverse', action='store_true', default=False, help='Reverse mode, take a dashboard and try to minimize it')
@@ -154,6 +156,30 @@ def get_json_file(name):
     except Exception as inst:
         print("Failed opening file:", name, inst)
         exit(0)
+def get_yaml_file(name):
+    with open(name, "r") as stream:
+        try:
+            return yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print("Failed opening replace file", name, exc)
+            exit(0)
+
+def get_file(f):
+    if f.endswith('json'):
+        return get_json_file(f)
+    elif f.endswith('yml') or f.endswith('yaml'):
+        return get_yaml_file(f)
+    else:
+        print("unsupported file extension ", f)
+        exit(0)
+
+def get_exact_match(replace_file):
+    if not replace_file:
+        return {}
+    res = {}
+    for f in replace_file:
+        res.update(get_file(f))
+    return res
 
 def write_json(name, obj, replace_strings=[]):
     y = json.dumps(obj, sort_keys = True, separators=(',', ': '), indent = 4)
@@ -167,7 +193,7 @@ def write_json(name, obj, replace_strings=[]):
 def merge_json_files(files):
     results = {}
     for name in files:
-        results.update(get_json_file(name))
+        results.update(get_file(name))
     return results
 
 def make_replace_strings(replace):
@@ -180,7 +206,7 @@ def make_replace_strings(replace):
 def should_product_reject(products, obj):
     return ("dashproduct" in obj) and (obj["dashproduct"] == "" and len(products)>0 or obj["dashproduct"] != "" and obj["dashproduct"] not in products) or ("dashproductreject" in obj and obj["dashproductreject"] in products)
 
-def update_object(obj, types, version, products):
+def update_object(obj, types, version, products, exact_match_replace):
     global id
     if not isinstance(obj, dict):
         return obj
@@ -197,9 +223,12 @@ def update_object(obj, types, version, products):
             obj[v] = id
             id = id + 1
         elif isinstance(obj[v], list):
-            obj[v] = [m for m in [update_object(o, types, version, products) for o in obj[v]] if m != None]
+            obj[v] = [m for m in [update_object(o, types, version, products, exact_match_replace) for o in obj[v]] if m != None]
         elif isinstance(obj[v], dict):
-            obj[v] = update_object(obj[v], types, version, products)
+            obj[v] = update_object(obj[v], types, version, products, exact_match_replace)
+        else:
+            if obj[v] in exact_match_replace:
+                obj[v] = exact_match_replace[obj[v]]
     return obj
 
 def compact_obj(obj, types, args):
@@ -340,7 +369,7 @@ def parse_version(v):
         return 666
     return int(v)
 
-def get_dashboard(name, types, args, replace_strings):
+def get_dashboard(name, types, args, replace_strings, exact_match_replace):
     global id
     id = 1
     version_name = ""
@@ -352,10 +381,10 @@ def get_dashboard(name, types, args, replace_strings):
     result = get_json_file(name)
     for r in args.add_row:
         [row_number, row_name] = r.split(",")
-        row = get_json_file(row_name)
+        row = get_file(row_name)
         result["dashboard"]["rows"].insert(int(row_number), row)
 
-    update_object(result, types, version, args.product)
+    update_object(result, types, version, args.product, exact_match_replace)
     if not args.grafana4:
         make_grafna_5(result, args)
     if args.as_file:
@@ -374,10 +403,12 @@ if args.help:
     help(args)
     exit(0)
 
+exact_match_replace = get_exact_match(args.replace_file)
+
 types = merge_json_files(args.type)
-replace_strings = make_replace_strings(args.Replace)
+replace_strings = make_replace_strings(args.replace)
 for d in args.dashboards:
     if args.reverse:
         compact_dashboard(d, types, args)
     else:
-        get_dashboard(d, types, args, replace_strings)
+        get_dashboard(d, types, args, replace_strings, exact_match_replace)
