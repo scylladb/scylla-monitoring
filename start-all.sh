@@ -595,6 +595,7 @@ if [ "$DB_ADDRESS" = ":9090" ]; then
     else 
         HOST_IP=`hostname -I | awk '{print $1}'`
         DB_ADDRESS="$HOST_IP:9090"
+    fi
 fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
      echo "running vmalert"
