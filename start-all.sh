@@ -232,7 +232,6 @@ for arg; do
             (--no-cas-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
                 ;;
-<<<<<<< HEAD
             (--no-cas)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas"
                 ;;
@@ -241,8 +240,6 @@ for arg; do
                 ;;
             (--help) usage
                 ;;
-=======
->>>>>>> branch-4.3.2-darwin
             (--archive)
                 PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
                 ;;
