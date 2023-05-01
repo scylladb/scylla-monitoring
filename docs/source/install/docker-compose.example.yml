@@ -1,7 +1,7 @@
 services:
   alertmanager:
     container_name: aalert
-    image: prom/alertmanager:v0.21.0
+    image: prom/alertmanager:v0.24.0
     ports:
     - 9093:9093
     volumes:
@@ -17,7 +17,9 @@ services:
     - GF_AUTH_ANONYMOUS_ENABLED=true
     - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     - GF_SECURITY_ADMIN_PASSWORD=admin
-    image: grafana/grafana:7.3.5
+    # To set your home dashboard uncomment the following line, set VERSION to be your current version
+    #- GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/ver_VERSION/scylla-overview.VERSION.json
+    image: grafana/grafana:9.3.11
     ports:
     - 3000:3000
     user: 1000:1000
@@ -31,7 +33,7 @@ services:
     command:
     - --config.file=/mnt/config/loki-config.yaml
     container_name: loki
-    image: grafana/loki:2.0.0
+    image: grafana/loki:2.7.3
     ports:
     - 3100:3100
     volumes:
@@ -39,15 +41,15 @@ services:
     - ./loki/conf:/mnt/config
   promotheus:
     command:
-    - --config.file=/etc/prometheus/prometheus.compose.yml
+    - --config.file=/etc/prometheus/prometheus.yml
     container_name: aprom
-    image: prom/prometheus:v2.18.1
+    image: prom/prometheus:v2.42.0
     ports:
     - 9090:9090
     volumes:
-    - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    - ./prometheus/prometheus.rules.yml:/etc/prometheus/prometheus.rules.yml
+    - ./prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml
     - ./prometheus/scylla_servers.yml:/etc/scylla.d/prometheus/scylla_servers.yml
+    - ./prometheus/prom_rules/:/etc/prometheus/prom_rules/
     - ./prometheus/scylla_manager_servers.yml:/etc/scylla.d/prometheus/scylla_manager_servers.yml
     - ./prometheus/scylla_servers.yml:/etc/scylla.d/prometheus/node_exporter_servers.yml
     # Uncomment the following line for prometheus persistency 
@@ -56,7 +58,7 @@ services:
     command:
     - --config.file=/etc/promtail/config.yml
     container_name: promtail
-    image: grafana/promtail:2.0.0
+    image: grafana/promtail:2.7.3
     ports:
     - 1514:1514
     - 9080:9080
