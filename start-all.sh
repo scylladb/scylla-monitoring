@@ -588,8 +588,13 @@ fi
 DB_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME):9090"
 
 if [ "$DB_ADDRESS" = ":9090" ]; then
-    HOST_IP=`hostname -I | awk '{print $1}'`
-    DB_ADDRESS="$HOST_IP:9090"
+    if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+        HOST_IP= `ipconfig getifaddr en0 | awk 'NR==1{print $1}'`
+        DB_ADDRESS="$HOST_IP:9090"
+
+    else 
+        HOST_IP=`hostname -I | awk '{print $1}'`
+        DB_ADDRESS="$HOST_IP:9090"
 fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
      echo "running vmalert"
