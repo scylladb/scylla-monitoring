@@ -232,7 +232,11 @@ fi
 
 if [ ! -z $RUN_RENDERER ]; then
 	if [ ! -z "$is_podman" ]; then
-		DOCKER_HOST=`hostname -I | awk '{print $1}'`
+        if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then         
+            DOCKER_HOST=$(ipconfig getifaddr en0)
+        else
+		    DOCKER_HOST=`hostname -I | awk '{print $1}'`
+         fi
 	else
         if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then         
             DOCKER_HOST=$(ipconfig getifaddr en0)
@@ -244,7 +248,7 @@ if [ ! -z $RUN_RENDERER ]; then
     RENDERING_SERVER_URL=`./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS  -D "$DOCKER_PARAM"`
     GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_RENDERING_SERVER_URL=http://$DOCKER_HOST:8081/render -e GF_RENDERING_CALLBACK_URL=http://$DOCKER_HOST:$GRAFANA_PORT/"
 fi
-    if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+    if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]] || [[ "$(uname -m)" == "aarch64"]]; then
         docker run --platform linux/arm64/v8 -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PORT_MAPPING \
         -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
         -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \

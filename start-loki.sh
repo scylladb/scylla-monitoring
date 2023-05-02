@@ -171,7 +171,7 @@ LOKI_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.I
 if [ "$LOKI_ADDRESS" = ":3100" ]; then
     if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
         HOST_IP= `ipconfig getifaddr en0 | awk 'NR==1{print $1}'`
-        DB_ADDRESS="$HOST_IP:3100"
+        LOKI_ADDRESS="$HOST_IP:3100"
 
     else 
         HOST_IP=`hostname -I | awk '{print $1}'`
@@ -197,7 +197,7 @@ if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
 fi
 
 sed "s/LOKI_IP/$LOKI_ADDRESS/" loki/promtail/promtail_config.template.yml > loki/promtail/promtail_config.yml
-if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]] || [[ "$(uname -m)" == "aarch64"]]; then
     docker run --platform linux/arm64/v8 ${DOCKER_LIMITS["promtail"]}  -d $DOCKER_PARAM -i $PROMTAIL_PORT_MAPPING \
         -v $PROMTAIL_CONFIG:/etc/promtail/config.yml:z \
         --name $PROMTAIL_NAME docker.io/grafana/promtail:$LOKI_VERSION --config.file=/etc/promtail/config.yml ${DOCKER_PARAMS["promtail"]} >& /dev/null

@@ -598,9 +598,9 @@ if [ "$DB_ADDRESS" = ":9090" ]; then
     fi
 fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
-     echo "running vmalert"
-       if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
-            docker run -d  --platform linux/arm64/v8 \
+    echo "running vmalert"
+    if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]] || [[ "$(uname -m)" == "aarch64"]]; then
+        docker run -d --platform linux/arm64/v8 \
             --name vmalert \
             -v $PROMETHEUS_RULES:z \
             victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
@@ -609,8 +609,8 @@ if [[ "$VICTORIA_METRICS" = "1" ]]; then
             -notifier.url=http://$AM_ADDRESS \
             -remoteWrite.url=http://$DB_ADDRESS \
             -remoteRead.url=http://$DB_ADDRESS
-        else
-            docker run -d \
+    else
+        docker run -d \
             --name vmalert \
             -v $PROMETHEUS_RULES:z \
             victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
@@ -619,7 +619,8 @@ if [[ "$VICTORIA_METRICS" = "1" ]]; then
             -notifier.url=http://$AM_ADDRESS \
             -remoteWrite.url=http://$DB_ADDRESS \
             -remoteRead.url=http://$DB_ADDRESS
-        fi
+    fi
+
 fi
 if [ $RUN_THANOS_SC -eq 1 ]; then
     if [ -z $DATA_DIR ]; then
