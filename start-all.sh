@@ -599,7 +599,7 @@ if [ "$DB_ADDRESS" = ":9090" ]; then
 fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
     echo "running vmalert"
-    if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]] || [[ "$(uname -m)" == "aarch64"]]; then
+    if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]] || [[ "$(uname -m)" == "aarch64" ]]; then
         docker run -d --platform linux/arm64/v8 \
             --name vmalert \
             -v $PROMETHEUS_RULES:z \
