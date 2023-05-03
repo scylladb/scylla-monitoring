@@ -2150,6 +2150,15 @@
             "instant":true,
             "dashversion":[">5.1", ">2022.2"],
             "format":"table"
+         },
+         {
+            "expr":"(min(scylla_streaming_finished_percentage{cluster=~\"$cluster|$^\", dc=~\"$dc\"}*100) by (instance) < 100) or on (instance)  0*sum(scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"}) by (instance)",
+            "legendFormat":"",
+            "interval":"",
+            "refId":"G",
+            "instant":true,
+            "dashversion":[">5.2", ">2023.1"],
+            "format":"table"
          }
       ],
       "type":"table",
@@ -2631,6 +2640,55 @@
                      ]
                   }
                ]
+            },
+            {
+               "matcher":{
+                  "id":"byName",
+                  "options":"Value #G"
+               },
+               "dashversion":[">5.2", ">2023.1"],
+               "properties":[
+                  {
+                     "id":"custom.displayMode",
+                     "value":"lcd-gauge"
+                  },
+                  {
+                     "id":"min",
+                     "value":0
+                  },
+                  {
+                     "id":"max",
+                     "value":101
+                  },
+                  {
+                     "id":"displayName",
+                     "value":"Streaming"
+                  },
+                  {
+                     "id":"custom.width",
+                     "value":90
+                  },
+                  {
+                     "id":"custom.filterable",
+                     "value":false
+                  },
+                  {
+                     "id":"decimals",
+                     "value":0
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        }
+                      ]
+                    }
+                  }
+               ]
             }
          ]
       },
@@ -2654,7 +2712,8 @@
                      "Value #C",
                      "Value #D",
                      "Value #E",
-                     "Value #F"
+                     "Value #F",
+                     "Value #G"
                   ]
                }
             }
@@ -2678,6 +2737,7 @@
                   "svr":4,
                   "Value #A":5,
                   "Value #F":6,
+                  "Value #G":8,
                   "Value #B":7
                },
                "renameByName":{
@@ -2878,6 +2938,14 @@
       "tagKeys":"ops,dc,instance",
       "titleFormat":"Operation"
    },
+   "stream_annotation":{
+      "class":"annotation_restart",
+      "expr":"10*min(scylla_streaming_finished_percentage{cluster=~\"$cluster|$^\"}) by (ops, dc,instance) < 10",
+      "iconColor":"rgb(50, 176, 0, 128)",
+      "name":"streaming",
+      "tagKeys":"ops,dc,instance",
+      "titleFormat":"Streaming"
+   },
    "vertical_lcd":{
       "datasource":"prometheus",
       "fieldConfig":{
@@ -2984,6 +3052,10 @@
          },
          {
             "class":"ops_annotation"
+         },
+         {
+            "dashversion":[">5.2", ">2023.1"],
+            "class":"stream_annotation"
          }
       ]
    },
