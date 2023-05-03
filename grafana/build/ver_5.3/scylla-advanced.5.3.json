@@ -569,7 +569,7 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "avg(wlatencya{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name!=\"streaming\"}>0) or on() (sum(rate(scylla_storage_proxy_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s]))/(sum(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) + 1))",
+                    "expr": "avg(wlatencya{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0)",
                     "instant": true,
                     "intervalFactor": 1,
                     "legendFormat": "",
@@ -632,7 +632,7 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "avg(wlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name!=\"streaming\"}>0)",
+                    "expr": "avg(wlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0)",
                     "instant": true,
                     "intervalFactor": 1,
                     "legendFormat": "",
@@ -695,7 +695,7 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "avg(rlatencya{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name!=\"streaming\"}>0) or on() (sum(rate(scylla_storage_proxy_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s]))/(sum(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) + 1))",
+                    "expr": "avg(rlatencya{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0)",
                     "instant": true,
                     "intervalFactor": 1,
                     "legendFormat": "",
@@ -758,7 +758,7 @@
             "pluginVersion": "7.1.3",
             "targets": [
                 {
-                    "expr": "avg(rlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name!=\"streaming\"}>0)",
+                    "expr": "avg(rlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0)",
                     "instant": true,
                     "intervalFactor": 1,
                     "legendFormat": "",
@@ -1013,6 +1013,7 @@
         {
             "class": "seconds_panel",
             "datasource": "prometheus",
+            "description": "seastar_io_queue_delay",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -1095,6 +1096,7 @@
         {
             "class": "graph_panel",
             "datasource": "prometheus",
+            "description": "Number of requests in the queue",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -1177,6 +1179,7 @@
         {
             "class": "bps_panel",
             "datasource": "prometheus",
+            "description": "seastar_io_queue_delay",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -1259,6 +1262,7 @@
         {
             "class": "iops_panel",
             "datasource": "prometheus",
+            "description": "Total operations passed in the queue",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -1341,6 +1345,7 @@
         {
             "class": "seconds_panel",
             "datasource": "prometheus",
+            "description": "Total time spent in disk",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -1411,7 +1416,7 @@
                 {
                     "expr": "max(rate(scylla_io_queue_total_exec_sec{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])/rate(scylla_io_queue_total_operations{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]]) or on() max(scylla_io_queue_delay{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
                     "intervalFactor": 1,
-                    "metric": "scylla_io_queue_total_exec_sec",
+                    "metric": "Total time spent in disk",
                     "refId": "A",
                     "step": 30
                 }
@@ -1422,6 +1427,7 @@
         {
             "class": "graph_panel",
             "datasource": "prometheus",
+            "description": "Number of requests in the disk",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -1492,12 +1498,94 @@
                 {
                     "expr": "max(scylla_io_queue_disk_queue_length{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                     "intervalFactor": 1,
-                    "metric": "scylla_io_queue_disk_queue_length",
+                    "metric": "Number of requests in the disk",
                     "refId": "A",
                     "step": 30
                 }
             ],
             "title": "DISK $classes Queue length by [[by]]",
+            "type": "timeseries"
+        },
+        {
+            "class": "seconds_panel",
+            "datasource": "prometheus",
+            "description": "The time the class waited for being dispatched with non-empty software queue.\n\nLarge IO delays coupled with small starvation time denotes that scheduler is doing its job properly, and it's upper layer that overflows disk capacity.\n\nLarge IO delays coupled with large starvation time denotes that there might be some problem on the scheduler level that it cannot deliver IO requests from that class into disk in timely manner or the disk is slow and cannot afford timely dispatching.",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 12,
+                "y": 15
+            },
+            "id": 26,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "class": "desc_tooltip_options",
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "sum(rate(scylla_io_queue_starvation_time_sec{class=\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "metric": "Total time spent starving for disk",
+                    "refId": "A",
+                    "step": 30
+                }
+            ],
+            "title": "DISK $classes starvation time by [[by]]",
             "type": "timeseries"
         },
         {
@@ -1510,7 +1598,7 @@
                 "x": 0,
                 "y": 21
             },
-            "id": 26,
+            "id": 27,
             "panels": [],
             "repeat": "",
             "title": "",
@@ -1534,7 +1622,7 @@
                 "x": 0,
                 "y": 22
             },
-            "id": 27,
+            "id": 28,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -1554,7 +1642,7 @@
                 "x": 0,
                 "y": 24
             },
-            "id": 28,
+            "id": 29,
             "panels": [],
             "repeat": "group",
             "title": "$group",
@@ -1614,7 +1702,7 @@
                 "x": 0,
                 "y": 25
             },
-            "id": 29,
+            "id": 30,
             "isNew": true,
             "links": [],
             "options": {
@@ -1699,7 +1787,7 @@
                 "x": 6,
                 "y": 25
             },
-            "id": 30,
+            "id": 31,
             "isNew": true,
             "links": [],
             "options": {
@@ -1784,7 +1872,7 @@
                 "x": 12,
                 "y": 25
             },
-            "id": 31,
+            "id": 32,
             "isNew": true,
             "links": [],
             "options": {
@@ -1868,7 +1956,7 @@
                 "x": 18,
                 "y": 25
             },
-            "id": 32,
+            "id": 33,
             "isNew": true,
             "links": [],
             "options": {
@@ -1909,7 +1997,7 @@
                 "x": 0,
                 "y": 31
             },
-            "id": 33,
+            "id": 34,
             "panels": [],
             "repeat": "",
             "title": "Internal node errors",
@@ -1933,7 +2021,7 @@
                 "x": 0,
                 "y": 32
             },
-            "id": 34,
+            "id": 35,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -1997,7 +2085,7 @@
                 "x": 0,
                 "y": 34
             },
-            "id": 35,
+            "id": 36,
             "isNew": true,
             "links": [],
             "options": {
@@ -2080,7 +2168,7 @@
                 "x": 8,
                 "y": 34
             },
-            "id": 36,
+            "id": 37,
             "isNew": true,
             "links": [],
             "options": {
@@ -2128,7 +2216,7 @@
                 "x": 16,
                 "y": 34
             },
-            "id": 37,
+            "id": 38,
             "isNew": true,
             "links": [],
             "mode": "markdown",
@@ -2192,7 +2280,7 @@
                 "x": 0,
                 "y": 40
             },
-            "id": 38,
+            "id": 39,
             "isNew": true,
             "links": [],
             "options": {
@@ -2275,7 +2363,7 @@
                 "x": 8,
                 "y": 40
             },
-            "id": 39,
+            "id": 40,
             "isNew": true,
             "links": [],
             "options": {
@@ -2358,7 +2446,7 @@
                 "x": 16,
                 "y": 40
             },
-            "id": 40,
+            "id": 41,
             "isNew": true,
             "links": [],
             "options": {
@@ -2444,7 +2532,7 @@
                 "x": 0,
                 "y": 46
             },
-            "id": 41,
+            "id": 42,
             "isNew": true,
             "links": [],
             "options": {
@@ -2530,7 +2618,7 @@
                 "x": 8,
                 "y": 46
             },
-            "id": 42,
+            "id": 43,
             "isNew": true,
             "links": [],
             "options": {
@@ -2616,7 +2704,7 @@
                 "x": 16,
                 "y": 46
             },
-            "id": 43,
+            "id": 44,
             "isNew": true,
             "links": [],
             "options": {
@@ -2659,7 +2747,7 @@
                 "x": 0,
                 "y": 52
             },
-            "id": 44,
+            "id": 45,
             "panels": [],
             "repeat": "",
             "title": "Commit Log",
@@ -2683,7 +2771,7 @@
                 "x": 0,
                 "y": 53
             },
-            "id": 45,
+            "id": 46,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -2747,7 +2835,7 @@
                 "x": 0,
                 "y": 55
             },
-            "id": 46,
+            "id": 47,
             "isNew": true,
             "links": [],
             "options": {
@@ -2830,7 +2918,7 @@
                 "x": 6,
                 "y": 55
             },
-            "id": 47,
+            "id": 48,
             "isNew": true,
             "links": [],
             "options": {
@@ -2913,7 +3001,7 @@
                 "x": 12,
                 "y": 55
             },
-            "id": 48,
+            "id": 49,
             "isNew": true,
             "links": [],
             "options": {
@@ -2999,7 +3087,7 @@
                 "x": 18,
                 "y": 55
             },
-            "id": 49,
+            "id": 50,
             "isNew": true,
             "links": [],
             "options": {
@@ -3085,7 +3173,7 @@
                 "x": 0,
                 "y": 61
             },
-            "id": 50,
+            "id": 51,
             "isNew": true,
             "links": [],
             "options": {
@@ -3171,7 +3259,7 @@
                 "x": 6,
                 "y": 61
             },
-            "id": 51,
+            "id": 52,
             "isNew": true,
             "links": [],
             "options": {
@@ -3257,7 +3345,7 @@
                 "x": 12,
                 "y": 61
             },
-            "id": 52,
+            "id": 53,
             "isNew": true,
             "links": [],
             "options": {
@@ -3343,7 +3431,7 @@
                 "x": 18,
                 "y": 61
             },
-            "id": 53,
+            "id": 54,
             "isNew": true,
             "links": [],
             "options": {
@@ -3429,7 +3517,7 @@
                 "x": 0,
                 "y": 67
             },
-            "id": 54,
+            "id": 55,
             "isNew": true,
             "links": [],
             "options": {
@@ -3473,7 +3561,7 @@
                 "x": 0,
                 "y": 73
             },
-            "id": 55,
+            "id": 56,
             "panels": [],
             "repeat": "",
             "title": "Your panels",
@@ -3496,7 +3584,7 @@
                 "x": 0,
                 "y": 74
             },
-            "id": 56,
+            "id": 57,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -3563,7 +3651,7 @@
                 "x": 0,
                 "y": 76
             },
-            "id": 57,
+            "id": 58,
             "isNew": true,
             "links": [],
             "options": {
@@ -3637,7 +3725,7 @@
                 "x": 12,
                 "y": 76
             },
-            "id": 58,
+            "id": 59,
             "isNew": true,
             "links": [],
             "options": {
@@ -3675,12 +3763,12 @@
                 "x": 0,
                 "y": 82
             },
-            "id": 59,
+            "id": 60,
             "isNew": true,
             "links": [],
             "mode": "html",
             "options": {
-                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - 4.3.4</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
+                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - master</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
                 "mode": "html"
             },
             "span": 12,
@@ -3694,7 +3782,7 @@
     "schemaVersion": 26,
     "style": "dark",
     "tags": [
-        "2021.1"
+        "5.3"
     ],
     "templating": {
         "list": [
@@ -3977,8 +4065,8 @@
                 "allValue": null,
                 "class": "template_variable_custom",
                 "current": {
-                    "text": "2021.1",
-                    "value": "2021.1"
+                    "text": "5.3",
+                    "value": "5.3"
                 },
                 "error": null,
                 "hide": 2,
@@ -3989,11 +4077,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "2021.1",
-                        "value": "2021.1"
+                        "text": "5.3",
+                        "value": "5.3"
                     }
                 ],
-                "query": "2021.1",
+                "query": "5.3",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -4001,8 +4089,8 @@
                 "allValue": null,
                 "class": "monitor_version_var",
                 "current": {
-                    "text": "4.3.4",
-                    "value": "4.3.4"
+                    "text": "master",
+                    "value": "master"
                 },
                 "error": null,
                 "hide": 2,
@@ -4013,11 +4101,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "4.3.4",
-                        "value": "4.3.4"
+                        "text": "master",
+                        "value": "master"
                     }
                 ],
-                "query": "4.3.4",
+                "query": "master",
                 "skipUrlSync": false,
                 "type": "custom"
             }
@@ -4055,6 +4143,6 @@
     },
     "timezone": "utc",
     "title": "Advanced",
-    "uid": "advanced-2021-1",
+    "uid": "advanced-5-3",
     "version": 5
 }

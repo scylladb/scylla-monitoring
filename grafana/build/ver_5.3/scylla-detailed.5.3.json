@@ -130,6 +130,25 @@
                 "tags": [],
                 "titleFormat": "Operation",
                 "type": "tags"
+            },
+            {
+                "class": "stream_annotation",
+                "dashversion": [
+                    ">5.2",
+                    ">2023.1"
+                ],
+                "datasource": "prometheus",
+                "enable": true,
+                "expr": "10*min(scylla_streaming_finished_percentage{cluster=~\"$cluster|$^\"}) by (ops, dc,instance) < 10",
+                "hide": false,
+                "iconColor": "rgb(50, 176, 0, 128)",
+                "limit": 100,
+                "name": "streaming",
+                "showIn": 0,
+                "tagKeys": "ops,dc,instance",
+                "tags": [],
+                "titleFormat": "Streaming",
+                "type": "tags"
             }
         ]
     },
@@ -351,6 +370,7 @@
         {
             "class": "rps_panel",
             "datasource": "prometheus",
+            "description": "Counts the total number of successful user reads on this shard.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -430,6 +450,7 @@
         {
             "class": "wps_panel",
             "datasource": "prometheus",
+            "description": "Counts the total number of successful write operations performed by this shard.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -876,6 +897,7 @@
         {
             "class": "wps_panel",
             "datasource": "prometheus",
+            "description": "Number of successfully written hints.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -955,6 +977,7 @@
         {
             "class": "ops_panel",
             "datasource": "prometheus",
+            "description": "Number of sent hints.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2008,6 +2031,7 @@
         {
             "class": "rps_panel",
             "datasource": "prometheus",
+            "description": "Counts the total number of failed user read operations. Add the total_reads to this value to get the total amount of reads issued on this shard.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2087,6 +2111,7 @@
         {
             "class": "wps_panel",
             "datasource": "prometheus",
+            "description": "Holds the current number of requests blocked due to reaching the memory quota (15566635008B). Non-zero value indicates that our bottleneck is memory and more specifically - the memory quota allocated for the \"database\" component.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2166,6 +2191,7 @@
         {
             "class": "wps_panel",
             "datasource": "prometheus",
+            "description": "Counts number of requests blocked due to memory pressure. A non-zero value indicates that the commitlog memory quota is not enough to serve the required amount of requests.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2245,6 +2271,7 @@
         {
             "class": "requestsps_panel",
             "datasource": "prometheus",
+            "description": "Holds an incrementing counter with the requests that were shed due to overload (threshold configured via max_concurrent_requests_per_shard). The first derivative of this value shows how often we shed requests due to overload in the \"CQL transport\" component.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2352,6 +2379,7 @@
         {
             "class": "wps_panel",
             "datasource": "prometheus",
+            "description": "Counts the total number of failed write operations. A sum of this value plus total_writes represents a total amount of writes attempted on this shard.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2431,6 +2459,7 @@
         {
             "class": "wps_panel",
             "datasource": "prometheus",
+            "description": "Counts write operations failed due to a timeout. A positive value is a sign of storage being overloaded.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2555,6 +2584,7 @@
         {
             "class": "rps_panel",
             "datasource": "prometheus",
+            "description": "number of reads that were served from the cache",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2634,6 +2664,7 @@
         {
             "class": "rps_panel",
             "datasource": "prometheus",
+            "description": "number of reads which had to read from sstables",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2713,6 +2744,7 @@
         {
             "class": "rps_panel",
             "datasource": "prometheus",
+            "description": "total number of rows needed by reads and found in cache",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2792,6 +2824,7 @@
         {
             "class": "rps_panel",
             "datasource": "prometheus",
+            "description": "number of partitions needed by reads and found in cache",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2871,6 +2904,7 @@
         {
             "class": "rps_panel",
             "datasource": "prometheus",
+            "description": "total number of rows needed by reads and missing in cache",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -2950,6 +2984,7 @@
         {
             "class": "rps_panel",
             "datasource": "prometheus",
+            "description": "number of partitions needed by reads and missing in cache",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3029,6 +3064,7 @@
         {
             "class": "rps_panel",
             "datasource": "prometheus",
+            "description": "total number of rows added to cache",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3108,6 +3144,7 @@
         {
             "class": "rps_panel",
             "datasource": "prometheus",
+            "description": "total number of partitions added to cache",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3187,6 +3224,7 @@
         {
             "class": "ops_panel",
             "datasource": "prometheus",
+            "description": "total number of rows evicted from cache",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3269,6 +3307,7 @@
         {
             "class": "ops_panel",
             "datasource": "prometheus",
+            "description": "total number of evicted partitions",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3351,6 +3390,7 @@
         {
             "class": "ops_panel",
             "datasource": "prometheus",
+            "description": "total number of rows in memtables which were merged with existing rows during cache update on memtable flush",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3433,6 +3473,7 @@
         {
             "class": "ops_panel",
             "datasource": "prometheus",
+            "description": "total number of partitions merged",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3515,6 +3556,7 @@
         {
             "class": "ops_panel",
             "datasource": "prometheus",
+            "description": "total number of invalidated rows",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3597,6 +3639,7 @@
         {
             "class": "ops_panel",
             "datasource": "prometheus",
+            "description": "total number of invalidated partitions",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3679,6 +3722,7 @@
         {
             "class": "graph_panel",
             "datasource": "prometheus",
+            "description": "total number of cached rows",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3758,6 +3802,7 @@
         {
             "class": "graph_panel",
             "datasource": "prometheus",
+            "description": "total number of cached partitions",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3837,6 +3882,7 @@
         {
             "class": "bytes_panel",
             "datasource": "prometheus",
+            "description": "current bytes used by the cache out of the total size of memory",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3916,6 +3962,7 @@
         {
             "class": "bytes_panel",
             "datasource": "prometheus",
+            "description": "total size of memory for the cache",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -3995,6 +4042,7 @@
         {
             "class": "graph_panel",
             "datasource": "prometheus",
+            "description": "Counts the number of prepared statements cache entries evictions.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -4074,6 +4122,7 @@
         {
             "class": "graph_panel",
             "datasource": "prometheus",
+            "description": "Counts the number of authenticated prepared statements cache entries evictions.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -7392,6 +7441,7 @@
         {
             "class": "bytes_panel",
             "datasource": "prometheus",
+            "description": "Holds a current size of allocated memory in bytes.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -7471,6 +7521,7 @@
         {
             "class": "bytes_panel",
             "datasource": "prometheus",
+            "description": "Holds a current amount of used non-LSA memory.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -7595,6 +7646,7 @@
         {
             "class": "graph_panel_int",
             "datasource": "prometheus",
+            "description": "Holds the number of currently active compactions.",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -7854,6 +7906,7 @@
         {
             "class": "wps_panel",
             "datasource": "prometheus",
+            "description": "The general write latency histogram",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -8181,6 +8234,7 @@
         {
             "class": "rps_panel",
             "datasource": "prometheus",
+            "description": "The general read latency histogram",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -8723,7 +8777,7 @@
             "links": [],
             "mode": "html",
             "options": {
-                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - 4.3.4</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
+                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - master</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
                 "mode": "html"
             },
             "span": 12,
@@ -8737,7 +8791,7 @@
     "schemaVersion": 26,
     "style": "dark",
     "tags": [
-        "5.2"
+        "5.3"
     ],
     "templating": {
         "list": [
@@ -8995,8 +9049,8 @@
                 "allValue": null,
                 "class": "template_variable_custom",
                 "current": {
-                    "text": "5.2",
-                    "value": "5.2"
+                    "text": "5.3",
+                    "value": "5.3"
                 },
                 "error": null,
                 "hide": 2,
@@ -9007,11 +9061,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "5.2",
-                        "value": "5.2"
+                        "text": "5.3",
+                        "value": "5.3"
                     }
                 ],
-                "query": "5.2",
+                "query": "5.3",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -9019,8 +9073,8 @@
                 "allValue": null,
                 "class": "monitor_version_var",
                 "current": {
-                    "text": "4.3.4",
-                    "value": "4.3.4"
+                    "text": "master",
+                    "value": "master"
                 },
                 "error": null,
                 "hide": 2,
@@ -9031,11 +9085,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "4.3.4",
-                        "value": "4.3.4"
+                        "text": "master",
+                        "value": "master"
                     }
                 ],
-                "query": "4.3.4",
+                "query": "master",
                 "skipUrlSync": false,
                 "type": "custom"
             }
@@ -9073,6 +9127,6 @@
     },
     "timezone": "utc",
     "title": "Detailed",
-    "uid": "detailed-5-2",
+    "uid": "detailed-5-3",
     "version": 5
 }

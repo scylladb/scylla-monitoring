@@ -970,6 +970,47 @@
                         ]
                     },
                     {
+                        "dashversion": [
+                            ">5.1",
+                            ">2022.2"
+                        ],
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value #F"
+                        },
+                        "properties": [
+                            {
+                                "id": "links",
+                                "value": [
+                                    {
+                                        "title": "How many live nodes this node sees",
+                                        "url": "/d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}&from=${__from}&to=${__to}"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "custom.width",
+                                "value": 80
+                            },
+                            {
+                                "id": "custom.filterable",
+                                "value": true
+                            },
+                            {
+                                "id": "custom.displayMode",
+                                "value": "color-text"
+                            },
+                            {
+                                "id": "custom.align",
+                                "value": "left"
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Live"
+                            }
+                        ]
+                    },
+                    {
                         "matcher": {
                             "id": "byName",
                             "options": "instance"
@@ -983,6 +1024,58 @@
                                         "url": "/d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}&from=${__from}&to=${__to}"
                                     }
                                 ]
+                            }
+                        ]
+                    },
+                    {
+                        "dashversion": [
+                            ">5.2",
+                            ">2023.1"
+                        ],
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value #G"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.displayMode",
+                                "value": "lcd-gauge"
+                            },
+                            {
+                                "id": "min",
+                                "value": 0
+                            },
+                            {
+                                "id": "max",
+                                "value": 101
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Streaming"
+                            },
+                            {
+                                "id": "custom.width",
+                                "value": 90
+                            },
+                            {
+                                "id": "custom.filterable",
+                                "value": false
+                            },
+                            {
+                                "id": "decimals",
+                                "value": 0
+                            },
+                            {
+                                "id": "thresholds",
+                                "value": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "green",
+                                            "value": null
+                                        }
+                                    ]
+                                }
                             }
                         ]
                     }
@@ -1045,6 +1138,30 @@
                     "interval": "",
                     "legendFormat": "",
                     "refId": "E"
+                },
+                {
+                    "dashversion": [
+                        ">5.1",
+                        ">2022.2"
+                    ],
+                    "expr": "sum(scylla_gossip_live{cluster=~\"$cluster|$^\"})by (instance)",
+                    "format": "table",
+                    "instant": true,
+                    "interval": "",
+                    "legendFormat": "",
+                    "refId": "F"
+                },
+                {
+                    "dashversion": [
+                        ">5.2",
+                        ">2023.1"
+                    ],
+                    "expr": "(min(scylla_streaming_finished_percentage{cluster=~\"$cluster|$^\", dc=~\"$dc\"}*100) by (instance) < 100) or on (instance)  0*sum(scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"}) by (instance)",
+                    "format": "table",
+                    "instant": true,
+                    "interval": "",
+                    "legendFormat": "",
+                    "refId": "G"
                 }
             ],
             "title": "Nodes",
@@ -1262,67 +1379,32 @@
         },
         {
             "class": "alert_table",
-            "columns": [],
-            "datasource": "alertmanager",
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "custom": {
-                        "align": null,
-                        "filterable": false
-                    },
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute"
-                    }
-                },
-                "overrides": [
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "Time"
-                        },
-                        "properties": [
-                            {
-                                "id": "custom.width",
-                                "value": 150
-                            }
-                        ]
-                    },
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "instance"
-                        },
-                        "properties": [
-                            {
-                                "id": "custom.width",
-                                "value": 100
-                            }
-                        ]
-                    }
-                ]
+            "datasource": {
+                "type": "datasource",
+                "uid": "grafana"
             },
-            "fontSize": "100%",
             "gridPos": {
                 "h": 6,
                 "w": 8,
                 "x": 16,
                 "y": 10
             },
-            "id": 10,
-            "links": [],
             "options": {
-                "showHeader": true
-            },
-            "pageSize": null,
-            "scroll": true,
-            "showHeader": true,
-            "sort": {
-                "col": 0,
-                "desc": true
+                "alertInstanceLabelFilter": "job!=\"scylla_manager\",advisor=\"\"",
+                "alertName": "",
+                "dashboardAlerts": false,
+                "groupBy": [],
+                "groupMode": "default",
+                "maxItems": 20,
+                "sortOrder": 3,
+                "stateFilter": {
+                    "error": true,
+                    "firing": true,
+                    "noData": false,
+                    "normal": false,
+                    "pending": true
+                },
+                "viewMode": "list"
             },
             "span": 4,
             "styles": [
@@ -1394,45 +1476,8 @@
                     "unit": "short"
                 }
             ],
-            "targets": [
-                {
-                    "active": true,
-                    "annotations": true,
-                    "filters": "job!=\"scylla_manager\",advisor=\"\"",
-                    "legendFormat": "{{description}}",
-                    "refId": "A",
-                    "target": "Query"
-                }
-            ],
             "title": "Active Alerts",
-            "transform": "table",
-            "transformations": [
-                {
-                    "id": "filterFieldsByName",
-                    "options": {
-                        "include": {
-                            "names": [
-                                "Time",
-                                "summary",
-                                "instance"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "id": "organize",
-                    "options": {
-                        "excludeByName": {},
-                        "indexByName": {
-                            "Time": 0,
-                            "instance": 1,
-                            "summary": 2
-                        },
-                        "renameByName": {}
-                    }
-                }
-            ],
-            "type": "table"
+            "type": "alertlist"
         },
         {
             "class": "collapsible_row_panel",
@@ -1444,7 +1489,7 @@
                 "x": 0,
                 "y": 16
             },
-            "id": 11,
+            "id": 10,
             "panels": [],
             "repeat": "",
             "title": "Data Plane Actions",
@@ -1468,7 +1513,7 @@
                 "x": 0,
                 "y": 17
             },
-            "id": 12,
+            "id": 11,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -1531,7 +1576,7 @@
                 "x": 0,
                 "y": 19
             },
-            "id": 13,
+            "id": 12,
             "isNew": true,
             "links": [],
             "options": {
@@ -1613,7 +1658,7 @@
                 "x": 8,
                 "y": 19
             },
-            "id": 14,
+            "id": 13,
             "isNew": true,
             "links": [],
             "options": {
@@ -1695,7 +1740,7 @@
                 "x": 16,
                 "y": 19
             },
-            "id": 15,
+            "id": 14,
             "isNew": true,
             "links": [],
             "options": {
@@ -1777,7 +1822,7 @@
                 "x": 0,
                 "y": 25
             },
-            "id": 16,
+            "id": 15,
             "isNew": true,
             "links": [],
             "options": {
@@ -1859,7 +1904,7 @@
                 "x": 8,
                 "y": 25
             },
-            "id": 17,
+            "id": 16,
             "isNew": true,
             "links": [],
             "options": {
@@ -1887,6 +1932,92 @@
                 }
             ],
             "title": "BatchWriteItem by [[by]]",
+            "type": "timeseries"
+        },
+        {
+            "class": "ops_panel",
+            "dashversion": [
+                ">4.4",
+                ">2021.1"
+            ],
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "si:ops/s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 8,
+                "x": 16,
+                "y": 25
+            },
+            "id": 17,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "asc"
+                }
+            },
+            "seriesOverrides": [
+                {}
+            ],
+            "span": 4,
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[60s])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "BatchGetItem by [[by]]",
             "type": "timeseries"
         },
         {
@@ -1938,8 +2069,8 @@
             "gridPos": {
                 "h": 6,
                 "w": 8,
-                "x": 16,
-                "y": 25
+                "x": 0,
+                "y": 31
             },
             "id": 18,
             "isNew": true,
@@ -2020,7 +2151,7 @@
             "gridPos": {
                 "h": 6,
                 "w": 8,
-                "x": 0,
+                "x": 8,
                 "y": 31
             },
             "id": 19,
@@ -3630,18 +3761,53 @@
             "type": "timeseries"
         },
         {
-            "class": "text_panel",
-            "content": "##  ",
+            "class": "ops_panel",
             "dashversion": [
-                "<5.1",
-                "<2022.2"
+                ">5.1",
+                ">2022.2"
             ],
-            "datasource": null,
+            "datasource": "prometheus",
+            "description": "The number of items deleted by their TTL",
             "editable": true,
             "error": false,
             "fieldConfig": {
                 "defaults": {
-                    "custom": {}
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -3654,13 +3820,32 @@
             "id": 45,
             "isNew": true,
             "links": [],
-            "mode": "markdown",
-            "options": {},
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "asc"
+                }
+            },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 4,
-            "style": {},
-            "title": "",
-            "transparent": true,
-            "type": "text"
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_expiration_items_deleted{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Expired Item Deleted by [[by]]",
+            "type": "timeseries"
         },
         {
             "class": "plain_text",
@@ -4247,7 +4432,7 @@
             "links": [],
             "mode": "html",
             "options": {
-                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - 4.3.4</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
+                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - master</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
                 "mode": "html"
             },
             "span": 12,
@@ -4261,7 +4446,7 @@
     "schemaVersion": 26,
     "style": "dark",
     "tags": [
-        "2020.1"
+        "5.3"
     ],
     "templating": {
         "list": [
@@ -4510,8 +4695,8 @@
                 "allValue": null,
                 "class": "template_variable_custom",
                 "current": {
-                    "text": "2020-1",
-                    "value": "2020-1"
+                    "text": "5-3",
+                    "value": "5-3"
                 },
                 "error": null,
                 "hide": 2,
@@ -4522,11 +4707,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "2020-1",
-                        "value": "2020-1"
+                        "text": "5-3",
+                        "value": "5-3"
                     }
                 ],
-                "query": "2020-1",
+                "query": "5-3",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -4534,8 +4719,8 @@
                 "allValue": null,
                 "class": "template_variable_custom",
                 "current": {
-                    "text": "2020.1",
-                    "value": "2020.1"
+                    "text": "5.3",
+                    "value": "5.3"
                 },
                 "error": null,
                 "hide": 2,
@@ -4546,11 +4731,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "2020.1",
-                        "value": "2020.1"
+                        "text": "5.3",
+                        "value": "5.3"
                     }
                 ],
-                "query": "2020.1",
+                "query": "5.3",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -4558,8 +4743,8 @@
                 "allValue": null,
                 "class": "monitor_version_var",
                 "current": {
-                    "text": "4.3.4",
-                    "value": "4.3.4"
+                    "text": "master",
+                    "value": "master"
                 },
                 "error": null,
                 "hide": 2,
@@ -4570,11 +4755,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "4.3.4",
-                        "value": "4.3.4"
+                        "text": "master",
+                        "value": "master"
                     }
                 ],
-                "query": "4.3.4",
+                "query": "master",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -4707,6 +4892,6 @@
     },
     "timezone": "utc",
     "title": "Alternator",
-    "uid": "alternator-2020-1",
+    "uid": "alternator-5-3",
     "version": 1
 }
