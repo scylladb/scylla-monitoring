@@ -103,7 +103,7 @@ fi
             if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.template.json" ] || [ ! -z "$FORCEUPDATE" ]; then
                 if [[ -z "$TEST_ONLY" ]]; then
                     echo "updating dashboard grafana/$f.$v.template.json"
-                   ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"  -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -V $v
+                   ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"  -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" --replace-file docs/source/reference/metrics.yaml -V $v
                fi
             fi
         else
@@ -124,7 +124,7 @@ then
     if [ ! -f "$VERDIR/scylla-manager.$v.json" ] || [ "$VERDIR/scylla-manager.$v.json" -ot "grafana/scylla-manager.template.json" ] || [ "$VERDIR/scylla-manager.$v.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
         if [[ -z "$TEST_ONLY" ]]; then
            echo "updating grafana/scylla-manager.$v.template.json"
-           ./make_dashboards.py ${PRODUCTS[@]}  -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -V $v
+           ./make_dashboards.py ${PRODUCTS[@]}  -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" --replace-file docs/source/reference/metrics.yaml -V $v
         else
            echo "notice: grafana/scylla-manager.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
         fi
@@ -142,7 +142,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         if [ ! -f $VERDIR/$val1.json ] || [ $VERDIR/$val1.json -ot $val ] || [ ! -z "$FORCEUPDATE" ]; then
             if [[ -z "$TEST_ONLY" ]]; then
                 echo "updating $val"
-               ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d $val -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION"
+               ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d $val -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" --replace-file docs/source/reference/metrics.yaml
             fi
         fi
     else
