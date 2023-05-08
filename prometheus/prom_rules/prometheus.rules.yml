@@ -8,7 +8,6 @@ groups:
       severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
-    annotations:
       description: 'Some queries are non-prepared'
       summary: non prepared statments
   - alert: cql:non_paged_no_system
@@ -19,7 +18,6 @@ groups:
       advisor: "cqlOptimization"
       dashboard: "cql"
       status: "1"
-    annotations:
       description: 'Some SELECT queries are non-paged'
       summary: non paged statments
   - alert: cqlNoTokenAware
@@ -29,7 +27,6 @@ groups:
       severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
-    annotations:
       description: 'Some queries are not token-aware'
       summary: non token aware statments
   - alert: cqlReverseOrder
@@ -39,7 +36,6 @@ groups:
       severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
-    annotations:
       description: 'Some queries use reverse order'
       summary: reverse order queries
   - alert: cqlAllowFiltering
@@ -49,7 +45,6 @@ groups:
       severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
-    annotations:
       description: 'Some queries use ALLOW FILTERING'
       summary: Allow filtering queries
   - alert: cqlCLAny
@@ -59,7 +54,6 @@ groups:
       severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
-    annotations:
       description: 'Some queries use Consistency Level: ANY'
       summary: non prepared statments
   - alert: cqlCLAll
@@ -69,18 +63,16 @@ groups:
       severity: "info"
       advisor: "cqlOptimization"
       dashboard: "cql"
-    annotations:
       description: 'Some queries use Consistency Level: ALL'
       summary: non prepared statments
   - alert: nonBalancedcqlTraffic
     expr: abs(rate(scylla_cql_updates{conditional="no"}[1m]) - scalar(avg(rate(scylla_cql_updates{conditional="no"}[1m]))))/scalar(stddev(rate(scylla_cql_updates{conditional="no"}[1m]))+100) > 2
-    for: 10s
+    for: 3m
     labels:
       severity: "info"
       status: "1"
       advisor: "balanced"
       dashboard: "cql"
-    annotations:
       description: 'CQL queries are not balanced among shards {{ $labels.instance }} shard {{ $labels.shard }}'
       summary: CQL queries are not balanced
   - alert: nodeLocalErrors
@@ -90,7 +82,6 @@ groups:
       severity: "info"
       advisor: "operationError"
       dashboard: "scylla-detailed"
-    annotations:
       description: 'Some operation failed at the replica side'
       summary: Replica side Level error
   - alert: nodeIOErrors
@@ -100,7 +91,6 @@ groups:
       severity: "info"
       advisor: "operationError"
       dashboard: "OS-master"
-    annotations:
       description: 'IO Errors can indicate a node with a faulty disk {{ $labels.instance }}'
       summary: IO Disk Error
   - alert: nodeCLErrors
@@ -110,7 +100,6 @@ groups:
       severity: "info"
       advisor: "operationError"
       dashboard: "scylla-detailed"
-    annotations:
       description: 'Some operation failed due to consistency level'
       summary: Consistency Level error
   - alert: preparedCacheEviction
@@ -120,7 +109,6 @@ groups:
       severity: "info"
       advisor: "preparedEviction"
       dashboard: "scylla-detailed"
-    annotations:
       description: 'The prepared-statement cache is being continuously evicted, which could indicate a problem in your prepared-statement usage logic.'
       summary: Prepared cache eviction
   - alert: heavyCompaction
@@ -130,7 +118,6 @@ groups:
       severity: "info"
       advisor: "heavyCompaction"
       dashboard: "scylla-detailed"
-    annotations:
       description: 'Compaction load increases to a level it can interfere with the system behaviour. If this persists set the compaction share to a static level.'
       summary: Heavy compaction load
   - alert: shedRequests
@@ -140,7 +127,6 @@ groups:
       severity: "info"
       advisor: "systemOverload"
       dashboard: "scylla-detailed"
-    annotations:
       description: 'More than 1% of the requests got shed, this is an indication of an overload, consider system resize.'
       summary: System is overloaded
   - alert: cappedTombstone
@@ -150,7 +136,6 @@ groups:
       severity: "info"
       advisor: "cappedTombstone"
       dashboard: "scylla-detailed"
-    annotations:
       description: 'Tombstone delete time was set too far in the future and was capped'
       summary: Tobmstone delete time is capped
   - alert: InstanceDown
