@@ -130,6 +130,25 @@
                 "tags": [],
                 "titleFormat": "Operation",
                 "type": "tags"
+            },
+            {
+                "class": "stream_annotation",
+                "dashversion": [
+                    ">5.2",
+                    ">2023.1"
+                ],
+                "datasource": "prometheus",
+                "enable": true,
+                "expr": "10*min(scylla_streaming_finished_percentage{cluster=~\"$cluster|$^\"}) by (ops, dc,instance) < 10",
+                "hide": false,
+                "iconColor": "rgb(50, 176, 0, 128)",
+                "limit": 100,
+                "name": "streaming",
+                "showIn": 0,
+                "tagKeys": "ops,dc,instance",
+                "tags": [],
+                "titleFormat": "Streaming",
+                "type": "tags"
             }
         ]
     },
@@ -8541,516 +8560,6 @@
             "type": "timeseries"
         },
         {
-            "class": "bytes_panel",
-            "dashversion": [
-                ">5.3",
-                ">2022.1"
-            ],
-            "datasource": "prometheus",
-            "description": "Bytes received in CQL messages",
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "class": "fieldConfig_defaults",
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "axisSoftMin": 0,
-                        "barAlignment": 0,
-                        "class": "fieldConfig_defaults_custom",
-                        "drawStyle": "line",
-                        "fillOpacity": 0,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 6,
-                "w": 6,
-                "x": 0,
-                "y": 200
-            },
-            "id": 121,
-            "isNew": true,
-            "links": [],
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "hidden",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "multi",
-                    "sort": "asc"
-                }
-            },
-            "span": 3,
-            "targets": [
-                {
-                    "expr": "sum(rate(scylla_transport_cql_request_bytes{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "",
-                    "refId": "A",
-                    "step": 1
-                }
-            ],
-            "title": "Received payload by [[by]]",
-            "type": "timeseries"
-        },
-        {
-            "class": "bytes_panel",
-            "dashversion": [
-                ">5.3",
-                ">2022.1"
-            ],
-            "datasource": "prometheus",
-            "description": "Average CQL message size (received)",
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "class": "fieldConfig_defaults",
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "axisSoftMin": 0,
-                        "barAlignment": 0,
-                        "class": "fieldConfig_defaults_custom",
-                        "drawStyle": "line",
-                        "fillOpacity": 0,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 6,
-                "w": 6,
-                "x": 6,
-                "y": 200
-            },
-            "id": 122,
-            "isNew": true,
-            "links": [],
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "hidden",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "multi",
-                    "sort": "asc"
-                }
-            },
-            "span": 3,
-            "targets": [
-                {
-                    "expr": "sum(rate(scylla_transport_cql_request_bytes{kind=~\"$kind\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]])/sum(rate(scylla_transport_cql_requests_count{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "",
-                    "refId": "A",
-                    "step": 1
-                }
-            ],
-            "title": "Average received payload size by [[by]]",
-            "type": "timeseries"
-        },
-        {
-            "class": "bytes_panel",
-            "dashversion": [
-                ">5.3",
-                ">2022.1"
-            ],
-            "datasource": "prometheus",
-            "description": "Bytes sent in CQL messages",
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "class": "fieldConfig_defaults",
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "axisSoftMin": 0,
-                        "barAlignment": 0,
-                        "class": "fieldConfig_defaults_custom",
-                        "drawStyle": "line",
-                        "fillOpacity": 0,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 6,
-                "w": 6,
-                "x": 12,
-                "y": 200
-            },
-            "id": 123,
-            "isNew": true,
-            "links": [],
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "hidden",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "multi",
-                    "sort": "asc"
-                }
-            },
-            "span": 3,
-            "targets": [
-                {
-                    "expr": "sum(rate(scylla_transport_cql_response_bytes{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "",
-                    "refId": "A",
-                    "step": 1
-                }
-            ],
-            "title": "Response payload by [[by]]",
-            "type": "timeseries"
-        },
-        {
-            "class": "bytes_panel",
-            "dashversion": [
-                ">5.3",
-                ">2022.1"
-            ],
-            "datasource": "prometheus",
-            "description": "Average CQL message size (sent)",
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "class": "fieldConfig_defaults",
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "axisSoftMin": 0,
-                        "barAlignment": 0,
-                        "class": "fieldConfig_defaults_custom",
-                        "drawStyle": "line",
-                        "fillOpacity": 0,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 6,
-                "w": 6,
-                "x": 18,
-                "y": 200
-            },
-            "id": 124,
-            "isNew": true,
-            "links": [],
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "hidden",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "multi",
-                    "sort": "asc"
-                }
-            },
-            "span": 3,
-            "targets": [
-                {
-                    "expr": "sum(rate(scylla_transport_cql_response_bytes{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]])/sum(rate(scylla_transport_cql_requests_count{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]])",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "",
-                    "refId": "A",
-                    "step": 1
-                }
-            ],
-            "title": "Average response payload size by [[by]]",
-            "type": "timeseries"
-        },
-        {
-            "class": "bytes_panel",
-            "dashversion": [
-                ">5.3",
-                ">2022.1"
-            ],
-            "datasource": "prometheus",
-            "description": "This is a ballpark estimation of the write-messages size (like insert and update).\n\nIt is based on the assumption that write-messages are responsible for most inwards traffic.",
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "class": "fieldConfig_defaults",
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "axisSoftMin": 0,
-                        "barAlignment": 0,
-                        "class": "fieldConfig_defaults_custom",
-                        "drawStyle": "line",
-                        "fillOpacity": 0,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 6,
-                "w": 6,
-                "x": 0,
-                "y": 206
-            },
-            "id": 125,
-            "isNew": true,
-            "links": [],
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "hidden",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "multi",
-                    "sort": "asc"
-                }
-            },
-            "span": 3,
-            "targets": [
-                {
-                    "expr": "sum(rate(scylla_transport_cql_request_bytes{kind=~\"QUERY|EXECUTE\",instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]])/(sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]]) or on([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]]))",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "",
-                    "refId": "A",
-                    "step": 1
-                }
-            ],
-            "title": "Estimated write message size by [[by]]",
-            "type": "timeseries"
-        },
-        {
-            "class": "bytes_panel",
-            "dashversion": [
-                ">5.3",
-                ">2022.1"
-            ],
-            "datasource": "prometheus",
-            "description": "This is a ballpark estimation of the read-messages size (like select).\n\nIt is based on the assumption that read-messages are responsible for most outbound traffic.",
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "class": "fieldConfig_defaults",
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "axisSoftMin": 0,
-                        "barAlignment": 0,
-                        "class": "fieldConfig_defaults_custom",
-                        "drawStyle": "line",
-                        "fillOpacity": 0,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 6,
-                "w": 6,
-                "x": 6,
-                "y": 206
-            },
-            "id": 126,
-            "isNew": true,
-            "links": [],
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "hidden",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "multi",
-                    "sort": "asc"
-                }
-            },
-            "span": 3,
-            "targets": [
-                {
-                    "expr": "sum(rate(scylla_transport_cql_request_bytes{kind=~\"QUERY|EXECUTE\",instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]])/(sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]]) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$scheduling_group\"}[1m])) by ([[by]]))",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "",
-                    "refId": "A",
-                    "step": 1
-                }
-            ],
-            "title": "Estimated read message size by [[by]]",
-            "type": "timeseries"
-        },
-        {
             "class": "collapsible_row_panel",
             "collapsed": false,
             "dashproductreject": "no-your-pannels",
@@ -9059,9 +8568,9 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 212
+                "y": 200
             },
-            "id": 127,
+            "id": 121,
             "panels": [],
             "repeat": "",
             "title": "Your panels",
@@ -9082,9 +8591,9 @@
                 "h": 2,
                 "w": 24,
                 "x": 0,
-                "y": 213
+                "y": 201
             },
-            "id": 128,
+            "id": 122,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -9149,9 +8658,9 @@
                 "h": 6,
                 "w": 12,
                 "x": 0,
-                "y": 215
+                "y": 203
             },
-            "id": 129,
+            "id": 123,
             "isNew": true,
             "links": [],
             "options": {
@@ -9223,9 +8732,9 @@
                 "h": 6,
                 "w": 12,
                 "x": 12,
-                "y": 215
+                "y": 203
             },
-            "id": 130,
+            "id": 124,
             "isNew": true,
             "links": [],
             "options": {
@@ -9261,9 +8770,9 @@
                 "h": 3,
                 "w": 24,
                 "x": 0,
-                "y": 221
+                "y": 209
             },
-            "id": 131,
+            "id": 125,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -9282,7 +8791,7 @@
     "schemaVersion": 26,
     "style": "dark",
     "tags": [
-        "2022.1"
+        "5.2"
     ],
     "templating": {
         "list": [
@@ -9458,14 +8967,14 @@
                     "selected": true,
                     "tags": [],
                     "text": [
-                        "sl:default"
+                        "statement"
                     ],
                     "value": [
-                        "sl:default"
+                        "statement"
                     ]
                 },
                 "dashversion": [
-                    ">2021.1"
+                    ">4.3"
                 ],
                 "datasource": "prometheus",
                 "definition": "",
@@ -9477,42 +8986,6 @@
                 "name": "scheduling_group",
                 "options": [],
                 "query": "label_values(all_scheduling_group{cluster=~\"$cluster|$^\"}, scheduling_group_name)",
-                "refresh": 2,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 3,
-                "tagValuesQuery": "",
-                "tags": [],
-                "tagsQuery": "",
-                "type": "query",
-                "useTags": false
-            },
-            {
-                "allValue": ".*",
-                "class": "template_variable_all",
-                "current": {
-                    "selected": true,
-                    "text": [
-                        "All"
-                    ],
-                    "value": [
-                        "$__all"
-                    ]
-                },
-                "dashversion": [
-                    ">5.3",
-                    ">2022.1"
-                ],
-                "datasource": "prometheus",
-                "definition": "",
-                "error": null,
-                "hide": 0,
-                "includeAll": true,
-                "label": "cql_kind",
-                "multi": true,
-                "name": "kind",
-                "options": [],
-                "query": "label_values(scylla_transport_cql_requests_count{cluster=~\"$cluster|$^\"}, kind)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,
@@ -9576,8 +9049,8 @@
                 "allValue": null,
                 "class": "template_variable_custom",
                 "current": {
-                    "text": "2022.1",
-                    "value": "2022.1"
+                    "text": "5.2",
+                    "value": "5.2"
                 },
                 "error": null,
                 "hide": 2,
@@ -9588,11 +9061,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "2022.1",
-                        "value": "2022.1"
+                        "text": "5.2",
+                        "value": "5.2"
                     }
                 ],
-                "query": "2022.1",
+                "query": "5.2",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -9654,6 +9127,6 @@
     },
     "timezone": "utc",
     "title": "Detailed",
-    "uid": "detailed-2022-1",
+    "uid": "detailed-5-2",
     "version": 5
 }

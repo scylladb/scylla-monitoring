@@ -970,6 +970,47 @@
                         ]
                     },
                     {
+                        "dashversion": [
+                            ">5.1",
+                            ">2022.2"
+                        ],
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value #F"
+                        },
+                        "properties": [
+                            {
+                                "id": "links",
+                                "value": [
+                                    {
+                                        "title": "How many live nodes this node sees",
+                                        "url": "/d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}&from=${__from}&to=${__to}"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "custom.width",
+                                "value": 80
+                            },
+                            {
+                                "id": "custom.filterable",
+                                "value": true
+                            },
+                            {
+                                "id": "custom.displayMode",
+                                "value": "color-text"
+                            },
+                            {
+                                "id": "custom.align",
+                                "value": "left"
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Live"
+                            }
+                        ]
+                    },
+                    {
                         "matcher": {
                             "id": "byName",
                             "options": "instance"
@@ -983,6 +1024,58 @@
                                         "url": "/d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}&from=${__from}&to=${__to}"
                                     }
                                 ]
+                            }
+                        ]
+                    },
+                    {
+                        "dashversion": [
+                            ">5.2",
+                            ">2023.1"
+                        ],
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value #G"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.displayMode",
+                                "value": "lcd-gauge"
+                            },
+                            {
+                                "id": "min",
+                                "value": 0
+                            },
+                            {
+                                "id": "max",
+                                "value": 101
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Streaming"
+                            },
+                            {
+                                "id": "custom.width",
+                                "value": 90
+                            },
+                            {
+                                "id": "custom.filterable",
+                                "value": false
+                            },
+                            {
+                                "id": "decimals",
+                                "value": 0
+                            },
+                            {
+                                "id": "thresholds",
+                                "value": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "green",
+                                            "value": null
+                                        }
+                                    ]
+                                }
                             }
                         ]
                     }
@@ -1045,6 +1138,30 @@
                     "interval": "",
                     "legendFormat": "",
                     "refId": "E"
+                },
+                {
+                    "dashversion": [
+                        ">5.1",
+                        ">2022.2"
+                    ],
+                    "expr": "sum(scylla_gossip_live{cluster=~\"$cluster|$^\"})by (instance)",
+                    "format": "table",
+                    "instant": true,
+                    "interval": "",
+                    "legendFormat": "",
+                    "refId": "F"
+                },
+                {
+                    "dashversion": [
+                        ">5.2",
+                        ">2023.1"
+                    ],
+                    "expr": "(min(scylla_streaming_finished_percentage{cluster=~\"$cluster|$^\", dc=~\"$dc\"}*100) by (instance) < 100) or on (instance)  0*sum(scylla_scylladb_current_version{cluster=~\"$cluster|$^\", dc=~\"$dc\"}) by (instance)",
+                    "format": "table",
+                    "instant": true,
+                    "interval": "",
+                    "legendFormat": "",
+                    "refId": "G"
                 }
             ],
             "title": "Nodes",
@@ -3644,18 +3761,53 @@
             "type": "timeseries"
         },
         {
-            "class": "text_panel",
-            "content": "##  ",
+            "class": "ops_panel",
             "dashversion": [
-                "<5.1",
-                "<2022.2"
+                ">5.1",
+                ">2022.2"
             ],
-            "datasource": null,
+            "datasource": "prometheus",
+            "description": "The number of items deleted by their TTL",
             "editable": true,
             "error": false,
             "fieldConfig": {
                 "defaults": {
-                    "custom": {}
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -3668,13 +3820,32 @@
             "id": 45,
             "isNew": true,
             "links": [],
-            "mode": "markdown",
-            "options": {},
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "asc"
+                }
+            },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 4,
-            "style": {},
-            "title": "",
-            "transparent": true,
-            "type": "text"
+            "targets": [
+                {
+                    "expr": "$func(rate(scylla_expiration_items_deleted{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[60s])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Expired Item Deleted by [[by]]",
+            "type": "timeseries"
         },
         {
             "class": "plain_text",
@@ -4275,7 +4446,7 @@
     "schemaVersion": 26,
     "style": "dark",
     "tags": [
-        "2022.1"
+        "2023.1"
     ],
     "templating": {
         "list": [
@@ -4524,8 +4695,8 @@
                 "allValue": null,
                 "class": "template_variable_custom",
                 "current": {
-                    "text": "2022-1",
-                    "value": "2022-1"
+                    "text": "2023-1",
+                    "value": "2023-1"
                 },
                 "error": null,
                 "hide": 2,
@@ -4536,11 +4707,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "2022-1",
-                        "value": "2022-1"
+                        "text": "2023-1",
+                        "value": "2023-1"
                     }
                 ],
-                "query": "2022-1",
+                "query": "2023-1",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -4548,8 +4719,8 @@
                 "allValue": null,
                 "class": "template_variable_custom",
                 "current": {
-                    "text": "2022.1",
-                    "value": "2022.1"
+                    "text": "2023.1",
+                    "value": "2023.1"
                 },
                 "error": null,
                 "hide": 2,
@@ -4560,11 +4731,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "2022.1",
-                        "value": "2022.1"
+                        "text": "2023.1",
+                        "value": "2023.1"
                     }
                 ],
-                "query": "2022.1",
+                "query": "2023.1",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -4721,6 +4892,6 @@
     },
     "timezone": "utc",
     "title": "Alternator",
-    "uid": "alternator-2022-1",
+    "uid": "alternator-2023-1",
     "version": 1
 }
