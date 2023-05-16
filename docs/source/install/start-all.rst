@@ -80,9 +80,12 @@ This flag places the Prometheus data directory outside of its container and by d
 
 **--evaluation-interval duration** Override the default recording rules evaluation-interval.
 
+<<<<<<< HEAD:docs/source/install/start-all.rst
 **--no-cas** An optimization for users who do not use cas, Prometheus will drop all cas related metrics while scrapping
 **--no-cdc** An optimization for users who do not use cdc, Prometheus will drop all cdc related metrics while scrapping
 
+=======
+>>>>>>> branch-4.3.2-darwin:docs/source/install/start_all.rst
 Prometheus Retention Period
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Prometheus retention period is set for two weeks by default. A common request is how to set it to something else.

@@ -132,13 +132,21 @@ fi
 
 sed "s/ALERTMANAGER/$ALERT_MANAGER_ADDRESS/" loki/conf/loki-config.template.yaml > loki/conf/loki-config.yaml
 
-docker run ${DOCKER_LIMITS["loki"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
-     $USER_PERMISSIONS \
-	 -v $LOKI_RULE_DIR:/etc/loki/rules/fake:z \
-	 -v $LOKI_CONF_DIR:/mnt/config:z \
-	 $LOKI_DIR \
-     --name $LOKI_NAME docker.io/grafana/loki:$LOKI_VERSION $LOKI_COMMANDS --config.file=/mnt/config/loki-config.yaml ${DOCKER_PARAMS["loki"]} >& /dev/null
-
+if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+    docker run --platform linux/arm64/v8 ${DOCKER_LIMITS["loki"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
+        $USER_PERMISSIONS \
+        -v $LOKI_RULE_DIR:/etc/loki/rules/fake:z \
+        -v $LOKI_CONF_DIR:/mnt/config:z \
+        $LOKI_DIR \
+        --name $LOKI_NAME docker.io/grafana/loki:$LOKI_VERSION $LOKI_COMMANDS --config.file=/mnt/config/loki-config.yaml ${DOCKER_PARAMS["loki"]} >& /dev/null
+else
+    docker run ${DOCKER_LIMITS["loki"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
+        $USER_PERMISSIONS \
+        -v $LOKI_RULE_DIR:/etc/loki/rules/fake:z \
+        -v $LOKI_CONF_DIR:/mnt/config:z \
+        $LOKI_DIR \
+        --name $LOKI_NAME docker.io/grafana/loki:$LOKI_VERSION $LOKI_COMMANDS --config.file=/mnt/config/loki-config.yaml ${DOCKER_PARAMS["loki"]} >& /dev/null
+fi
 if [ $? -ne 0 ]; then
     echo "Error: Loki container failed to start"
     echo "For more information use: docker logs $LOKI_NAME"
@@ -161,8 +169,14 @@ fi
 
 LOKI_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $LOKI_NAME):3100"
 if [ "$LOKI_ADDRESS" = ":3100" ]; then
-    HOST_IP=`hostname -I | awk '{print $1}'`
-    LOKI_ADDRESS="$HOST_IP:3100"
+    if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]]; then
+        HOST_IP= `ipconfig getifaddr en0 | awk 'NR==1{print $1}'`
+        LOKI_ADDRESS="$HOST_IP:3100"
+
+    else 
+        HOST_IP=`hostname -I | awk '{print $1}'`
+        LOKI_ADDRESS="$HOST_IP:3100"
+    fi
 fi
 
 if [ -z $PROMTAIL_PORT ]; then
@@ -183,10 +197,16 @@ if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
 fi
 
 sed "s/LOKI_IP/$LOKI_ADDRESS/" loki/promtail/promtail_config.template.yml > loki/promtail/promtail_config.yml
+if [[ "$(uname)" == "Darwin" && "$(arch)" == "arm64" ]] || [[ "$(uname -m)" == "aarch64"]]; then
+    docker run --platform linux/arm64/v8 ${DOCKER_LIMITS["promtail"]}  -d $DOCKER_PARAM -i $PROMTAIL_PORT_MAPPING \
+        -v $PROMTAIL_CONFIG:/etc/promtail/config.yml:z \
+        --name $PROMTAIL_NAME docker.io/grafana/promtail:$LOKI_VERSION --config.file=/etc/promtail/config.yml ${DOCKER_PARAMS["promtail"]} >& /dev/null
 
-docker run ${DOCKER_LIMITS["promtail"]}  -d $DOCKER_PARAM -i $PROMTAIL_PORT_MAPPING \
-	 -v $PROMTAIL_CONFIG:/etc/promtail/config.yml:z \
-     --name $PROMTAIL_NAME docker.io/grafana/promtail:$LOKI_VERSION --config.file=/etc/promtail/config.yml ${DOCKER_PARAMS["promtail"]} >& /dev/null
+else
+    docker run ${DOCKER_LIMITS["promtail"]}  -d $DOCKER_PARAM -i $PROMTAIL_PORT_MAPPING \
+        -v $PROMTAIL_CONFIG:/etc/promtail/config.yml:z \
+        --name $PROMTAIL_NAME docker.io/grafana/promtail:$LOKI_VERSION --config.file=/etc/promtail/config.yml ${DOCKER_PARAMS["promtail"]} >& /dev/null
+fi
 
 if [ $? -ne 0 ]; then
     echo "Error: Promtail container failed to start"
