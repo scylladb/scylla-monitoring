@@ -56,6 +56,12 @@ if [ ! -z "$is_podman" ]; then
     group_args+=(--userns=keep-id)
 fi
 
+if [[ $(uname) == "Linux" ]]; then
+  readlink_command="readlink -f"
+elif [[ $(uname) == "Darwin" ]]; then
+  readlink_command="realpath "
+fi
+
 function usage {
   __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
 
@@ -267,7 +273,7 @@ for arg; do
             if [ "$VOLUME" = "1" ]; then
                 SRC=`echo $VALUE|cut -d':' -f1`
                 DST=`echo $VALUE|cut -d':' -f2-`
-                SRC=$(readlink -m $SRC)
+                SRC=$($readlink_command "$SRC")
                 DOCKER_LIMITS[$DOCR]="${DOCKER_LIMITS[$DOCR]} -v $SRC:$DST"
                 VOLUMES="$VOLUMES --volume $NOSPACE"
                 unset VOLUME
@@ -299,9 +305,9 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
     r) ALERT_MANAGER_RULE_CONFIG="-r $OPTARG"
        ;;
     R) if [[ -d "$OPTARG" ]]; then
-        PROMETHEUS_RULES=`readlink -m $OPTARG`":/etc/prometheus/prom_rules/"
+        PROMETHEUS_RULES=$($readlink_command $OPTARG)":/etc/prometheus/prom_rules/"
        else
-        PROMETHEUS_RULES=`readlink -m $OPTARG`":/etc/prometheus/prometheus.rules.yml"
+        PROMETHEUS_RULES=$($readlink_command $OPTARG)":/etc/prometheus/prometheus.rules.yml"
        fi
        ;;
     g) GRAFANA_PORT="-g $OPTARG"
@@ -412,9 +418,9 @@ if [ -z "$CONSUL_ADDRESS" ]; then
         fi
     fi
 
-    SCYLLA_TARGET_FILE="-v "$(readlink -m $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_servers.yml:Z"
-    SCYLLA_MANGER_TARGET_FILE="-v "$(readlink -m $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z"
-    NODE_TARGET_FILE="-v "$(readlink -m $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/node_exporter_servers.yml:Z"
+    SCYLLA_TARGET_FILE="-v "$($readlink_command $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_servers.yml:Z"
+    SCYLLA_MANGER_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z"
+    NODE_TARGET_FILE="-v "$($readlink_command $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/node_exporter_servers.yml:Z"
 else
     SCYLLA_TARGET_FILE=""
     SCYLLA_MANGER_TARGET_FILE=""
@@ -433,9 +439,9 @@ else
         mkdir -p $DATA_DIR
     fi
     if [[ "$VICTORIA_METRICS" = "1" ]]; then
-        DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/victoria-metrics-data"
+        DATA_DIR_CMD="-v "$($readlink_command $DATA_DIR)":/victoria-metrics-data"
     else
-        DATA_DIR_CMD="-v "$(readlink -m $DATA_DIR)":/prometheus/data:Z"
+        DATA_DIR_CMD="-v "$($readlink_command $DATA_DIR)":/prometheus/data:Z"
     fi
 fi
 
@@ -564,9 +570,14 @@ fi
 DB_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME):9090"
 
 if [ "$DB_ADDRESS" = ":9090" ]; then
-    HOST_IP=`hostname -I | awk '{print $1}'`
+    if [[ $(uname) == "Linux" ]]; then
+        HOST_IP=$(hostname -I | awk '{print $1}')
+    elif [[ $(uname) == "Darwin" ]]; then
+        HOST_IP=$(ifconfig en0 | awk '/inet / {print $2}')
+    fi
     DB_ADDRESS="$HOST_IP:9090"
 fi
+
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
      echo "running vmalert"
 
