@@ -230,14 +230,18 @@ if [[ "$HOME_DASHBOARD" = "" ]]; then
     HOME_DASHBOARD="/var/lib/grafana/dashboards/ver_$VERSION/scylla-overview.$VERSION.json"
 fi
 
-if [ ! -z $RUN_RENDERER ]; then
-	if [ ! -z "$is_podman" ]; then
-		DOCKER_HOST=`hostname -I | awk '{print $1}'`
-	else
-		DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+if [ ! -z "$is_podman" ]; then
+	if [[ $(uname) == "Linux" ]]; then
+		DOCKER_HOST=$(hostname -I | awk '{print $1}')
+	elif [[ $(uname) == "Darwin" ]]; then
+		DOCKER_HOST=$(ifconfig bridge0 | awk '/inet / {print $2}')
 	fi
-    RENDERING_SERVER_URL=`./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS  -D "$DOCKER_PARAM"`
-    GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_RENDERING_SERVER_URL=http://$DOCKER_HOST:8081/render -e GF_RENDERING_CALLBACK_URL=http://$DOCKER_HOST:$GRAFANA_PORT/"
+else
+	if [[ $(uname) == "Linux" ]]; then
+		DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+	elif [[ $(uname) == "Darwin" ]]; then
+		DOCKER_HOST=$(ifconfig bridge0 | awk '/inet / {print $2}')
+	fi
 fi
 
 docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PORT_MAPPING \
