@@ -161,9 +161,14 @@ fi
 
 LOKI_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $LOKI_NAME):3100"
 if [ "$LOKI_ADDRESS" = ":3100" ]; then
-    HOST_IP=`hostname -I | awk '{print $1}'`
+    if [[ $(uname) == "Linux" ]]; then
+        HOST_IP=$(hostname -I | awk '{print $1}')
+    elif [[ $(uname) == "Darwin" ]]; then
+        HOST_IP=$(ifconfig en0 | awk '/inet / {print $2}')
+    fi
     LOKI_ADDRESS="$HOST_IP:3100"
 fi
+
 
 if [ -z $PROMTAIL_PORT ]; then
     PROMTAIL_PORT=9080
