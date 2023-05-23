@@ -36,5 +36,5 @@ The ScyllaDB Monitoring Stack consists of three components, wrapped in Docker co
 * :doc:`Reference <reference/index>`
 * :doc:`Upgrade <upgrade/index>`
 
-* `ScyllaDB Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/admin-procedures-and-basic-monitoring/>`_ on Scylla University
+* `ScyllaDB Monitoring Stack lesson <https://university.scylladb.com/courses/scylla-operations/lessons/scylla-monitoring/>`_ on Scylla University
 * `ScyllaDB Monitoring Stack GitHub Project <https://github.com/scylladb/scylla-monitoring/>`_
