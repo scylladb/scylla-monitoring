@@ -103,6 +103,8 @@ Options:
   --no-renderer                  - If set, do not run the Grafana renderer container.
   --thanos-sc                    - If set, run thanos side car with the Prometheus server.
   --thanos                       - If set, run thanos query as a Grafana datasource.
+  --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
+                                   the file names should be scylla_server.yml, node_exporter_servers.yml, and  scylla_manager_servers.yml
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
                                    prometheus, grafana, alertmanager, loki, sidecar, grafanarender
   --archive                      - Treat data directory as an archive. This disables Prometheus time-to-live (infinite retention).
@@ -244,6 +246,9 @@ for arg; do
             (--no-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cdc"
                 ;;
+            (--target-directory)
+                TARGET_DIRECTORY="1"
+                ;;
             (--help) usage
                 ;;
             (--archive)
@@ -376,7 +381,7 @@ if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
     HOST_NETWORK=1
 fi
 
-if [ -z "$CONSUL_ADDRESS" ]; then
+if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
     for f in ${SCYLLA_TARGET_FILES[@]}; do
         if [ -f $f ]; then
             SCYLLA_TARGET_FILE=$f
@@ -418,15 +423,18 @@ if [ -z "$CONSUL_ADDRESS" ]; then
         fi
     fi
 
-    SCYLLA_TARGET_FILE="-v "$($readlink_command $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_servers.yml:Z"
-    SCYLLA_MANGER_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/scylla_manager_servers.yml:Z"
-    NODE_TARGET_FILE="-v "$($readlink_command $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/node_exporter_servers.yml:Z"
+    SCYLLA_TARGET_FILE="-v "$($readlink_command $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_servers.yml"
+    SCYLLA_MANGER_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_servers.yml"
+    NODE_TARGET_FILE="-v "$($readlink_command $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/targets/node_exporter_servers.yml"
 else
     SCYLLA_TARGET_FILE=""
     SCYLLA_MANGER_TARGET_FILE=""
     NODE_TARGET_FILE=""
 fi
 
+if [ "$TARGET_DIRECTORY" = "1" ]; then
+    SCYLLA_TARGET_FILE="-v $PWD/prometheus/targets/:/etc/scylla.d/prometheus/targets/"
+fi
 if [ -z $DATA_DIR ]
 then
     USER_PERMISSIONS=""
@@ -529,7 +537,7 @@ else
 docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
      $DATA_DIR_CMD \
      "${group_args[@]}" \
-     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:Z \
+     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml \
      -v $PROMETHEUS_RULES:z \
      $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
