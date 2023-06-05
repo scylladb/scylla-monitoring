@@ -92,7 +92,7 @@ smv_outputdir_format = '{ref.name}'
 
 # -- Options for sitemap extension ---------------------------------------
 
-sitemap_url_scheme = 'stable/{link}'
+sitemap_url_scheme = "/stable/{link}"
 
 # -- Options for HTML output ---------------------------------------------
 
@@ -110,6 +110,7 @@ html_theme_options = {
     'conf_py_path': 'docs/source/',
     'hide_version_dropdown': ['master'],
     'hide_edit_this_page_button': 'false',
+    'hide_feedback_buttons': 'false',
     'github_issues_repository': 'scylladb/scylla-monitoring',
     'github_repository': 'scylladb/scylla-monitoring',
     'site_description': 'Scylla Monitoring Stack is a full stack for Scylla monitoring and alerting. The stack contains open source tools including Prometheus and Grafana, as well as custom Scylla dashboards and tooling.',
