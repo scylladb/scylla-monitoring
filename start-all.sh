@@ -247,7 +247,8 @@ for arg; do
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cdc"
                 ;;
             (--target-directory)
-                TARGET_DIRECTORY="1"
+                LIMIT="1"
+                PARAM="target-directory"
                 ;;
             (--help) usage
                 ;;
@@ -270,6 +271,9 @@ for arg; do
             unset PARAM
         elif [ "$PARAM" = "evaluation-interval" ]; then
             PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS -E $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "target-directory" ]; then
+            TARGET_DIRECTORY="$NOSPACE"
             unset PARAM
         else
             if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
@@ -432,8 +436,8 @@ else
     NODE_TARGET_FILE=""
 fi
 
-if [ "$TARGET_DIRECTORY" = "1" ]; then
-    SCYLLA_TARGET_FILE="-v $PWD/prometheus/targets/:/etc/scylla.d/prometheus/targets/"
+if [ "$TARGET_DIRECTORY" != "" ]; then
+    SCYLLA_TARGET_FILE="-v "$($readlink_command $TARGET_DIRECTORY)":/etc/scylla.d/prometheus/targets/"
 fi
 if [ -z $DATA_DIR ]
 then
