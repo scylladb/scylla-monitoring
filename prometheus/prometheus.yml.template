@@ -26,7 +26,7 @@ scrape_configs:
   honor_labels: false
   file_sd_configs:
     - files:
-      - /etc/scylla.d/prometheus/scylla_servers.yml
+      - /etc/scylla.d/prometheus/targets/scylla_servers.yml
   relabel_configs:
     - source_labels: [__address__]
       regex:  '([^:]+)'
@@ -150,7 +150,7 @@ scrape_configs:
   scrape_timeout: 20s # Timeout before trying to scape a target again
   file_sd_configs:
     - files:
-      - /etc/scylla.d/prometheus/node_exporter_servers.yml
+      - /etc/scylla.d/prometheus/targets/node_exporter_servers.yml
   relabel_configs:
     - source_labels: [__address__]
       regex:  '(.*):\d+'
@@ -174,26 +174,22 @@ scrape_configs:
   honor_labels: false
   file_sd_configs:
     - files:
-      - /etc/scylla.d/prometheus/scylla_servers.yml
+      - /etc/scylla.d/prometheus/targets/scylla_manager_agents.yml
   relabel_configs:
     - source_labels: [__address__]
-      regex:  '(.*):\d+'
-      target_label: instance
-      replacement: '${1}'
-    - source_labels: [__address__]
       regex:  '([^:]+)'
-      target_label: instance
-      replacement: '${1}'
-    - source_labels: [instance]
-      regex:  '(.*)'
       target_label: __address__
       replacement: '${1}:5090'
+    - source_labels: [__address__]
+      regex:  '(.*):.+'
+      target_label: instance
+      replacement: '${1}'
 
 - job_name: scylla_manager
   honor_labels: false
   file_sd_configs:
     - files:
-      - /etc/scylla.d/prometheus/scylla_manager_servers.yml
+      - /etc/scylla.d/prometheus/targets/scylla_manager_servers.yml
   metric_relabel_configs:
     - source_labels: [host]
       target_label: instance
