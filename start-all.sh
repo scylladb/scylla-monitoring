@@ -237,6 +237,10 @@ for arg; do
                 LIMIT="1"
                 PARAM="evaluation-interval"
                 ;;
+            (--manager-agents)
+                LIMIT="1"
+                PARAM="manager-agents"
+                ;;
             (--no-cas-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
                 ;;
@@ -271,6 +275,9 @@ for arg; do
             unset PARAM
         elif [ "$PARAM" = "evaluation-interval" ]; then
             PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS -E $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "manager-agents" ]; then
+            SCYLLA_MANGER_AGENT_TARGET_FILE="$NOSPACE"
             unset PARAM
         elif [ "$PARAM" = "target-directory" ]; then
             TARGET_DIRECTORY="$NOSPACE"
@@ -402,7 +409,9 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
        NODE_TARGET_FILE=$SCYLLA_TARGET_FILE
     fi
 
-
+    if [ -z $SCYLLA_MANGER_AGENT_TARGET_FILE ]; then
+       SCYLLA_MANGER_AGENT_TARGET_FILE=$SCYLLA_TARGET_FILE
+    fi
     if [ ! -f $NODE_TARGET_FILE ]; then
         echo "Node target file '${NODE_TARGET_FILE}' does not exist"
         exit 1
@@ -430,9 +439,11 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
     SCYLLA_TARGET_FILE="-v "$($readlink_command $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_servers.yml"
     SCYLLA_MANGER_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_servers.yml"
     NODE_TARGET_FILE="-v "$($readlink_command $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/targets/node_exporter_servers.yml"
+    SCYLLA_MANGER_AGENT_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_AGENT_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_agents.yml"
 else
     SCYLLA_TARGET_FILE=""
     SCYLLA_MANGER_TARGET_FILE=""
+    SCYLLA_MANGER_AGENT_TARGET_FILE=""
     NODE_TARGET_FILE=""
 fi
 
@@ -535,6 +546,7 @@ if [[ "$VICTORIA_METRICS" = "1" ]]; then
     $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
      $NODE_TARGET_FILE \
+     $SCYLLA_MANGER_AGENT_TARGET_FILE \
     victoriametrics/victoria-metrics:$VICTORIA_METRICS_VERSION $PROMETHEUS_COMMAND_LINE_OPTIONS \
      ${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090
 else
@@ -546,6 +558,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
      $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
      $NODE_TARGET_FILE \
+     $SCYLLA_MANGER_AGENT_TARGET_FILE \
      $PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
      --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
      ${DOCKER_PARAMS["prometheus"]}
