@@ -36,7 +36,6 @@ Each Advisor issue is explained in detail:
 * :doc:`Some queries are not token-aware <cqlNoTokenAware>`
 * :doc:`Some SELECT queries are non-paged <cqlNonPaged>`
 * :doc:`Some queries are non-prepared <cqlNonPrepared>`
-* :doc:`Some queries use reverse order <cqlReverseOrder>`
 * :doc:`Some operation failed due to unsatisfied consistency level <nodeCLErrors>`
 * :doc:`I/O Errors can indicate a node with a faulty disk <nodeIOErrors>`
 * :doc:`Some operations failed on the replica side <nodeLocalErrors>`

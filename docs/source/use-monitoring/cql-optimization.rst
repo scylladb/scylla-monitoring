@@ -63,10 +63,12 @@ The **Non-Paged CQL Reads** Graph shows the rate of the non-paged queries, make 
 Reversed CQL Reads
 ^^^^^^^^^^^^^^^^^^
 
-Scylla supports compound primary keys with a clustering column, this kind of primary keys allows an efficient way
+ScyllaDB supports compound primary keys with a clustering column. This kind of primary keys allows an efficient way
 to return sorted results that are sorted by the clustering column.
 
-Querying with an order different than the order the ``CLUSTERING ORDER BY`` was defined is inefficient and should be avoided.
+We strongly recommend using use the correct ordering.
+Querying with an order different than the order the ``CLUSTERING ORDER BY`` was defined is supported, but not advisable.
+
 
 For example, look at the following table:
 
