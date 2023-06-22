@@ -145,6 +145,36 @@ groups:
       by: "instance"
       level: "1"
       dd: "1"
+  - record: scylla_node_network_receive_bytes
+    expr: sum(rate(node_network_receive_bytes_total[2m])) by (cluster)
+    labels:
+      by: "cluster"
+      level: "1"
+      dd: "1"
+  - record: scylla_node_network_transmit_bytes
+    expr: sum(rate(node_network_transmit_bytes_total[2m])) by (cluster)
+    labels:
+      by: "cluster"
+      level: "1"
+      dd: "1"
+  - record: scylla_node_disk_read_bytes
+    expr: sum(rate(node_disk_read_bytes_total[2m])) by (cluster, device)
+    labels:
+      by: "cluster"
+      level: "1"
+      dd: "1"
+  - record: scylla_node_disk_written_bytes
+    expr: sum(rate(node_disk_written_bytes_total[2m])) by (cluster, device)
+    labels:
+      by: "cluster"
+      level: "1"
+      dd: "1"
+  - record: scylla_scylladb_current_version_total
+    expr: count(scylla_scylladb_current_version) by (cluster, version)
+    labels:
+      by: "cluster"
+      level: "1"
+      dd: "1"
   - record: scylla_ag_cache_bytes_used
     expr: avg(rate(scylla_cache_bytes_used{}[60s])) by (cluster)
     labels:
