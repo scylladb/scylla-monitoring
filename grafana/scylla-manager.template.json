@@ -20,12 +20,7 @@
                            "h":3
                         }
                      }
-                 ],
-                "dashversion": ">2.4"
-            },
-            {
-                "class": "logo_row",
-                "dashversion":"<2.4"
+                 ]
             },
             {
                 "class": "row",
@@ -139,14 +134,6 @@
                               "expr": "manager:repair_progress{cluster=~\"[[cluster]]\"}",
                               "format": "time_series",
                               "intervalFactor": 2,
-                              "dashversion":">2.4",
-                              "refId": "A"
-                            },
-                            {
-                              "expr": "sum(avg(scylla_manager_repair_progress{cluster=~\"[[cluster]]\", instance=\"\", keyspace=\"\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"repair\"}) by (task))  or vector(0)",
-                              "format": "time_series",
-                              "intervalFactor": 2,
-                              "dashversion":"<2.4",
                               "refId": "A"
                             }
                           ],
@@ -253,14 +240,6 @@
                               "expr": "manager:backup_progress{cluster=~\"[[cluster]]\"}*100",
                               "format": "time_series",
                               "intervalFactor": 2,
-                              "dashversion":">2.4",
-                              "refId": "A"
-                            },
-                            {
-                              "expr": "sum(avg(scylla_manager_backup_percent_progress{cluster=~\"[[cluster]]\", instance=\"\", keyspace=\"\"}) by (task) * sum(scylla_manager_task_active_count{cluster=~\"[[cluster]]\", type=\"backup\"}) by (task)) or vector(0)",
-                              "format": "time_series",
-                              "intervalFactor": 2,
-                              "dashversion":"<2.4",
                               "refId": "A"
                             }
                           ],
@@ -369,14 +348,13 @@
                         "class": "percentunit_panel",
                         "targets": [
                             {
-                              "expr": "manager:repair_progress{cluster=~\"[[cluster]]\"}*100",
+                              "expr": "manager:repair_progress{cluster=~\"[[cluster]]\"}",
                               "format": "time_series",
                               "intervalFactor": 2,
                               "refId": "A"
                             }
                         ],
                         "span":2,
-                        "dashversion":">2.4",
                         "title": "Repair Progress"
                     },
                     {
@@ -396,21 +374,7 @@
                                 "step": 4
                             }
                         ],
-                        "dashversion":">2.4",
                         "title": "Repair Token-Range Rate"
-                    },
-                    {
-                        "class": "ops_panel",
-                        "targets": [
-                            {
-                                "expr": "sum(rate(scylla_manager_repair_segments_success{cluster=~\"[[cluster]]\", instance=~\"$instance\", shard=~\"$shard\"}[60s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "dashversion":"<2.4",
-                        "title": "Repair Segments Rate"
                     },
                     {
                         "class": "ops_panel",
@@ -429,28 +393,13 @@
                                 "step": 4
                             }
                         ],
-                        "dashversion":">2.4",
                         "title": "Repair Token-Range Error Rate"
-                    },
-                    {
-                        "class": "ops_panel",
-                        "targets": [
-                            {
-                                "expr": "sum(rate(scylla_manager_repair_segments_error{cluster=~\"[[cluster]]\", instance=~\"$instance\", shard=~\"$shard\"}[60s])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "dashversion":"<2.4",
-                        "title": "Repair Segments Error Rate"
                     }
                     ],
                 "title": "Repair rate Row"
             },
             {
                 "class": "row",
-                "dashversion":">2.4",
                 "panels": [
                    {
                         "class": "percentunit_panel",
@@ -559,20 +508,6 @@
             {
                 "class": "row",
                 "panels": [
-                    {
-                        "class": "graph_panel",
-                        "targets": [
-                            {
-                                "expr": "sum(scylla_manager_ssh_open_streams_count{instance=~\"$instance\"}) by ($by)",
-                                "intervalFactor": 1,
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "description": "The number of SSH connection used by the manager",
-                        "dashversion":"<2.4",
-                        "title": "SSH open connections by $by"
-                    },
                     {
                         "class": "ms_panel",
                         "targets": [
