@@ -241,6 +241,10 @@ for arg; do
                 LIMIT="1"
                 PARAM="manager-agents"
                 ;;
+            (--datadog-api-keys)
+                LIMIT="1"
+                PARAM="datadog-api-keys"
+                ;;
             (--no-cas-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
                 ;;
@@ -281,6 +285,12 @@ for arg; do
             unset PARAM
         elif [ "$PARAM" = "target-directory" ]; then
             TARGET_DIRECTORY="$NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "datadog-api-keys" ]; then
+            DATDOGPARAM="$DATDOGPARAM -A $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "datadog-hostname" ]; then
+            DATDOGPARAM="$DATDOGPARAM -H $NOSPACE"
             unset PARAM
         else
             if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
@@ -635,5 +645,8 @@ done
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
-
+if [ ! -z "$DATDOGPARAM" ]; then
+   ./start-datadog.sh $DATDOGPARAM -p $DB_ADDRESS 
+fi
+    
 ./start-grafana.sh $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
