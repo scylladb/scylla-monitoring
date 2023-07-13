@@ -25,6 +25,9 @@ Prerequisites
    * - Scylla Monitoring Stack Version
      - Prometheus Version
      - Grafana Version
+   * - 4.5
+     - 2.45.0
+     - 10.0.2
    * - 4.4
      - 2.44.0
      - 9.5.2
