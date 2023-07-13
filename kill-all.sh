@@ -57,5 +57,6 @@ sleep 2
 ./kill-container.sh -b promtail
 ./kill-container.sh -b sidecar1
 ./kill-container.sh -b thanos
+./kill-container.sh -b datadog-agent
 
 
