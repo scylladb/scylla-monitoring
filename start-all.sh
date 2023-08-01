@@ -552,7 +552,7 @@ if [[ "$VICTORIA_METRICS" = "1" ]]; then
     echo "Using victoria metrics"
 
     docker run -d --rm $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
-    -v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml \
+    -v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml:z \
     $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
      $NODE_TARGET_FILE \
@@ -563,7 +563,7 @@ else
 docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
      $DATA_DIR_CMD \
      "${group_args[@]}" \
-     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml \
+     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:z \
      -v $PROMETHEUS_RULES:z \
      $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
