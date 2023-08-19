@@ -35,7 +35,8 @@ while getopts ':hA:p:e:H:D:' option; do
 done
 
 if [ -z "$DD_API_KEY" ]; then
-    exit 0
+	printf "\nDatagot API keys are not pressent, exiting.\n"
+    exit 1
 fi
 if [ -z "$DATADOG_NAME" ]; then
     DATADOG_NAME="datadog-agent"
@@ -101,14 +102,6 @@ fi
 cat docs/source/procedures/datadog/conf.yaml|sed "s/IP:9090/$PROMIP/g" > $CONF_DIR/conf.d/prometheus.d/conf.yaml
 
 CONF_DIR=$($readlink_command "$CONF_DIR")
-
-echo docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["datadog"]} -i \
---name $DATADOG_NAME \
---pid host -v $CONF_DIR/datadog.yaml:/etc/datadog-agent/datadog.yaml \
--v $CONF_DIR/conf.d/:/conf.d \
-$ENV_COMMAND \
--e DD_API_KEY="$DD_API_KEY" -e DD_CONTAINER_INCLUDE="" gcr.io/datadoghq/agent:latest
- 
 
 docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["datadog"]} -i \
 --name $DATADOG_NAME \
