@@ -245,6 +245,10 @@ for arg; do
                 LIMIT="1"
                 PARAM="datadog-api-keys"
                 ;;
+            (--datadog-hostname)
+                LIMIT="1"
+                PARAM="datadog-hostname"
+                ;;
             (--no-cas-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
                 ;;
