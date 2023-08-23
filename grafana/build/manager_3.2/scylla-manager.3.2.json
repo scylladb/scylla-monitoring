@@ -1031,15 +1031,50 @@
             "type": "timeseries"
         },
         {
-            "class": "ops_panel",
+            "class": "percent_panel",
+            "dashversion": ">3.2",
             "datasource": "prometheus",
-            "description": "Shows restore progress, the remaining bytes to complete",
+            "description": "Shows current restore progress",
             "editable": true,
             "error": false,
             "fieldConfig": {
                 "defaults": {
-                    "links": [],
-                    "unit": "decbytes"
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "percent"
                 },
                 "overrides": []
             },
@@ -1069,13 +1104,61 @@
             "span": 4,
             "targets": [
                 {
+                    "expr": "scylla_manager_restore_progress{cluster=~\"[[cluster]]\"} < 100",
+                    "intervalFactor": 1,
+                    "refId": "A",
+                    "step": 4
+                }
+            ],
+            "title": "Restore Progress",
+            "type": "timeseries"
+        },
+        {
+            "class": "ops_panel",
+            "datasource": "prometheus",
+            "description": "Shows restore progress, the remaining bytes to complete",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "links": [],
+                    "unit": "decbytes"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 8,
+                "x": 8,
+                "y": 19
+            },
+            "id": 19,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "asc"
+                }
+            },
+            "seriesOverrides": [
+                {}
+            ],
+            "span": 4,
+            "targets": [
+                {
                     "expr": "sum(scylla_manager_restore_remaining_bytes{cluster=~\"[[cluster]]\", instance=~\"$instance\", shard=~\"$shard\"}) by ([[by]])",
                     "intervalFactor": 1,
                     "refId": "A",
                     "step": 4
                 }
             ],
-            "title": "Restore Remaining bytes",
+            "title": "Restore Remaining Bytes",
             "type": "timeseries"
         },
         {
@@ -1131,7 +1214,7 @@
                 "x": 0,
                 "y": 25
             },
-            "id": 19,
+            "id": 20,
             "isNew": true,
             "links": [],
             "options": {
@@ -1175,7 +1258,7 @@
                 "x": 0,
                 "y": 31
             },
-            "id": 20,
+            "id": 21,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -1239,7 +1322,7 @@
                 "x": 0,
                 "y": 33
             },
-            "id": 21,
+            "id": 22,
             "isNew": true,
             "links": [],
             "options": {
@@ -1318,7 +1401,7 @@
                 "x": 10,
                 "y": 33
             },
-            "id": 22,
+            "id": 23,
             "isNew": true,
             "links": [],
             "options": {
@@ -1361,7 +1444,7 @@
                 "x": 0,
                 "y": 39
             },
-            "id": 23,
+            "id": 24,
             "isNew": true,
             "links": [],
             "mode": "html",
