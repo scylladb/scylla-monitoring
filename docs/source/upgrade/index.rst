@@ -7,6 +7,7 @@ Upgrade Scylla Monitoring Stack
    :titlesonly:
    :hidden:
 
+   Monitoring 4.x to 4.y <upgrade-guide-from-monitoring-4.x-to-monitoring-4.y>
    Monitoring 3.x to 4.y <upgrade-guide-from-monitoring-3.x-to-monitoring-4.y>
    Monitoring 3.x to 3.y <upgrade-guide-from-monitoring-3.x-to-monitoring-3.y>
    Monitoring 2.x to 3.y <upgrade-guide-from-monitoring-2.x-to-monitoring-3.y>
@@ -24,6 +25,8 @@ Upgrade Scylla Monitoring Stack
               <div class="medium-9 columns">
 
 Procedures for upgrading the Scylla Monitoring Stack.
+
+* :doc:`Upgrade Guide - Monitoring 4.x to 4.y <upgrade-guide-from-monitoring-4.x-to-monitoring-4.y>`
 
 * :doc:`Upgrade Guide - Monitoring 3.x to 4.y <upgrade-guide-from-monitoring-3.x-to-monitoring-4.y>`
 
