@@ -2,7 +2,7 @@
 Upgrade Guide - Scylla Monitoring 3.x to Scylla Monitoring 4.y
 ==============================================================
 
-This document is a step by step procedure for upgrading `Scylla Monitoring Stack </operating-scylla/monitoring/3.0>`_ from version 3.x to 4.y, for example, between 3.9 to 4.0.0.
+This document is a step by step procedure for upgrading ScyllaDB Monitoring Stack from version 3.x to 4.y, for example, between 3.9 to 4.0.0.
 
 Upgrade Procedure
 =================
@@ -277,5 +277,4 @@ see the latency graphs over your entire retention time.
 Related Links
 =============
 
-* `Scylla Monitoring </operating-scylla/monitoring/>`_
 * :doc:`Upgrade</upgrade/index>`

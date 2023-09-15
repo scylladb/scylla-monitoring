@@ -2,7 +2,7 @@
 Upgrade Guide - Scylla Monitoring 2.x to Scylla Monitoring 2.y
 ==============================================================
 
-This document is a step by step procedure for upgrading  |mon_root| from version 2.x to 2.y, for example, between 2.0 to 2.1.
+This document is a step by step procedure for upgrading  ScyllaDB Monitoring Stack from version 2.x to 2.y, for example, between 2.0 to 2.1.
 
 
 
@@ -128,5 +128,4 @@ Run:
 Related Links
 =============
 
-* |mon_root|
 * :doc:`Upgrade</upgrade/index>`
