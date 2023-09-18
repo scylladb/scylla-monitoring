@@ -2,7 +2,7 @@
 Upgrade Guide - Scylla Monitoring 2.x to Scylla Monitoring 3.x
 ==============================================================
 
-This document is a step by step procedure for upgrading |mon_root| from version 2.x to 3.x
+This document is a step by step procedure for upgrading ScyllaDB Monitoring Stack from version 2.x to 3.x
 
 Switching from Scylla Monitoring 2.x to Scylla Monitoring 3.x is not fully backward compatible.
 The changes affect dashboards' names and metrics.
@@ -59,5 +59,4 @@ To rollback, simply kill the new stack, change to the old monitoring stack direc
 Related Links
 =============
 
-* |mon_root|
 * :doc:`Upgrade</upgrade/index>`
