@@ -398,6 +398,14 @@ if [ -z "$VERSIONS" ]; then
   exit 1
 fi
 
+DOCKER_PARAMS_ORIGIN="$DOCKER_PARAM"
+DOCKER_PARAM=""
+for val in $DOCKER_PARAMS_ORIGIN; do
+	if [[ "$DOCKER_PARAM" != *"$val"* ]]; then
+		DOCKER_PARAM="$DOCKER_PARAM $val"
+	fi
+done
+
 if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
     if [ ! -z "$ALERTMANAGER_PORT" ] || [ ! -z "$GRAFANA_PORT" ] || [ ! -z $PROMETHEUS_PORT ]; then
         echo "Port mapping is not supported with host network, remove the -l flag from the command line"
