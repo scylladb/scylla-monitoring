@@ -13,7 +13,6 @@ fi
 if [ -z "$GRAFANA_AUTH_ANONYMOUS" ]; then
     GRAFANA_AUTH_ANONYMOUS=true
 fi
-DOCKER_PARAM=""
 EXTERNAL_VOLUME=""
 BIND_ADDRESS=""
 if [ -z "$ANONYMOUS_ROLE" ]; then
@@ -32,6 +31,7 @@ DEFAULT_THEME="light"
 if [ -f  env.sh ]; then
     . env.sh
 fi
+DOCKER_PARAM=""
 
 BRANCH_VERSION=$CURRENT_VERSION
 if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
