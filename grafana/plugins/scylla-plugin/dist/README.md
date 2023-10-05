@@ -1,4 +1,4 @@
-# Scylla/Appache Cassandra Backend Plugin
+# Scylla/Apache Cassandra Backend Plugin
 
 The plugin is currently in Alpha and not ready for comercial usage.
 
