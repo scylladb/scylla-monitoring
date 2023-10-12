@@ -26,8 +26,8 @@ Prerequisites
      - Prometheus Version
      - Grafana Version
    * - 4.5
-     - 2.45.0
-     - 10.0.2
+     - 2.47.1
+     - 10.1.5
    * - 4.4
      - 2.44.0
      - 9.5.2
