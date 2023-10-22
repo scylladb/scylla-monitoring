@@ -26,6 +26,9 @@ for arg; do
         (--no-cdc)
             NO_CDC="1"
             ;;
+        (--no-manager-agent-file)
+            NO_MANAGER_AGENT_FILE="1"
+            ;;
         (*) set -- "$@" "$arg"
             ;;
     esac
@@ -74,6 +77,9 @@ elif [ "$NO_CAS" = "1" ]; then
     sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cas.*)'\\n      action: drop/g" $PWD/prometheus/build/prometheus.yml
 elif [ "$NO_CDC" = "1" ]; then
     sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cdc_.*)'\\n      action: drop/g" $PWD/prometheus/build/prometheus.yml
+fi
+if [ "$NO_MANAGER_AGENT_FILE" = "1" ]; then
+    sed -i "s/ *# MANAGER_AGENT_PORT_MAPPING.*/    - source_labels: [__address__]\\n      regex:  '(.*):\\\\d+'\\n      target_label: __address__\\n      replacement: \'\$\{1\}\'\\n/g" $PWD/prometheus/build/prometheus.yml
 fi
 
 for val in "${PROMETHEUS_TARGETS[@]}"; do
