@@ -432,6 +432,7 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
     fi
 
     if [ -z $SCYLLA_MANGER_AGENT_TARGET_FILE ]; then
+       PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-manager-agent-file"
        SCYLLA_MANGER_AGENT_TARGET_FILE=$SCYLLA_TARGET_FILE
     fi
     if [ ! -f $NODE_TARGET_FILE ]; then
