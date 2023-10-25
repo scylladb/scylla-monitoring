@@ -27,8 +27,8 @@
                     {
                         "class": "collapsible_row_panel",
                         "repeat":"table",
-                        "collapsed": true,
-                        "title": "Latencies - $ks:$table"
+                        "collapsed": false,
+                        "title": "$ks:$table"
                     }
                 ]
             },
@@ -150,7 +150,68 @@
                             }
                         ],
                         "title": "99th percentile read latency by [[by]]"
+                    },
+                    {
+                        "class": "percentunit_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_column_family_cache_hit_rate{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Avg cache hit rate by [[by]]"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_column_family_total_disk_space{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Total disk space by [[by]]"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_column_family_live_disk_space{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Live disk space by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_column_family_live_sstable{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]|^$\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Live sstables by [[by]]"
                     }
+                   
                 ]
             },
             {
