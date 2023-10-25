@@ -152,18 +152,15 @@ scrape_configs:
     - files:
       - /etc/scylla.d/prometheus/targets/node_exporter_servers.yml
   relabel_configs:
-    - source_labels: [__address__]
-      regex:  '(.*):\d+'
-      target_label: instance
-      replacement: '${1}'
+# NODE_EXPORTER_PORT_MAPPING
     - source_labels: [__address__]
       regex:  '([^:]+)'
-      target_label: instance
-      replacement: '${1}'
-    - source_labels: [instance]
-      regex:  '(.*)'
       target_label: __address__
       replacement: '${1}:9100'
+    - source_labels: [__address__]
+      regex:  '(.*):.+'
+      target_label: instance
+      replacement: '${1}'
   metric_relabel_configs:
     - source_labels: [__name__]
       regex: '(node_filesystem_size_bytes|node_filesystem_avail_bytes|node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total)'
