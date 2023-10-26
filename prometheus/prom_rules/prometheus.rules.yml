@@ -133,7 +133,7 @@ groups:
     expr: up{job="scylla"} == 0
     for: 30s
     labels:
-      severity: "warn"
+      severity: "error"
     annotations:
       description: '{{ $labels.instance }} has been down for more than 30 seconds.'
       summary: Instance {{ $labels.instance }} down
@@ -141,7 +141,7 @@ groups:
     expr: sum(up{job="scylla"}>0)by(instance) unless sum(scylla_transport_requests_served{shard="0"}) by(instance)
     for: 1m
     labels:
-      severity: "warn"
+      severity: "error"
     annotations:
       description: '{{ $labels.instance }} instance is shutting down.'
       summary: Instance {{ $labels.instance }} down
@@ -149,7 +149,7 @@ groups:
     expr: scylla_node_operation_mode > 3
     for: 30s
     labels:
-      severity: "warn"
+      severity: "error"
     annotations:
       description: '{{ $labels.instance }} instance is shutting down.'
       summary: Instance {{ $labels.instance }} down
