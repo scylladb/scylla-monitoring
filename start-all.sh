@@ -201,6 +201,13 @@ LIMITS=""
 VOLUMES=""
 PARAMS=""
 for arg; do
+	if [ $arg = "--compose" ]; then
+		echo "Using compose"
+		exec ./make-compose.sh "$@"
+	fi
+done
+
+for arg; do
     shift
     if [ -z "$LIMIT" ]; then
        case $arg in
