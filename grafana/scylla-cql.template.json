@@ -146,40 +146,6 @@
                         "description": "Rate of CQL connections created"
                     },
                     {
-                        "class": "graph_panel",
-                        "span": 3,
-                        "pointradius": 1,
-                        "targets": [
-                            {
-                                "expr": "sum(rate(scylla_cql_batches{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 30
-                            }
-                        ],
-                        "title": "CQL Batches by [[by]]",
-                        "description": "Number of CQL batches command, each batched command is counted once"
-                    },
-                    {
-                        "class": "graph_panel",
-                        "span": 3,
-                        "pointradius": 1,
-                        "targets": [
-                            {
-                                "expr": "sum(rate(scylla_cql_statements_in_batches{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 30
-                            }
-                        ],
-                        "title": "CQL Command In Batches by [[by]]",
-                        "description": "Number of CQL command batched. Each batch would add the number of commands inside the batch"
-                    },
-                    {
                         "class": "ops_panel",
                         "description": "Counts the number of SELECT statements with BYPASS CACHE option",
                         "span": 3,
@@ -211,6 +177,57 @@
                         "title": "CQL Errors [[by]]",
                         "description": "CQL errors by type, only active errors are shown",
                         "dashversion":[">4.4", ">2021.1"]
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_cql_batches_pure_logged{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "CQL Logged Batches by [[by]]",
+                        "description": "Number of Logged CQL batches command, each batched command is counted once.\n\nIs used to make sure that multiple mutations across multiple partitions happen atomically, that is, all the included mutations will eventually succeed. However, there is a performance penalty imposed by atomicity guarantee."
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_cql_batches_pure_unlogged{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "CQL Unlogged Batches by [[by]]",
+                        "description": "Number of CQL batches command, each batched command is counted once.\n\nIs generally used to group mutations for a single partition and do not suffer from the performance penalty imposed by logged batches, but there is no atomicity guarantee for multi-partition updates."
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_cql_statements_in_batches{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "CQL Command In Batches by [[by]]",
+                        "description": "Number of CQL command batched. Each batch would add the number of commands inside the batch"
                     },
                     {
                         "class": "graph_panel",
