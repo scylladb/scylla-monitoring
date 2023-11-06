@@ -19,9 +19,9 @@ The Alertmanager also acts as a data source for Grafana so the active alerts ar
 
 Prometheus Alerts
 ^^^^^^^^^^^^^^^^^
-The Prometheus alerts are defined in the `prometheus.rules.yml` file that is located in the prometheus directory.
+The Prometheus alerts are defined in files placed under `prometheus/prom_rules/`. Prometheus will load any file that ends with `yml` or `yaml`.
 
-Each alert consists of:
+Each Prometheus alert consists of:
 
 - Name
 - What happened
@@ -36,7 +36,7 @@ For example, let us look at the `InstanceDown` alert that comes by default as pa
     expr: up == 0
     for: 60s
     labels:
-      severity: "2"
+      severity: "error"
     annotations:
       description: '{{ $labels.instance }} has been down for more than 30 seconds.'
       summary: Instance {{ $labels.instance }} down
@@ -45,9 +45,31 @@ The **expr** is a legal Prometheus expression, in this case, the **up** metric i
 
 The **for** set the minimal duration before the alert will be active. Prior to that, the alert will be in pending-mode and will not be sent.
 
-The **labels** part holds additional labels that will be added to the alert, in the example, the **severity** label will be set to **2**.
+The **labels** part holds additional labels that will be added to the alert, in the example, the **severity** label will be set to **error**.
 
 **annotations** are special labels that add a description to the alert and can be used in emails and notification when the alert is forward to external systems.
+
+Alerts severity
+---------------
+
+Prometheus uses the following severities from low to high: **info**, **warn**, **error**, **critical**.
+
+The Alertmanager inhibition rule (see the Alertmanager section) makes
+sure that an alert with higher priority will mute the lower priority rule. For example, out-of-disk space alerts have different thresholds,
+this way when the **error** alert for disk-full is firing, it silences the **warn** alert.
+
+When adding your own alerts, you can use the severities to signal the action's importance, for example **critical** would be a pager-duty, while an **error** will be an email.
+
+Adding Alerts
+----------------
+
+Add your own alerts in a separate file with a **yml** or **yaml** extension. Making it easier during upgrade.
+
+Modifying Alerts
+----------------
+
+It is a common practice to update the alerts that comes with the monitoring stack. Verify that the existing alerts suitable to your needs.
+When modifying an alert, remember that it will be overridden on you next upgrade.  
 
 Alertmanager
 ^^^^^^^^^^^^
