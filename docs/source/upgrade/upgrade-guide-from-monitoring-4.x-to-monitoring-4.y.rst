@@ -1,8 +1,8 @@
-==================================================================
-Upgrade Guide - ScyllaDB Monitoring 4.x to ScyllaDB Monitoring 4.y
-==================================================================
+======================================================================
+Upgrade Guide - ScyllaDB Monitoring 4.x.a to ScyllaDB Monitoring 4.y.b
+======================================================================
 
-This document is a step by step procedure for upgrading ScyllaDB Monitoring Stack from version 4.x to 4.y, for example, between 4.0 to 4.0.1.
+This document is a step by step procedure for upgrading ScyllaDB Monitoring Stack from version 4.x.a to 4.y.b, for example, between 4.0.0 to 4.0.1.
 
 Upgrade Procedure
 =================
@@ -13,14 +13,14 @@ Change to the directory you want to install the new Monitoring stack.
 Download the latest release:
 You can download the .zip or the .tar.
 
-Install 4.y (The new version)
------------------------------
+Install 4.y.b (The new version)
+-------------------------------
 
 .. code-block:: bash
 
-                wget -L https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-4.y.zip
-                unzip scylla-monitoring-4.y.zip
-                cd scylla-monitoring-scylla-monitoring-4.y/
+                wget -L https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-4.y.b.zip
+                unzip scylla-monitoring-4.y.b.zip
+                cd scylla-monitoring-scylla-monitoring-4.y.b/
 
 Replace “y” with the new minor release number, for example, 4.0.1.zip
 
@@ -31,8 +31,8 @@ Copy the ``scylla_servers.yml`` and ``scylla_manager_servers.yml`` from the vers
 
 .. code-block:: bash
 
-                cp /path/to/monitoring/4.x/prometheus/scylla_servers.yml prometheus/
-                cp /path/to/monitoring/4.x/prometheus/scylla_manager_servers.yml.yml prometheus/
+                cp /path/to/monitoring/4.x.a/prometheus/scylla_servers.yml prometheus/
+                cp /path/to/monitoring/4.x.a/prometheus/scylla_manager_servers.yml.yml prometheus/
 
 Validate the new version is running the correct version
 -------------------------------------------------------
@@ -49,7 +49,7 @@ To validate the Scylla-Monitoring version.
 Validate the version installed correctly
 ----------------------------------------
 
-To validate that the Monitoring stack starts correctly, first in parallel to the current (4.x) stack.
+To validate that the Monitoring stack starts correctly, first in parallel to the current (4.x.a) stack.
 
 .. code-block:: bash
 
@@ -68,10 +68,10 @@ When you are satisfied with the data in the dashboard, you can shut down the con
 
 .. caution::
 
-   Important: Do not kill the 4.x version that is currently running.
+   Important: Do not kill the 4.x.a version that is currently running.
 
-Killing the new 4.y Monitoring stack in testing mode
-----------------------------------------------------
+Killing the new 4.y.b Monitoring stack in testing mode
+------------------------------------------------------
 
 Use the following command to kill the containers:
 
@@ -79,10 +79,10 @@ Use the following command to kill the containers:
 
                 ./kill-all.sh -p 9091 -g 3001 -m 9095
 
-You can start and stop the new 4.y version while testing.
+You can start and stop the new 4.y.b version while testing.
 
-Move to version 4.y (the new version)
--------------------------------------
+Move to version 4.y.b (the new version)
+---------------------------------------
 
 Note: migrating will cause a few seconds of blackout in the system.
 
@@ -94,19 +94,19 @@ Kill all containers
 At this point you have two monitoring stacks running side by side, you should kill both before
 continuing.
 
-Kill the newer version that runs in testing mode by following the instructions on how to `Killing the new 4.y Monitoring stack in testing mode`_
+Kill the newer version that runs in testing mode by following the instructions on how to `Killing the new 4.y.b Monitoring stack in testing mode`_
 in the previous section
 
-kill the older 4.x version containers by running:
+kill the older 4.x.a version containers by running:
 
 .. code-block:: bash
 
                 ./kill-all.sh
 
-Start version 4.y in normal mode
+Start version 4.y.b in normal mode
 
 
-From the new root of the `scylla-monitoring-scylla-monitoring-4.y` run
+From the new root of the `scylla-monitoring-scylla-monitoring-4.y.b` run
 
 .. code-block:: bash
 
@@ -115,20 +115,20 @@ From the new root of the `scylla-monitoring-scylla-monitoring-4.y` run
 
 Point your browser to ``http://{ip}:3000`` and see that the data is there.
 
-Rollback to version 4.x
------------------------
+Rollback to version 4.x.a
+-------------------------
 
 
-To rollback during the testing mode, follow `Killing the new 4.y Monitoring stack in testing mode`_ as explained previously
+To rollback during the testing mode, follow `Killing the new 4.y.b Monitoring stack in testing mode`_ as explained previously
 and the system will continue to operate normally.
 
-To rollback to version 4.x after you completed the moving to version 4.y (as shown above).
+To rollback to version 4.x.a after you completed the moving to version 4.y.b (as shown above).
 Run:
 
 .. code-block:: bash
 
                 ./kill-all.sh
-                cd /path/to/scylla-grafana-4.x/
+                cd /path/to/scylla-grafana-4.x.a/
                 ./start-all.sh -d /path/to/data/dir
 
 Related Links
