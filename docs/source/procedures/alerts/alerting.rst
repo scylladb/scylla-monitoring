@@ -69,7 +69,7 @@ Modifying Alerts
 ----------------
 
 It is a common practice to update the alerts that comes with the monitoring stack. Verify that the existing alerts suitable to your needs.
-When modifying an alert, remember that it will be override on you next upgrade.  
+When modifying an alert, remember that it will be overridden on you next upgrade.  
 
 Alertmanager
 ^^^^^^^^^^^^
