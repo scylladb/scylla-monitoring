@@ -58,7 +58,7 @@ The Alertmanager inhibition rule (see the Alertmanager section) makes
 sure that an alert with higher priority will mute the lower priority rule. For example, out-of-disk space alerts have different thresholds,
 this way when the **error** alert for disk-full is firing, it silences the **warn** alert.
 
-When adding your own alerts, you can use the severities to signal the action importance, for example **critical** would be a pager-duty, while an **error** will be an email.
+When adding your own alerts, you can use the severities to signal the action's importance, for example **critical** would be a pager-duty, while an **error** will be an email.
 
 Adding Alerts
 ----------------
