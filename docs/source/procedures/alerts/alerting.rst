@@ -54,7 +54,7 @@ Alerts severity
 
 Prometheus uses the following severities from low to high: **info**, **warn**, **error**, **critical**.
 
-The Alertmanager inhibition rule (see the Alertmanager section) make
+The Alertmanager inhibition rule (see the Alertmanager section) makes
 sure that an alert with higher priority will mute lower priority rule. For example, out-of-disk space alerts have different thresholds,
 this way when the **error** alert for disk-full is firing, it silences the **warn** alert.
 
