@@ -562,13 +562,27 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(scylla_database_active_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "expr": "$func(scylla_database_active_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", class=~\"$scheduling_group\"}>0) by ([[by]], class)",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{class}} {{dc}} {{instance}} {{shard}}",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
+                        "fieldConfig": {
+				        "defaults": {
+				          "class": "fieldConfig_defaults",
+				          "custom": {
+				             "class":"fieldConfig_defaults_custom",
+				             "stacking": {
+					          "mode": "normal",
+					          "group": "A"
+					        }
+				          },
+				          "unit": "si:reads"
+				        },
+				        "overrides": []
+				     },
                         "title": "Active reads"
                     },
                     {
