@@ -29,6 +29,84 @@
             },
             {
                 "class": "row",
+                "height": "25px",
+                "dashversion":[">5.4", ">2023.1"],
+                "panels": [
+                    {
+                        "class": "percentunit_panel",
+                        "dashversion":[">5.4", ">2024.1"],
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_io_queue_consumption{iogroup=~\"$iogroup\", class=~\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]], class, iogroup)",
+                                "intervalFactor": 1,
+                                "legendFormat": "Group {{iogroup}} {{dc}} {{instance}} {{class}} {{shard}}",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "fieldConfig": {
+                            "defaults": {
+                              "class": "fieldConfig_defaults",
+                              "custom": {
+                                 "class":"fieldConfig_defaults_custom",
+                                 "axisSoftMax": 1,
+                                 "stacking": {
+                                  "mode": "normal",
+                                  "group": "A"
+                                }
+                              },
+                              "unit": "percentunit"
+                            },
+                            "overrides": []
+                         },
+                        "options": {
+                            "class":"desc_tooltip_options"
+                        },
+                        "description": "seastar_io_queue_delay",
+                        "title": "I/O Group [[iogroup]] Queue consumption by [[by]]"
+                    },
+                   {
+                        "class": "percentunit_panel",
+                        "dashversion":["<2024.1"],
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_io_queue_consumption{class=~\"$classes\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]], class)",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{class}} {{dc}} {{node}} {{shard}}",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "fieldConfig": {
+                            "defaults": {
+                              "class": "fieldConfig_defaults",
+                              "custom": {
+                                 "class":"fieldConfig_defaults_custom",
+                                 "axisSoftMax": 1,
+                                 "stacking": {
+                                  "mode": "normal",
+                                  "group": "A"
+                                }
+                              },
+                              "unit": "percentunit"
+                            },
+                            "overrides": []
+                         },
+                        "options": {
+                            "class":"desc_tooltip_options"
+                        },
+                        "description": "seastar_io_queue_delay",
+                        "title": "I/O Queue consumption by [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
                 "panels": [
                     {
                       "collapsed": false,
@@ -796,6 +874,15 @@
                     "sort": 1
                 },
                 {
+                    "class": "template_variable_all",
+                    "dashversion":[">5.4", ">2024.1"],
+                    "label": "iogroup",
+                    "name": "iogroup",
+                    "hide": 0,
+                    "query": "label_values(scylla_io_queue_consumption,iogroup)",
+                    "sort": 1
+                },
+                {
                     "class": "aggregation_function",
                     "current": {
                       "tags": [],
@@ -824,9 +911,9 @@
                 }
             ]
         },
-		"tags": [
-			"__SCYLLA_VERSION_DOT__"
-		],
+        "tags": [
+            "__SCYLLA_VERSION_DOT__"
+        ],
         "time": {
             "from": "now-30m",
             "to": "now"
