@@ -413,7 +413,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
        if [ ! -d $LOKI_DIR ]; then
            mkdir -p $LOKI_DIR
        fi
-       LOKI_DIR="-v $LOKI_DIR:/tmp/loki:z"
+       LOKI_DIR="- $LOKI_DIR:/tmp/loki:z"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -572,9 +572,19 @@ echo "LOKI_CONF_DIR=$LOKI_CONF_DIR">> .env
 echo "LOKI_DIR=$LOKI_DIR">> .env
 echo "LOKI_PORT=$LOKI_PORT">> .env
 echo "LOKI_WALL_DIR=$LOKI_WALL_DIR">> .env
+if [ "$VICTORIA_METRICS" = "1" ]; then
+	sed -i 's&prom/prometheus:${PROMETHEUS_VERSION}&victoriametrics/victoria-metrics:${VICTORIA_METRICS_VERSION}&' docker-compose.yml
+	sed -i 's&./prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml&./prometheus/build/prometheus.yml:/etc/promscrape.config.yml:z&' docker-compose.yml
+	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=( -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090)
+else
+	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--config.file=/etc/prometheus/prometheus.yml --web.enable-lifecycle)
+fi
+PROMETHEUS_COMMAND_LINE=""
+if (( ${#PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]} )); then
+    PROMETHEUS_COMMAND_LINE="    command:\n"`add_param "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"`
+fi
 
-val=`add_param "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"`
-sed -i "s/ *#PROMETHEUS_COMMAND_LINE/$val/" docker-compose.yml
+sed -i "s& *#PROMETHEUS_COMMAND_LINE&$PROMETHEUS_COMMAND_LINE&" docker-compose.yml
 val=`add_param "${PROMETHEUS_PROMETHEUS_VOLUMES_ARRAY[@]}"`
 sed -i "s& *#PROMETHEUS_VOLUMES&$val&" docker-compose.yml
 
