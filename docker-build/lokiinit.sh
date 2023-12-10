@@ -2,7 +2,7 @@
 echo "running loki init"
 
 if [ -f /mnt/config/loki-config.yaml ]; then
-    echo "Config exsits loki-config.yaml"
+    echo "Config exists loki-config.yaml"
 else
     echo "Setting loki-config.yaml"
     sed "s/ALERTMANAGER/$ALERT_MANAGER_ADDRESS/" /mnt/config/loki-config.template.yaml > /mnt/config/loki-config.yaml

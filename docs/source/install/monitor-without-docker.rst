@@ -15,7 +15,7 @@ Scylla Monitoring uses the following components:
 * Grafana
 
 The common scenario for users who use their own standalone installation, is that they already have such a server and would like to consolidate.
-We assume that that you already have Prometheus and Grafana running but we will add minimal installation instruction for all componenents.
+We assume that that you already have Prometheus and Grafana running but we will add minimal installation instruction for all components.
 
 We suggest that you follow the installation instruction of each of those products from their official documentation. It is also recommended that all servers will run as a service.
 
@@ -497,7 +497,7 @@ Enable the Plugin
 Grafana will not load unsigned plugins, for that you will need to enable it with Grafana. Edit Grafana ``grafana.ini`` file and add
 the line ``allow_loading_unsigned_plugins: scylladb-scylla-datasource``.
 
-See more about it the `Grafana configurtion`_.
+See more about it the `Grafana configuration`_.
 
-.. _`grafana configurtion`: https://grafana.com/docs/grafana/latest/administration/configuration/#allow_loading_unsigned_plugins
+.. _`grafana configuration`: https://grafana.com/docs/grafana/latest/administration/configuration/#allow_loading_unsigned_plugins
 
