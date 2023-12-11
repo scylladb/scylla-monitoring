@@ -226,6 +226,21 @@
                         ],
                         "description" : "Number of times a read was done on behalf of a speculative retry.\n\nSpeculative retry is a mechanism that causes the client or server to speculate that a request may fail, and send a new request.\n\nspeculative retry may reduce latency in exchange for system load, but only if there is little activity.\n\nA lot of speculative retries increases load and can harm latency more than helping.",
                         "title": "Speculative Data Reads By [[by]]"
+                    },
+                    {
+                        "class": "requestsps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_transport_requests_shed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "scylla_transport_requests_shed",
+                        "title": "Requests Shed"
                     }
                 ],
                 "title": "New row"
@@ -613,25 +628,10 @@
                         "title": "Writes blocked on commitlog"
                     },
                     {
-                        "class": "requestsps_panel",
-                        "span": 3,
-                        "targets": [
-                            {
-                                "expr": "$func(rate(scylla_transport_requests_shed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "description": "scylla_transport_requests_shed",
-                        "title": "Requests Shed"
-                    },
-                    {
                         "class": "text_panel",
                         "content": "",
                         "mode": "markdown",
-                        "span": 3
+                        "span": 6
                     },
                     {
                         "class": "wps_panel",
