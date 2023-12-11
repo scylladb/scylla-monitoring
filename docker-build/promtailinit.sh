@@ -2,7 +2,7 @@
 echo "running promtail init"
 
 if [ -f /etc/promtail/config.yml ]; then
-    echo "Config exsits promtail-config.yaml"
+    echo "Config exists promtail-config.yaml"
 else
     echo "Setting promtail-config.yaml"
     sed "s/ALERTMANAGER/$ALERT_MANAGER_ADDRESS/" /etc/promtail/promtail-config.template.yaml > /etc/promtail/config.yml

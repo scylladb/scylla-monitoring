@@ -1,7 +1,7 @@
 #!/bin/sh -e
 echo "running prometheus init"
 if [ -f /etc/prometheus/conf/prometheus.yml ]; then
-    echo "Config exsits /etc/prometheus/conf/prometheus.yml"
+    echo "Config exists /etc/prometheus/conf/prometheus.yml"
 else
     echo "Setting prometheus.yml"
     DST="/etc/prometheus/conf/"

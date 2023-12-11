@@ -2,7 +2,7 @@
 if [ -f  env.sh ]; then
     . env.sh
 fi
-usage="$(basename "$0") [-h] [-A DD_API_KEY ][-p ip:port address of prometheus ] [-d configuration directory] [-e enviroment variable, multiple params are supported] [-D encapsulate docker param] -- Start a datadog agent inside a container"
+usage="$(basename "$0") [-h] [-A DD_API_KEY ][-p ip:port address of prometheus ] [-d configuration directory] [-e environment variable, multiple params are supported] [-D encapsulate docker param] -- Start a datadog agent inside a container"
 
 while getopts ':hA:p:e:H:D:' option; do
   case "$option" in
@@ -35,7 +35,7 @@ while getopts ':hA:p:e:H:D:' option; do
 done
 
 if [ -z "$DD_API_KEY" ]; then
-	printf "\nDatagot API keys are not pressent, exiting.\n"
+	printf "\nDatagot API keys are not present, exiting.\n"
     exit 1
 fi
 if [ -z "$DATADOG_NAME" ]; then

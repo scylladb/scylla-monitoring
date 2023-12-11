@@ -1,6 +1,6 @@
 # Scylla/Apache Cassandra Backend Plugin
 
-The plugin is currently in Alpha and not ready for comercial usage.
+The plugin is currently in Alpha and not ready for commercial usage.
 
 [![CircleCI](https://circleci.com/gh/grafana/simple-datasource-backend/tree/master.svg?style=svg)](https://circleci.com/gh/grafana/simple-datasource-backend/tree/master)
 
@@ -9,7 +9,7 @@ This plugin allows connecting Scylla or Appahe Cassandra to Grafana.
 ## What is Scylla Grafana Data Source Backend Plugin?
 
 A [Backend plugins](https://grafana.com/docs/grafana/latest/developers/plugins/backend/) is a type of data-source plugin that runs on the server.
-That means that that from IP connectivity, your Database (Scylla or Appache Cassanra) should be accessible from the grafana server.
+That means that that from IP connectivity, your Database (Scylla or Apache Cassanra) should be accessible from the grafana server.
 
 
 ## Getting started
