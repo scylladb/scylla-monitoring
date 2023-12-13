@@ -1,0 +1,77 @@
+services:
+  alertmanager:
+    container_name: aalert
+    image: "prom/alertmanager:${ALERT_MANAGER_VERSION}"
+    #GENERAL_DOCER_CONFIG
+    ports:
+    - ${BIND_ADDRESS}${ALERTMANAGER_PORT}:9093
+    volumes:
+    - ${ALERT_MANAGER_RULE_CONFIG}:/etc/alertmanager/config.yml
+    #ALERT_MANAGER_DIR
+    #ALERTMANAGER_COMMAND
+  grafana:
+    container_name: agraf
+    environment:
+    - GF_PANELS_DISABLE_SANITIZE_HTML=true
+    - GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning
+    - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource
+    - GF_AUTH_BASIC_ENABLED=${GF_AUTH_BASIC_ENABLED}
+    - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED}
+    - GF_AUTH_ANONYMOUS_ORG_ROLE=${GF_AUTH_ANONYMOUS_ORG_ROLE}
+    - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/ver_${SCYLLA_VERSION}/scylla-overview.${SCYLLA_VERSION}.json
+    #GRAFANA_ENV
+    #GENERAL_DOCER_CONFIG
+    image: grafana/grafana:${GRAFANA_VERSION}
+    ports:
+    - ${BIND_ADDRESS}${GRAFANA_PORT}:3000
+    user: 1000:1000
+    volumes:
+    - ./grafana/build:/var/lib/grafana/dashboards
+    - ./grafana/plugins:/var/lib/grafana/plugins
+    - ./grafana/provisioning:/var/lib/grafana/provisioning
+    #GRAFANA_VOLUMES
+    # - path/to/grafana/dir:/var/lib/grafana
+  loki:
+    command:
+    - --config.file=/mnt/config/loki-config.yaml
+    container_name: loki
+    image: grafana/loki:${LOKI_VERSION}
+    #GENERAL_DOCER_CONFIG
+    #LOKi_USER_PERMISSIONS
+    ports:
+    - ${BIND_ADDRESS}${LOKI_PORT}:3100
+    volumes:
+    - ${LOKI_RULE_DIR}:/etc/loki/rules/fake:z
+    - ${LOKI_CONF_DIR}:/mnt/config:z
+    - ${LOKI_WALL_DIR}:/wal:z
+    #LOKI_DIR
+  promotheus:
+    #PROMETHEUS_COMMAND_LINE
+    #GENERAL_DOCER_CONFIG
+    #PROMETHEUS_USER_PERMISSIONS
+    container_name: aprom
+    image: prom/prometheus:${PROMETHEUS_VERSION}
+    ports:
+    - ${BIND_ADDRESS}${PROMETHEUS_PORT}:9090
+    volumes:
+    - ./prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml
+    - ${SCYLLA_TARGET_FILE}
+    - ${PROMETHEUS_RULES}
+    - ${SCYLLA_MANGER_TARGET_FILE}
+    - ${NODE_TARGET_FILE}
+    - ${SCYLLA_MANGER_AGENT_TARGET_FILE}
+    #PROMETHEUS_VOLUMES
+    # - path/to/data/dir:/prometheus/data
+  promtail:
+    command:
+    - --config.file=/etc/promtail/config.yml
+    container_name: promtail
+    #GENERAL_DOCER_CONFIG
+    image: grafana/promtail:${LOKI_VERSION}
+    ports:
+    - ${BIND_ADDRESS}1514:1514
+    - ${BIND_ADDRESS}9080:9080
+    volumes:
+    - ./loki/promtail/promtail_config.compose.yml:/etc/promtail/config.yml
+version: '3'

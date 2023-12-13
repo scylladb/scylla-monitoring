@@ -4,8 +4,9 @@
 if [ -f  env.sh ]; then
     . env.sh
 fi
-
+DATA_SOURCES=""
 CURRENT_VERSION="master"
+LOKI_WALL_DIR="./loki-wall"
 if [ -f CURRENT_VERSION.sh ]; then
     CURRENT_VERSION=`cat CURRENT_VERSION.sh`
 fi
@@ -24,13 +25,6 @@ if [ -z "$MANAGER_VERSION" ];then
   MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
 fi
 
-if [ "$1" = "--version" ]; then
-    echo "Scylla-Monitoring Stack version: $CURRENT_VERSION"
-    echo "Supported versions:" ${SUPPORTED_VERSIONS[$BRANCH_VERSION]}
-    echo "Manager supported versions:" ${MANAGER_SUPPORTED_VERSIONS[$BRANCH_VERSION]}
-    exit
-fi
-
 if [ "$CURRENT_VERSION" = "master" ]; then
     echo ""
     echo "*****************************************************"
@@ -42,18 +36,21 @@ if [ "$CURRENT_VERSION" = "master" ]; then
     echo 'For example to use Scylla 2021.1 run `./generate-dashboards.sh -F -v 2021.1`'
     echo ""
 fi
-
+if [ -z $LOKI_RULE_DIR ]; then
+	LOKI_RULE_DIR=./loki/rules/scylla
+fi
+if [ -z $LOKI_CONF_DIR ]; then
+	LOKI_CONF_DIR=./loki/conf
+fi
+if [ -z $PROMTAIL_CONFIG ]; then
+	PROMTAIL_CONFIG=$PWD/loki/promtail/promtail_config.yml
+fi
 if [ "`id -u`" -eq 0 ]; then
     echo "Running as root is not advised, please check the documentation on how to run as non-root user"
 else
     GROUPID=`id -g`
-    USER_PERMISSIONS="-u $UID:$GROUPID"
-fi
-
-group_args=()
-is_podman="$(docker --help | grep -o podman)"
-if [ ! -z "$is_podman" ]; then
-    group_args+=(--userns=keep-id)
+    PROMETHEUS_USER_PERMISSIONS="user: $UID:$GROUPID"
+    LOKi_USER_PERMISSIONS="user: $UID:$GROUPID"
 fi
 
 if [[ $(uname) == "Linux" ]]; then
@@ -63,7 +60,7 @@ elif [[ $(uname) == "Darwin" ]]; then
 fi
 
 function usage {
-  __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
+  __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
 
 Options:
   -h print this help and exit
@@ -113,7 +110,7 @@ The script starts Scylla Monitoring stack.
   echo "$__usage"
 }
 
-is_local () {
+function is_local () {
     for var in "$@"; do
         if grep -q '\s127.' $1; then
             echo "Local host found in $1"
@@ -126,6 +123,35 @@ is_local () {
     done
     return 1
 }
+
+function add_param() {
+	arr=("$@")
+	for value in "${arr[@]}"; do
+        echo -n "    - $value\n"
+    done
+}
+
+function set_path() {
+	if [[ "$1" == "."* || "$1" == "/"* ]]; then
+		echo $1
+	else
+		echo "./$1"
+	fi
+}
+
+if [ -z "$GF_AUTH_BASIC_ENABLED" ]; then
+	GF_AUTH_BASIC_ENABLED=false
+fi
+
+if [ -z "$GF_AUTH_ANONYMOUS_ENABLED" ]; then
+	GF_AUTH_ANONYMOUS_ENABLED=true
+fi
+if [ -z "$GF_AUTH_ANONYMOUS_ORG_ROLE" ]; then
+	GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+fi
+if [ -z "$GF_SECURITY_ADMIN_PASSWORD" ]; then
+	GF_SECURITY_ADMIN_PASSWORD=admin
+fi
 
 if [ -z "$PROMETHEUS_RULES" ]; then
   PROMETHEUS_RULES="$PWD/prometheus/prom_rules/:/etc/prometheus/prom_rules/"
@@ -149,6 +175,9 @@ if [ -z "$ALERTMANAGER_PORT" ]; then
   ALERTMANAGER_PORT=""
 fi
 
+if [ -z "$LOKI_PORT" ]; then
+	LOKI_PORT=3100
+fi
 if [ -z "$DOCKER_PARAM" ]; then
   DOCKER_PARAM=""
 fi
@@ -166,9 +195,6 @@ if [ -z "$PROMETHEUS_TARGETS" ]; then
 fi
 if [ -z "$BIND_ADDRESS" ]; then
   BIND_ADDRESS=""
-fi
-if [ -z "$BIND_ADDRESS_CONFIG" ]; then
-  BIND_ADDRESS_CONFIG=""
 fi
 if [ -z "$GRAFNA_ANONYMOUS_ROLE" ]; then
   GRAFNA_ANONYMOUS_ROLE=""
@@ -197,20 +223,12 @@ fi
 if [ -z "$LOKI_DIR" ]; then
   LOKI_DIR=""
 fi
-LIMITS=""
-VOLUMES=""
-PARAMS=""
-for arg; do
-	if [ $arg = "--compose" ]; then
-		echo "Using compose"
-		exec ./make-compose.sh "$@"
-	fi
-done
-
 for arg; do
     shift
     if [ -z "$LIMIT" ]; then
        case $arg in
+            (--compose) RUN_COMPOSE=1
+                ;;
             (--no-loki) RUN_LOKI=0
                 ;;
             (--no-renderer) RUN_RENDERER=""
@@ -219,15 +237,15 @@ for arg; do
                 ;;
             (--thanos) RUN_THANOS=1
                 ;;
-            (--auto-restart) DOCKER_PARAM="--restart=unless-stopped"
+            (--auto-restart) DOCKER_PARAM="$DOCKER_PARAM    restart: unless-stopped\n" 
                 ;;
             (--victoria-metrics) VICTORIA_METRICS="1"
                 ;;
             (--auth)
-                GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --auth"
+                GF_AUTH_BASIC_ENABLED="true"
                 ;;
             (--disable-anonymous)
-                GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --disable-anonymous"
+                GF_AUTH_ANONYMOUS_ENABLED="false"
                 ;;
             (--limit)
                 LIMIT="1"
@@ -256,6 +274,11 @@ for arg; do
                 LIMIT="1"
                 PARAM="datadog-hostname"
                 ;;
+            (--version)
+                echo "Scylla-Monitoring Stack version: $CURRENT_VERSION"
+    			echo "Supported versions:" ${SUPPORTED_VERSIONS[$BRANCH_VERSION]}
+    			echo "Manager supported versions:" ${MANAGER_SUPPORTED_VERSIONS[$BRANCH_VERSION]}
+    			exit 0
             (--no-cas-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
                 ;;
@@ -337,9 +360,8 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
     G) EXTERNAL_VOLUME="-G $OPTARG"
        ;;
     A) BIND_ADDRESS="$OPTARG:"
-       BIND_ADDRESS_CONFIG="-A $OPTARG"
        ;;
-    r) ALERT_MANAGER_RULE_CONFIG="-r $OPTARG"
+    r) ALERT_MANAGER_RULE_CONFIG=$(set_path $OPTARG)
        ;;
     R) if [[ -d "$OPTARG" ]]; then
         PROMETHEUS_RULES=$($readlink_command $OPTARG)":/etc/prometheus/prom_rules/"
@@ -347,13 +369,13 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
         PROMETHEUS_RULES=$($readlink_command $OPTARG)":/etc/prometheus/prometheus.rules.yml"
        fi
        ;;
-    g) GRAFANA_PORT="-g $OPTARG"
+    g) GRAFANA_PORT="$OPTARG"
        ;;
-    m) ALERTMANAGER_PORT="-p $OPTARG"
+    m) ALERTMANAGER_PORT="$OPTARG"
        ;;
     T) PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS -T $OPTARG"
        ;;
-    Q) GRAFNA_ANONYMOUS_ROLE="-Q $OPTARG"
+    Q) GF_AUTH_ANONYMOUS_ORG_ROLE="$OPTARG"
        ;;
     p) PROMETHEUS_PORT=$OPTARG
        ;;
@@ -361,13 +383,13 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
        ;;
     n) NODE_TARGET_FILE=$OPTARG
        ;;
-    l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
+    l) DOCKER_PARAM="$DOCKER_PARAM    network_mode: host\n"
        ;;
     L) CONSUL_ADDRESS="-L $OPTARG"
        ;;
     P) LDAP_FILE="-P $OPTARG"
        ;;
-    a) GRAFANA_ADMIN_PASSWORD="-a $OPTARG"
+    a) GF_SECURITY_ADMIN_PASSWORD="$OPTARG"
        ;;
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
        ;;
@@ -375,7 +397,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
        ;;
     C) ALERTMANAGER_COMMANDS+=("$OPTARG")
        ;;
-    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+    D) DOCKER_PARAM="$DOCKER_PARAM    $OPTARG\n"
        ;;
     b) PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=("$OPTARG")
        ;;
@@ -385,9 +407,13 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
        ;;
     E) RUN_RENDERER="-E"
        ;;
-    f) ALERT_MANAGER_DIR="-f $OPTARG"
+    f) ALERT_MANAGER_DIR=( $(set_path $OPTARG):/alertmanager/data:z) 
        ;;
-    k) LOKI_DIR="-k $OPTARG"
+    k) LOKI_DIR=`set_path $OPTARG`
+       if [ ! -d $LOKI_DIR ]; then
+           mkdir -p $LOKI_DIR
+       fi
+       LOKI_DIR="- $LOKI_DIR:/tmp/loki:z"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -405,15 +431,7 @@ if [ -z "$VERSIONS" ]; then
   exit 1
 fi
 
-DOCKER_PARAMS_ORIGIN="$DOCKER_PARAM"
-DOCKER_PARAM=""
-for val in $DOCKER_PARAMS_ORIGIN; do
-	if [[ "$DOCKER_PARAM" != *"$val"* ]]; then
-		DOCKER_PARAM="$DOCKER_PARAM $val"
-	fi
-done
-
-if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
+if [[ $DOCKER_PARAM = *"network_mode: host"* ]]; then
     if [ ! -z "$ALERTMANAGER_PORT" ] || [ ! -z "$GRAFANA_PORT" ] || [ ! -z $PROMETHEUS_PORT ]; then
         echo "Port mapping is not supported with host network, remove the -l flag from the command line"
         exit 1
@@ -435,12 +453,12 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
     fi
 
     if [ -z $NODE_TARGET_FILE ]; then
-       PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-manager-agent-file"
+       PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-node-exporter-file"
        NODE_TARGET_FILE=$SCYLLA_TARGET_FILE
     fi
 
     if [ -z $SCYLLA_MANGER_AGENT_TARGET_FILE ]; then
-       PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-node-exporter-file"
+       PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-manager-agent-file"
        SCYLLA_MANGER_AGENT_TARGET_FILE=$SCYLLA_TARGET_FILE
     fi
     if [ ! -f $NODE_TARGET_FILE ]; then
@@ -466,11 +484,10 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
             echo ""
         fi
     fi
-
-    SCYLLA_TARGET_FILE="-v "$($readlink_command $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_servers.yml"
-    SCYLLA_MANGER_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_servers.yml"
-    NODE_TARGET_FILE="-v "$($readlink_command $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/targets/node_exporter_servers.yml"
-    SCYLLA_MANGER_AGENT_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_AGENT_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_agents.yml"
+    SCYLLA_TARGET_FILE=$(set_path $SCYLLA_TARGET_FILE):/etc/scylla.d/prometheus/targets/scylla_servers.yml
+    SCYLLA_MANGER_TARGET_FILE=$(set_path $SCYLLA_MANGER_TARGET_FILE):/etc/scylla.d/prometheus/targets/scylla_manager_servers.yml
+    NODE_TARGET_FILE=$(set_path $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/targets/node_exporter_servers.yml"
+    SCYLLA_MANGER_AGENT_TARGET_FILE=$(set_path $SCYLLA_MANGER_AGENT_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_agents.yml"
 else
     SCYLLA_TARGET_FILE=""
     SCYLLA_MANGER_TARGET_FILE=""
@@ -479,11 +496,11 @@ else
 fi
 
 if [ "$TARGET_DIRECTORY" != "" ]; then
-    SCYLLA_TARGET_FILE="-v "$($readlink_command $TARGET_DIRECTORY)":/etc/scylla.d/prometheus/targets/"
+    SCYLLA_TARGET_FILE=$(set_path $TARGET_DIRECTORY)":/etc/scylla.d/prometheus/targets/"
 fi
 if [ -z $DATA_DIR ]
 then
-    USER_PERMISSIONS=""
+    PROMETHEUS_USER_PERMISSIONS=""
     echo "Warning: without an external Prometheus directory, Prometheus data will be deleted on shutdown, use the -d command line flag for data persistence."
 else
     if [ -d $DATA_DIR ]; then
@@ -493,181 +510,102 @@ else
         mkdir -p $DATA_DIR
     fi
     if [[ "$VICTORIA_METRICS" = "1" ]]; then
-        DATA_DIR_CMD="-v "$($readlink_command $DATA_DIR)":/victoria-metrics-data"
+    	PROMETHEUS_PROMETHEUS_VOLUMES_ARRAY+=($(set_path $DATA_DIR)":/victoria-metrics-data")
     else
-        DATA_DIR_CMD="-v "$($readlink_command $DATA_DIR)":/prometheus/data:Z"
+        PROMETHEUS_PROMETHEUS_VOLUMES_ARRAY+=($(set_path $DATA_DIR)":/prometheus/data:Z")
     fi
 fi
 
-if [ "$VERSIONS" = "latest" ]; then
-    if [ -z "$BRANCH_VERSION" ] || [ "$BRANCH_VERSION" = "master" ]; then
-        echo "Default versions (-v latest) is not supported on the master branch, use specific version instead"
-        exit 1
-    fi
-    VERSIONS=${DEFAULT_VERSION[$BRANCH_VERSION]}
-    echo "The use of -v latest is deprecated. Use a specific version instead."
-else
-    if [ "$VERSIONS" = "all" ]; then
-        VERSIONS=$ALL
-    fi
-fi
-
-ALERTMANAGER_COMMAND=""
-for val in "${ALERTMANAGER_COMMANDS[@]}"; do
-    ALERTMANAGER_COMMAND="$ALERTMANAGER_COMMAND -C $val"
-done
-
-echo "Wait for alert manager container to start"
-AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
-if [ $? -ne 0 ]; then
-    echo "$AM_ADDRESS"
-    exit 1
-fi
-LOKI_ADDRESS=""
-if [ $RUN_LOKI -eq 1 ]; then
-    echo "Wait for Loki container to start."
-	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS`
-	if [ $? -ne 0 ]; then
-	    echo "$LOKI_ADDRESS"
-	    exit 1
-	fi
-    LOKI_ADDRESS="-L $LOKI_ADDRESS"
+if (( ${#ALERTMANAGER_COMMANDS[@]} )); then
+    ALERTMANAGER_COMMAND="    command:\n"`add_param "${ALERTMANAGER_COMMANDS[@]}"`
 fi
 
 if [ -z $PROMETHEUS_PORT ]; then
     PROMETHEUS_PORT=9090
-    PROMETHEUS_NAME=aprom
+fi
+if [ -z $ALERTMANAGER_PORT ]; then
+    ALERTMANAGER_PORT=9093
+fi
+if [ -z $GRAFANA_PORT ]; then
+    GRAFANA_PORT=3000
+fi
+DATA_SOURCES="-p aprom:$PROMETHEUS_PORT -m $ALERTMANAGER_ADDRESS -L loki:$LOKI_PORT"
+ALERTMANAGER_ADDRESS="aalert:$ALERTMANAGER_PORT"
+if [[ "$HOST_NETWORK" = "1" ]]; then
+    ALERTMANAGER_ADDRESS="127.0.0.1:$ALERTMANAGER_PORT"
+    DATA_SOURCES="-p 127.0.0.1:$PROMETHEUS_PORT -m $ALERTMANAGER_ADDRESS -L 127.0.0.1:$LOKI_PORT"
+fi
+
+if [[ ! -d $LOKI_WALL_DIR ]]; then
+	echo "loki WALL directory does not exists"
+fi
+
+if [ -z $ALERT_MANAGER_RULE_CONFIG ]; then
+	ALERT_MANAGER_RULE_CONFIG=./prometheus/rule_config.yml
+fi
+cat docker-compose.template.yml > docker-compose.yml
+echo "" > .env
+echo "PROMETHEUS_VERSION=$PROMETHEUS_VERSION" >> .env
+echo "ALERT_MANAGER_VERSION=$ALERT_MANAGER_VERSION" >> .env
+echo "GRAFANA_VERSION=$GRAFANA_VERSION" >> .env
+echo "LOKI_VERSION=$LOKI_VERSION" >> .env
+echo "GRAFANA_RENDERER_VERSION=$GRAFANA_RENDERER_VERSION" >> .env
+echo "THANOS_VERSION=$THANOS_VERSION" >> .env
+echo "VICTORIA_METRICS_VERSION=$VICTORIA_METRICS_VERSION" >> .env
+echo "GF_AUTH_BASIC_ENABLED=$GF_AUTH_BASIC_ENABLED" >> .env
+echo "GF_AUTH_ANONYMOUS_ENABLED=$GF_AUTH_ANONYMOUS_ENABLED" >> .env
+echo "GF_AUTH_ANONYMOUS_ORG_ROLE=$GF_AUTH_ANONYMOUS_ORG_ROLE" >> .env
+echo "GF_SECURITY_ADMIN_PASSWORD=$GF_SECURITY_ADMIN_PASSWORD" >> .env
+echo "SCYLLA_VERSION=$VERSIONS" >> .env
+echo "ALERTMANAGER_PORT=$ALERTMANAGER_PORT" >> .env
+echo "GRAFANA_PORT=$GRAFANA_PORT" >> .env
+echo "PROMETHEUS_PORT=$PROMETHEUS_PORT" >> .env
+echo "ALERT_MANAGER_RULE_CONFIG=$ALERT_MANAGER_RULE_CONFIG" >> .env
+echo "PROMETHEUS_RULES=$PROMETHEUS_RULES">> .env
+echo "BIND_ADDRESS=$BIND_ADDRESS">> .env
+echo "SCYLLA_TARGET_FILE=$SCYLLA_TARGET_FILE">> .env
+echo "SCYLLA_MANGER_TARGET_FILE=$SCYLLA_MANGER_TARGET_FILE">> .env
+echo "SCYLLA_MANGER_AGENT_TARGET_FILE=$SCYLLA_MANGER_AGENT_TARGET_FILE">> .env
+echo "NODE_TARGET_FILE=$NODE_TARGET_FILE">> .env
+echo "LOKI_RULE_DIR=$LOKI_RULE_DIR">> .env
+echo "LOKI_CONF_DIR=$LOKI_CONF_DIR">> .env
+echo "LOKI_DIR=$LOKI_DIR">> .env
+echo "LOKI_PORT=$LOKI_PORT">> .env
+echo "LOKI_WALL_DIR=$LOKI_WALL_DIR">> .env
+if [ "$VICTORIA_METRICS" = "1" ]; then
+	sed -i 's&prom/prometheus:${PROMETHEUS_VERSION}&victoriametrics/victoria-metrics:${VICTORIA_METRICS_VERSION}&' docker-compose.yml
+	sed -i 's&./prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml&./prometheus/build/prometheus.yml:/etc/promscrape.config.yml:z&' docker-compose.yml
+	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=( -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090)
 else
-    PROMETHEUS_NAME=aprom-$PROMETHEUS_PORT
+	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--config.file=/etc/prometheus/prometheus.yml --web.enable-lifecycle)
+fi
+PROMETHEUS_COMMAND_LINE=""
+if (( ${#PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]} )); then
+    PROMETHEUS_COMMAND_LINE="    command:\n"`add_param "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"`
 fi
 
-docker container inspect $PROMETHEUS_NAME > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-    printf "\nSome of the monitoring docker instances ($PROMETHEUS_NAME) exist. Make sure all containers are killed and removed. You can use kill-all.sh for that\n"
-    exit 1
-fi
+sed -i "s& *#PROMETHEUS_COMMAND_LINE&$PROMETHEUS_COMMAND_LINE&" docker-compose.yml
+val=`add_param "${PROMETHEUS_PROMETHEUS_VOLUMES_ARRAY[@]}"`
+sed -i "s& *#PROMETHEUS_VOLUMES&$val&" docker-compose.yml
 
+val=`add_param "${GRAFANA_ENV_ARRAY[@]}"`
+sed -i "s& *#GRAFANA_ENV&$val&" docker-compose.yml
 
-# Exit if Docker engine is not running
-if [ ! "$(docker ps)" ]
-then
-        echo "Error: Docker engine is not running"
-        exit 1
-fi
+sed -i "s& *#GENERAL_DOCER_CONFIG&$DOCKER_PARAM&" docker-compose.yml
+sed -i "s& *#ALERT_MANAGER_DIR&$ALERT_MANAGER_DIR&" docker-compose.yml
+sed -i "s& *#ALERTMANAGER_COMMAND&$ALERTMANAGER_COMMAND&" docker-compose.yml
+sed -i "s&#PROMETHEUS_USER_PERMISSIONS&$PROMETHEUS_USER_PERMISSIONS&" docker-compose.yml
+sed -i "s&#LOKI_DIR&$LOKI_DIR&" docker-compose.yml
+sed -i "s&#LOKi_USER_PERMISSIONS&$LOKi_USER_PERMISSIONS&" docker-compose.yml
 
-for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
-    if [[ $val = "--"* ]]; then
-        PROMETHEUS_COMMAND_LINE_OPTIONS+=" $val"
-    else
-        echo "Using single hyphen is deprecated and will be removed in future version use -$val instead"
-        PROMETHEUS_COMMAND_LINE_OPTIONS+=" -$val"
-    fi
-done
-
-./prometheus-config.sh -m $AM_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS
-
-if [ -z $HOST_NETWORK ]; then
-    PORT_MAPPING="-p $BIND_ADDRESS$PROMETHEUS_PORT:9090"
-fi
-if [[ "$VICTORIA_METRICS" = "1" ]]; then
-    echo "Using victoria metrics"
-
-    docker run -d --rm $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
-    -v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml:z \
-    $SCYLLA_TARGET_FILE \
-     $SCYLLA_MANGER_TARGET_FILE \
-     $NODE_TARGET_FILE \
-     $SCYLLA_MANGER_AGENT_TARGET_FILE \
-    victoriametrics/victoria-metrics:$VICTORIA_METRICS_VERSION $PROMETHEUS_COMMAND_LINE_OPTIONS \
-     ${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090
-else
-docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
-     $DATA_DIR_CMD \
-     "${group_args[@]}" \
-     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:z \
-     -v $PROMETHEUS_RULES:z \
-     $SCYLLA_TARGET_FILE \
-     $SCYLLA_MANGER_TARGET_FILE \
-     $NODE_TARGET_FILE \
-     $SCYLLA_MANGER_AGENT_TARGET_FILE \
-     $PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
-     --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
-     ${DOCKER_PARAMS["prometheus"]}
-fi
-
-if [ $? -ne 0 ]; then
-    echo "Error: Prometheus container failed to start"
-    echo "For more information use: docker logs $PROMETHEUS_NAME"
-    exit 1
-fi
-
-# Number of retries waiting for a Docker container to start
-RETRIES=7
-
-# Wait till Prometheus is available
-printf "Wait for Prometheus container to start."
-TRIES=0
-until $(curl --output /dev/null -f --silent http://localhost:$PROMETHEUS_PORT) || [ $TRIES -eq $RETRIES ]; do
-    printf '.'
-    ((TRIES=TRIES+1))
-    sleep 5
-done
-echo
-
-if [ ! "$(docker ps -q -f name=$PROMETHEUS_NAME)" ]
-then
-        echo "Error: Prometheus container failed to start"
-        echo "For more information use: docker logs $PROMETHEUS_NAME"
-        exit 1
-fi
-
-# Can't use localhost here, because the monitoring may be running remotely.
-# Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
-DB_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME):9090"
-
-if [ "$DB_ADDRESS" = ":9090" ]; then
-    if [[ $(uname) == "Linux" ]]; then
-        HOST_IP=$(hostname -I | awk '{print $1}')
-    elif [[ $(uname) == "Darwin" ]]; then
-        HOST_IP=$(ifconfig en0 | awk '/inet / {print $2}')
-    fi
-    DB_ADDRESS="$HOST_IP:9090"
-fi
-
-if [[ "$VICTORIA_METRICS" = "1" ]]; then
-     echo "running vmalert"
-
-     docker run -d \
-     --name vmalert \
-     -v $PROMETHEUS_RULES:z \
-     victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
-    -datasource.url=http://$DB_ADDRESS \
-    -notifier.url=http://$AM_ADDRESS \
-    -notifier.url=http://$AM_ADDRESS \
-    -remoteWrite.url=http://$DB_ADDRESS \
-    -remoteRead.url=http://$DB_ADDRESS
-fi
-if [ $RUN_THANOS_SC -eq 1 ]; then
-    if [ -z $DATA_DIR ]; then
-        echo "You must use external prometheus directory to use the thanos side cart"
-    else
-        ./start-thanos-sc.sh -d $DATA_DIR -D "$DOCKER_PARAM" -a $DB_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG
-    fi
-fi
-
-if [ $RUN_THANOS -eq 1 ]; then
-    ./start-thanos.sh -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG
-fi
-
-for val in "${GRAFANA_ENV_ARRAY[@]}"; do
-        GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -c $val"
-done
-
+./prometheus-config.sh -m $ALERTMANAGER_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
-if [ ! -z "$DATDOGPARAM" ]; then
-   ./start-datadog.sh $DATDOGPARAM -p $DB_ADDRESS 
+./generate-dashboards.sh -t $SPECIFIC_SOLUTION -v $VERSIONS -M $MANAGER_VERSION $GRAFANA_DASHBOARD_COMMAND
+
+./grafana-datasource.sh $DATA_SOURCES
+
+if [ "$RUN_COMPOSE" = "1" ]; then
+	docker-compose up
 fi
-    
-./start-grafana.sh $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD

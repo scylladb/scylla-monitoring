@@ -23,6 +23,8 @@ You cannot use port mapping when using the ``-l`` flag
 
 **--auto-restart** When set, Docker will automatically restart all the services inside the containers in case of a failure.
 
+**--compose** This is an experimental option. When set, it initiates a two-stage process. Firstly, a ``docker-compose.yml`` file is created along with an ``.env`` file. Following this, the script executes ``docker-compose up``. Please note that having docker-compose is a prerequisite.
+
 Grafana Related Commands
 ------------------------
 
