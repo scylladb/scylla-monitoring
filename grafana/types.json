@@ -657,13 +657,14 @@
             },
             "targets":[
                {
-                  "expr":"sum(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m]))",
+                  "expr":"(sum(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) or on() vector(0)) + (sum(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) or on() vector(0))",
                   "intervalFactor":1,
                   "refId":"A",
                   "instant":true,
                   "step":40
                }
             ],
+            "description":"The rate of timeouts (read and write).\n\nTimeouts are an indication of an overloaded system",
             "title":"Timeouts"
          }
       ],
