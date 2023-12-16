@@ -201,7 +201,7 @@ LIMITS=""
 VOLUMES=""
 PARAMS=""
 for arg; do
-	if [ $arg = "--compose" ]; then
+	if [ "$arg" = "--compose" ]; then
 		echo "Using compose"
 		exec ./make-compose.sh "$@"
 	fi
@@ -667,7 +667,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 if [ ! -z "$DATDOGPARAM" ]; then
-   ./start-datadog.sh $DATDOGPARAM -p $DB_ADDRESS 
+   ./start-datadog.sh $DATDOGPARAM -p $DB_ADDRESS
 fi
-    
+
 ./start-grafana.sh $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
