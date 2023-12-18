@@ -45,6 +45,7 @@ fi
 
 if [ "`id -u`" -eq 0 ]; then
     echo "Running as root is not advised, please check the documentation on how to run as non-root user"
+    USER_PERMISSIONS="-u 0:0"
 else
     GROUPID=`id -g`
     USER_PERMISSIONS="-u $UID:$GROUPID"
