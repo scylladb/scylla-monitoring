@@ -175,15 +175,15 @@ For example:
 
 *Using IPV6*
 
-To use IPv6 inside scylla_server.yml, add the IPv6 addresses with their square brackets and the port numbers.
+To use IPv6 inside scylla_server.yml, add the IPv6 addresses with their square brackets.
 
 For example:
 
 .. code-block:: yaml
 
    - targets:
-         - "[2600:1f18:26b1:3a00:fac8:118e:9199:67b9]:9180"
-         - "[2600:1f18:26b1:3a00:fac8:118e:9199:67ba]:9180"
+         - "[2600:1f18:26b1:3a00:fac8:118e:9199:67b9]"
+         - "[2600:1f18:26b1:3a00:fac8:118e:9199:67ba]"
      labels:
          cluster: cluster1
          dc: dc1
