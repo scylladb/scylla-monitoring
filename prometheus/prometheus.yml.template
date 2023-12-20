@@ -29,12 +29,16 @@ scrape_configs:
       - /etc/scylla.d/prometheus/targets/scylla_servers.yml
   relabel_configs:
     - source_labels: [__address__]
-      regex:  '([^:]+)'
+      regex:  '(.+)([:]\d+)$'
+      target_label: __port__
+      replacement: '::'
+    - source_labels: [__address__, __port__]
+      regex:  '(.+);$'
       target_label: __address__
       replacement: '${1}:9180'
 
     - source_labels: [__address__]
-      regex:  '(.*):.+'
+      regex:  '(.*):.+$'
       target_label: instance
       replacement: '${1}'
   metric_relabel_configs:
@@ -154,7 +158,11 @@ scrape_configs:
   relabel_configs:
 # NODE_EXPORTER_PORT_MAPPING
     - source_labels: [__address__]
-      regex:  '([^:]+)'
+      regex:  '(.+)([:]\d+)$'
+      target_label: __port__
+      replacement: '::'
+    - source_labels: [__address__, __port__]
+      regex:  '(.+);$'
       target_label: __address__
       replacement: '${1}:9100'
     - source_labels: [__address__]
@@ -175,7 +183,11 @@ scrape_configs:
   relabel_configs:
 # MANAGER_AGENT_PORT_MAPPING
     - source_labels: [__address__]
-      regex:  '([^:]+)'
+      regex:  '(.+)([:]\d+)$'
+      target_label: __port__
+      replacement: '::'
+    - source_labels: [__address__, __port__]
+      regex:  '(.+);$'
       target_label: __address__
       replacement: '${1}:5090'
     - source_labels: [__address__]
