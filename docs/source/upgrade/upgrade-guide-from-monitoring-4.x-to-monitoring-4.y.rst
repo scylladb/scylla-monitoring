@@ -27,12 +27,24 @@ Replace “y” with the new minor release number, for example, 4.0.1.zip
 Setting the server's files
 --------------------------
 
-Copy the ``scylla_servers.yml`` and ``scylla_manager_servers.yml`` from the version that is already installed.
+Copy the target files ``scylla_servers.yml`` and ``scylla_manager_servers.yml`` from the version that is already installed.
 
 .. code-block:: bash
 
                 cp /path/to/monitoring/4.x.a/prometheus/scylla_servers.yml prometheus/
                 cp /path/to/monitoring/4.x.a/prometheus/scylla_manager_servers.yml.yml prometheus/
+
+Validate the port numbers
+^^^^^^^^^^^^^^^^^^^^^^^^^
+ScyllaDB-monitoring reads from ScyllaDB itself, from node_exporter for OS-related metrics, and from the ScyllaDB manager agent.
+
+Almost always, those targets use their default ports, and all share the same IP.
+If you use the default port number, we recommend using the target file without ports and letting ScyllaDB monitoring add the default port number.
+If the ScyllaDB manager agent and node_exporter are running next to ScyllaDB on the same host (the default installation), use one target file for scylla_server, and the ScyllaDB monitoring will use that file with the correct ports for each target.
+
+.. caution::
+
+   As of SyllaDB Monitoring 4.5, Specifying the node_exporter file (the -n flag) with the wrong ports will prevent ScyllaDB Monitoring from reading the metrics.
 
 Validate the new version is running the correct version
 -------------------------------------------------------
