@@ -200,7 +200,7 @@
             "repeat": "node",
             "targets": [
                 {
-                    "expr": "sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"})",
+                    "expr": "sum(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\"})",
                     "instant": true,
                     "interval": "",
                     "intervalFactor": 1,
@@ -210,7 +210,7 @@
                     "step": 7200
                 },
                 {
-                    "expr": "(sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"})-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\"}))",
+                    "expr": "(sum(node_filesystem_size_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\"})-sum(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\"}))",
                     "instant": true,
                     "intervalFactor": 1,
                     "legendFormat": "Used",
@@ -1528,7 +1528,36 @@
             "type": "row"
         },
         {
-            "class": "bps_panel",
+            "class": "text_panel",
+            "content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">CPU and Memory</h1>",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {}
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 51
+            },
+            "id": 25,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {},
+            "span": 12,
+            "style": {},
+            "title": "",
+            "transparent": true,
+            "type": "text"
+        },
+        {
+            "class": "bytes_panel",
             "datasource": "prometheus",
             "description": "The available memory, note that in a production environment we expect this to be low, Scylla would use most of the available memory when possible",
             "editable": true,
@@ -1570,7 +1599,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "Bps"
+                    "unit": "bytes"
                 },
                 "overrides": []
             },
@@ -1578,9 +1607,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 0,
-                "y": 51
+                "y": 53
             },
-            "id": 25,
+            "id": 26,
             "isNew": true,
             "links": [],
             "options": {
@@ -1660,9 +1689,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 6,
-                "y": 51
+                "y": 53
             },
-            "id": 26,
+            "id": 27,
             "isNew": true,
             "links": [],
             "options": {
@@ -1687,7 +1716,7 @@
                     "step": 1
                 }
             ],
-            "title": "Available memory",
+            "title": "Percent of Available memory",
             "type": "timeseries"
         },
         {
@@ -1742,9 +1771,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 12,
-                "y": 51
+                "y": 53
             },
-            "id": 27,
+            "id": 28,
             "isNew": true,
             "links": [],
             "options": {
@@ -1789,9 +1818,9 @@
                 "h": 6,
                 "w": 6,
                 "x": 18,
-                "y": 51
+                "y": 53
             },
-            "id": 28,
+            "id": 29,
             "isNew": true,
             "links": [],
             "options": {
@@ -1849,9 +1878,9 @@
                 "h": 3,
                 "w": 24,
                 "x": 0,
-                "y": 57
+                "y": 59
             },
-            "id": 29,
+            "id": 30,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -2005,15 +2034,22 @@
                 "type": "custom"
             },
             {
-                "allValue": null,
+                "allValue": ".*",
+                "class": "template_variable_all",
                 "current": {
-                    "isNone": true,
-                    "text": "None",
-                    "value": ""
+                    "selected": true,
+                    "text": [
+                        "All"
+                    ],
+                    "value": [
+                        "$__all"
+                    ]
                 },
                 "datasource": "prometheus",
+                "definition": "",
+                "error": null,
                 "hide": 0,
-                "includeAll": false,
+                "includeAll": true,
                 "label": null,
                 "multi": true,
                 "name": "monitor_disk",
@@ -2021,7 +2057,8 @@
                 "query": "node_disk_read_bytes_total",
                 "refresh": 2,
                 "regex": "/.*device=\"([^\\\"]*)\".*/",
-                "sort": 0,
+                "skipUrlSync": false,
+                "sort": 1,
                 "tagValuesQuery": "",
                 "tags": [],
                 "tagsQuery": "",
