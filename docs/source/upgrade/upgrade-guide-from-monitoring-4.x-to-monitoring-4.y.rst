@@ -40,7 +40,7 @@ ScyllaDB-monitoring reads from ScyllaDB itself, from node_exporter for OS-relate
 
 Almost always, those targets use their default ports, and all share the same IP.
 If you use the default port number, we recommend using the target file without ports and letting ScyllaDB monitoring add the default port number.
-If the ScyllaDB Mmanager agent and node_exporter are running next to ScyllaDB on the same host (the default installation), use one target file for scylla_server, and the ScyllaDB monitoring will use that file with the correct ports for each target.
+If the ScyllaDB Manager agent and node_exporter are running next to ScyllaDB on the same host (the default installation), use one target file for scylla_server, and the ScyllaDB monitoring will use that file with the correct ports for each target.
 
 .. caution::
 
