@@ -36,7 +36,7 @@ Copy the target files ``scylla_servers.yml`` and ``scylla_manager_servers.yml`` 
 
 Validate the port numbers
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-ScyllaDB-monitoring reads from ScyllaDB itself, from node_exporter for OS-related metrics, and from the ScyllaDB manager agent.
+ScyllaDB-monitoring reads from ScyllaDB itself, from node_exporter for OS-related metrics, and from the ScyllaDB Manager agent.
 
 Almost always, those targets use their default ports, and all share the same IP.
 If you use the default port number, we recommend using the target file without ports and letting ScyllaDB monitoring add the default port number.
