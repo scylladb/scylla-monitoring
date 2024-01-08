@@ -1,127 +1,51 @@
-# Scylla/Apache Cassandra Backend Plugin
+<!-- This README file is going to be the one displayed on the Grafana.com website for your plugin. Uncomment and replace the content here before publishing.
 
-The plugin is currently in Alpha and not ready for commercial usage.
+Remove any remaining comments before publishing as these may be displayed on Grafana.com -->
 
-[![CircleCI](https://circleci.com/gh/grafana/simple-datasource-backend/tree/master.svg?style=svg)](https://circleci.com/gh/grafana/simple-datasource-backend/tree/master)
+# Scylla Jan24
 
-This plugin allows connecting Scylla or Appahe Cassandra to Grafana.
+Datasource for scylla
 
-## What is Scylla Grafana Data Source Backend Plugin?
+<!-- To help maximize the impact of your README and improve usability for users, we propose the following loose structure:
 
-A [Backend plugins](https://grafana.com/docs/grafana/latest/developers/plugins/backend/) is a type of data-source plugin that runs on the server.
-That means that that from IP connectivity, your Database (Scylla or Apache Cassanra) should be accessible from the grafana server.
+**BEFORE YOU BEGIN**
+- Ensure all links are absolute URLs so that they will work when the README is displayed within Grafana and Grafana.com
+- Be inspired ✨
+  - [grafana-polystat-panel](https://github.com/grafana/grafana-polystat-panel)
+  - [volkovlabs-variable-panel](https://github.com/volkovlabs/volkovlabs-variable-panel)
 
+**ADD SOME BADGES**
 
-## Getting started
-Use Grafana 7.0 or higher
-* Download and place the datasouce in grafana/plugins directory.
+Badges convey useful information at a glance for users whether in the Catalog or viewing the source code. You can use the generator on [Shields.io](https://shields.io/badges/dynamic-json-badge) together with the Grafana.com API
+to create dynamic badges that update automatically when you publish a new version to the marketplace.
 
-This plugin is not signed yet, Granfa will not allow loading it by default. you should enable it by adding:
+- For the logo field use 'grafana'.
+- Examples (label: query)
+  - Downloads: $.downloads
+  - Catalog Version: $.version
+  - Grafana Dependency: $.grafanaDependency
+  - Signature Type: $.versionSignatureType
 
-for example, if you are using Grafana with containers, add:
-```
--e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource"
-```
+Full example: ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?logo=grafana&query=$.version&url=https://grafana.com/api/plugins/grafana-polystat-panel&label=Marketplace&prefix=v&color=F47A20)
 
-You can now add the scylla data source, the only current configuration is a host in the cluster.
+Consider other [badges](https://shields.io/badges) as you feel appropriate for your project.
 
-When adding a panel use CQL to get the data.
-you can only do select statements, but any valid select would work.
+## Overview / Introduction
+Provide one or more paragraphs as an introduction to your plugin to help users understand why they should use it.
 
+Consider including screenshots:
+- in [plugin.json](https://grafana.com/developers/plugin-tools/reference-plugin-json#info) include them as relative links.
+- in the README ensure they are absolute URLs.
 
-## For Scylla-Monitoring Users
-* Take the master branch that would run Grafana 7
-* Either edit and add the the `ALLOW_PLUGINS` to `start-grafana.sh` or use the command line flag to `start-all.sh`
-```
-./start-all.sh -s scylla_servers.yml -c "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource"
+## Requirements
+List any requirements or dependencies they may need to run the plugin.
 
-```
-### Configure the datasoure from file
-* If you do not want to configure the data source on every restart, edit `grafana/datasource.yml`
-And add:
-```
-- name: scylla-datasource
-  type: scylladb-scylla-datasource
-  orgId: 1
-  isDefault:
-  jsonData:
-    host: 'node-ip'
-```
-Replacing `node-ip` with an ip of a node in the cluster.
+## Getting Started
+Provide a quick start on how to configure and use the plugin.
 
-To support user and password add `secureJsonData` to `grafana/datasource.yml`
-```
-- name: scylla-datasource
-  type: scylladb-scylla-datasource
-  orgId: 1
-  isDefault:
-  jsonData:
-    host: 'node-ip'
-  secureJsonData:
-    user: 'cassandra'
-    password: 'cassandra'
-```
+## Documentation
+If your project has dedicated documentation available for users, provide links here. For help in following Grafana's style recommendations for technical documentation, refer to our [Writer's Toolkit](https://grafana.com/docs/writers-toolkit/).
 
-### Configure the Datasource using Grafana API:
-Grafana API allows adding datasource.
-The following will add a data source without a username and password, replace the `ADMIN_PASSWORD`
-with Grafana's Admin password
-
-```
-curl -XPOST -i http://admin:$ADMIN_PASSWORD@localhost:3000/api/datasources \
-     --data-binary '{"name": "scylla-datasource","type": "scylladb-scylla-datasource", \
-     "orgId": 1,"access":"proxy", "jsonData":{"host": ""}}' -H "Content-Type: application/json"
-```
-
-The following example shows how to configure the plugin with username and password
-```
-curl -XPOST -i http://admin:$ADMIN_PASSWORD@localhost:3000/api/datasources \
-     --data-binary '{"name": "scylla-datasource","type": "scylladb-scylla-datasource", "orgId": 1,"access":"proxy", \
-     "jsonData":{"host": ""}, "secureJsonData":{"user": "scylla", "password": "scylla"}}' \
-      -H "Content-Type: application/json"
-```
-
-## Compiling the data source by yourself
-A data source backend plugin consists of both frontend and backend components.
-
-### Frontend
-
-1. Install dependencies
-```BASH
-yarn install
-```
-
-2. Build plugin in development mode or run in watch mode
-```BASH
-yarn dev
-```
-or
-```BASH
-yarn watch
-```
-3. Build plugin in production mode
-```BASH
-yarn build
-```
-
-### Backend
-
-1. Update [Grafana plugin SDK for Go](https://grafana.com/docs/grafana/latest/developers/plugins/backend/grafana-plugin-sdk-for-go/) dependency to the latest minor version:
-
-```bash
-go get -u github.com/grafana/grafana-plugin-sdk-go
-```
-
-2. Build backend plugin binaries for Linux, Windows and Darwin:
-```BASH
-mage -v
-```
-
-3. List all available Mage targets for additional commands:
-```BASH
-mage -l
-```
-
-## Learn more
-
-- [Grafana plugin SDK for Go](https://grafana.com/docs/grafana/latest/developers/plugins/backend/grafana-plugin-sdk-for-go/)
+## Contributing
+Do you want folks to contribute to the plugin or provide feedback through specific means? If so, tell them how!
+-->
