@@ -117,6 +117,7 @@ html_theme_options = {
     'site_description': 'Scylla Monitoring Stack is a full stack for Scylla monitoring and alerting. The stack contains open source tools including Prometheus and Grafana, as well as custom Scylla dashboards and tooling.',
     'versions_unstable': UNSTABLE_VERSIONS,
     'versions_deprecated': DEPRECATED_VERSIONS,
+    'zendesk_tag': 'pgbgkga1hpa6ug0732m8ae',
 }
 
 html_extra_path = ['robots.txt']
