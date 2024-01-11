@@ -62,17 +62,19 @@ for val in "${ENV_ARRAY[@]}"; do
         ENV_COMMAND="$ENV_COMMAND -e $val"
 done
 
-if [ ! -z "$is_podman" ]; then
-    if [[ $(uname) == "Linux" ]]; then
-        DOCKER_HOST=$(hostname -I | awk '{print $1}')
-    elif [[ $(uname) == "Darwin" ]]; then
-        DOCKER_HOST=$(ifconfig bridge0 | awk '/inet / {print $2}')
-    fi
-else
-    if [[ $(uname) == "Linux" ]]; then
-        DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
-    elif [[ $(uname) == "Darwin" ]]; then
-        DOCKER_HOST=$(ifconfig bridge0 | awk '/inet / {print $2}')
+if [[ -z "${DOCKER_HOST}" ]]; then
+    if [ ! -z "$is_podman" ]; then
+        if [[ $(uname) == "Linux" ]]; then
+            DOCKER_HOST=$(hostname -I | awk '{print $1}')
+        elif [[ $(uname) == "Darwin" ]]; then
+            DOCKER_HOST=$(ifconfig bridge0 | awk '/inet / {print $2}')
+        fi
+    else
+        if [[ $(uname) == "Linux" ]]; then
+            DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+        elif [[ $(uname) == "Darwin" ]]; then
+            DOCKER_HOST=$(ifconfig bridge0 | awk '/inet / {print $2}')
+        fi
     fi
 fi
 
