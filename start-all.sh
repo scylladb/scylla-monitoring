@@ -624,7 +624,7 @@ if [ "$DB_ADDRESS" = ":9090" ]; then
     elif [[ $(uname) == "Darwin" ]]; then
         HOST_IP=$(ifconfig en0 | awk '/inet / {print $2}')
     fi
-    DB_ADDRESS="$HOST_IP:9090"
+    DB_ADDRESS="$HOST_IP:$PROMETHEUS_PORT"
 fi
 
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
