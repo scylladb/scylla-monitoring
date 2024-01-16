@@ -237,7 +237,7 @@ for arg; do
                 ;;
             (--thanos) RUN_THANOS=1
                 ;;
-            (--auto-restart) DOCKER_PARAM="$DOCKER_PARAM    restart: unless-stopped\n" 
+            (--auto-restart) DOCKER_PARAM="$DOCKER_PARAM    restart: unless-stopped\n"
                 ;;
             (--victoria-metrics) VICTORIA_METRICS="1"
                 ;;
@@ -407,7 +407,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
        ;;
     E) RUN_RENDERER="-E"
        ;;
-    f) ALERT_MANAGER_DIR=( $(set_path $OPTARG):/alertmanager/data:z) 
+    f) ALERT_MANAGER_DIR=( $(set_path $OPTARG):/alertmanager/data:z)
        ;;
     k) LOKI_DIR=`set_path $OPTARG`
        if [ ! -d $LOKI_DIR ]; then
@@ -529,6 +529,21 @@ fi
 if [ -z $GRAFANA_PORT ]; then
     GRAFANA_PORT=3000
 fi
+if [ -z $ANALYTICS_REPORTING_ENABLED ]; then
+	ANALYTICS_REPORTING_ENABLED="false"
+fi
+if [ -z $ANALYTICS_CHECK_FOR_UPDATES ]; then
+	ANALYTICS_CHECK_FOR_UPDATES="false"
+fi
+if [ -z $ANALYTICS_CHECK_FOR_PLUGIN_UPDATES ]; then
+	ANALYTICS_CHECK_FOR_PLUGIN_UPDATES="false"
+fi
+if [ -z $SECURITY_ANGULAR_SUPPORT_ENABLED ]; then
+	SECURITY_ANGULAR_SUPPORT_ENABLED="false"
+fi
+if [ -z $SERVER_ENABLE_GZIP ]; then
+	SERVER_ENABLE_GZIP="true"
+fi
 DATA_SOURCES="-p aprom:$PROMETHEUS_PORT -m $ALERTMANAGER_ADDRESS -L loki:$LOKI_PORT"
 ALERTMANAGER_ADDRESS="aalert:$ALERTMANAGER_PORT"
 if [[ "$HOST_NETWORK" = "1" ]]; then
@@ -556,6 +571,11 @@ echo "GF_AUTH_BASIC_ENABLED=$GF_AUTH_BASIC_ENABLED" >> .env
 echo "GF_AUTH_ANONYMOUS_ENABLED=$GF_AUTH_ANONYMOUS_ENABLED" >> .env
 echo "GF_AUTH_ANONYMOUS_ORG_ROLE=$GF_AUTH_ANONYMOUS_ORG_ROLE" >> .env
 echo "GF_SECURITY_ADMIN_PASSWORD=$GF_SECURITY_ADMIN_PASSWORD" >> .env
+echo "GF_ANALYTICS_REPORTING_ENABLED=$ANALYTICS_REPORTING_ENABLED" >> .env
+echo "GF_ANALYTICS_CHECK_FOR_UPDATES=$ANALYTICS_CHECK_FOR_UPDATES" >> .env
+echo "GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=$ANALYTICS_CHECK_FOR_PLUGIN_UPDATES" >> .env
+echo "GF_SECURITY_ANGULAR_SUPPORT_ENABLED=$SECURITY_ANGULAR_SUPPORT_ENABLED" >> .env
+echo "GF_SERVER_ENABLE_GZIP=$SERVER_ENABLE_GZIP" >> .env
 echo "SCYLLA_VERSION=$VERSIONS" >> .env
 echo "ALERTMANAGER_PORT=$ALERTMANAGER_PORT" >> .env
 echo "GRAFANA_PORT=$GRAFANA_PORT" >> .env
