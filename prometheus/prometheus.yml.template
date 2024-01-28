@@ -171,8 +171,12 @@ scrape_configs:
       replacement: '${1}'
   metric_relabel_configs:
     - source_labels: [__name__]
-      regex: '(node_filesystem_size_bytes|node_filesystem_avail_bytes|node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total)'
+      regex: '(node_filesystem_size_bytes|node_filesystem_avail_bytes|node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total|node_ethtool_.*)'
       target_label: level
+      replacement: '1'
+    - source_labels: [__name__]
+      regex: '(node_filesystem_size_bytes|node_filesystem_avail_bytes|node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total|node_ethtool_.*)'
+      target_label: dd
       replacement: '1'
 
 - job_name: manager_agent
