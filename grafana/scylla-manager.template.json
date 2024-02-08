@@ -131,7 +131,7 @@
                         "span": 2,
                          "targets": [
                             {
-                              "expr": "manager:repair_progress{cluster=~\"[[cluster]]\"}",
+                              "expr": "sum(scylla_manager_repair_progress{cluster=~\"$cluster|$^\", job=\"scylla_manager\"}) or on() manager:repair_progress{cluster=~\"[[cluster]]\"}*100",
                               "format": "time_series",
                               "intervalFactor": 2,
                               "refId": "A"
@@ -141,7 +141,7 @@
                            "defaults":{
                               "custom":{
                               },
-                              "unit":"percentunit",
+                              "unit":"percent",
                               "decimals":0,
                               "thresholds":{
                                  "mode":"absolute",
@@ -345,10 +345,10 @@
                 "class": "row",
                 "panels": [
                    {
-                        "class": "percentunit_panel",
+                        "class": "percent_panel",
                         "targets": [
                             {
-                              "expr": "manager:repair_progress{cluster=~\"[[cluster]]\"}",
+                              "expr": "sum(scylla_manager_repair_progress{cluster=~\"$cluster|$^\", job=\"scylla_manager\"}) or on() manager:repair_progress{cluster=~\"[[cluster]]\"}*100",
                               "format": "time_series",
                               "intervalFactor": 2,
                               "refId": "A"
