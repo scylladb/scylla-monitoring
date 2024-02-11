@@ -543,7 +543,7 @@ else
         VERSIONS=$ALL
     fi
 fi
-if [ $STACK_ID != "" ]; then
+if [ "$STACK_ID" != "" ]; then
     echo "Running a seconddary stack $STACK_ID"
     echo "Note that the following containers will not run: loki, promtail, grafana renderer"
     echo "to stop it use ./kill-all.sh --stack $STACK_ID"
