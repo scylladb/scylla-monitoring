@@ -300,7 +300,7 @@ for arg; do
             (--help) usage
                 ;;
             (--archive)
-                PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
+                ARCHIVE="1"
                 ;;
             (*) set -- "$@" "$arg"
                 ;;
@@ -439,6 +439,16 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
        ;;
   esac
 done
+if [ "$ARCHIVE" == "1" ]; then
+    if [ -z $DATA_DIR ]; then
+        echo "Running --archive without an external Prometheus directory, make sure you are using the -d command line option"
+        exit -1
+    fi
+    PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
+    RUN_LOKI=0
+    RUN_RENDERER=""
+    CONSUL_ADDRESS="127.0.0.1:0"
+fi
 
 if [ -z "$VERSIONS" ]; then
   echo "Scylla-version was not not found, add the -v command-line with a specific version (i.e. -v 2021.1)"
