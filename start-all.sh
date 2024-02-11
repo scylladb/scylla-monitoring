@@ -64,7 +64,7 @@ elif [[ $(uname) == "Darwin" ]]; then
 fi
 
 function usage {
-  __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
+  __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--loki-port port] [--promtail-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
 
 Options:
   -h print this help and exit
@@ -98,6 +98,9 @@ Options:
   -T path/to/prometheus-targets  - Adds additional Prometheus target files.
   -k path/to/loki/storage        - When set, will use the given directory for Loki's data
   --no-loki                      - If set, do not run Loki and promtail.
+  --loki-port port               - If set, loki would use the given port number
+  --promtail-port port           - If set, promtail would use the given port number
+  --promtail-binary-port port    - If set, promtail would use the given port number for the binary protocol
   --no-cas                       - If set, Prometheus will drop all cas related metrics while scrapping
   --no-cdc                       - If set, Prometheus will drop all cdc related metrics while scrapping
   --auto-restart                 - If set, auto restarts the containers on failure.
@@ -199,6 +202,9 @@ fi
 if [ -z "$LOKI_DIR" ]; then
   LOKI_DIR=""
 fi
+if [ -z "$LOKI_PORT" ]; then
+  LOKI_PORT=""
+fi
 LIMITS=""
 VOLUMES=""
 PARAMS=""
@@ -214,6 +220,18 @@ for arg; do
     if [ -z "$LIMIT" ]; then
        case $arg in
             (--no-loki) RUN_LOKI=0
+                ;;
+            (--loki-port)
+                LIMIT="1"
+                PARAM="loki-port"
+                ;;
+            (--promtail-port)
+                LIMIT="1"
+                PARAM="promtail-port"
+                ;;
+            (--promtail-binary-port)
+                LIMIT="1"
+                PARAM="promtail-binary-port"
                 ;;
             (--no-renderer) RUN_RENDERER=""
                 ;;
@@ -307,6 +325,15 @@ for arg; do
             unset PARAM
         elif [ "$PARAM" = "datadog-hostname" ]; then
             DATDOGPARAM="$DATDOGPARAM -H $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "loki-port" ]; then
+            LOKI_PORT="$LOKI_PORT -p $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "promtail-port" ]; then
+            LOKI_PORT="$LOKI_PORT -t $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "promtail-binary-port" ]; then
+            LOKI_PORT="$LOKI_PORT -T $NOSPACE"
             unset PARAM
         else
             if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
@@ -523,7 +550,7 @@ fi
 LOKI_ADDRESS=""
 if [ $RUN_LOKI -eq 1 ]; then
     echo "Wait for Loki container to start."
-	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS`
+	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR $LOKI_PORT -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS`
 	if [ $? -ne 0 ]; then
 	    echo "$LOKI_ADDRESS"
 	    exit 1

@@ -6,6 +6,37 @@ PROMETHEUS_PORT=""
 ALERTMANAGER_PORT=""
 PROMETHEUS_NAME="aprom"
 PROMETHEUS_KILL_WAITTIME="120"
+LOKI_PORT=""
+PROMTAIL_PORT=""
+for arg; do
+    shift
+    if [ -z "$LIMIT" ]; then
+       case $arg in
+            (--loki-port)
+                LIMIT="1"
+                PARAM="loki-port"
+                ;;
+            (--promtail-port)
+                LIMIT="1"
+                PARAM="promtail-port"
+                ;;
+            (*) set -- "$@" "$arg"
+                ;;
+        esac
+    else
+        DOCR=`echo $arg|cut -d',' -f1`
+        VALUE=`echo $arg|cut -d',' -f2-|sed 's/#/ /g'`
+        NOSPACE=`echo $arg|sed 's/ /#/g'`
+        if [ "$PARAM" = "loki-port" ]; then
+            LOKI_PORT="-p $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "promtail-port" ]; then
+            PROMTAIL_PORT="-p $NOSPACE"
+            unset PARAM
+        fi
+        unset LIMIT
+    fi
+done
 while getopts ':hg:p:w:m:' option; do
   case "$option" in
     h) echo "$usage"
@@ -53,8 +84,8 @@ sleep 2
 ./kill-container.sh $ALERTMANAGER_PORT -b aalert
 ./kill-container.sh -b agrafrender
 ./kill-container.sh -b vmalert
-./kill-container.sh -b loki
-./kill-container.sh -b promtail
+./kill-container.sh $LOKI_PORT -b loki
+./kill-container.sh $PROMTAIL_PORT -b promtail
 ./kill-container.sh -b sidecar1
 ./kill-container.sh -b thanos
 ./kill-container.sh -b datadog-agent
