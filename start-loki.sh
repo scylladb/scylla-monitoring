@@ -70,12 +70,16 @@ for arg; do
         unset LIMIT
     fi
 done
-while getopts ':hlp:D:m:A:k:' option; do
+while getopts ':hlp:D:m:A:k:t:T:' option; do
   case "$option" in
     h) echo "$usage"
        exit
        ;;
     p) LOKI_PORT=$OPTARG
+       ;;
+    t) PROMTAIL_PORT=$OPTARG
+       ;;
+    T) PROMTAIL_BIN_PORT=$OPTARG
        ;;
     r) LOKI_RULE_DIR=`readlink -m $OPTARG`
        ;;
@@ -176,6 +180,9 @@ if [ -z $PROMTAIL_PORT ]; then
 else
     PROMTAIL_NAME=promtail-$PROMTAIL_PORT
 fi
+if [ -z $PROMTAIL_BIN_PORT ]; then
+    PROMTAIL_BIN_PORT=1514
+fi
 
 docker container inspect $PROMTAIL_NAME > /dev/null 2>&1
 if [ $? -eq 0 ]; then
@@ -184,7 +191,7 @@ if [ $? -eq 0 ]; then
 fi
 
 if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
-    PROMTAIL_PORT_MAPPING="-p $BIND_ADDRESS$PROMTAIL_PORT:9080 -p ${BIND_ADDRESS}1514:1514"
+    PROMTAIL_PORT_MAPPING="-p $BIND_ADDRESS$PROMTAIL_PORT:9080 -p ${BIND_ADDRESS}$PROMTAIL_BIN_PORT:1514"
 fi
 
 sed "s/LOKI_IP/$LOKI_ADDRESS/" loki/promtail/promtail_config.template.yml > loki/promtail/promtail_config.yml

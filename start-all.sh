@@ -64,7 +64,7 @@ elif [[ $(uname) == "Darwin" ]]; then
 fi
 
 function usage {
-  __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
+  __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--loki-port port] [--promtail-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
 
 Options:
   -h print this help and exit
@@ -98,6 +98,9 @@ Options:
   -T path/to/prometheus-targets  - Adds additional Prometheus target files.
   -k path/to/loki/storage        - When set, will use the given directory for Loki's data
   --no-loki                      - If set, do not run Loki and promtail.
+  --loki-port port               - If set, loki would use the given port number
+  --promtail-port port           - If set, promtail would use the given port number
+  --promtail-binary-port port    - If set, promtail would use the given port number for the binary protocol
   --no-cas                       - If set, Prometheus will drop all cas related metrics while scrapping
   --no-cdc                       - If set, Prometheus will drop all cdc related metrics while scrapping
   --auto-restart                 - If set, auto restarts the containers on failure.
@@ -107,6 +110,7 @@ Options:
   --enable-protobuf              - If set, enable the experimental Prometheus Protobuf with Native histograms support.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
                                    the file names should be scylla_server.yml, node_exporter_servers.yml, and  scylla_manager_servers.yml
+  --stack id                     - Use this option when running a secondary stack, id could be 1-4
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
                                    prometheus, grafana, alertmanager, loki, sidecar, grafanarender
   --archive                      - Treat data directory as an archive. This disables Prometheus time-to-live (infinite retention).
@@ -199,6 +203,9 @@ fi
 if [ -z "$LOKI_DIR" ]; then
   LOKI_DIR=""
 fi
+if [ -z "$LOKI_PORT" ]; then
+  LOKI_PORT=""
+fi
 LIMITS=""
 VOLUMES=""
 PARAMS=""
@@ -214,6 +221,18 @@ for arg; do
     if [ -z "$LIMIT" ]; then
        case $arg in
             (--no-loki) RUN_LOKI=0
+                ;;
+            (--loki-port)
+                LIMIT="1"
+                PARAM="loki-port"
+                ;;
+            (--promtail-port)
+                LIMIT="1"
+                PARAM="promtail-port"
+                ;;
+            (--promtail-binary-port)
+                LIMIT="1"
+                PARAM="promtail-binary-port"
                 ;;
             (--no-renderer) RUN_RENDERER=""
                 ;;
@@ -261,6 +280,10 @@ for arg; do
                 LIMIT="1"
                 PARAM="datadog-hostname"
                 ;;
+            (--stack)
+                LIMIT="1"
+                PARAM="stack"
+                ;;
             (--no-cas-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
                 ;;
@@ -307,6 +330,18 @@ for arg; do
             unset PARAM
         elif [ "$PARAM" = "datadog-hostname" ]; then
             DATDOGPARAM="$DATDOGPARAM -H $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "loki-port" ]; then
+            LOKI_PORT="$LOKI_PORT -p $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "promtail-port" ]; then
+            LOKI_PORT="$LOKI_PORT -t $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "promtail-binary-port" ]; then
+            LOKI_PORT="$LOKI_PORT -T $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "stack" ]; then
+            STACK_ID="$NOSPACE"
             unset PARAM
         else
             if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
@@ -508,6 +543,16 @@ else
         VERSIONS=$ALL
     fi
 fi
+if [ $STACK_ID != "" ]; then
+    echo "Running a seconddary stack $STACK_ID"
+    echo "Note that the following containers will not run: loki, promtail, grafana renderer"
+    echo "to stop it use ./kill-all.sh --stack $STACK_ID"
+    RUN_LOKI=0
+    RUN_RENDERER=""
+    PROMETHEUS_PORT=${STACK_PROMETHEUS["$STACK_ID"]}
+    GRAFANA_PORT="-g"${STACK_GRAFANA["$STACK_ID"]}
+    ALERTMANAGER_PORT="-p "${STACK_ALERTMANAGER["$STACK_ID"]}
+fi
 
 ALERTMANAGER_COMMAND=""
 for val in "${ALERTMANAGER_COMMANDS[@]}"; do
@@ -523,7 +568,7 @@ fi
 LOKI_ADDRESS=""
 if [ $RUN_LOKI -eq 1 ]; then
     echo "Wait for Loki container to start."
-	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS`
+	LOKI_ADDRESS=`./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR $LOKI_PORT -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS`
 	if [ $? -ne 0 ]; then
 	    echo "$LOKI_ADDRESS"
 	    exit 1
