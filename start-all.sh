@@ -110,6 +110,7 @@ Options:
   --enable-protobuf              - If set, enable the experimental Prometheus Protobuf with Native histograms support.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
                                    the file names should be scylla_server.yml, node_exporter_servers.yml, and  scylla_manager_servers.yml
+  --stack id                     - Use this option when running a secondary stack, id could be 1-4
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
                                    prometheus, grafana, alertmanager, loki, sidecar, grafanarender
   --archive                      - Treat data directory as an archive. This disables Prometheus time-to-live (infinite retention).
@@ -279,6 +280,10 @@ for arg; do
                 LIMIT="1"
                 PARAM="datadog-hostname"
                 ;;
+            (--stack)
+                LIMIT="1"
+                PARAM="stack"
+                ;;
             (--no-cas-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
                 ;;
@@ -334,6 +339,9 @@ for arg; do
             unset PARAM
         elif [ "$PARAM" = "promtail-binary-port" ]; then
             LOKI_PORT="$LOKI_PORT -T $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "stack" ]; then
+            STACK_ID="$NOSPACE"
             unset PARAM
         else
             if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
@@ -534,6 +542,16 @@ else
     if [ "$VERSIONS" = "all" ]; then
         VERSIONS=$ALL
     fi
+fi
+if [ $STACK_ID != "" ]; then
+    echo "Running a seconddary stack $STACK_ID"
+    echo "Note that the following containers will not run: loki, promtail, grafana renderer"
+    echo "to stop it use ./kill-all.sh --stack $STACK_ID"
+    RUN_LOKI=0
+    RUN_RENDERER=""
+    PROMETHEUS_PORT=${STACK_PROMETHEUS["$STACK_ID"]}
+    GRAFANA_PORT="-g"${STACK_GRAFANA["$STACK_ID"]}
+    ALERTMANAGER_PORT="-p "${STACK_ALERTMANAGER["$STACK_ID"]}
 fi
 
 ALERTMANAGER_COMMAND=""
