@@ -617,7 +617,17 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
 done
 
 ./prometheus-config.sh -m $AM_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS
-
+if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
+    DATE=$(date +"%Y-%m-%d_%H_%M_%S")
+    if [ -f $DATA_DIR/scylla.txt ]; then
+        mv $DATA_DIR/scylla.txt $DATA_DIR/scylla.$DATE.txt
+    fi
+    echo COMMAND_LINE='"'"$@"'"' > $DATA_DIR/scylla.txt
+    echo VERSIONS='"'"$VERSIONS"'"' >> $DATA_DIR/scylla.txt
+    echo CURRENT_VERSION='"'"$CURRENT_VERSION"'"' >> $DATA_DIR/scylla.txt
+    echo PROMETHEUS_VERSION='"'"$PROMETHEUS_VERSION"'"' >> $DATA_DIR/scylla.txt
+    echo LAST_RUN='"'"$DATE"'"' >> $DATA_DIR/scylla.txt
+fi
 if [ -z $HOST_NETWORK ]; then
     PORT_MAPPING="-p $BIND_ADDRESS$PROMETHEUS_PORT:9090"
 fi
