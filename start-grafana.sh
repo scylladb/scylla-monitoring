@@ -98,7 +98,7 @@ for arg; do
 done
 usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 
-while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:' option; do
+while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:s:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -146,6 +146,9 @@ while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:' option; do
     A) BIND_ADDRESS="$OPTARG:"
        ;;
     S) SPECIFIC_SOLUTION="-S $OPTARG"
+       ;;
+    s) STACK="/stack/$OPTARG"
+       STACK_CMD="-s $OPTARG"
        ;;
     E) RUN_RENDERER="-E"
        ;;
@@ -234,9 +237,8 @@ fi
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
-
-./generate-dashboards.sh -t $SPECIFIC_SOLUTION -v $VERSIONS -M $MANAGER_VERSION $GRAFANA_DASHBOARD_COMMAND
-./grafana-datasource.sh $DATA_SOURCES
+./generate-dashboards.sh -t $SPECIFIC_SOLUTION -v $VERSIONS -M $MANAGER_VERSION $STACK_CMD $GRAFANA_DASHBOARD_COMMAND
+./grafana-datasource.sh $DATA_SOURCES $STACK_CMD
 
 if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
     PORT_MAPPING="-p $BIND_ADDRESS$GRAFANA_PORT:3000"
@@ -272,6 +274,10 @@ if [ ! -z $RUN_RENDERER ]; then
     GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_RENDERING_SERVER_URL=http://$HOST_ADDRESS:8081/render -e GF_RENDERING_CALLBACK_URL=http://$HOST_ADDRESS:$GRAFANA_PORT/"
 fi
 
+if [ -z $STACK ]; then
+    STACK=""
+fi
+
 docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PORT_MAPPING \
      -e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
      -e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
@@ -281,7 +287,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
      "${group_args[@]}" \
      -v $PWD/grafana/build:/var/lib/grafana/dashboards:z \
      -v $PWD/grafana/plugins:/var/lib/grafana/plugins:z \
-     -v $PWD/grafana/provisioning:/var/lib/grafana/provisioning:z $EXTERNAL_VOLUME \
+     -v $PWD/grafana$STACK/provisioning:/var/lib/grafana/provisioning:z $EXTERNAL_VOLUME \
      -e "GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning" \
      -e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
      -e "GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID=$UA_ANALTYICS" \
