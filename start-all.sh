@@ -343,6 +343,7 @@ for arg; do
         elif [ "$PARAM" = "stack" ]; then
             STACK_ID="$NOSPACE"
             STACK_CMD="-s $NOSPACE"
+            STACK="/stack/$NOSPACE"
             unset PARAM
         else
             if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
@@ -617,7 +618,7 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
     fi
 done
 
-./prometheus-config.sh -m $AM_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS
+./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
     DATE=$(date +"%Y-%m-%d_%H_%M_%S")
     if [ -f $DATA_DIR/scylla.txt ]; then
@@ -647,7 +648,7 @@ else
 docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
      $DATA_DIR_CMD \
      "${group_args[@]}" \
-     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:z \
+     -v $PWD/prometheus/build$STACK/prometheus.yml:/etc/prometheus/prometheus.yml:z \
      -v $PROMETHEUS_RULES:z \
      $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
