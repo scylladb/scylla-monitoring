@@ -31,18 +31,6 @@ if [ "$1" = "--version" ]; then
     exit
 fi
 
-if [ "$CURRENT_VERSION" = "master" ]; then
-    echo ""
-    echo "*****************************************************"
-    echo "* WARNING: You are using the unstable master branch *"
-    echo "* Check the README.md file for the stable releases  *"
-    echo "*****************************************************"
-    echo ""
-    echo "Make sure you run generate-dashboards.sh to generate your dashboards."
-    echo 'For example to use Scylla 2021.1 run `./generate-dashboards.sh -F -v 2021.1`'
-    echo ""
-fi
-
 if [ "`id -u`" -eq 0 ]; then
     echo "Running as root is not advised, please check the documentation on how to run as non-root user"
     USER_PERMISSIONS="-u 0:0"
@@ -113,7 +101,7 @@ Options:
   --stack id                     - Use this option when running a secondary stack, id could be 1-4
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
                                    prometheus, grafana, alertmanager, loki, sidecar, grafanarender
-  --archive                      - Treat data directory as an archive. This disables Prometheus time-to-live (infinite retention).
+  --archive  data-directory      - Treat data directory as an archive. This disables Prometheus time-to-live (infinite retention), and would run a minimal mode
 The script starts Scylla Monitoring stack.
 "
   echo "$__usage"
@@ -262,7 +250,7 @@ for arg; do
                 ;;
             (--param)
                 LIMIT="1"
-                PARAM="1"
+                PARAM="param"
                 ;;
             (--evaluation-interval)
                 LIMIT="1"
@@ -301,6 +289,8 @@ for arg; do
                 ;;
             (--archive)
                 ARCHIVE="1"
+                LIMIT="1"
+                PARAM="archive"
                 ;;
             (*) set -- "$@" "$arg"
                 ;;
@@ -309,7 +299,13 @@ for arg; do
         DOCR=`echo $arg|cut -d',' -f1`
         VALUE=`echo $arg|cut -d',' -f2-|sed 's/#/ /g'`
         NOSPACE=`echo $arg|sed 's/ /#/g'`
-        if [ "$PARAM" = "1" ]; then
+        if [[ $NOSPACE == --* ]]; then
+            echo "Error: No value given to --$PARAM"
+            echo
+            usage
+            exit 1
+        fi
+        if [ "$PARAM" = "param" ]; then
             if [ -z "${DOCKER_PARAMS[$DOCR]}" ]; then
                 DOCKER_PARAMS[$DOCR]=""
             fi
@@ -342,6 +338,11 @@ for arg; do
             unset PARAM
         elif [ "$PARAM" = "stack" ]; then
             STACK_ID="$NOSPACE"
+            STACK_CMD="-s $NOSPACE"
+            STACK="/stack/$NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "archive" ]; then
+            DATA_DIR="$NOSPACE"
             unset PARAM
         else
             if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
@@ -362,6 +363,13 @@ for arg; do
         unset LIMIT
     fi
 done
+
+if [ ! -z $LIMIT ]; then
+    echo "Error: No value given to --$PARAM"
+    echo
+    usage
+    exit -1
+fi
 
 while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option; do
   case "$option" in
@@ -440,19 +448,41 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
   esac
 done
 if [ "$ARCHIVE" == "1" ]; then
-    if [ -z $DATA_DIR ]; then
-        echo "Running --archive without an external Prometheus directory, make sure you are using the -d command line option"
-        exit -1
-    fi
     PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
     RUN_LOKI=0
     RUN_RENDERER=""
-    CONSUL_ADDRESS="127.0.0.1:0"
+    CONSUL_ADDRESS="-L 127.0.0.1:0"
+    if [ ! -d $DATA_DIR/ ]; then
+        echo "The giving data directory $DATA_DIR does not exist"
+        exit 1
+    fi
+    if [ -f $DATA_DIR/scylla.txt ]; then
+        . $DATA_DIR/scylla.txt
+        echo "Taking version from $DATA_DIR/scylla.txt"
+        echo "Version set to $VERSIONS"
+    else
+        echo "scylla.txt not found in $DATA_DIR/. You can use it to start the monitoring stack with a given version"
+        echo "For example, to start the monitoring stack with version 2014.1 and manager 3.3"
+        echo 'echo VERSIONS="2024.1">'$DATA_DIR/scylla.txt
+        echo 'echo MANAGER_VERSION="3.3">>'$DATA_DIR/scylla.txt
+    fi
 fi
 
 if [ -z "$VERSIONS" ]; then
   echo "Scylla-version was not not found, add the -v command-line with a specific version (i.e. -v 2021.1)"
   exit 1
+fi
+
+if [ "$CURRENT_VERSION" = "master" ]; then
+    if [ "$ARCHIVE" = "" ]; then
+        echo ""
+        echo "*****************************************************"
+        echo "* WARNING: You are using the unstable master branch *"
+        echo "* Check the README.md file for the stable releases  *"
+        echo "*****************************************************"
+    fi
+    echo "Generating the dashaobard ./generate-dashboards.sh -v $VERSIONS -m $MANAGER_VERSION" $STACK_CMD
+    ./generate-dashboards.sh -v $VERSIONS
 fi
 
 if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
@@ -616,15 +646,16 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
     fi
 done
 
-./prometheus-config.sh -m $AM_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS
+./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
     DATE=$(date +"%Y-%m-%d_%H_%M_%S")
     if [ -f $DATA_DIR/scylla.txt ]; then
         mv $DATA_DIR/scylla.txt $DATA_DIR/scylla.$DATE.txt
     fi
-    echo COMMAND_LINE='"'"$@"'"' > $DATA_DIR/scylla.txt
+    echo LAST_COMMAND_LINE='"'"$@"'"' > $DATA_DIR/scylla.txt
     echo VERSIONS='"'"$VERSIONS"'"' >> $DATA_DIR/scylla.txt
-    echo CURRENT_VERSION='"'"$CURRENT_VERSION"'"' >> $DATA_DIR/scylla.txt
+    echo MANAGER_VERSION='"'"$MANAGER_VERSION"'"' >> $DATA_DIR/scylla.txt
+    echo MONITORING_VERSION='"'"$CURRENT_VERSION"'"' >> $DATA_DIR/scylla.txt
     echo PROMETHEUS_VERSION='"'"$PROMETHEUS_VERSION"'"' >> $DATA_DIR/scylla.txt
     echo LAST_RUN='"'"$DATE"'"' >> $DATA_DIR/scylla.txt
 fi
@@ -646,7 +677,7 @@ else
 docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
      $DATA_DIR_CMD \
      "${group_args[@]}" \
-     -v $PWD/prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml:z \
+     -v $PWD/prometheus/build$STACK/prometheus.yml:/etc/prometheus/prometheus.yml:z \
      -v $PROMETHEUS_RULES:z \
      $SCYLLA_TARGET_FILE \
      $SCYLLA_MANGER_TARGET_FILE \
@@ -731,5 +762,4 @@ done
 if [ ! -z "$DATDOGPARAM" ]; then
    ./start-datadog.sh $DATDOGPARAM -p $DB_ADDRESS
 fi
-
-./start-grafana.sh $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD
+./start-grafana.sh $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD

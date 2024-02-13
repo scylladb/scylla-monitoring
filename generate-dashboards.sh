@@ -28,7 +28,7 @@ fi
 
 usage="$(basename "$0") [-h] [-v comma separated versions ]  [-D] [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] [-F force update] [-S start with a system specific dashboard set] -- Generates the grafana dashboards and their load files"
 BASE_DASHBOARD_DIR="grafana/provisioning/dashboards"
-while getopts ':htDv:j:M:S:B:P:F' option; do
+while getopts ':htDv:j:M:S:B:P:s:F' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -48,6 +48,9 @@ while getopts ':htDv:j:M:S:B:P:F' option; do
        ;;
     S) SPECIFIC_SOLUTION="$OPTARG"
        ;;
+    s) STACK="$OPTARG"
+       BASE_DASHBOARD_DIR="grafana/stack/$OPTARG/provisioning/dashboards"
+       ;;
     D) VERSIONS=${SUPPORTED_VERSIONS[$BRANCH_VERSION]}
        FORMAT_COMAND="$FORMAT_COMAND -v $VERSIONS"
        MANAGER_VERSION=${MANAGER_SUPPORTED_VERSIONS[$BRANCH_VERSION]}
@@ -62,7 +65,6 @@ done
 if [[ -z "$TEST_ONLY" ]]; then
     mkdir -p grafana/build
 fi
-
 mkdir -p $BASE_DASHBOARD_DIR
 rm -f $BASE_DASHBOARD_DIR/load.*.yaml
 

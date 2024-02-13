@@ -5,13 +5,13 @@ if [ "$1" = "" ]; then
     echo "$usage"
     exit
 fi
-
+BASE_DIR="grafana/provisioning/datasources"
 if [ "$1" = "--compose" ]; then
     DB_ADDRESS="aprom:9090"
     ALERT_MANAGER_ADDRESS="aalert:9093"
     LOKI_ADDRESS="loki:3100"
 else
-    while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:' option; do
+    while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:s:' option; do
       case "$option" in
         h) echo "$usage"
            exit
@@ -22,6 +22,8 @@ else
            ALERT_MANAGER_ADDRESS=$OPTARG
            ;;
         L) LOKI_ADDRESS=$OPTARG
+           ;;
+        s) BASE_DIR="grafana/stack/$OPTARG/provisioning/datasources"
            ;;
         :) printf "missing argument for -%s\n" "$OPTARG" >&2
            echo "$usage" >&2
@@ -34,16 +36,16 @@ else
       esac
     done
 fi
-mkdir -p grafana/provisioning/datasources
-rm -f grafana/provisioning/datasources/datasource.yaml
-sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" > grafana/provisioning/datasources/datasource.yaml
+mkdir -p $BASE_DIR
+rm -f $BASE_DIR/datasource.yaml
+sed "s/DB_ADDRESS/$DB_ADDRESS/" grafana/datasource.yml | sed "s/AM_ADDRESS/$ALERT_MANAGER_ADDRESS/" > $BASE_DIR/datasource.yaml
 if [ -z "$LOKI_ADDRESS" ]; then
-    rm -f grafana/provisioning/datasources/datasource.loki.yaml
+    rm -f $BASE_DIR/datasource.loki.yaml
 else
-    sed "s/LOKI_ADDRESS/$LOKI_ADDRESS/" grafana/datasource.loki.yml> grafana/provisioning/datasources/datasource.loki.yaml
+    sed "s/LOKI_ADDRESS/$LOKI_ADDRESS/" grafana/datasource.loki.yml> $BASE_DIR/datasource.loki.yaml
 fi
 if [ -z "$SCYLLA_USER" ] || [ -z "$SCYLLA_PSSWD" ]; then
-    cp grafana/datasource.scylla.yml grafana/provisioning/datasources/datasource.scylla.yml
+    cp grafana/datasource.scylla.yml $BASE_DIR/datasource.scylla.yml
 else
-    sed "s/SCYLLA_USER/$SCYLLA_USER/" grafana/datasource.psswd.scylla.yml |sed "s/SCYLLA_PSSWD/$SCYLLA_PSSWD/">grafana/provisioning/datasources/datasource.scylla.yml
+    sed "s/SCYLLA_USER/$SCYLLA_USER/" grafana/datasource.psswd.scylla.yml |sed "s/SCYLLA_PSSWD/$SCYLLA_PSSWD/">$BASE_DIR/datasource.scylla.yml
 fi
