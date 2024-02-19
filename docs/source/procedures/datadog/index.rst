@@ -12,6 +12,19 @@ The integration consists of:
 
 .. note::  Scylla Cloud users, use and update the proper configuration file.
 
+Scylla Monitoring Datadog Integration Overview
+==============================================
+A typical ScyllaDB cluster generates thousands of metrics, sometimes even tens of thousands.
+The sheer number of metrics is too much for Datadog.
+
+Instead of letting the Datadog agent scrap all metrics, the monitoring stack marks a small subset of metrics with a label and lets the Datadog agent scrap only those.
+That labeling is done in two places: recording rules and the Prometheus relabel config.
+
+Recording rules aggregate the metrics so that they will be reported per instance instead of per shard, and they mark the result with a label.
+
+Prometheus relabel config marks metrics that are reported per instance, like disk and CPU.
+
+
 Install And configure the Datadog Agent
 =======================================
 
@@ -48,7 +61,7 @@ Cloud users, skip this step, it's been take care for by the cloud.
 Upload the Dashboard
 ====================
 Download the dashboard file :download:`dashboard.json <dashboard.json>`.
-Create a new dashboard in Datadog and import the json file you downloaded. 
+Create a new dashboard in Datadog and import the json file you downloaded.
 
 Using the Dashboard
 ===================
@@ -66,3 +79,15 @@ Second, you can filter to see specific shards, nodes, or DCs.
 Adding Monitor
 ==============
 Alerts in Datadog called Monitor. Download the monitor file :download:`monitor.json <monitor.json>`. Go to the Monitor section in datadog and import the json.
+
+Adding more metrics to Datadog
+==============================
+To add a missing metric, do the following:
+
+For ScyllaDB metrics, add a recording rule to report an aggregated per instance of that metric. We suggest placing it in a different YAML file to simplify an upgrade.
+
+OS-related metrics originate from node_exporter, and Prometheus labels them during scraping.
+To label a node exporter metrics, edit the prometheus/prometheus.yml.template search for the job_name: node_exporter and find the metric_relabel_configs.
+You can add a metric name to the regex section.
+
+If you think that metric is helpful for other users, open an issue, and we'll add it.
