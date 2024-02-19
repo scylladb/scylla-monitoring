@@ -48,7 +48,7 @@ The following procedure uses a ``CentOS 7`` based instance
 Install Alertmanager
 --------------------
 
-Tested with alertmanager 0.22.2 version
+Tested with alertmanager 0.26.0 version
 
 1. Install `alertmanager`_
 
@@ -56,7 +56,7 @@ Tested with alertmanager 0.22.2 version
 
 .. code-block:: shell
 
-   wget https://github.com/prometheus/alertmanager/releases/download/v0.22.2/alertmanager-0.22.2.linux-amd64.tar.gz
+   wget https://github.com/prometheus/alertmanager/releases/download/v0.26.0/alertmanager-0.26.0.linux-amd64.tar.gz
    tar -xvf alertmanager-*.linux-amd64.tar.gz
 
 
@@ -66,8 +66,8 @@ For example:
 
 .. code-block:: shell
    :substitutions:
-   
-   cp -p /home/centos/scylla-monitoring-scylla-monitoring-|version|/prometheus/rule_config.yml alertmanager-0.22.2.linux-amd64/alertmanager.yml
+
+   cp -p /home/centos/scylla-monitoring-scylla-monitoring-|version|/prometheus/rule_config.yml alertmanager-0.26.0.linux-amd64/alertmanager.yml
 
 3. Start the Alertmanager
 
@@ -75,7 +75,7 @@ For example:
 
 .. code-block:: shell
 
-   cd alertmanager-0.22.2.linux-amd64
+   cd alertmanager-0.26.0.linux-amd64/
    ./alertmanager
 
 
@@ -131,7 +131,7 @@ Edit ``/etc/promtail/config.yml`` and replace ``LOKI_IP`` with Loki's ip:port (i
 Install Prometheus
 ------------------
 
-Tested with Prometheus version 2.27.1
+Tested with Prometheus version 2.49.1
 
 .. note::
    If you already have a prometheus server, beside the expected scrap jobs, make sure you take the Prometheus rules directory.
@@ -143,16 +143,18 @@ Tested with Prometheus version 2.27.1
 
 .. code-block:: shell
 
-   wget https://github.com/prometheus/prometheus/releases/download/v2.27.1/prometheus-2.27.1.linux-amd64.tar.gz
+   wget https://github.com/prometheus/prometheus/releases/download/v2.49.1/prometheus-2.49.1.linux-amd64.tar.gz
    tar -xvf prometheus-*.linux-amd64.tar.gz
 
 2. Create Data and Config directories
+
 .. code-block:: shell
 
-   mkdir -p /prometheus/data
-   mkdir -p /etc/prometheus/prom_rules/
-   mkdir -p /etc/scylla.d/prometheus/
+   sudo mkdir -p /prometheus/data
+   sudo mkdir -p /etc/prometheus/prom_rules/
+   sudo mkdir -p /etc/scylla.d/prometheus/
 
+.. note:: To run Promethues as non-root user, you would need to give read write and execute permissions to those directories.
 
 3. Copy the following files: ``scylla_servers.yml``, ``prometheus.rules.yml`` from ``prometheus/`` directory to Prometheus installation directory.
 
@@ -243,7 +245,7 @@ For example:
 
 .. code-block:: shell
 
-   cat scylla_servers.yml
+   cat /etc/scylla.d/prometheus/scylla_servers.yml
    # List Scylla end points
 
    - targets:
@@ -267,6 +269,7 @@ For example:
 
 .. code-block:: shell
 
+   cat /etc/scylla.d/prometheus/scylla_manager_server.yml
    - targets:
      - 127.0.0.1:5090
 
@@ -277,7 +280,7 @@ For example:
 .. code-block:: shell
    :substitutions:
 
-   cd scylla-monitoring-scylla-monitoring-|version|/
+   cd cd prometheus-2.49.1.linux-amd64/
    ./prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path /prometheus/data
 
 Data should start accumulate on: /prometheus/data
@@ -313,12 +316,12 @@ At this point Scylla is emitting the metrics and Prometheus is able to store the
 Install Grafana
 ---------------
 
-Tested with Grafna 7.5.7
+Tested with Grafna 10.3.3
 
 1. Install Grafana based on the instructions `here <http://docs.grafana.org/installation/>`_
 
 Depends if you installed Grafana from a repository (yum install), or if you downloaded the zip version, the directory structure will be
-different in the rest of the steps.
+different, we will assume that you used yum/dnf install.
 
 2. Access Scylla-Grafana-monitoring directory
 
@@ -333,38 +336,49 @@ different in the rest of the steps.
 
    sudo cp -r grafana/plugins /var/lib/grafana/
 
-If you installed Grafana from packages, instead of ``/var/lib/grafana/`` you should copy it to ``public/app`` inside the directory you
-opened Grafana in.
-
-For example:
-
-.. code-block:: shell
-
-   cp -r grafana/plugins ../grafana-7.5.7/public/app
-
 4. Provision the Dashboards
 
-For example Scylla Open-source version 4.5 and Scylla manager version 2.4
-
-For Grafana installed with ``yum install``
+For example Scylla Open-source version 5.4 and Scylla manager version 2.4
 
 .. code-block:: shell
 
-   sudo cp grafana/load.yaml /etc/grafana/provisioning/dashboards/
+   sudo cp grafana/load.yaml /etc/grafana/provisioning/dashboards/load.5.4.yaml
+   sudo cp grafana/load.yaml /etc/grafana/provisioning/dashboards/load.manager_3.3.yaml
    sudo mkdir -p /var/lib/grafana/dashboards
    sudo cp -r grafana/build/* /var/lib/grafana/dashboards
 
-For Grafana installed from packages
+
+Edit the ``load.*`` you just copied. For example
 
 .. code-block:: shell
 
-   cp -p -r grafana/build/* ../grafana-7.5.7/public/build/
-   cp -p grafana/load.yaml ../grafana-7.5.7/conf/provisioning/dashboards/load.4.5.yaml
-   cp -p grafana/load.yaml ../grafana-7.5.7/conf/provisioning/dashboards/load.manager_2.4.yaml
+   $ cat /etc/grafana/provisioning/dashboards/load.manager_3.3.yaml
+   apiVersion: 1
 
-Edit the ``load.*``  files in ``/home/centos/grafana-7.5.7/conf/provisioning/dashboards/`` for the correct path,
-for example ``load.4.5.yaml`` would point to: ``/home/centos/grafana-7.5.7/public/build/ver_4.5``.
+   providers:
+   - name: 'manager_3.3'
+     orgId: 1
+     folder: ''
+     type: file
+     disableDeletion: false
+     allowUiUpdates: true
+     updateIntervalSeconds: 10 #how often Grafana will scan for changed dashboards
+     options:
+       path: /var/lib/grafana/dashboards/manager_3.3
 
+   $ cat /etc/grafana/provisioning/dashboards/load.5.4.yaml
+   apiVersion: 1
+
+   providers:
+   - name: '5.4'
+     orgId: 1
+     folder: ''
+     type: file
+     disableDeletion: false
+     allowUiUpdates: true
+     updateIntervalSeconds: 10 #how often Grafana will scan for changed dashboards
+     options:
+       path: /var/lib/grafana/dashboards/ver_5.4
 .. note:: A note about using folders, if you provision multiple Scylla versions, use the version as a folder name. Otherwise, no need to configure a FOLDER.
 
 
@@ -376,11 +390,6 @@ for example ``load.4.5.yaml`` would point to: ``/home/centos/grafana-7.5.7/publi
 
 .. note:: Scylla uses a plugin to read from some system tables see the section below about using it.
 
-For Grafana installed from packages
-
-.. code-block:: shell
-
-   cp -p grafana/datasource.yml /home/centos/grafana-7.5.7/conf/provisioning/datasources/
 
 You should set the Prometheus and the alertmanager IP and port.
 
@@ -420,26 +429,6 @@ For Grafana installed with `yum install`
 
 ``sudo service grafana-server start``
 
-For Grafana installed from packages:
-
-``cp -p /home/centos/grafana-7.5.7/conf/sample.ini /home/centos/grafana-7.5.7/conf/scylla.ini``
-
-Edit scylla.ini to reflect the right paths in the paths section of the file.
-
-
-.. code-block:: shell
-
-    plugins = /home/centos/grafana-7.5.7/data/plugins
-    provisioning = /home/centos/grafana-7.5.7/conf/provisioning
-
-
-Start the server:
-
-.. code-block:: shell
-
-    cd /home/centos/grafana-7.5.7/
-    ./bin/grafana-server -config /home/centos/grafana-7.5.7/conf/scylla.ini
-
 7. Make sure Grafana is running
 
 Point your browser to the Grafana server port 3000, the assumption is that Grafana and Prometheus are collocated on the same server.
@@ -457,9 +446,9 @@ Because the plugin gives access to the Scylla tables, we strongly encourage you
 Setting a monitoring user
 .........................
 
-This part is optional, but is highly recommended. The instruction at `enable authorization`_ covers all the following items in details.  
+This part is optional, but is highly recommended. The instruction at `enable authorization`_ covers all the following items in details.
 
-.. _`enable authorization`: https://docs.scylladb.com/operating-scylla/security/enable-authorization/ 
+.. _`enable authorization`: https://docs.scylladb.com/operating-scylla/security/enable-authorization/
 
 * If you have not done so, `enable authorization`_ first.
 * Add a new ROLL for the scylla monitoring: ``CREATE ROLE scylla_monitoring WITH PASSWORD = 'scylla_monitoring' AND LOGIN = true;`` make sure to give it a proper password.
