@@ -271,7 +271,8 @@ Generating the dashboards from templates (generate-dashboards.sh)
 
 Prerequisite
 ============
-Python 2.7
+Python 3
+pyyaml
 
 
 `make_dashboards.py` is a utility that generates dashboards from templates or helps you update the templates when working in reverse mode (the `-r` flag).
