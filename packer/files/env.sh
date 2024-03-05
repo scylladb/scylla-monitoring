@@ -1,0 +1,2 @@
+RUN_THANOS_SC=1
+

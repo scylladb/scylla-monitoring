@@ -1,0 +1,210 @@
+#!/usr/bin/python3
+#
+# Copyright 2018 ScyllaDB
+#
+
+#
+# This file is part of Scylla.
+#
+# Scylla is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Scylla is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Scylla.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
+import sys
+import glob
+import re
+import shutil
+import shlex
+import tarfile
+import argparse
+import subprocess
+from pathlib import Path
+HOME_DIR='/home/centos/'
+USER='centos'
+COPY_OR_MOVE='mv'
+
+def is_centos():
+    return USER == 'centos'
+
+def install_pip_dep():
+    run('pip3 install psutil')
+    run('pip3 install pyyaml')
+    run('pip3 install distro')
+    run('pip3 install traceback-with-variables')
+
+def get_swap_scripts():
+    with open("{_HOME}/scylla_product.py".format(_HOME=HOME_DIR, _USER=USER), "w") as f:
+        f.write('PRODUCT="scylla-monitoring"')
+    run('chown {_USER}:{_USER} {_HOME}/scylla_product.py')
+
+def make_conf_sh(args):
+    with open("{_HOME}/scylla-grafana-monitoring-scylla-monitoring/conf-from-user.sh".format(_HOME=HOME_DIR), "w") as f:
+        f.write('sudo ./conf-from-user.py --cloud {_CLOUD}\n'.format(_CLOUD=args.cloud))
+    run('chown {_USER}:{_USER} {_HOME}/scylla-grafana-monitoring-scylla-monitoring/conf-from-user.sh')
+    run("chmod a+x {_HOME}/scylla-grafana-monitoring-scylla-monitoring/conf-from-user.sh".format(_HOME=HOME_DIR))
+    run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/conf-from-user.py {_HOME}/scylla-grafana-monitoring-scylla-monitoring/')
+def update_swap(size):
+    if size == 0:
+        return
+    try:
+        run('{_HOME}/scylla_swap_setup --swap-size {SIZE}'.format(_HOME=HOME_DIR, SIZE=size))
+    except Exception as e:
+        print("Failed creating swap:", e.output)
+def run(template_cmd, shell=False):
+    cmd = template_cmd.format(_HOME=HOME_DIR, _USER=USER, _COPY_OR_MOVE=COPY_OR_MOVE)
+    if dry_run:
+        print(cmd)
+        return
+    if verbose:
+        print(cmd)
+    if not shell:
+        cmd = shlex.split(cmd)
+    try:
+        res = subprocess.check_output(cmd, shell=shell)
+        if verbose:
+            print(res)
+        return res
+    except Exception as e:
+        print("Error while running:")
+        print(cmd,end =" ")
+        print(e.output)
+        raise
+
+def chdir(template_dir):
+    dir = template_dir.format(_HOME=HOME_DIR, _USER=USER)
+    if dry_run:
+        print('cd ', dir)
+        return
+    if verbose:
+        print('cd ', dir)
+    os.chdir(dir)
+
+def install_docker():
+    if is_centos():
+        run('yum install -y yum-utils device-mapper-persistent-data lvm2')
+        run('yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo')
+        run('yum install -y docker-ce')
+    else:
+        run('apt install -y apt-transport-https ca-certificates curl software-properties-common')
+        run('curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o gpg')
+        run('apt-key add ./gpg')
+        run('add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"')
+        run('apt-cache policy docker-ce')
+        run('apt install -y docker-ce')
+    run('usermod -aG docker {_USER}'.format(_HOME=HOME_DIR, _USER=USER))
+    run('systemctl enable docker')
+    run('systemctl start docker')
+
+def setup_monitoring():
+    run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/env.sh {_HOME}/scylla-grafana-monitoring-scylla-monitoring/')
+    run_monitoring()
+    run('sudo -u {_USER} cp {_HOME}/scylla-grafana-monitoring-scylla-monitoring/docs/source/procedures/datadog/datadog.rules.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/prom_rules/')
+    run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/prometheus.rules.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/prom_rules/')
+    run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/rule_config.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/rule_config.original.yml')
+    run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/rule_config.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/')
+    run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/UA.sh {_HOME}/scylla-grafana-monitoring-scylla-monitoring/')
+    run('sudo -u {_USER} ./generate-dashboards.sh -D -F -P "no-version-check" -P "no-cql-connection" -P "no-your-pannels"')
+    run('sudo -u {_USER}  {_HOME}/clear_files.sh scylla-ks')
+
+def install_monitoring(version):
+    if version == 'master':
+        run('sudo -u {_USER} curl -L -o {_HOME}/scylla-monitoring.tar.gz  https://github.com/scylladb/scylla-monitoring/archive/refs/heads/master.tar.gz'.format(_HOME=HOME_DIR, _USER=USER))
+        name = 'scylla-monitoring-master'
+    else:
+        run('sudo -u {_USER} curl -L -o {_HOME}/scylla-monitoring.tar.gz  https://github.com/scylladb/scylla-monitoring/archive/refs/tags/scylla-monitoring-{VERSION}.tar.gz'.format(VERSION=version, _HOME=HOME_DIR, _USER=USER))
+        name = 'scylla-monitoring-scylla-monitoring-{VERSION}'.format(VERSION=version)
+    run('sudo -u {_USER} tar -xvf {_HOME}/scylla-monitoring.tar.gz -C {_HOME}/')
+    run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/{NAME} {_HOME}/scylla-grafana-monitoring-scylla-monitoring'.format(NAME=name, _HOME=HOME_DIR, _USER=USER, _COPY_OR_MOVE=COPY_OR_MOVE))
+
+def run_monitoring():
+    if os.path.exists('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_servers.example.yml'.format(_HOME=HOME_DIR, _USER=USER)):
+        run('sudo -u {_USER} cp {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_servers.example.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_servers.yml')
+    if os.path.exists('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_manager_servers.example.yml'.format(_HOME=HOME_DIR, _USER=USER)):
+        run('sudo -u {_USER} cp {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_manager_servers.example.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_manager_servers.yml')
+    run('sudo -u {_USER} mkdir -p {_HOME}/scylla-grafana-monitoring-scylla-monitoring/data')
+    chdir('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/')
+    try:
+        run('sudo -u {_USER} ./start-all.sh -d {_HOME}/scylla-grafana-monitoring-scylla-monitoring/data -v master')
+    except Exception as e:
+        print("First call to start-all failed, maybe the second one will succeed" + str(e))
+    try:
+        run('sudo -u {_USER} ./kill-all.sh')
+    except Exception as e:
+        print("Failed calling kill start-all failed, maybe the second one will succeed" + str(e))
+
+def post_monitoring_installation(args):
+    run('mv {_HOME}/overide_file.py /usr/bin')
+    run('cp {_HOME}/setup.monitoring.service /etc/systemd/system/')
+    if not args.no_autorun:
+        run('chmod 644 /etc/systemd/system/setup.monitoring.service')
+        run('systemctl enable setup.monitoring')
+        make_conf_sh(args)
+
+def install_dbaas(version):
+    run('sudo -u {_USER} cp {_HOME}/env.centralzied.sh {_HOME}/scylla-grafana-monitoring-scylla-monitoring/env.sh')
+    run('sudo -u {_USER} cp  {_HOME}/scylla-centralized.template.json {_HOME}/scylla-grafana-monitoring-scylla-monitoring/grafana/')
+    run('sudo -u {_USER} cp {_HOME}/prometheus.dbaas.yml.template {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/')
+    chdir('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/')
+    run('sudo -u {_USER} ./generate-dashboards.sh -F -v master'.format(VERSION="master", _USER=USER))
+    run_monitoring()
+
+def install_node_exporter():
+    if not is_centos():
+        run('apt install -y policycoreutils')
+    run('cp {_HOME}/node-exporter.service /etc/systemd/system/')
+    try:
+        run('cp {_HOME}/node-exporter.service /usr/lib/systemd/system/')
+    except Exception as e:
+        print("could not place node-exporter file in user/lib/systemd" + str(e))
+        print(e.output)
+    run('systemctl daemon-reload')
+    try:
+        run('{_HOME}/node_exporter_install')
+    except Exception as e:
+        print("node_exporter_install failed" + str(e))
+        print(e.output)
+
+if __name__ == '__main__':
+    if os.getuid() > 0:
+        print('Requires root permission.')
+        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Construct Scylla-grafana-manager AMI')
+    parser.add_argument('--os', default="centos", help='which version will be installed [centos/ubuntu]')
+    parser.add_argument('--version', default="4.3", help='Monitoring version to install')
+    parser.add_argument('--cloud', default="aws", choices=['aws','gce'], help='What cloud we are running on')
+    parser.add_argument('--verbose', action='store_true', default=False, help='Verbose trace mode')
+    parser.add_argument('--mode', default="scylla", choices=['scylla','dbaas'], help='scylla/dbaas which monitoring stack to create')
+    parser.add_argument('--do-not-move', action='store_true', default=False, help='For testing, do not move files, copy them instead')
+    parser.add_argument('--swap-size', default=20, type=int, help='set the swap size in GB, set it to 0 for no swap')
+    parser.add_argument('--no-autorun', default=False, action='store_true', help='Autorun will try to use user data to configure and run the system')
+    parser.add_argument('-d', '--dry-run', action='store_true', default=False, help='Dry run mode')
+
+    args = parser.parse_args()
+    dry_run = args.dry_run
+    verbose = args.verbose
+    if args.os == 'ubuntu':
+        HOME_DIR='/home/ubuntu'
+        USER='ubuntu'
+    if args.do_not_move:
+        COPY_OR_MOVE='cp'
+    install_pip_dep()
+    get_swap_scripts()
+    update_swap(args.swap_size)
+    install_docker()
+    install_monitoring(args.version)
+    post_monitoring_installation(args)
+    if args.mode == "dbaas":
+        install_dbaas(args.version)
+    else:
+        setup_monitoring()
+        install_node_exporter()

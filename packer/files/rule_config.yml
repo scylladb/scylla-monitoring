@@ -1,0 +1,96 @@
+global:
+  # The smarthost and SMTP sender used for mail notifications.
+  smtp_smarthost: 'localhost:25'
+  smtp_from: 'alertmanager@example.org'
+
+# The root route on which each incoming alert enters.
+route:
+  # The root route must not have any matchers as it is the entry point for
+  # all alerts. It needs to have a receiver configured so alerts that do not
+  # match any of the sub-routes are sent to someone.
+  receiver: 'team-X-mails-regular'
+
+  # The labels by which incoming alerts are grouped together. For example,
+  # multiple alerts coming in for cluster=A and alertname=LatencyHigh would
+  # be batched into a single group.
+  # group_by: ['alertname', 'cluster']
+
+  # When a new group of alerts is created by an incoming alert, wait at
+  # least 'group_wait' to send the initial notification.
+  # This way ensures that you get multiple alerts for the same group that start
+  # firing shortly after another are batched together on the first
+  # notification.
+  group_wait: 30s
+
+  # When the first notification was sent, wait 'group_interval' to send a batch
+  # of new alerts that started firing for that group.
+  group_interval: 5m
+
+  # If an alert has successfully been sent, wait 'repeat_interval' to
+  # resend them.
+  repeat_interval: 6h
+
+  # All the above attributes are inherited by all child routes and can 
+  # overwritten on each.
+
+  # The child route trees.
+  routes:
+  - match:
+      severity: '4'
+    receiver: team-X-mails-urgent
+  - match:
+      severity: '3'
+    receiver: team-X-mails-urgent
+
+
+
+# Inhibition rules allow to mute a set of alerts given that another alert is
+# firing.
+# We use this to mute any warning-level notifications if the same alert is
+# already critical.
+inhibit_rules:
+- source_match:
+    severity: '4'
+  target_match:
+    severity: '3'
+  # Apply inhibition if the alertname is the same.
+  equal: ['alertname']
+- source_match:
+    severity: '3'
+  target_match:
+    severity: '2'
+  # Apply inhibition if the alertname is the same.
+  equal: ['alertname']
+- source_match:
+    severity: '2'
+  target_match:
+    severity: '1'
+  # Apply inhibition if the alertname is the same.
+  equal: ['alertname']
+
+
+receivers:
+- name: 'team-X-mails-regular'
+  email_configs:
+  - from: SENDER_EMAIL
+    to: TARGET_EMAIL_DESTINATION
+    smarthost: SENDER_SMTP_HOST
+    auth_username: "SENDER_EMAIL"
+    auth_identity: "SENDER_EMAIL"
+    auth_password: "SENDER_PASSCODE"
+    send_resolved: true
+    headers:
+      'Subject': 'EMAIL_SUBJECT_NORMAL'
+
+- name: 'team-X-mails-urgent'
+  email_configs:
+  - from: SENDER_EMAIL
+    to: TARGET_EMAIL_DESTINATION
+    smarthost: SENDER_SMTP_HOST
+    auth_username: "SENDER_EMAIL"
+    auth_identity: "SENDER_EMAIL"
+    auth_password: "SENDER_PASSCODE"
+    send_resolved: true
+    headers:
+      'Subject': 'EMAIL_SUBJECT_URGENT'
+

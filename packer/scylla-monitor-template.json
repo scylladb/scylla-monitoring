@@ -1,0 +1,122 @@
+{
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "{{user `aws_region`}}",
+      "ami_name": "{{ user `monitor_image_name` }}",
+      "source_ami": "{{user `aws_source_ami`}}",
+      "instance_type": "{{user `aws_instance_type`}}",
+      "user_data_file": "files/user_data.txt",
+      "subnet_filter": {
+        "filters": {
+          "tag:Name": "image-build-subnet*"
+        },
+        "most_free": true,
+        "random": false
+      },
+      "associate_public_ip_address": "true",
+      "ssh_username": "{{user `aws_ssh_username`}}",
+      "ssh_timeout": "5m",
+      "ena_support": true,
+      "shutdown_behavior": "terminate",
+      "launch_block_device_mappings": [
+        {
+          "device_name": "/dev/sda1",
+          "volume_type": "gp3",
+          "volume_size": 30,
+          "delete_on_termination": true
+        }
+      ],
+      "tags": {
+        "Name": "{{ user `monitor_image_name` }}",
+        "scylladb-monitor-version": "{{ user `monitor_version`| clean_resource_name }}"
+      }
+    },
+    {
+      "type": "googlecompute",
+      "project_id": "{{user `gcp_project_id`}}",
+      "zone": "{{user `gcp_zone`}}",
+      "source_image_family": "{{user `gcp_source_image_family`}}",
+      "image_storage_locations": ["{{user `gcp_image_storage_location`}}"],
+      "machine_type": "{{user `gcp_instance_type`}}",
+      "ssh_username": "{{user `gcp_ssh_username`}}",
+      "ssh_timeout": "6m",
+      "metadata": { "block-project-ssh-keys": "TRUE" },
+      "image_family": "scylladb-monitor",
+      "image_name": "{{ user `monitor_image_name` }}",
+      "instance_name": "{{ user `monitor_image_name` }}",
+      "image_description": "Scylla Monitor Image {{user `monitor_version`| clean_resource_name}}",
+      "use_internal_ip": false,
+      "preemptible": true,
+      "omit_external_ip": false,
+      "disk_size": 40,
+      "disk_type": "pd-balanced",
+      "image_labels": {
+        "scylladb-monitor-version": "{{ user `monitor_version`| clean_resource_name }}"
+      },
+      "labels": {
+        "keep": 1,
+        "keep_action": "terminate"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "files/",
+      "destination": "/home/ubuntu/"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef dist-upgrade --allow-downgrades --allow-remove-essential --allow-change-held-packages -y",
+        "sudo apt-get update --fix-missing -y",
+        "sudo apt-get upgrade -y",
+        "sudo apt-get install -y python3-setuptools",
+        "sudo apt-get install -y python3-pip"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo /home/{{user `aws_ssh_username`}}/scylla_monitoring_install_ami {{ user `aws_install_args` }}",
+        "sudo chmod 666 /var/run/docker.sock",
+        "sudo /home/{{user `aws_ssh_username`}}/add_centos_user.sh --os ubuntu --copy"
+      ],
+      "only": ["amazon-ebs"]
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo /home/{{user `gcp_ssh_username`}}/scylla_monitoring_install_ami {{ user `gcp_install_args` }}",
+        "sudo /home/{{user `gcp_ssh_username`}}/add_centos_user.sh --os ubuntu --copy"
+      ],
+      "only": ["googlecompute"]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "manifest",
+      "output": "packer-manifest.json",
+      "strip_path": true
+    }
+  ],
+  "variables": {
+    "monitor_version": "",
+    "monitor_image_name": "scylladb-monitor-{{ user `monitor_version` | replace_all \".\" \"-\" }}-{{ isotime \"2006-01-02t03-04-05z\" }}",
+
+    "aws_region": "us-east-1",
+    "aws_source_ami": "ami-02a35bd020554f400",
+    "aws_instance_type": "c4.xlarge",
+    "aws_ssh_username": "ubuntu",
+    "aws_install_args": "--cloud aws --os ubuntu --version {{ user `monitor_version` }}",
+
+    "gcp_project_id": "scylla-images",
+    "gcp_zone": "europe-west1-b",
+    "gcp_source_image_family": "ubuntu-minimal-2204-lts",
+    "gcp_image_storage_location": "europe-west1",
+    "gcp_instance_type": "n1-standard-1",
+    "gcp_ssh_username": "ubuntu",
+    "gcp_install_args": "--cloud gce --os ubuntu --version {{ user `monitor_version` }}"
+  }
+}

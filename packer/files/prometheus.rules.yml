@@ -1,0 +1,105 @@
+groups:
+- name: scylla.rules
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 30s
+    labels:
+      severity: "3"
+    annotations:
+      description: '{{ $labels.instance }} has been down for more than 30 seconds.'
+      summary: Instance {{ $labels.instance }} down
+  - alert: InstanceDown
+    expr: absent(scylla_transport_requests_served{job="scylla", shard="0"})
+    for: 1m
+    labels:
+      severity: "3"
+    annotations:
+      description: '{{ $labels.instance }} instance is shutting down'
+      summary: Instance {{ $labels.instance }} down
+  - alert: DiskFull
+    expr: node_filesystem_avail{mountpoint="/var/lib/scylla"} / node_filesystem_size{mountpoint="/var/lib/scylla"}
+      * 100 < 50
+    for: 30s
+    labels:
+      severity: "1"
+    annotations:
+      description: '{{ $labels.instance }} has less than 50% free disk space.'
+      summary: Instance {{ $labels.instance }} low disk space
+  - alert: DiskFull
+    expr: node_filesystem_avail{mountpoint="/var/lib/scylla"} / node_filesystem_size{mountpoint="/var/lib/scylla"}
+      * 100 < 40
+    for: 30s
+    labels:
+      severity: "2"
+    annotations:
+      description: '{{ $labels.instance }} has less than 40% free disk space.'
+      summary: Instance {{ $labels.instance }} low disk space
+  - alert: DiskFull
+    expr: node_filesystem_avail{mountpoint="/var/lib/scylla"} / node_filesystem_size{mountpoint="/var/lib/scylla"}
+      * 100 < 20
+    for: 30s
+    labels:
+      severity: "3"
+    annotations:
+      description: '{{ $labels.instance }} has less than 20% free disk space.'
+      summary: Instance {{ $labels.instance }} low disk space
+  - alert: DiskFull
+    expr: node_filesystem_avail{mountpoint="/"} / node_filesystem_size{mountpoint="/"}
+      * 100 < 40
+    for: 30s
+    labels:
+      severity: "1"
+    annotations:
+      description: '{{ $labels.instance }} has less than 40% free disk space. on root'
+      summary: Instance {{ $labels.instance }} root low disk space root
+  - alert: DiskFull
+    expr: node_filesystem_avail{mountpoint="/"} / node_filesystem_size{mountpoint="/"}
+      * 100 < 30
+    for: 30s
+    labels:
+      severity: "2"
+    annotations:
+      description: '{{ $labels.instance }} has less than 30% free disk space. on root'
+      summary: Instance {{ $labels.instance }} root low disk space
+  - alert: DiskFull
+    expr: node_filesystem_avail{mountpoint="/"} / node_filesystem_size{mountpoint="/"}
+      * 100 < 20
+    for: 30s
+    labels:
+      severity: "3"
+    annotations:
+      description: '{{ $labels.instance }} has less than 20% free disk space. on root'
+      summary: Instance {{ $labels.instance }} root low disk space
+  - alert: OpenConnections
+    expr: node_sockstat_sockets_used>5000
+    for: 60s
+    labels:
+      severity: "1"
+    annotations:
+      description: '{{ $labels.instance }} has over 5000 open connections'
+      summary: Instance {{ $labels.instance }} has many open connections
+  - alert: PendingCompactions
+    expr: scylla_compaction_manager_compactions>100
+    for: 60s
+    labels:
+      severity: "2"
+    annotations:
+      description: '{{ $labels.instance }} has more than 100 pending compactions'
+      summary: Instance {{ $labels.instance }} has many pending compactions
+  - alert: LowMemory
+    expr: node_memory_MemFree<200000000
+    for: 60s
+    labels:
+      severity: "3"
+    annotations:
+      description: '{{ $labels.instance }} has lower than 0.2 GB for the last 60s'
+      summary: Instance {{ $labels.instance }} with low free memory
+  - alert: HighCQLTransaction
+    expr: sum(rate(scylla_transport_requests_served[60s])) by (instance)>1000000
+    for: 60s
+    labels:
+      severity: "2"
+    annotations:
+      description: '{{ $labels.instance }} has more than 1 million CQL operations per seconds'
+      summary: Instance {{ $labels.instance }} with high CQL transactions
