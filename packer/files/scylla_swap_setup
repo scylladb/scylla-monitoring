@@ -1,0 +1,93 @@
+#!/usr/bin/python3
+#
+# Copyright 2021 ScyllaDB
+#
+
+#
+# This file is part of Scylla.
+#
+# Scylla is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Scylla is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Scylla.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
+import sys
+import glob
+import re
+import shutil
+import shlex
+import tarfile
+import argparse
+import subprocess
+
+dry_run = None
+verbose = None
+
+def trace(*vars):
+    if verbose:
+        print(*vars)
+
+def run_args(cmd, shell=False):
+    if dry_run:
+        print(cmd)
+        return
+    if verbose:
+        print(cmd)
+    return subprocess.check_call(cmd, shell=shell)
+
+def run(cmd, shell=False):
+    if dry_run:
+        print(cmd)
+        return
+    if verbose:
+        print(cmd)
+    if not shell:
+        cmd = shlex.split(cmd)
+    return subprocess.check_call(cmd, shell=shell)
+
+def set_files():
+    run_args(["sed","-i", f"s/SWAP_SIZE/{args.swap_size}/g", f"{args.scripts_folder}/set-swap.service"])
+    run(f"cp {args.scripts_folder}/set-swap.service /etc/systemd/system/")
+    try:
+        run(f"cp {args.scripts_folder}/set-swap.service /usr/lib/systemd/system/")
+    except Exception as e:
+        print("could not place set-swap.service file in user/lib/systemd" + str(e))
+    run(f"cp {args.scripts_folder}/scylla_swap_setup /usr/bin/")
+    run('systemctl daemon-reload')
+    run('systemctl enable set-swap.service')
+
+def set_up_service(args):
+    set_files()
+
+def set_up_swap(args):
+    run(f"{args.scripts_folder}/scylla_swap_setup-install --swap-size {args.swap_size}")
+    run('systemctl disable set-swap.service')
+
+
+if __name__ == '__main__':
+    if os.getuid() > 0:
+        print('Requires root permission.')
+        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Set the swap using service')
+    parser.add_argument('--verbose', action='store_true', default=False, help='Verbose trace mode')
+    parser.add_argument('--swap-size', default=20, type=int, help='set the swap size in GB, set it to 0 for no swap')
+    parser.add_argument('-d', '--dry-run', action='store_true', default=False, help='Dry run mode')
+    parser.add_argument('-I', '--install', action='store_true', default=False, help='When set, the swap will be installed, otherwise only the service will be installed')
+    parser.add_argument('--scripts-folder', default='/home/ubuntu', help='Path to the folder containing installation scripts (default: /home/ubuntu)')
+    args = parser.parse_args()
+    dry_run = args.dry_run
+    verbose = args.verbose
+    if args.install:
+        set_up_swap(args)
+    else:
+        set_up_service(args)
+

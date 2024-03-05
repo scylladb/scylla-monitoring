@@ -1,0 +1,2 @@
+DEFAULT_VERSION="dbaas"
+MANAGER_VERSION="dbaas"
