@@ -352,18 +352,26 @@
                      },
                      {
                         "from":"",
-                        "id":2,
+                        "id":3,
                         "text":"Offline",
                         "to":"",
                         "type":1,
                         "value":"-1"
+                     },
+                     {
+                        "from":"",
+                        "id":4,
+                        "text":"Backup Repair",
+                        "to":"",
+                        "type":1,
+                        "value":"3"
                      }
                   ]
                }
             },
             "targets":[
                {
-                  "expr":"(sum(scylla_manager_task_active_count{type=~\"repair\",cluster=~\"$cluster|$^\"}) or on() vector(0)) + (sum(scylla_manager_task_active_count{type=~\"backup\",cluster=~\"$cluster|$^\"})*2 or on() vector(0)) + (sum(scylla_manager_server_current_version{}) or on() vector(-1))",
+                  "expr":"(max(scylla_manager_scheduler_run_indicator{type=~\"repair\",cluster=~\"$cluster|$^\"}) or on() vector(0)) + (max(scylla_manager_scheduler_run_indicator{type=~\"backup\",cluster=~\"$cluster|$^\"})*2 or on() vector(0)) + (sum(scylla_manager_server_current_version{}) or on() vector(-1))",
                   "intervalFactor":1,
                   "refId":"A",
                   "step":40
@@ -398,7 +406,7 @@
             },
             "targets":[
                {
-                  "expr":"(sum(scylla_manager_repair_progress{cluster=~\"$cluster|$^\", job=\"scylla_manager\"}) or on() sum(avg(scylla_manager_repair_progress{cluster=~\"$cluster|$^\"}) by (task) * sum(scylla_manager_task_active_count{type=\"repair\",cluster=~\"$cluster|$^\"}) by (task)) or on () vector(0)) + (sum(avg(scylla_manager_backup_percent_progress{cluster=~\"$cluster|$^\"}) by (task) * sum(scylla_manager_task_active_count{type=\"backup\",cluster=~\"$cluster|$^\"}) by (task)) or on () vector(0))",
+                  "expr":"(avg(scylla_manager_repair_progress{cluster=~\"$cluster|$^\", job=\"scylla_manager\"}) * max(scylla_manager_scheduler_run_indicator{type=\"repair\",cluster=~\"$cluster|$^\"})) or on ()  (100*avg(manager:backup_progress{cluster=~\"$cluster|$^\"}) * max(scylla_manager_scheduler_run_indicator{type=\"backup\",cluster=~\"$cluster|$^\"})) or on () vector(0)",
                   "legendFormat":"",
                   "interval":"",
                   "refId":"A",
