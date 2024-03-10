@@ -10,7 +10,7 @@ The integration consists of:
 3. Loading Scylla dashboard to Datadog.
 4. Optionally load Monitor (Alerts).
 
-.. note::  Scylla Cloud users, use and update the proper configuration file.
+.. note::  Scylla Cloud users, Check the cloud users `specific guide <cloud-integration>`_.
 
 Scylla Monitoring Datadog Integration Overview
 ==============================================
@@ -31,17 +31,7 @@ Install And configure the Datadog Agent
 Start by following `Installation <https://docs.datadoghq.com/agent/>`_ guide. The datadog agent should run on a machine that can reach the Prometheus server.
 
 Once the Datadog agent is working, download the configuration file and place it under /etc/datadog-agent/conf.d/prometheus.d/conf.yaml
-
-Scylla Cloud Users
-^^^^^^^^^^^^^^^^^^
-Scylla Cloud users, download the configuration file :download:`conf.yaml <cloud-conf.yaml>` move it to: /etc/datadog-agent/conf.d/prometheus.d/conf.yaml
-
-
-Edit the file. You must replace the cluster id (CLUSTER_ID) and the token (TOKEN).
-
-Other Scylla Users
-^^^^^^^^^^^^^^^^^^
-Other Scylla users, download the configuration file :download:`conf.yaml <conf.yaml>` and replace the ip address of the Prometheus server.
+Download the configuration file :download:`conf.yaml <conf.yaml>` and replace the ip address of the Prometheus server.
 
 
 Post configuration
@@ -53,10 +43,8 @@ Restart the agent based on your installation. Scylla metrics should be visible i
 
 Add datadog recording rules
 ===========================
-Non Scylla Cloud users, download the rules configuration file :download:`datadog.rules.yml <datadog.rules.yml>` if you need per-shard metrics, download :download:`datadog.rules-with-shards.yml <datadog.rules-with-shards.yml>` and place it under prometheus/prom_rules/.
+Download the rules configuration file :download:`datadog.rules.yml <datadog.rules.yml>` if you need per-shard metrics, download :download:`datadog.rules-with-shards.yml <datadog.rules-with-shards.yml>` and place it under prometheus/prom_rules/.
 Per-shards metrics adds load and cost to both the Prometheus server and Datadog agent and server, so only use it if needed.
-
-Cloud users, skip this step, it's been take care for by the cloud.
 
 Upload the Dashboard
 ====================
