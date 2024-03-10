@@ -1,7 +1,7 @@
 Minimal Production System Recommendations
 -----------------------------------------
 
-* **CPU** - For clusters with up to 100 cores use 2vCPUS, for larger clusters 4vCPUs
+* **CPU** - at least 2 physical cores/ 4vCPUs
 * **Memory** - 15GB+ DRAM and proportional to the number of cores.
 * **Disk** - persistent disk storage is proportional to the number of cores and Prometheus retention period (see the following section)
 * **Network** - 1GbE/10GbE preferred
