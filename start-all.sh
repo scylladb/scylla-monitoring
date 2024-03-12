@@ -291,6 +291,7 @@ for arg; do
                 ARCHIVE="1"
                 LIMIT="1"
                 PARAM="archive"
+                GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND --archive"
                 ;;
             (*) set -- "$@" "$arg"
                 ;;
@@ -480,9 +481,13 @@ if [ "$CURRENT_VERSION" = "master" ]; then
         echo "* WARNING: You are using the unstable master branch *"
         echo "* Check the README.md file for the stable releases  *"
         echo "*****************************************************"
+        ./generate-dashboards.sh -v $VERSIONS -m $MANAGER_VERSION $STACK_CMD
+    else
+        echo ./generate-dashboards.sh -v $VERSIONS -F -R 0 -m $MANAGER_VERSION $STACK_CMD
+        ./generate-dashboards.sh -v $VERSIONS -F -R 0 -m $MANAGER_VERSION $STACK_CMD
     fi
-    echo "Generating the dashaobard ./generate-dashboards.sh -v $VERSIONS -m $MANAGER_VERSION" $STACK_CMD
-    ./generate-dashboards.sh -v $VERSIONS
+    echo "Generating the dashaobards"
+
 fi
 
 if [[ $DOCKER_PARAM = *"--net=host"* ]]; then

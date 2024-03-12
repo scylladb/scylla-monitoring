@@ -184,7 +184,7 @@ def get_exact_match(replace_file):
 def write_json(name, obj, replace_strings=[]):
     y = json.dumps(obj, sort_keys = True, separators=(',', ': '), indent = 4)
     for r in replace_strings:
-        y = y.replace(r[0], r[1])
+        y = y.replace(r[0], r[1] if len(r) > 1 else '')
         if r[0].endswith('_DOT__'):
             y = y.replace(r[0].replace('_DOT__','_DASHED__'), r[1].replace('.', '-'))
     with open(name, 'w') as outfile:
