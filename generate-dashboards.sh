@@ -28,7 +28,7 @@ fi
 
 usage="$(basename "$0") [-h] [-v comma separated versions ]  [-D] [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] [-F force update] [-S start with a system specific dashboard set] -- Generates the grafana dashboards and their load files"
 BASE_DASHBOARD_DIR="grafana/provisioning/dashboards"
-while getopts ':htDv:j:M:S:B:P:s:F' option; do
+while getopts ':htDv:j:M:S:B:P:s:R:F' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -55,6 +55,8 @@ while getopts ':htDv:j:M:S:B:P:s:F' option; do
        FORMAT_COMAND="$FORMAT_COMAND -v $VERSIONS"
        MANAGER_VERSION=${MANAGER_SUPPORTED_VERSIONS[$BRANCH_VERSION]}
        ;;
+    R) DASHBOARD_REFRESH=$OPTARG
+       ;;
     B) BASE_DASHBOARD_DIR=$OPTARG
        ;;
     j) GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
@@ -64,6 +66,14 @@ while getopts ':htDv:j:M:S:B:P:s:F' option; do
 done
 if [[ -z "$TEST_ONLY" ]]; then
     mkdir -p grafana/build
+fi
+
+if [[ -z "$DASHBOARD_REFRESH" ]]; then
+    DASHBOARD_REFRESH="30s"
+fi
+
+if [ "$DASHBOARD_REFRESH" = "0" ]; then
+    DASHBOARD_REFRESH=""
 fi
 mkdir -p $BASE_DASHBOARD_DIR
 rm -f $BASE_DASHBOARD_DIR/load.*.yaml
@@ -105,7 +115,7 @@ fi
             if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.template.json" ] || [ ! -z "$FORCEUPDATE" ]; then
                 if [[ -z "$TEST_ONLY" ]]; then
                     echo "updating dashboard grafana/$f.$v.template.json"
-                   ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"  -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" --replace-file docs/source/reference/metrics.yaml -V $v
+                   ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION"  -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -R "__REFRESH_INTERVAL__=$DASHBOARD_REFRESH" --replace-file docs/source/reference/metrics.yaml -V $v
                fi
             fi
         else
@@ -126,7 +136,7 @@ then
     if [ ! -f "$VERDIR/scylla-manager.$v.json" ] || [ "$VERDIR/scylla-manager.$v.json" -ot "grafana/scylla-manager.template.json" ] || [ "$VERDIR/scylla-manager.$v.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
         if [[ -z "$TEST_ONLY" ]]; then
            echo "updating grafana/scylla-manager.$v.template.json"
-           ./make_dashboards.py ${PRODUCTS[@]}  -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" --replace-file docs/source/reference/metrics.yaml -V $v
+           ./make_dashboards.py ${PRODUCTS[@]}  -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -R "__REFRESH_INTERVAL__=$DASHBOARD_REFRESH"  --replace-file docs/source/reference/metrics.yaml -V $v
         else
            echo "notice: grafana/scylla-manager.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
         fi
