@@ -1788,7 +1788,7 @@
                 "panels": [
                     {
                         "class": "bytes_panel",
-                        "span": 6,
+                        "span": 4,
                         "targets": [
                             {
                                 "expr": "$func(scylla_lsa_total_space_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
@@ -1803,7 +1803,7 @@
                     },
                     {
                         "class": "bytes_panel",
-                        "span": 6,
+                        "span": 4,
                         "targets": [
                             {
                                 "expr": "$func(scylla_lsa_non_lsa_used_space_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
@@ -1815,6 +1815,21 @@
                         ],
                         "description": "scylla_lsa_non_lsa_used_space_bytes",
                         "title": "Non-LSA used memory"
+                    },
+                    {
+                        "class": "percentunit_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_sstables_bloom_filter_memory_size{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])/$func(scylla_memory_total_memory{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Bloom filter should take a small percentage of the total memory.\n\nscylla_sstables_bloom_filter_memory_size",
+                        "title": "Bloom Filter memory usage (percentage)"
                     }
                 ],
                 "title": "New row"
