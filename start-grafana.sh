@@ -49,6 +49,9 @@ for arg; do
             (--limit)
                 LIMIT="1"
                 ;;
+            (--alternator)
+                RUN_ALTERNATOR="1"
+                ;;
             (--volume)
                 LIMIT="1"
                 VOLUME="1"
@@ -245,7 +248,11 @@ if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
 fi
 
 if [[ "$HOME_DASHBOARD" = "" ]]; then
-    HOME_DASHBOARD="/var/lib/grafana/dashboards/ver_$VERSION/scylla-overview.$VERSION.json"
+    if [ "$RUN_ALTERNATOR" = "1" ]; then
+        HOME_DASHBOARD="/var/lib/grafana/dashboards/ver_$VERSION/alternator.$VERSION.json"
+    else
+        HOME_DASHBOARD="/var/lib/grafana/dashboards/ver_$VERSION/scylla-overview.$VERSION.json"
+    fi
 fi
 
 if [[ -z "${DOCKER_HOST}" ]]; then
