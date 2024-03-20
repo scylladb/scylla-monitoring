@@ -294,7 +294,6 @@ for arg; do
                 ARCHIVE="1"
                 LIMIT="1"
                 PARAM="archive"
-                GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND --archive"
                 ;;
             (*) set -- "$@" "$arg"
                 ;;
