@@ -241,6 +241,9 @@ for arg; do
             (--enable-protobuf)
                 PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--enable-feature=native-histograms)
                 ;;
+            (--alternator)
+                RUN_ALTERNATOR="1"
+                ;;
             (--limit)
                 LIMIT="1"
                 ;;
@@ -663,6 +666,9 @@ if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
     echo MONITORING_VERSION='"'"$CURRENT_VERSION"'"' >> $DATA_DIR/scylla.txt
     echo PROMETHEUS_VERSION='"'"$PROMETHEUS_VERSION"'"' >> $DATA_DIR/scylla.txt
     echo LAST_RUN='"'"$DATE"'"' >> $DATA_DIR/scylla.txt
+    if [ "$RUN_ALTERNATOR" = "1" ]; then
+        echo RUN_ALTERNATOR=1 >> $DATA_DIR/scylla.txt
+    fi
 fi
 if [ -z $HOST_NETWORK ]; then
     PORT_MAPPING="-p $BIND_ADDRESS$PROMETHEUS_PORT:9090"
@@ -766,5 +772,8 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 done
 if [ ! -z "$DATDOGPARAM" ]; then
    ./start-datadog.sh $DATDOGPARAM -p $DB_ADDRESS
+fi
+if [ "$RUN_ALTERNATOR" = 1 ]; then
+    GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --alternator"
 fi
 ./start-grafana.sh $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD
