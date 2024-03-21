@@ -131,27 +131,27 @@ groups:
       summary: Tobmstone delete time is capped
   - alert: InstanceDown
     expr: up{job="scylla"} == 0
-    for: 30s
+    for: 5m
     labels:
       severity: "error"
     annotations:
-      description: '{{ $labels.instance }} has been down for more than 30 seconds.'
+      description: '{{ $labels.instance }} has been down for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} down
   - alert: InstanceDown
     expr: sum(up{job="scylla"}>0)by(instance) unless sum(scylla_transport_requests_served{shard="0"}) by(instance)
-    for: 1m
+    for: 5m
     labels:
       severity: "error"
     annotations:
-      description: '{{ $labels.instance }} instance is shutting down.'
+      description: '{{ $labels.instance }} instance has been down for more than 10 minutes.'
       summary: Instance {{ $labels.instance }} down
   - alert: InstanceDown
     expr: scylla_node_operation_mode > 3
-    for: 30s
+    for: 5m
     labels:
       severity: "error"
     annotations:
-      description: '{{ $labels.instance }} instance is shutting down.'
+      description: '{{ $labels.instance }} instance has been down for more than 5 minutes.'
       summary: Instance {{ $labels.instance }} down
   - alert: DiskFull
     expr: node_filesystem_avail_bytes{mountpoint="/var/lib/scylla"} / node_filesystem_size_bytes{mountpoint="/var/lib/scylla"}
@@ -165,7 +165,7 @@ groups:
   - alert: DiskFull
     expr: node_filesystem_avail_bytes{mountpoint="/var/lib/scylla"} / node_filesystem_size_bytes{mountpoint="/var/lib/scylla"}
       * 100 < 25
-    for: 30s
+    for: 5m
     labels:
       severity: "error"
     annotations:
@@ -183,7 +183,7 @@ groups:
   - alert: DiskFull
     expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}
       * 100 < 20
-    for: 30s
+    for: 5m
     labels:
       severity: "error"
     annotations:
@@ -277,7 +277,7 @@ groups:
       summary: There are over 30K open files per shard on Instance {{ $labels.instance }}
   - alert: tooManyFiles
     expr: (node_filesystem_files{mountpoint="/var/lib/scylla"} - node_filesystem_files_free{mountpoint="/var/lib/scylla"}) / on(instance) group_left count(scylla_reactor_cpu_busy_ms) by (instance)>40000
-    for: 10s
+    for: 5m
     labels:
       severity: "error"
       description: 'Over 40k open files in /var/lib/scylla per shard {{ $labels.instance }}'
