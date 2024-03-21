@@ -52,7 +52,7 @@ elif [[ $(uname) == "Darwin" ]]; then
 fi
 
 function usage {
-  __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--loki-port port] [--promtail-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
+  __usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--no-alertmanager] [--loki-port port] [--promtail-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
 
 Options:
   -h print this help and exit
@@ -86,6 +86,7 @@ Options:
   -T path/to/prometheus-targets  - Adds additional Prometheus target files.
   -k path/to/loki/storage        - When set, will use the given directory for Loki's data
   --no-loki                      - If set, do not run Loki and promtail.
+  --no-alertmanager              - If set, do not run the Alertmanager.
   --loki-port port               - If set, loki would use the given port number
   --promtail-port port           - If set, promtail would use the given port number
   --promtail-binary-port port    - If set, promtail would use the given port number for the binary protocol
@@ -209,6 +210,8 @@ for arg; do
     if [ -z "$LIMIT" ]; then
        case $arg in
             (--no-loki) RUN_LOKI=0
+                ;;
+            (--no-alertmanager) SKIP_ALERTMANAGER=1
                 ;;
             (--loki-port)
                 LIMIT="1"
@@ -453,6 +456,7 @@ done
 if [ "$ARCHIVE" == "1" ]; then
     PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
     RUN_LOKI=0
+    SKIP_ALERTMANAGER="1"
     RUN_RENDERER=""
     CONSUL_ADDRESS="-L 127.0.0.1:0"
     if [ ! -d $DATA_DIR/ ]; then
@@ -606,11 +610,15 @@ for val in "${ALERTMANAGER_COMMANDS[@]}"; do
     ALERTMANAGER_COMMAND="$ALERTMANAGER_COMMAND -C $val"
 done
 
-echo "Wait for alert manager container to start"
-AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
-if [ $? -ne 0 ]; then
-    echo "$AM_ADDRESS"
-    exit 1
+if [ "$SKIP_ALERTMANAGER" = "1" ]; then
+    AM_ADDRESS="127.0.0.1:9093"
+else
+    echo "Wait for alert manager container to start"
+    AM_ADDRESS=`./start-alertmanager.sh $ALERTMANAGER_PORT $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG`
+    if [ $? -ne 0 ]; then
+        echo "$AM_ADDRESS"
+        exit 1
+    fi
 fi
 LOKI_ADDRESS=""
 if [ $RUN_LOKI -eq 1 ]; then
