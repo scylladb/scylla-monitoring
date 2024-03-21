@@ -562,13 +562,27 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(scylla_database_active_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "expr": "$func(scylla_database_active_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", class=~\"$scheduling_group\"}>0) by ([[by]], class)",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{class}} {{dc}} {{instance}} {{shard}}",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
+                        "fieldConfig": {
+				        "defaults": {
+				          "class": "fieldConfig_defaults",
+				          "custom": {
+				             "class":"fieldConfig_defaults_custom",
+				             "stacking": {
+					          "mode": "normal",
+					          "group": "A"
+					        }
+				          },
+				          "unit": "si:reads"
+				        },
+				        "overrides": []
+				     },
                         "title": "Active reads"
                     },
                     {
@@ -714,6 +728,65 @@
                     }
                 ],
                 "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Storage"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_sstables_currently_open_for_reading{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Number of sstables currently open for reading \n\nscylla_sstables_currently_open_for_reading",
+                        "title": "Open sstables for reading"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_database_sstables_read{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}>0) by ([[by]], class)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Number of sstables read\n\nscylla_database_sstables_read",
+                        "title": "SStable reads"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_database_disk_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}>0) by ([[by]], class)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Number of sstables disk reads\n\nscylla_database_disk_reads",
+                        "title": "SStables disk reads"
+                    }
+                ]
             },
             {
                 "class": "row",
@@ -1192,14 +1265,12 @@
                     {
                         "class": "collapsible_row_panel",
                         "collapsed": true,
-                        "dashversion":[">4.5", ">2021.1"],
                         "title": "Tombstones"
                     }
                 ]
             },
             {
                 "class": "row",
-                "dashversion":[">4.5", ">2021.1"],
                 "panels": [
                     {
                         "class": "rps_panel",
@@ -1214,7 +1285,6 @@
                             }
                         ],
                         "title": "Range Tombstones reads",
-                        "dashversion":[">4.6", ">2021.1"],
                         "description" : "Amount of range tombstones processed during read."
                     },
                     {
@@ -1230,7 +1300,6 @@
                             }
                         ],
                         "title": "Cache Range Tombstones Read",
-                        "dashversion":[">4.6", ">2021.1"],
                         "description" : "Amount of range tombstones processed during read."
                     },
                     {
@@ -1246,7 +1315,6 @@
                             }
                         ],
                         "title": "Row Tombstones reads",
-                        "dashversion":[">4.6", ">2021.1"],
                         "description" : "Amount of row tombstones read"
                     },
                     {
@@ -1262,7 +1330,6 @@
                             }
                         ],
                         "title": "Cache Row Tombstones reads",
-                        "dashversion":[">4.6", ">2021.1"],
                         "description" : "Amount of cache row tombstones read"
                     },
                     {
@@ -1467,7 +1534,6 @@
             },
             {
                 "class": "row",
-                "dashversion":[">4.2", ">2021.1"],
                 "panels": [
                     {
                         "class": "ops_panel",
@@ -2192,25 +2258,6 @@
                 {
                     "class": "template_variable_all",
                     "label": "SG",
-                    "dashversion":[">2021.1"],
-                    "current": {
-                      "selected": true,
-                      "tags": [],
-                      "text": [
-                        "sl:default"
-                      ],
-                      "value": [
-                        "sl:default"
-                      ]
-                    },
-                    "name": "scheduling_group",
-                    "query": "label_values(scylla_scheduler_runtime_ms{cluster=\"$cluster\"}, group)",
-                    "sort": 3
-                },
-                {
-                    "class": "template_variable_all",
-                    "label": "SG",
-                    "dashversion":[">4.3"],
                     "current": {
                       "selected": true,
                       "tags": [],
