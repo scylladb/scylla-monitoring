@@ -11,7 +11,7 @@ The Datadog agent reads from the proxy, which reads from the Promethues server.
 4. Optionally load Monitor (Alerts).
 
 ScyllaDB Monitoring Datadog Integration Overview
-==============================================
+================================================
 A typical ScyllaDB cluster generates thousands of metrics, sometimes even tens of thousands.
 The sheer number of metrics is too much for Datadog.
 
