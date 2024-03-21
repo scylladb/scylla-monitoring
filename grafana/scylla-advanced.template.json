@@ -292,8 +292,8 @@
                         "w": 24
                       },
                       "panels": [],
-                      "repeat": "group",
-                      "title": "$group",
+                      "repeat": "sg",
+                      "title": "$sg",
                       "type": "row"
                     }
                 ]
@@ -307,7 +307,7 @@
                         "pointradius": 1,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[1m])/1000) by ([[by]])",
+                                "expr": "$func(rate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$sg\", shard=~\"[[shard]]\"}[1m])/1000) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -318,8 +318,8 @@
                         "options": {
                             "class":"desc_tooltip_options"
                         },
-                        "title": "Time used by [[by]] - $group",
-                        "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. This graph shows how much time was spent in $group group"
+                        "title": "Time used by [[by]] - $sg",
+                        "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. This graph shows how much time was spent in $sg group"
                     },
                     {
                         "class": "percentunit_panel",
@@ -327,7 +327,7 @@
                         "pointradius": 1,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_scheduler_time_spent_on_task_quota_violations_ms{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[1m])/1000) by ([[by]])",
+                                "expr": "$func(rate(scylla_scheduler_time_spent_on_task_quota_violations_ms{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$sg\", shard=~\"[[shard]]\"}[1m])/1000) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -338,7 +338,7 @@
                         "options": {
                             "class":"desc_tooltip_options"
                         },
-                        "title": "Time spent in task quota violations by [[by]] - $group",
+                        "title": "Time spent in task quota violations by [[by]] - $sg",
                         "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer. This may cause latency issues"
                     },
                     {
@@ -347,7 +347,7 @@
                         "pointradius": 1,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_scheduler_starvetime_ms{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}[1m])/1000) by ([[by]])",
+                                "expr": "$func(rate(scylla_scheduler_starvetime_ms{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$sg\", shard=~\"[[shard]]\"}[1m])/1000) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -358,7 +358,7 @@
                         "options": {
                             "class":"desc_tooltip_options"
                         },
-                        "title": "Starvation time by [[by]] - $group",
+                        "title": "Starvation time by [[by]] - $sg",
                         "description": "Scylla employs an event-loop like reactor that alternates between the execution of different groups of tasks periodically. The maximum amount of time during which a task group can run is called the \"task quota\". Some task groups may disrespect that and run for longer.\n\n This graph shows the amount of time the group was waiting to get CPU time."
                     },
                     {
@@ -367,7 +367,7 @@
                         "pointradius": 1,
                         "targets": [
                             {
-                                "expr": "$func(scylla_scheduler_shares{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$group\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "expr": "$func(scylla_scheduler_shares{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$sg\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -378,8 +378,8 @@
                         "options": {
                             "class":"desc_tooltip_options"
                         },
-                        "title": "Scheduler shares [[by]] - $group",
-                        "description": "Shares assigned to the $group. Shares determine how Scylla reactor distributes the task quotas between groups (Higher share gets more quotas)"
+                        "title": "Scheduler shares [[by]] - $sg",
+                        "description": "Shares assigned to the $sg. Shares determine how Scylla reactor distributes the task quotas between groups (Higher share gets more quotas)"
                     }
                 ],
                 "title": "New row"
@@ -868,7 +868,7 @@
                 {
                     "class": "template_variable_all",
                     "label": "group",
-                    "name": "group",
+                    "name": "sg",
                     "hide": 0,
                     "query": "label_values(scylla_scheduler_time_spent_on_task_quota_violations_ms,group)",
                     "sort": 1
