@@ -120,8 +120,12 @@ scrape_configs:
       regex: '(scylla_storage_proxy_coordinator_cas_read_latency_summary;0.50*)'
       target_label: __name__
       replacement: 'casrlatencya'
+    - source_labels: [quantile]
+      regex: '(0\.[1-9]+)0*'
+      target_label: quantile
+      replacement: '${1}'
     - source_labels: [__name__]
-      regex: '(.latency..?.?|cas.latency..?.?)'
+      regex: '(.latency..?.?|cas.latency..?.?|scylla_.*_summary)'
       target_label: by
       replacement: 'instance,shard'
     - source_labels: [__name__]
