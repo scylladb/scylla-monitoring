@@ -68,6 +68,10 @@ for arg; do
         unset LIMIT
     fi
 done
+if [ "$DOCKER_PARAM" != "" ]; then
+    DOCKER_PARAM_FROM_FILE="1"
+fi
+
 while getopts ':hlp:r:D:C:f:A:' option; do
   case "$option" in
     h) echo "$usage"
@@ -79,9 +83,15 @@ while getopts ':hlp:r:D:C:f:A:' option; do
        ;;
     f) ALERT_MANAGER_DIR="$USER_PERMISSIONS -v $(readlink -m $OPTARG):/alertmanager/data:z"
        ;;
-    l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
+    l) if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+        DOCKER_PARAM="$DOCKER_PARAM --net=host"
+       fi
        ;;
-    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+    D) if [ "$DOCKER_PARAM_FROM_FILE" = "1" ]; then
+          DOCKER_PARAM=""
+          DOCKER_PARAM_FROM_FILE=""
+       fi
+       DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
     C) ALERTMANAGER_COMMANDS="$ALERTMANAGER_COMMANDS $OPTARG"
        ;;

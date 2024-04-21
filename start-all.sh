@@ -376,7 +376,9 @@ if [ ! -z $LIMIT ]; then
     usage
     exit -1
 fi
-
+if [ "$DOCKER_PARAM" != "" ]; then
+    DOCKER_PARAM_FROM_FILE="1"
+fi
 while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option; do
   case "$option" in
     h) usage
@@ -415,7 +417,9 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
        ;;
     n) NODE_TARGET_FILE=$OPTARG
        ;;
-    l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
+    l) if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+        DOCKER_PARAM="$DOCKER_PARAM --net=host"
+       fi
        ;;
     L) CONSUL_ADDRESS="-L $OPTARG"
        ;;
@@ -429,7 +433,11 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
        ;;
     C) ALERTMANAGER_COMMANDS+=("$OPTARG")
        ;;
-    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+    D) if [ "$DOCKER_PARAM_FROM_FILE" = "1" ]; then
+          DOCKER_PARAM=""
+          DOCKER_PARAM_FROM_FILE=""
+       fi
+       DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
     b) PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=("$OPTARG")
        ;;
