@@ -12,7 +12,7 @@ Options:
   -h print this help and exit
   -S sidecart address         - A side cart address:port multiple side cart can be comma delimited
 
-The script starts Thanos query, it connect to external Thanos side carts and act as a grafana data source  
+The script starts Thanos query, it connect to external Thanos side carts and act as a grafana data source
 "
   echo "$__usage"
 }
@@ -87,12 +87,18 @@ for arg; do
 done
 SIDECAR=()
 
-DOCKER_PARAM=""
+if [ "$DOCKER_PARAM" != "" ]; then
+    DOCKER_PARAM_FROM_FILE="1"
+else
+    DOCKER_PARAM=""
+fi
+
 while getopts ':hlp:S:D:' option; do
   case "$option" in
-    l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
+    l) if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+        DOCKER_PARAM="$DOCKER_PARAM --net=host"
+       fi
        ;;
-
     h) usage
        exit
        ;;
@@ -100,7 +106,11 @@ while getopts ':hlp:S:D:' option; do
          SIDECAR+=(--store=$s)
 	   done
 	   ;;
-    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+    D) if [ "$DOCKER_PARAM_FROM_FILE" = "1" ]; then
+          DOCKER_PARAM=""
+          DOCKER_PARAM_FROM_FILE=""
+       fi
+       DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2

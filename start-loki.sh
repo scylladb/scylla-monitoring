@@ -70,6 +70,10 @@ for arg; do
         unset LIMIT
     fi
 done
+if [ "$DOCKER_PARAM" != "" ]; then
+    DOCKER_PARAM_FROM_FILE="1"
+fi
+
 while getopts ':hlp:D:m:A:k:t:T:' option; do
   case "$option" in
     h) echo "$usage"
@@ -83,9 +87,15 @@ while getopts ':hlp:D:m:A:k:t:T:' option; do
        ;;
     r) LOKI_RULE_DIR=`readlink -m $OPTARG`
        ;;
-    l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
+    l) if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+        DOCKER_PARAM="$DOCKER_PARAM --net=host"
+       fi
        ;;
-    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+    D) if [ "$DOCKER_PARAM_FROM_FILE" = "1" ]; then
+          DOCKER_PARAM=""
+          DOCKER_PARAM_FROM_FILE=""
+       fi
+       DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
     C) LOKI_COMMANDS="$LOKI_COMMANDS $OPTARG"
        ;;

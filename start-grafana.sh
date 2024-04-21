@@ -100,7 +100,9 @@ for arg; do
     fi
 done
 usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
-
+if [ "$DOCKER_PARAM" != "" ]; then
+    DOCKER_PARAM_FROM_FILE="1"
+fi
 while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:s:' option; do
   case "$option" in
     h) echo "$usage"
@@ -126,7 +128,9 @@ while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:s:' option; do
        ;;
     L) DATA_SOURCES="$DATA_SOURCES -L $OPTARG"
        ;;
-    l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
+    l) if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+        DOCKER_PARAM="$DOCKER_PARAM --net=host"
+       fi
        ;;
     P) LDAP_FILE="$OPTARG"
        GRAFANA_ENV_ARRAY+=("GF_AUTH_LDAP_ENABLED=true" "GF_AUTH_LDAP_CONFIG_FILE=/etc/grafana/ldap.toml" "GF_AUTH_LDAP_ALLOW_SIGN_UP=true")
@@ -134,7 +138,11 @@ while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:s:' option; do
        GRAFANA_AUTH=true
        GRAFANA_AUTH_ANONYMOUS=false
        ;;
-    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+    D) if [ "$DOCKER_PARAM_FROM_FILE" = "1" ]; then
+          DOCKER_PARAM=""
+          DOCKER_PARAM_FROM_FILE=""
+       fi
+       DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
     Q) ANONYMOUS_ROLE=$OPTARG
        ;;

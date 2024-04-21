@@ -83,9 +83,15 @@ for arg; do
         unset LIMIT
     fi
 done
+if [ "$DOCKER_PARAM" != "" ]; then
+    DOCKER_PARAM_FROM_FILE="1"
+fi
+
 while getopts ':hl:p:a:D:d:A:n:' option; do
   case "$option" in
-    l) DOCKER_PARAM="$DOCKER_PARAM --net=host"
+    l) if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+        DOCKER_PARAM="$DOCKER_PARAM --net=host"
+       fi
        ;;
     d) DATA_DIR="$OPTARG"
        ;;
@@ -100,7 +106,11 @@ while getopts ':hl:p:a:D:d:A:n:' option; do
        ;;
     A) BIND_ADDRESS="$OPTARG:"
        ;;
-    D) DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+    D) if [ "$DOCKER_PARAM_FROM_FILE" = "1" ]; then
+          DOCKER_PARAM=""
+          DOCKER_PARAM_FROM_FILE=""
+       fi
+       DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
