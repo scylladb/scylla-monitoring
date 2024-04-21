@@ -37,19 +37,26 @@ groups:
     expr: errors:local_failed + errors:operation_unavailable
   - record: manager:repair_done_ts
     expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="DONE",type="repair"}[2m])) by (cluster) > 0) or on(cluster) manager:repair_done_ts
-  - record: manager:backup_done_ts
-    expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="DONE",type="backup"}[2m])) by (cluster) > 0) or on(cluster) manager:backup_done_ts
-  - record: manager:repair_fail_ts
-    expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="ERROR",type="repair"}[2m])) by (cluster) > 0) or on(cluster) manager:repair_fail_ts
-  - record: manager:backup_fail_ts
-    expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="ERROR",type="backup"}[2m])) by (cluster) > 0) or on(cluster) manager:backup_fail_ts
-  - record: manager:repair_progress
-    expr: (max(scylla_manager_scheduler_run_indicator{type="repair"}) by (cluster) >bool 0)*((max(scylla_manager_repair_token_ranges_total) by(cluster)<= 0)*0 or on(cluster) (sum(scylla_manager_repair_token_ranges_success>=0) by (cluster) + sum(scylla_manager_repair_token_ranges_error>=0) by (cluster))/sum(scylla_manager_repair_token_ranges_total>=0) by (cluster))
-  - record: scylla_manager_repair_progress
-    expr: sum(manager:repair_progress) by (cluster)
     labels:
       dd: "1"
       by: "cluster"
+  - record: manager:backup_done_ts
+    expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="DONE",type="backup"}[2m])) by (cluster) > 0) or on(cluster) manager:backup_done_ts
+    labels:
+      dd: "1"
+      by: "cluster"
+  - record: manager:repair_fail_ts
+    expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="ERROR",type="repair"}[2m])) by (cluster) > 0) or on(cluster) manager:repair_fail_ts
+    labels:
+      dd: "1"
+      by: "cluster"
+  - record: manager:backup_fail_ts
+    expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="ERROR",type="backup"}[2m])) by (cluster) > 0) or on(cluster) manager:backup_fail_ts
+    labels:
+      dd: "1"
+      by: "cluster"
+  - record: manager:repair_progress
+    expr: (max(scylla_manager_scheduler_run_indicator{type="repair"}) by (cluster) >bool 0)*((max(scylla_manager_repair_token_ranges_total) by(cluster)<= 0)*0 or on(cluster) (sum(scylla_manager_repair_token_ranges_success>=0) by (cluster) + sum(scylla_manager_repair_token_ranges_error>=0) by (cluster))/sum(scylla_manager_repair_token_ranges_total>=0) by (cluster))
   - record: manager:backup_progress
     expr: (max(scylla_manager_scheduler_run_indicator{type="backup"}) by (cluster) >bool 0)*((max(scylla_manager_backup_files_size_bytes) by(cluster)<= 0)*0 or on(cluster) (sum(scylla_manager_backup_files_uploaded_bytes) by (cluster) + sum(scylla_manager_backup_files_skipped_bytes) by (cluster) + sum(scylla_manager_backup_files_failed_bytes)by(cluster))/sum(scylla_manager_backup_files_size_bytes>=0) by (cluster))
   - record: scylla_manager_backup_progress
