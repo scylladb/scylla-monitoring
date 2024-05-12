@@ -38,12 +38,12 @@ The following procedure uses a ``CentOS 7`` based instance
 .. code-block:: sh
    :substitutions:
 
-   wget https://github.com/scylladb/scylla-monitoring/archive/refs/tags/scylla-monitoring-|version|.tar.gz
+   wget -O scylla-monitoring.tar.gz https://github.com/scylladb/scylla-monitoring/archive/refs/tags/|version|.tar.gz
 
 
 2. Open the tar
 
-``tar -xvf scylla-monitoring-*.tar.gz``
+``tar -xvf scylla-monitoring.tar.gz``
 
 Install Alertmanager
 --------------------
@@ -221,7 +221,92 @@ For example the scrape config for Scylla:
          regex:  '(.*):.+'
          target_label: instance
          replacement: '${1}'
-
+     metric_relabel_configs:
+       - source_labels: [__name__, scheduling_group_name]
+         regex: '(scylla_storage_proxy_coordinator_.*_bucket;)(atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache)'
+         action: drop
+       - source_labels: [version]
+         regex:  '(.+)'
+         target_label: CPU
+         replacement: 'cpu'
+       - source_labels: [version]
+         regex:  '(.+)'
+         target_label: CQL
+         replacement: 'cql'
+       - source_labels: [version]
+         regex:  '(.+)'
+         target_label: OS
+         replacement: 'os'
+       - source_labels: [version]
+         regex:  '(.+)'
+         target_label: IO
+         replacement: 'io'
+       - source_labels: [version]
+         regex:  '(.+)'
+         target_label: Errors
+         replacement: 'errors'
+       - regex: 'help|exported_instance'
+         action: labeldrop
+       - source_labels: [version]
+         regex: '([0-9]+\.[0-9]+)(\.?[0-9]*).*'
+         replacement: '$1$2'
+         target_label: svr
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_write_latency_summary;0.990*)'
+         target_label: __name__
+         replacement: 'wlatencyp99'
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_write_latency_summary;0.950*)'
+         target_label: __name__
+         replacement: 'wlatencyp95'
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_write_latency_summary;0.50*)'
+         target_label: __name__
+         replacement: 'wlatencya'
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_read_latency_summary;0.990*)'
+         target_label: __name__
+         replacement: 'rlatencyp99'
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_read_latency_summary;0.950*)'
+         target_label: __name__
+         replacement: 'rlatencyp95'
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_read_latency_summary;0.50*)'
+         target_label: __name__
+         replacement: 'rlatencya'
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_cas_write_latency_summary;0.950*)'
+         target_label: __name__
+         replacement: 'caswlatencyp95'
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_cas_write_latency_summary;0.990*)'
+         target_label: __name__
+         replacement: 'caswlatencyp99'
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_cas_write_latency_summary;0.50*)'
+         target_label: __name__
+         replacement: 'caswlatencya'
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_cas_read_latency_summary;0.950*)'
+         target_label: __name__
+         replacement: 'casrlatencyp95'
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_cas_read_latency_summary;0.990*)'
+         target_label: __name__
+         replacement: 'casrlatencyp99'
+       - source_labels: [__name__, quantile]
+         regex: '(scylla_storage_proxy_coordinator_cas_read_latency_summary;0.50*)'
+         target_label: __name__
+         replacement: 'casrlatencya'
+       - source_labels: [quantile]
+         regex: '(0\.[1-9]+)0*'
+         target_label: quantile
+         replacement: '${1}'
+       - source_labels: [__name__]
+         regex: '(.latency..?.?|cas.latency..?.?|scylla_.*_summary)'
+         target_label: by
+         replacement: 'instance,shard'
 
 5. Create and set ``scylla_servers.yml`` file point to your Scylla nodes and ``scylla_manager_server.yml`` file to point to your Scylla Manager.
 
