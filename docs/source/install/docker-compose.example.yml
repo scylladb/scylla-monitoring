@@ -1,7 +1,7 @@
 services:
   alertmanager:
     container_name: aalert
-    image: prom/alertmanager:v0.24.0
+    image: prom/alertmanager:v0.26.0
     ports:
     - 9093:9093
     volumes:
@@ -19,7 +19,7 @@ services:
     - GF_SECURITY_ADMIN_PASSWORD=admin
     # To set your home dashboard uncomment the following line, set VERSION to be your current version
     #- GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/ver_VERSION/scylla-overview.VERSION.json
-    image: grafana/grafana:9.3.11
+    image: grafana/grafana:10.4.1
     ports:
     - 3000:3000
     user: 1000:1000
@@ -33,7 +33,7 @@ services:
     command:
     - --config.file=/mnt/config/loki-config.yaml
     container_name: loki
-    image: grafana/loki:2.7.3
+    image: grafana/loki:2.9.5
     ports:
     - 3100:3100
     volumes:
@@ -43,15 +43,19 @@ services:
     command:
     - --config.file=/etc/prometheus/prometheus.yml
     container_name: aprom
-    image: prom/prometheus:v2.42.0
+    image: prom/prometheus:v2.51.1
     ports:
     - 9090:9090
     volumes:
     - ./prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml
-    - ./prometheus/scylla_servers.yml:/etc/scylla.d/prometheus/scylla_servers.yml
     - ./prometheus/prom_rules/:/etc/prometheus/prom_rules/
-    - ./prometheus/scylla_manager_servers.yml:/etc/scylla.d/prometheus/scylla_manager_servers.yml
-    - ./prometheus/scylla_servers.yml:/etc/scylla.d/prometheus/node_exporter_servers.yml
+    # instead of the following three targets, you can place three files under one directory and mount that directory
+    # If you do, uncomment the following line and delete the three lines afterwards
+    #- /path/to/targets:/etc/scylla.d/prometheus/targets/
+    - ./prometheus/scylla_servers.yml:/etc/scylla.d/prometheus/targets/scylla_servers.yml
+    - ./prometheus/scylla_manager_servers.yml:/etc/scylla.d/prometheus/targets/scylla_manager_servers.yml
+    - ./prometheus/scylla_servers.yml:/etc/scylla.d/prometheus/targets/node_exporter_servers.yml
+    
     # Uncomment the following line for prometheus persistency 
     # - path/to/data/dir:/prometheus/data
   promtail:
