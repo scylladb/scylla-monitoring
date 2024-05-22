@@ -500,7 +500,7 @@ if [ "$CURRENT_VERSION" = "master" ]; then
         echo ./generate-dashboards.sh -v $VERSIONS -F -R 0 -m $MANAGER_VERSION $STACK_CMD
         ./generate-dashboards.sh -v $VERSIONS -F -R 0 -m $MANAGER_VERSION $STACK_CMD
     fi
-    echo "Generating the dashaobards"
+    echo "Generating the dashboards"
 
 fi
 
