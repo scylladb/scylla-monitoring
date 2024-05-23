@@ -175,8 +175,7 @@
                             }
                         ],
                         "title": "CQL Errors [[by]]",
-                        "description": "CQL errors by type, only active errors are shown",
-                        "dashversion":[">4.4", ">2021.1"]
+                        "description": "CQL errors by type, only active errors are shown"
                     },
                     {
                         "class": "graph_panel",
@@ -305,18 +304,9 @@
                         "targets": [
                             {
                               "refId": "A",
-                              "queryText": "select address, port, shard_id, ssl_enabled, username from system.clients",
-                              "queryHost": "$node",
-                              "dashversion":["<4.4", "<2020.1"],
-      						  "allHosts": true
-
-                            },
-                            {
-                              "refId": "A",
                               "queryText": "select address, port, shard_id, connection_stage, client_type, ssl_enabled, username, driver_name, driver_version, protocol_version from system.clients",
                               "queryHost": "$node",
-                              "dashversion":[">4.4", ">2020.1"],
-      						  "allHosts": true
+                              "allHosts": true
                             }
                           ],
                         "title": "Connection Table"
@@ -784,7 +774,7 @@
                         "description": "All requests should be paged\n\nNon Paged request sources:\n- Client modifying the fetch size\n\nNon Paged requests require reading all the results and returning them in a single request.",
                         "targets": [
                             {
-                                "expr": "100 * ((sum(rate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m]))-sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks=\"system\",instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]]))/sum(rate(scylla_cql_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m]))) OR vector(0)",
+                                "expr": "100 * ((sum(rate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m]))-sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks=\"system\",instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])))/sum(rate(scylla_cql_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m]))) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
