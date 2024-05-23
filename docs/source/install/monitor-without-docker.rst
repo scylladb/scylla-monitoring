@@ -67,7 +67,7 @@ For example:
 .. code-block:: shell
    :substitutions:
 
-   cp -p /home/centos/scylla-monitoring-scylla-monitoring-|version|/prometheus/rule_config.yml alertmanager-0.26.0.linux-amd64/alertmanager.yml
+   cp -p /home/centos/scylla-monitoring-|version|/prometheus/rule_config.yml alertmanager-0.26.0.linux-amd64/alertmanager.yml
 
 3. Start the Alertmanager
 
@@ -165,8 +165,8 @@ For example:
 .. code-block:: shell
    :substitutions:
 
-   cp scylla-monitoring-scylla-monitoring-|version|/prometheus/prom_rules/*.yml /etc/prometheus/prom_rules/
-   cp scylla-monitoring-scylla-monitoring-|version|/prometheus/prometheus.yml.template /etc/prometheus/prometheus.yml
+   cp scylla-monitoring-|version|/prometheus/prom_rules/*.yml /etc/prometheus/prom_rules/
+   cp scylla-monitoring-|version|/prometheus/prometheus.yml.template /etc/prometheus/prometheus.yml
 
 
 4. Edit the ``prometheus.yml`` file to point to the correct static data sources.
@@ -365,7 +365,7 @@ For example:
 .. code-block:: shell
    :substitutions:
 
-   cd cd prometheus-2.49.1.linux-amd64/
+   cd prometheus-2.49.1.linux-amd64/
    ./prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path /prometheus/data
 
 Data should start accumulate on: /prometheus/data
@@ -413,7 +413,7 @@ different, we will assume that you used yum/dnf install.
 .. code-block:: shell
    :substitutions:
 
-   cd scylla-monitoring-scylla-monitoring-|version|/
+   cd scylla-monitoring-|version|/
 
 3. Copy the plugins to the grafana plugins directory (by default ``/var/lib/grafana/``)
 
