@@ -42,7 +42,6 @@
                                 "expr": "sum(rate(scylla_io_queue_consumption{iogroup=~\"$iogroup\", class=~\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]], class, iogroup)",
                                 "intervalFactor": 1,
                                 "legendFormat": "Group {{iogroup}} {{dc}} {{instance}} {{class}} {{shard}}",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -88,12 +87,12 @@
                         "class": "percentunit_panel",
                         "dashversion":["<2024.1"],
                         "span": 3,
+                        "type": "barchart",
                         "targets": [
                             {
                                 "expr": "sum(rate(scylla_io_queue_consumption{class=~\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]], class)",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{class}} {{dc}} {{node}} {{shard}}",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -103,6 +102,7 @@
                               "class": "fieldConfig_defaults",
                               "custom": {
                                  "class":"fieldConfig_defaults_custom",
+                                 "fillOpacity": 30,
                                  "axisSoftMax": 1,
                                  "stacking": {
                                   "mode": "normal",
@@ -114,9 +114,12 @@
                             "overrides": []
                          },
                         "options": {
-                            "class":"desc_tooltip_options"
+                            "class":"desc_tooltip_options",
+                            "xTickLabelSpacing": 100,
+                            "showValue": "never",
+                            "stacking": "normal"
                         },
-                        "description": "seastar_io_queue_delay",
+                        "description": "This stack graph shows how IO queue consumption is distributed between io-groups and classes. Being a stack graph means the total would reach 100% with a high consumption.\n\nscylla_io_queue_consumption",
                         "title": "I/O Queue consumption by [[by]]"
                     }
                 ],
@@ -151,7 +154,6 @@
                                 "expr": "max(rate(scylla_io_queue_total_delay_sec{class=\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])/rate(scylla_io_queue_total_operations{class=\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]]) or on() max(scylla_io_queue_delay{class=\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "seastar_io_queue_delay",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -159,7 +161,7 @@
                         "options": {
                             "class":"desc_tooltip_options"
                         },
-                        "description": "seastar_io_queue_delay",
+                        "description": "scylla_io_queue_total_delay_sec",
                         "title": "$classes I/O Queue delay by [[by]]"
                     },
                     {
@@ -170,7 +172,6 @@
                                 "expr": "max(scylla_io_queue_queue_length{class=\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "seastar_io_queue_delay",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -189,7 +190,6 @@
                                 "expr": "sum(rate(scylla_io_queue_total_bytes{class=\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "seastar_io_queue_delay",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -197,7 +197,7 @@
                         "options": {
                             "class":"desc_tooltip_options"
                         },
-                        "description": "seastar_io_queue_delay",
+                        "description": "The queue bandwidth rate in bytes \n\nscylla_io_queue_total_bytes",
                         "title": "$classes I/O Queue bandwidth by [[by]]"
                     },
                     {
@@ -208,7 +208,6 @@
                                 "expr": "sum(rate(scylla_io_queue_total_operations{class=\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "seastar_io_queue_delay",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -216,7 +215,7 @@
                         "options": {
                             "class":"desc_tooltip_options"
                         },
-                        "description": "scylla_io_queue_total_operations",
+                        "description": "The rate of io queue operation\n\nsscylla_io_queue_total_operations",
                         "title": "$classes I/O Queue IOPS by [[by]]"
                     },
                     {
@@ -226,7 +225,6 @@
                             {
                                 "expr": "max(rate(scylla_io_queue_total_exec_sec{class=\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])/rate(scylla_io_queue_total_operations{class=\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]]) or on() max(scylla_io_queue_delay{class=\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
                                 "intervalFactor": 1,
-                                "metric": "scylla_io_queue_total_exec_sec",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -244,7 +242,6 @@
                             {
                                 "expr": "max(scylla_io_queue_disk_queue_length{class=\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
-                                "metric": "scylla_io_queue_disk_queue_length",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -262,7 +259,6 @@
                             {
                                 "expr": "sum(rate(scylla_io_queue_starvation_time_sec{class=\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
-                                "metric": "scylla_io_queue_starvation_time_sec",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -327,7 +323,6 @@
                                 "expr": "$func(rate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$sg\", shard=~\"[[shard]]\"}[1m])/1000) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -347,7 +342,6 @@
                                 "expr": "$func(rate(scylla_scheduler_time_spent_on_task_quota_violations_ms{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$sg\", shard=~\"[[shard]]\"}[1m])/1000) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -367,7 +361,6 @@
                                 "expr": "$func(rate(scylla_scheduler_starvetime_ms{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$sg\", shard=~\"[[shard]]\"}[1m])/1000) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -387,7 +380,6 @@
                                 "expr": "$func(scylla_scheduler_shares{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\",group=~\"$sg\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -433,7 +425,6 @@
                                 "expr": "avg(rate(scylla_storage_proxy_coordinator_read_errors_local_node{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -452,7 +443,6 @@
                                 "expr": "avg(rate(scylla_storage_proxy_coordinator_write_errors_local_node{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -484,7 +474,6 @@
                                 "expr": "avg(rate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -503,7 +492,6 @@
                                 "expr": "avg(rate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -522,7 +510,6 @@
                                 "expr": "avg(rate(scylla_storage_proxy_coordinator_range_unavailable{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -547,7 +534,6 @@
                                 "expr": "avg(rate(scylla_reactor_aio_errors{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -566,7 +552,6 @@
                                 "expr": "sum(rate(scylla_reactor_abandoned_failed_futures{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -585,7 +570,6 @@
                                 "expr": "sum(rate(scylla_reactor_cpp_exceptions{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -632,7 +616,6 @@
                                 "expr": "avg(scylla_commitlog_disk_total_bytes{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -651,7 +634,6 @@
                                 "expr": "avg(scylla_commitlog_disk_active_bytes{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -670,7 +652,6 @@
                                 "expr": "avg(rate(scylla_commitlog_flush{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -689,7 +670,6 @@
                                 "expr": "avg(scylla_commitlog_segments{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -708,7 +688,6 @@
                                 "expr": "avg(rate(scylla_commitlog_flush_limit_exceeded{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -727,7 +706,6 @@
                                 "expr": "avg(scylla_commitlog_pending_allocations{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -746,7 +724,6 @@
                                 "expr": "avg(scylla_commitlog_pending_flushes{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -765,7 +742,6 @@
                                 "expr": "avg(scylla_commitlog_unused_segments{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
@@ -784,7 +760,6 @@
                                 "expr": "avg(scylla_commitlog_allocating_segments{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
-                                "metric": "",
                                 "refId": "A",
                                 "step": 30
                             }
