@@ -23,6 +23,16 @@ Install 4.y (The new version)
 
 Replace “y” with the new minor and patch release number, for example, 4.0.0.zip
 
+
+.. note::
+    For versions 4.7.* and above, use the format `4.7.*.zip`, for example:
+
+    .. code-block:: bash
+
+        wget -L https://github.com/scylladb/scylla-monitoring/archive/4.7.1.zip
+        unzip 4.7.b.zip
+        cd scylla-monitoring-4.7.b/
+
 Setting the server's files
 --------------------------
 

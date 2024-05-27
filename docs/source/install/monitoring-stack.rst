@@ -117,7 +117,7 @@ Install Scylla Monitoring Stack
 .. code-block:: sh
    :substitutions:
 
-   wget https://github.com/scylladb/scylla-monitoring/archive/scylla-monitoring-|version|.tar.gz
+   wget https://github.com/scylladb/scylla-monitoring/archive/|version|.tar.gz
    tar -xvf scylla-monitoring-|version|.tar.gz
    cd scylla-monitoring-scylla-monitoring-|version|
 
