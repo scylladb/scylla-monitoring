@@ -26,7 +26,7 @@ We suggest that you follow the installation instruction of each of those product
 The main item to set an alert on is the available disk space in the monitoring system. Data is indefinitely accrued on the Prometheus data directory.
 The current monitoring solution does not churn data.
 
-.. note:: Confirm before installing, that your Grafana and Prometheus versions are supported by the Scylla Monitoring Stack version you want to install. Scylla-Monitoring follows the latest Prometheus and Grafana releases tightly. See the `Scylla Monitoring Stack Compatibility Matrix </install/monitoring_stack/#prerequisites>`_.
+.. note:: Confirm before installing, that your Grafana and Prometheus versions are supported by the Scylla Monitoring Stack version you want to install. Scylla-Monitoring follows the latest Prometheus and Grafana releases tightly. See the `Scylla Monitoring Stack Compatibility Matrix <stable/install/monitoring-stack.html#prerequisites>`_.
 
 Install Scylla Monitoring Stack
 -------------------------------
