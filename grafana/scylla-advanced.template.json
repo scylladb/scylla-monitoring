@@ -34,93 +34,18 @@
                 "panels": [
                     {
                         "class": "percentunit_panel",
-                        "dashversion":[">5.4", ">2024.1"],
                         "span": 3,
-                        "type": "barchart",
                         "targets": [
                             {
-                                "expr": "sum(rate(scylla_io_queue_consumption{iogroup=~\"$iogroup\", class=~\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]], class, iogroup)",
+                                "expr": "$func(rate(scylla_io_queue_consumption{iogroup=~\"$iogroup\", class=~\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[1m])) by (instance, iogroup, stream)",
                                 "intervalFactor": 1,
-                                "legendFormat": "Group {{iogroup}} {{dc}} {{instance}} {{class}} {{shard}}",
+                                "legendFormat": "Group {{iogroup}} {{stream}} {{dc}} {{instance}} ",
                                 "refId": "A",
                                 "step": 30
                             }
                         ],
-                        "fieldConfig": {
-                            "defaults": {
-                              "class": "fieldConfig_defaults",
-                              "custom": {
-                                 "class":"fieldConfig_defaults_custom",
-                                 "fillOpacity": 30,
-                                 "thresholdsStyle": {
-                                    "mode": "line"
-                                 },
-                                 "thresholds": {
-                                    "mode": "absolute",
-                                    "steps": [
-                                      {
-                                        "color": "green",
-                                        "value": null
-                                      },
-                                      {
-                                        "color": "red",
-                                        "value": 0.8
-                                      }
-                                    ]
-                                  },
-                                 "axisSoftMax": 1
-                              },
-                              "unit": "percentunit"
-                            },
-                            "overrides": []
-                         },
-                        "options": {
-                            "class":"desc_tooltip_options",
-                            "xTickLabelSpacing": 100,
-                            "showValue": "never",
-                            "stacking": "normal"
-                        },
-                        "description": "This stack graph shows how IO queue consumption is distributed between io-groups and classes. Being a stack graph means the total would reach 100% with a high consumption.\n\nscylla_io_queue_consumption",
-                        "title": "I/O Group [[iogroup]] Queue consumption by [[by]]"
-                    },
-                   {
-                        "class": "percentunit_panel",
-                        "dashversion":["<2024.1"],
-                        "span": 3,
-                        "type": "barchart",
-                        "targets": [
-                            {
-                                "expr": "sum(rate(scylla_io_queue_consumption{class=~\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]], class)",
-                                "intervalFactor": 1,
-                                "legendFormat": "{{class}} {{dc}} {{node}} {{shard}}",
-                                "refId": "A",
-                                "step": 30
-                            }
-                        ],
-                        "fieldConfig": {
-                            "defaults": {
-                              "class": "fieldConfig_defaults",
-                              "custom": {
-                                 "class":"fieldConfig_defaults_custom",
-                                 "fillOpacity": 30,
-                                 "axisSoftMax": 1,
-                                 "stacking": {
-                                  "mode": "normal",
-                                  "group": "A"
-                                }
-                              },
-                              "unit": "percentunit"
-                            },
-                            "overrides": []
-                         },
-                        "options": {
-                            "class":"desc_tooltip_options",
-                            "xTickLabelSpacing": 100,
-                            "showValue": "never",
-                            "stacking": "normal"
-                        },
-                        "description": "This stack graph shows how IO queue consumption is distributed between io-groups and classes. Being a stack graph means the total would reach 100% with a high consumption.\n\nscylla_io_queue_consumption",
-                        "title": "I/O Queue consumption by [[by]]"
+                        "description": "This graph shows how IO queue consumption is distributed between io-groups and streams.\n\nscylla_io_queue_consumption",
+                        "title": "I/O Group [[iogroup]] [[stream]] Queue consumption by instance"
                     }
                 ],
                 "title": "New row"
