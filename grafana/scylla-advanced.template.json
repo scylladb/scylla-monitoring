@@ -45,7 +45,22 @@
                             }
                         ],
                         "description": "This graph shows how IO queue consumption is distributed between io-groups and streams.\n\nscylla_io_queue_consumption",
-                        "title": "I/O Group [[iogroup]] [[stream]] Queue consumption by instance"
+                        "title": "I/O Group consumption by instance"
+                    },
+                    {
+                        "class": "percentunit_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "scylla_io_queue_flow_ratio{iogroup=~\"$iogroup\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}",
+                                "intervalFactor": 1,
+                                "legendFormat": "Group {{iogroup}} {{dc}} {{instance}} {{shard}}",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "description": "This graph shows the ratio of dispatch rate to completion rate. It is expected to be 1.0, growing larger on reactor stalls or disk problems.\n\nscylla_io_queue_flow_ratio",
+                        "title": "I/O Group Queue flow ratio"
                     }
                 ],
                 "title": "New row"
