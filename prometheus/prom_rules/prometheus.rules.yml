@@ -297,11 +297,11 @@ groups:
       description: 'Node {{ $labels.instance }} in Joining mode for 1 day'
       summary: Node {{ $labels.instance }} in Joining mode for 1 day
   - alert: splitBrain
-    expr: sum(scylla_gossip_live) < (count(scylla_node_operation_mode==3)-1) * count(scylla_gossip_live)
+    expr: sum(scylla_gossip_live) by (cluster) < (count(scylla_node_operation_mode==3) by (cluster)  -1) * count(scylla_gossip_live) by (cluster) 
     for: 10m
     labels:
       severity: "warn"
-      description: 'Cluster in a split-brain mode'
+      description: 'Cluster {{ $labels.cluster }} in a split-brain mode'
       summary: Some nodes in the cluster do not see all of the other live nodes
   - alert: bloomFilterSize
     expr: scylla_sstables_bloom_filter_memory_size/scylla_memory_total_memory > 0.2
