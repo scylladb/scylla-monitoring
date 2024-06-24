@@ -34,7 +34,7 @@
                         "repeat": "node",
                         "targets": [
                             {
-                                "expr": "sum(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"})",
+                                "expr": "sum(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"})",
                                 "interval": "",
                                 "intervalFactor": 1,
                                 "legendFormat": "Free",
@@ -44,7 +44,7 @@
                                 "step": 7200
                             },
                             {
-                                "expr": "(sum(node_filesystem_size_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"})-sum(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"}))",
+                                "expr": "(sum(node_filesystem_size_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"})-sum(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}))",
                                 "intervalFactor": 1,
                                 "legendFormat": "Used",
                                 "refId": "B",
@@ -83,7 +83,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "1-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"}) by ([[by]])/sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"}) by ([[by]])",
+                                "expr": "1-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])/sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -98,7 +98,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"}) by ([[by]])-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"}) by ([[by]])",
+                                "expr": "sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -106,7 +106,7 @@
                                 "step": 1
                             },
                             {
-                                "expr": "sum(node_filesystem_size{mountpoint=\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"}) by ([[by]])-sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"}) by ([[by]])",
+                                "expr": "sum(node_filesystem_size{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])-sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -121,7 +121,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(node_filesystem_free_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"}) by ([[by]])",
+                                "expr": "sum(node_filesystem_free_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -136,7 +136,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(node_filesystem_files{mountpoint=\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"}- node_filesystem_files_free{mountpoint=\"$mount_point\", instance=~\"$node\", job=\"node_exporter\"}) by ([[by]])",
+                                "expr": "sum(node_filesystem_files{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}- node_filesystem_files_free{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -190,7 +190,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(rate(node_disk_writes_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_disk_writes_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -198,7 +198,7 @@
                                 "step": 1
                             },
                             {
-                                "expr": "sum(rate(node_disk_writes_completed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_disk_writes_completed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -213,14 +213,14 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(rate(node_disk_reads_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_disk_reads_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 1
                             },
                             {
-                                "expr": "sum(rate(node_disk_reads_completed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_disk_reads_completed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "B",
@@ -234,7 +234,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(rate(node_disk_written_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_disk_written_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -242,7 +242,7 @@
                                 "step": 1
                             },
                             {
-                                "expr": "sum(rate(node_disk_bytes_written{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_disk_bytes_written{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -257,14 +257,14 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "sum(rate(node_disk_read_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_disk_read_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
                                 "step": 1
                             },
                             {
-                                "expr": "sum(rate(node_disk_bytes_read{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_disk_bytes_read{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "B",
@@ -278,7 +278,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "rate(node_disk_read_time_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])/rate(node_disk_reads_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])",
+                                "expr": "rate(node_disk_read_time_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])/rate(node_disk_reads_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
@@ -293,7 +293,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "rate(node_disk_write_time_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])/rate(node_disk_writes_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=\"node_exporter\"}[4m])",
+                                "expr": "rate(node_disk_write_time_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])/rate(node_disk_writes_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
@@ -347,7 +347,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(rate(node_network_receive_packets_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_network_receive_packets_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -355,7 +355,7 @@
                                 "step": 1
                             },
                             {
-                                "expr": "sum(rate(node_network_receive_packets{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_network_receive_packets{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -370,7 +370,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(rate(node_network_transmit_packets_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_network_transmit_packets_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -378,7 +378,7 @@
                                 "step": 1
                             },
                             {
-                                "expr": "sum(rate(node_network_transmit_packets{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_network_transmit_packets{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -399,7 +399,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(rate(node_network_receive_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_network_receive_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -407,7 +407,7 @@
                                 "step": 1
                             },
                             {
-                                "expr": "sum(rate(node_network_receive_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_network_receive_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -422,7 +422,7 @@
                         "span": 6,
                         "targets": [
                             {
-                                "expr": "sum(rate(node_network_transmit_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_network_transmit_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -430,7 +430,7 @@
                                 "step": 1
                             },
                             {
-                                "expr": "sum(rate(node_network_transmit_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=\"node_exporter\"}[4m])) by ([[by]])",
+                                "expr": "sum(rate(node_network_transmit_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -484,7 +484,7 @@
                         "description": "The available memory, note that in a production environment we expect this to be low, Scylla would use most of the available memory when possible",
                         "targets": [
                             {
-                                "expr": "sum(node_memory_MemAvailable_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=\"node_exporter\"}) by ([[by]])",
+                                "expr": "sum(node_memory_MemAvailable_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -500,7 +500,7 @@
                         "description": "Percent of available memory, note that in a production environment we expect this to be low, Scylla would use most of the available memory when possible",
                         "targets": [
                             {
-                                "expr": "sum(node_memory_MemAvailable_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=\"node_exporter\"}) by ([[by]])/sum(node_memory_MemTotal_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=\"node_exporter\"}) by ([[by]])",
+                                "expr": "sum(node_memory_MemAvailable_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) by ([[by]])/sum(node_memory_MemTotal_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -516,7 +516,7 @@
                         "description": "Percent of CPU used, note that in production Scylla would try to use most of the CPU and this is not a problem",
                         "targets": [
                             {
-                                "expr": "1-sum(rate(node_cpu_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", mode=\"idle\", job=\"node_exporter\"}[3m])) by ([[by]])/count(node_cpu_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", mode=\"idle\", job=\"node_exporter\"}) by ([[by]])",
+                                "expr": "1-sum(rate(node_cpu_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", mode=\"idle\", job=~\"node_exporter.*\"}[3m])) by ([[by]])/count(node_cpu_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", mode=\"idle\", job=~\"node_exporter.*\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -532,7 +532,7 @@
                         "description": "CPU frequency should be set for performance.\n\n The current frequency should match the max frequency. If that is not the case, check your host configuration.",
                         "targets": [
                             {
-                                "expr": "max(node_cpu_scaling_frequency_max_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=\"node_exporter\"}) or on() max(node_cpu_frequency_max_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=\"node_exporter\"})",
+                                "expr": "max(node_cpu_scaling_frequency_max_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) or on() max(node_cpu_frequency_max_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"})",
                                 "intervalFactor": 1,
                                 "legendFormat": "Max",
                                 "metric": "",
@@ -540,7 +540,7 @@
                                 "step": 1
                             },
                             {
-                                "expr": "min(node_cpu_scaling_frequency_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=\"node_exporter\"}) by ([[by]]) or on() min(node_cpu_frequency_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=\"node_exporter\"}) by ([[by]])",
+                                "expr": "min(node_cpu_scaling_frequency_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) by ([[by]]) or on() min(node_cpu_frequency_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
