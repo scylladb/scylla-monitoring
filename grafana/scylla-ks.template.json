@@ -32,44 +32,6 @@
                     }
                 ]
             },
-           {
-           "class": "row",
-           "dashversion":[">6.0"],
-                "panels": [
-                 {
-                 "title": "Tablets over time per [[by]]",
-                 "class": "heatmap_panel",
-                 "gridPos": {
-                   "h": 13,
-                   "w": 24
-                 },
-                 "targets": [
-                   {
-                     "refId": "A",
-                     "expr": "sum(scylla_column_family_tablet_count{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$\"}) by([[by]])",
-                     "range": false,
-                     "format": "time_series",
-                       "instant": false,
-                     "legendFormat": "{{dc}} {{instance}} {{shard}}"
-                   }
-                 ]
-               },
-                 {
-                 "title": "Tablet per [[by]]",
-                 "class": "barchart_panel",
-                 "span": 12,
-                 "targets": [
-                   {
-                     "refId": "A",
-                     "expr": "sum(scylla_column_family_tablet_count{ks=\"$ks\", cf=\"$table\",instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$\"}) by([[by]])",
-                     "range": false,
-                     "legendFormat": "__auto",
-                     "instant": true,
-                     "format": "table"
-                   }
-                 ]
-               }
-         ]},
             {
                 "class": "row",
                 "panels": [
@@ -248,9 +210,63 @@
                             }
                         ],
                         "title": "Live sstables by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "dashversion":[">6.0"],
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_column_family_tablet_count{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Tablets by [[by]]"
                     }
                 ]
             },
+           {
+           "class": "row",
+           "dashversion":[">6.0"],
+                "panels": [
+                 {
+                 "title": "Tablets over time per [[by]]",
+                 "class": "heatmap_panel",
+                 "gridPos": {
+                   "h": 13,
+                   "w": 24
+                 },
+                 "targets": [
+                   {
+                     "refId": "A",
+                     "expr": "sum(scylla_column_family_tablet_count{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$\"}) by([[by]])",
+                     "range": false,
+                     "format": "time_series",
+                       "instant": false,
+                     "legendFormat": "{{dc}} {{instance}} {{shard}}"
+                   }
+                 ]
+               },
+                 {
+                 "title": "Tablets per [[by]]",
+                 "class": "barchart_panel",
+                 "span": 12,
+                 "targets": [
+                   {
+                     "refId": "A",
+                     "expr": "sum(scylla_column_family_tablet_count{ks=\"$ks\", cf=\"$table\",instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$\"}) by([[by]])",
+                     "range": false,
+                     "legendFormat": "__auto",
+                     "instant": true,
+                     "format": "table"
+                   }
+                 ]
+               }
+         ]},
             {
                 "class": "row",
                 "panels": [
