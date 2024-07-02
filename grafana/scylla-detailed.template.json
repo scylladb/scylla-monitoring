@@ -790,7 +790,40 @@
                         "class": "text_panel",
                         "content": "",
                         "mode": "markdown",
+                        "dashversion":["<2024.1", ">5.0"],
                         "span": 6
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "dashversion":[">2024.1"],
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "topk([[topk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]], algorithm)) or on ([[by]]) bottomk([[bottomk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]], algorithm))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Bytes sent using compressed protocol\n\nscylla_rpc_compression_compressed_bytes_sent",
+                        "title": "Compressed bytes sent by protocol"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "dashversion":[">2024.1"],
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "topk([[topk]], $func(rate(scylla_rpc_compression_compressed_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]], algorithm)) or on ([[by]]) bottomk([[bottomk]], $func(rate(scylla_rpc_compression_compressed_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by ([[by]], algorithm))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Bytes sent using compressed protocol\n\nscylla_rpc_compression_compressed_bytes_received",
+                        "title": "Compressed bytes received by protocol"
                     },
                     {
                         "class": "wps_panel",
