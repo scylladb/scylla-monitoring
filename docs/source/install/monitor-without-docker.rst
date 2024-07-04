@@ -197,8 +197,8 @@ For example the scrape config for Scylla:
 .. code-block:: shell
 
    global:
-     scrape_interval: 5s # By default, scrape targets every 5 second.
-     scrape_timeout: 4s # Timeout before trying to scape a target again
+     scrape_interval: 20s # By default, scrape targets every 20s second.
+     scrape_timeout: 15s # Timeout before trying to scape a target again
 
      # Attach these labels to any time series or alerts when communicating with
      # external systems (federation, remote storage, Alertmanager).
@@ -307,6 +307,9 @@ For example the scrape config for Scylla:
          regex: '(.latency..?.?|cas.latency..?.?|scylla_.*_summary)'
          target_label: by
          replacement: 'instance,shard'
+
+.. note::
+       You can change scrape_interval to a longer interval to save resources. If you do that, you must change the Grafan configuration to match it.
 
 5. Create and set ``scylla_servers.yml`` file point to your Scylla nodes and ``scylla_manager_server.yml`` file to point to your Scylla Manager.
 
@@ -490,6 +493,8 @@ For example
       url: http://192.168.135.167:9090
       access: proxy
       basicAuth: false
+      jsonData:
+         timeInterval: '20s' # Must match prometheus gloabal scrape_interval
 
     - name: alertmanager
       type: camptocamp-prometheus-alertmanager-datasource
@@ -503,10 +508,10 @@ For example
       basicAuth:
       isDefault:
       jsonData:
-        severity_critical: '4'
-        severity_high: '3'
-        severity_warning: '2'
-        severity_info: '1'
+        implementation: 'prometheus'
+
+.. note::
+       The timeInterval parameter must match Prometheus scrape_interval config.
 
 6. Start the Grafana service
 
