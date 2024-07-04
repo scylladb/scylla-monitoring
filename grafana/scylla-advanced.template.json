@@ -713,6 +713,135 @@
                  ]
             },
             {
+                "class": "row",
+                "dashversion":[">6.0", ">2024.1"],
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "collapsed": true,
+                        "title": "RPC metrics"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "dashversion":[">6.0", ">2024.1"],
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "topk([[topk]], sum(scylla_rpc_client_count{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by ([[by]],domain)>0) or on ([[by]],domain) bottomk([[bottomk]], sum(scylla_rpc_client_count{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by ([[by]],domain)>0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "scylla_rpc_client_count",
+                        "title": "RPC Client count by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "topk([[topk]], sum(rate(scylla_rpc_client_sent_messages{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])>0) by ([[by]],domain)) or on ([[by]],domain) bottomk([[bottomk]], sum(rate(scylla_rpc_client_sent_messages{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by ([[by]],domain)>0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "scylla_rpc_client_sent_messages",
+                        "title": "RPC sent messages by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "topk([[topk]], sum(rate(scylla_rpc_client_replied{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])>0) by ([[by]],domain)) or on ([[by]],domain) bottomk([[bottomk]], sum(rate(scylla_rpc_client_replied{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by ([[by]],domain)>0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "scylla_rpc_client_replied",
+                        "title": "RPC replied messages by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "topk([[topk]], sum(rate(scylla_rpc_client_exception_received{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])>0) by ([[by]],domain)) or on ([[by]],domain) bottomk([[bottomk]], sum(rate(scylla_rpc_client_exception_received{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by ([[by]],domain)>0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "scylla_rpc_client_exception_received",
+                        "title": "RPC exceptional replied messages by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "topk([[topk]], sum(rate(scylla_rpc_client_timeout{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])>0) by ([[by]],domain)) or on ([[by]],domain) bottomk([[bottomk]], sum(rate(scylla_rpc_client_timeout{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[1m])) by ([[by]],domain)>0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "scylla_rpc_client_timeout",
+                        "title": "RPC requests timeout by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "topk([[topk]], sum(scylla_rpc_client_pending{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by ([[by]],domain)>0) or on ([[by]],domain) bottomk([[bottomk]], sum(scylla_rpc_client_pending{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by ([[by]],domain)>0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "the number of requests queued for sending, but not yet sent\n\nscylla_rpc_client_pending",
+                        "title": "RPC Pending Messages by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "topk([[topk]], sum(scylla_rpc_client_wait_reply{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by ([[by]],domain)>0) or on ([[by]],domain) bottomk([[bottomk]], sum(scylla_rpc_client_wait_reply{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by ([[by]],domain)>0)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "the number of requests waiting for the reply\n\nscylla_rpc_client_wait_reply",
+                        "title": "RPC Wait for Reply by [[by]]"
+                    }
+                ]
+            },
+            {
                 "class": "user_panels_collapse"
             },
             {
