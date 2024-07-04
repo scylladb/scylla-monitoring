@@ -97,6 +97,7 @@ Options:
   --thanos-sc                    - If set, run thanos side car with the Prometheus server.
   --thanos                       - If set, run thanos query as a Grafana datasource.
   --enable-protobuf              - If set, enable the experimental Prometheus Protobuf with Native histograms support.
+  --scrap [scrap duration]       - Change the default Prometheus scrap duration. Duration is in seconds.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
                                    the file names should be scylla_server.yml, node_exporter_servers.yml, and  scylla_manager_servers.yml
   --stack id                     - Use this option when running a secondary stack, id could be 1-4
@@ -278,6 +279,10 @@ for arg; do
                 LIMIT="1"
                 PARAM="stack"
                 ;;
+            (--scrap)
+                LIMIT="1"
+                PARAM="scrap"
+                ;;
             (--no-cas-cdc)
                 PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
                 ;;
@@ -346,6 +351,9 @@ for arg; do
             STACK_ID="$NOSPACE"
             STACK_CMD="-s $NOSPACE"
             STACK="/stack/$NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "scrap" ]; then
+            SCRAP_CMD="--scrap $NOSPACE"
             unset PARAM
         elif [ "$PARAM" = "archive" ]; then
             DATA_DIR="$NOSPACE"
@@ -669,7 +677,7 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
     fi
 done
 
-./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS
+./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
     DATE=$(date +"%Y-%m-%d_%H_%M_%S")
     if [ -f $DATA_DIR/scylla.txt ]; then
@@ -791,4 +799,4 @@ fi
 if [ "$RUN_ALTERNATOR" = 1 ]; then
     GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --alternator"
 fi
-./start-grafana.sh $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD
+./start-grafana.sh $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD
