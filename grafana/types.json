@@ -310,6 +310,23 @@
          },
          {
             "class":"small_stat",
+            "options": {
+                    "reduceOptions": {
+                      "values": false,
+                      "calcs": [
+                        "last"
+                      ],
+                      "fields": ""
+                    },
+                    "orientation": "auto",
+                    "textMode": "value",
+                    "wideLayout": true,
+                    "colorMode": "value",
+                    "graphMode": "none",
+                    "justifyMode": "auto",
+                    "showPercentChange": false,
+                    "percentChangeColorMode": "standard"
+                  },
             "fieldConfig":{
                "defaults":{
                   "noValue":" Offline",
@@ -325,50 +342,74 @@
                            "value":0
                         }
                      ]
-                  },
-                  "mappings":[
-                     {
-                        "from":"",
-                        "id":0,
-                        "text":"Backup",
-                        "to":"",
-                        "type":1,
-                        "value":"2"
-                     },
-                     {
-                        "from":"",
-                        "id":1,
-                        "text":"Repair",
-                        "to":"",
-                        "type":1,
-                        "value":"1"
-                     },
-                     {
-                        "from":"",
-                        "id":2,
-                        "text":"Online",
-                        "to":"",
-                        "type":1,
-                        "value":"0"
-                     },
-                     {
-                        "from":"",
-                        "id":3,
-                        "text":"Offline",
-                        "to":"",
-                        "type":1,
-                        "value":"-1"
-                     },
-                     {
-                        "from":"",
-                        "id":4,
-                        "text":"Backup Repair",
-                        "to":"",
-                        "type":1,
-                        "value":"3"
-                     }
-                  ]
-               }
+                  }
+               },
+               "overrides": [
+                      {
+                        "matcher": {
+                          "id": "byFrameRefID",
+                          "options": "A"
+                        },
+                        "properties": [
+                          {
+                            "id": "mappings",
+                            "value": [
+                              {
+                                "type": "value",
+                                "options": {
+                                  "0": {
+                                    "index": 2,
+                                    "text": "Online"
+                                  },
+                                  "1": {
+                                    "text": "Repair",
+                                    "index": 3
+                                  },
+                                  "2": {
+                                    "text": "Backup",
+                                    "index": 4
+                                  },
+                                  "3": {
+                                    "index": 1,
+                                    "text": "Backup Repair"
+                                  },
+                                  "-1": {
+                                    "index": 0,
+                                    "text": "Offline"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "matcher": {
+                          "id": "byFrameRefID",
+                          "options": "B"
+                        },
+                        "properties": [
+                          {
+                            "id": "unit",
+                            "value": "percent"
+                          },
+                          {
+                            "id": "mappings",
+                            "value": [
+                              {
+                                "type": "value",
+                                "options": {
+                                  "0": {
+                                    "text": " ",
+                                    "index": 0
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+              ]
             },
             "targets":[
                {
@@ -376,44 +417,20 @@
                   "intervalFactor":1,
                   "refId":"A",
                   "step":40
-               }
-            ],
-            "title":"Manager"
-         },
-         {
-            "class":"vertical_lcd",
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"percent",
-                  "decimals":0,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        }
-                     ]
-                  },
-                  "mappings":[]
                },
-               "overrides":[]
-            },
-            "gridPos":{
-               "w":1,
-               "h":4
-            },
-            "targets":[
-               {
+                {
                   "expr":"(avg(scylla_manager_repair_progress{cluster=\"$cluster\", job=\"scylla_manager\"}) * max(scylla_manager_scheduler_run_indicator{type=\"repair\",cluster=\"$cluster\"})) or on ()  (100*avg(manager:backup_progress{cluster=\"$cluster\"}) * max(scylla_manager_scheduler_run_indicator{type=\"backup\",cluster=\"$cluster\"})) or on () vector(0)",
                   "legendFormat":"",
                   "interval":"",
-                  "refId":"A",
+                  "refId":"B",
                   "instant":true
                }
-            ]
+            ],
+            "gridPos": {
+                "h": 4,
+                "w": 3
+            },
+            "title":"Manager"
          },
          {
             "class":"small_stat",
@@ -849,7 +866,7 @@
          {
             "class":"small_stat",
                 "options": {
-                    "reduceOptions": {
+                    "": {
                       "values": false,
                       "calcs": [
                         "last"
