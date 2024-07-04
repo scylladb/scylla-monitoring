@@ -25,12 +25,14 @@ You cannot use port mapping when using the ``-l`` flag
 
 **--compose** This is an experimental option. When set, it initiates a two-stage process. Firstly, a ``docker-compose.yml`` file is created along with an ``.env`` file. Following this, the script executes ``docker-compose up``. Please note that having docker-compose is a prerequisite.
 
+**--scrap scrap-interval** Allows changing Prometheus scrap interval.
+
 Grafana Related Commands
 ------------------------
 
-**-G path/to/grafana data-dir** Use an external directory for the Grafana database. 
-This flag places the Grafana data directory outside of its container and, by doing that, makes it persistent. 
-This is only important if you are creating your own dashboards using the Grafana GUI and wish to keep them. 
+**-G path/to/grafana data-dir** Use an external directory for the Grafana database.
+This flag places the Grafana data directory outside of its container and, by doing that, makes it persistent.
+This is only important if you are creating your own dashboards using the Grafana GUI and wish to keep them.
 If not used, each run of the containers will clear all of Grafana's information.
 
 **-v comma-separated versions** Each Scylla version comes with its own set of dashboards. By default, Grafana starts with the two latest versions. The ``-v`` flag allows specifying a specific version or versions.
@@ -63,7 +65,7 @@ Prometheus Related Commands
 **-d path/to/data-dir** Use an external directory for the Prometheus data directory.
 This flag places the Prometheus data directory outside of its container and by doing that makes it persistent.
 
-.. note:: Specifying an external directory is important for systems in production. Without it, 
+.. note:: Specifying an external directory is important for systems in production. Without it,
           every restart of the monitoring stack will result in metrics lost.
 
 **-p prometheus-port** Override the default Prometheus port, this is done using port mapping, note that port mapping does not work when using the host network.
@@ -95,7 +97,7 @@ Prometheus storage configuration is covered here_.
 
 For example to set the retention time to 30 days add ``-b "--storage.tsdb.retention.time=30d"`` to the ``start-all.sh`` command
 
-Alert Manager 
+Alert Manager
 -------------
 
 The Alertmanager handles the alerts and takes the following parameters:
