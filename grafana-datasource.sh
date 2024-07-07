@@ -25,6 +25,8 @@ else
            ;;
         s) BASE_DIR="grafana/stack/$OPTARG/provisioning/datasources"
            ;;
+        S) SCRAP_INTERVAL="$OPTARG"
+           ;;
         :) printf "missing argument for -%s\n" "$OPTARG" >&2
            echo "$usage" >&2
            exit 1
@@ -48,4 +50,8 @@ if [ -z "$SCYLLA_USER" ] || [ -z "$SCYLLA_PSSWD" ]; then
     cp grafana/datasource.scylla.yml $BASE_DIR/datasource.scylla.yml
 else
     sed "s/SCYLLA_USER/$SCYLLA_USER/" grafana/datasource.psswd.scylla.yml |sed "s/SCYLLA_PSSWD/$SCYLLA_PSSWD/">$BASE_DIR/datasource.scylla.yml
+fi
+
+if [[ "$SCRAP_INTERVAL" != "" ]]; then
+    sed -i "s/    timeInterval: *'[[:digit:]]*.*/    timeInterval: '${SCRAP_INTERVAL}s'/g" $BASE_DIR/datasource.yaml
 fi

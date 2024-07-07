@@ -60,6 +60,10 @@ for arg; do
                 LIMIT="1"
                 PARAM="1"
                 ;;
+            (--scrap)
+                PARAM="scrap"
+                LIMIT="1"
+                ;;
             (--auth)
                 GRAFANA_AUTH=true
                 ;;
@@ -79,6 +83,9 @@ for arg; do
             fi
             DOCKER_PARAMS[$DOCR]="${DOCKER_PARAMS[$DOCR]} $VALUE"
             PARAMS="$PARAMS --param $NOSPACE"
+            unset PARAM
+        elif [ "$PARAM" = "scrap" ]; then
+            SCRAP_INTERVAL="-S $NOSPACE"
             unset PARAM
         else
             if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
@@ -249,7 +256,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
         GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 ./generate-dashboards.sh -t $SPECIFIC_SOLUTION -v $VERSIONS -M $MANAGER_VERSION $STACK_CMD $GRAFANA_DASHBOARD_COMMAND
-./grafana-datasource.sh $DATA_SOURCES $STACK_CMD
+./grafana-datasource.sh $DATA_SOURCES $STACK_CMD $SCRAP_INTERVAL
 
 if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
     PORT_MAPPING="-p $BIND_ADDRESS$GRAFANA_PORT:3000"
