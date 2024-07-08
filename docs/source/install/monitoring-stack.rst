@@ -118,8 +118,8 @@ Install Scylla Monitoring Stack
    :substitutions:
 
    wget https://github.com/scylladb/scylla-monitoring/archive/|version|.tar.gz
-   tar -xvf scylla-monitoring-|version|.tar.gz
-   cd scylla-monitoring-scylla-monitoring-|version|
+   tar -xvf |version|.tar.gz
+   cd scylla-monitoring-|version|
 
 As an alternative, you can clone and use the Git repository directly.
 
@@ -289,15 +289,15 @@ If the environment variables **SCYLLA_USER** and  **SCYLLA_PSSWD** are set, they
 To set the user and password from a file, edit `grafana/datasource.scylla.yml`. Uncomment the **secureJsonData** part and set the user and password.
 
 .. note:: It is best to use a dedicated user and password with limited privileges.
- 
+
 
 Use an external directory for the Prometheus data directory
 ...........................................................
 
 The ``-d`` flag, places the Prometheus data directory outside of its container and by doing that makes it persistent.
 
-.. note:: Specifying an external directory is important for systems in production. Without it, 
-          every restart of the monitoring stack will result in metrics lost. 
+.. note:: Specifying an external directory is important for systems in production. Without it,
+          every restart of the monitoring stack will result in metrics lost.
 
 If the directory provided does not exist, the ``start-all.sh`` script will create it. Note that you should avoid running docker as root, the ``start-all.sh`` script
 will use the user permissions that runs it. This is important if you want to place the prometheus directory not under the user path but somewhere else, for example ``/prometheus-data``.
@@ -377,7 +377,7 @@ To do that run ./start-all.sh with the -l flag. For example:
 Configure rsyslog on each Scylla node
 .....................................
 generates metrics and alerts from logs. To get full functionality, you should use rsyslog_. Scylla Monitoring Stack will act as an additional rsyslog server.
-Scylla Monitoring Stack collects Scylla logs using Loki and generates metrics and alerts based on these logs. 
+Scylla Monitoring Stack collects Scylla logs using Loki and generates metrics and alerts based on these logs.
 To use this feature, you need to direct logs from each Scylla node to Loki.
 The recommended method to do this is by using rsyslog_, where Scylla Monitoring Stack (Loki) acts as an additional rsyslog server.
 .. note:: Scylla can send logs to more than one log collection service.
