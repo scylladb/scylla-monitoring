@@ -14,12 +14,12 @@ Scylla-Manager 2.2 with Duplicate information
 
 Scylla Manager 2.2 change the default metrics (Prometheus) reporting ports:
 
-* For Manager server: from 56090 to 5090 
-* For Manager Agent: from 56090 to 5090 
+* For Manager server: from 56090 to 5090
+* For Manager Agent: from 56090 to 5090
 
 For backward compatibility, Scylla Monitoring Stack 3.5 default configuration reads from **both** Manager ports, old and new, so you do not have to update the Prometheus configuration when upgrading to Manager 2.2
 
-  
+
 
 However, if you configure ``scylla_manager_server.yml`` file with the new port, Scylla-Manager dashboard will report all metrics twice.
 
@@ -102,13 +102,13 @@ If there are no data points, or if a node appears to be unreachable when you kno
 
   * Confirm Prometheus is pointing to the wrong target. Check your ``prometheus/scylla_servers.yml``. Make sure Prometheus is pulling data from the Scylla server.
 
-  * Your dashboard and Scylla version may not be aligned. If you are running Scylla 3.1.x, you can specify a specific version with ``-v`` flag.
+  * Your dashboard and Scylla version may not be aligned. You can specify a specific Scylla version with ``-v`` flag to the start-all.sh script.
 
 For example:
 
 .. code-block:: shell
 
-   ./start-all.sh -v 3.1
+   ./start-all.sh -v 2024.1
 
 More on start-all.sh `options`_.
 
@@ -120,7 +120,7 @@ Grafana Chart Shows Error (!) Sign
 
 Run this procedure on the Scylla Monitoring Stack server.
 
-If the Grafana charts show an error (!) sign, there is a problem with the connection between Grafana and Prometheus. 
+If the Grafana charts show an error (!) sign, there is a problem with the connection between Grafana and Prometheus.
 
 Solution
 .........
@@ -149,7 +149,7 @@ Prometheus fails to fetch metrics from Scylla servers.
 Solution
 .........
 
-* Use ``curl <scylla_node>:9180/metrics`` to fetch binary metric data from Scylla.  If curl does not return data, the problem is the connectivity between the Scylla Monitoring Stack and Scylla server. In that case, check your IPs and firewalls.
+* Use ``curl <scylla_node>:9180/metrics`` to fetch metric data from Scylla.  If curl does not return data, the problem is the connectivity between the Scylla Monitoring Stack and Scylla server. In that case, check your IPs and firewalls.
 
 For example
 
@@ -169,19 +169,7 @@ Solution
 1. Make sure that ``node_exporter`` is running on each Scylla server (by login to the machine and running ``ps -ef |gre node_exporter``). ``node_exporter`` is installed with ``scylla_setup``.
 to check that ``node_exporter`` is installed, run ``node_exporter --version``, If it is not, make sure to install and run it.
 
-2. If it is running, use ``curl http://<scylla_node>:9100/metrics`` (where <scylla_node> is a Scylla server IP) to fetch metric data from Scylla.  If curl does not return data, the problem is the connectivity between Scylla Monitoring Stack and Scylla server. Please check your IPs and firewalls.
-
-Notice to users upgrading to Scylla Open Source 3.0 or Scylla Enterprise 2019.1
-................................................................................
-
-While upgrading, you need to upgrade the ``node_exporter`` from version 0.14 to 0.17.
-
-If the node_exporter service is not starting it may need to be updated manually.
-
-Check the node_exporter version ``node_exporter --version`` if it shows 0.14 check the node_exporter section
-in the `upgrade guide`_.
-
-.. _`upgrade guide`: /upgrade/upgrade-opensource/upgrade-guide-from-2.3-to-3.0/
+2. If it is running, use ``curl http://<scylla_node>:9100/metrics`` (where <scylla_node> is a Scylla server IP) to fetch metric data from the ``node_exporter``.  If curl does not return data, the problem is the connectivity between Scylla Monitoring Stack and Scylla server. Please check your IPs and firewalls.
 
 Latencies Graphs Are empty
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
