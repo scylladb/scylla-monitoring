@@ -422,10 +422,17 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "topk([[topk]], wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})",
+                                "expr": "(topk([[topk]], wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "$func(wlatencya{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -437,11 +444,18 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "topk([[topk]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"})",
+                                "expr": "(topk([[topk]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                                 "metric": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "$func(wlatencyp95{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -453,11 +467,18 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "topk([[topk]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})",
+                                "expr": "(topk([[topk]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                                 "metric": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "$func(wlatencyp99{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -471,7 +492,7 @@
                             {
                                 "expr": "topk([[topk]], $func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name) or on ([[by]],scheduling_group_name) $func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name)) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], $func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name) or on ([[by]],scheduling_group_name) $func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                                 "refId": "A",
                                 "step": 1
                             }
@@ -484,10 +505,17 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "topk([[topk]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})",
+                                "expr": "(topk([[topk]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "$func(rlatencya{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -499,11 +527,18 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "topk([[topk]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})",
+                                "expr": "(topk([[topk]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                                 "metric": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "$func(rlatencyp95{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
@@ -515,11 +550,18 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "topk([[topk]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})",
+                                "expr": "(topk([[topk]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                                 "metric": "",
                                 "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "$func(rlatencyp99{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}",
+                                "refId": "B",
                                 "step": 1
                             }
                         ],
