@@ -16,7 +16,7 @@ The following table shows which version of Scylla Monitoring Stack supports dash
      - Scylla Manager Version
    * - 4.8
      - 5.2, 5.4, 6.0, 6.1
-     - 2022.1, 2022.2, 2023.1, 2024.1
+     - 2022.1, 2022.2, 2023.1, 2024.1, 2024.2
      - 1.7.0
      - 3.3
    * - 4.7
