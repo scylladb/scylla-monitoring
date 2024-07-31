@@ -2787,6 +2787,91 @@
             "type": "timeseries"
         },
         {
+            "class": "percentunit_panel",
+            "dashversion": [
+                ">2024.1"
+            ],
+            "datasource": "prometheus",
+            "description": "Data compression percentage by using compressed algorithm\n\nscylla_rpc_compression_compressed_bytes_sent",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMax": 1,
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "percentunit"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 3,
+                "x": 0,
+                "y": 61
+            },
+            "id": 38,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 5,
+            "targets": [
+                {
+                    "expr": "topk([[topk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", algorithm!~\"raw\"}[$__rate_interval])) by ([[by]], algorithm)/$func(rate(scylla_rpc_compression_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", algorithm!~\"raw\"}[$__rate_interval])) by ([[by]], algorithm)) or on ([[by]]) bottomk([[bottomk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", algorithm!~\"raw\"}[$__rate_interval])) by ([[by]], algorithm)/$func(rate(scylla_rpc_compression_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", algorithm!~\"raw\"}[$__rate_interval])) by ([[by]], algorithm))",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Compressed sent compression by compression algorithm",
+            "type": "timeseries"
+        },
+        {
             "class": "bytes_panel",
             "dashversion": [
                 ">2024.1"
@@ -2838,11 +2923,96 @@
             },
             "gridPos": {
                 "h": 6,
-                "w": 6,
-                "x": 0,
+                "w": 3,
+                "x": 3,
                 "y": 61
             },
-            "id": 38,
+            "id": 39,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 5,
+            "targets": [
+                {
+                    "expr": "topk([[topk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm)) or on ([[by]]) bottomk([[bottomk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm))",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Compressed bytes sent by compression algorithm",
+            "type": "timeseries"
+        },
+        {
+            "class": "percentunit_panel",
+            "dashversion": [
+                ">2024.1"
+            ],
+            "datasource": "prometheus",
+            "description": "Data compression percentage by using compressed algorithm\n\nscylla_rpc_compression_compressed_bytes_received",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMax": 1,
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "percentunit"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 3,
+                "x": 6,
+                "y": 61
+            },
+            "id": 40,
             "isNew": true,
             "links": [],
             "options": {
@@ -2860,14 +3030,14 @@
             "span": 3,
             "targets": [
                 {
-                    "expr": "topk([[topk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm)) or on ([[by]]) bottomk([[bottomk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm))",
+                    "expr": "topk([[topk]], $func(rate(scylla_rpc_compression_compressed_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm)/$func(rate(scylla_rpc_compression_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm)) or on ([[by]]) bottomk([[bottomk]], $func(rate(scylla_rpc_compression_compressed_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm)/$func(rate(scylla_rpc_compression_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm))",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A",
                     "step": 1
                 }
             ],
-            "title": "Compressed bytes sent by compression algorithm",
+            "title": "Compressed received compression by compression algorithm",
             "type": "timeseries"
         },
         {
@@ -2922,11 +3092,11 @@
             },
             "gridPos": {
                 "h": 6,
-                "w": 6,
-                "x": 6,
+                "w": 3,
+                "x": 9,
                 "y": 61
             },
-            "id": 39,
+            "id": 41,
             "isNew": true,
             "links": [],
             "options": {
@@ -3007,7 +3177,7 @@
                 "x": 12,
                 "y": 61
             },
-            "id": 40,
+            "id": 42,
             "isNew": true,
             "links": [],
             "options": {
@@ -3088,7 +3258,7 @@
                 "x": 18,
                 "y": 61
             },
-            "id": 41,
+            "id": 43,
             "isNew": true,
             "links": [],
             "options": {
@@ -3126,7 +3296,7 @@
                 "x": 0,
                 "y": 67
             },
-            "id": 42,
+            "id": 44,
             "panels": [],
             "repeat": "",
             "title": "Storage",
@@ -3185,7 +3355,7 @@
                 "x": 0,
                 "y": 68
             },
-            "id": 43,
+            "id": 45,
             "isNew": true,
             "links": [],
             "options": {
@@ -3266,7 +3436,7 @@
                 "x": 6,
                 "y": 68
             },
-            "id": 44,
+            "id": 46,
             "isNew": true,
             "links": [],
             "options": {
@@ -3347,7 +3517,7 @@
                 "x": 12,
                 "y": 68
             },
-            "id": 45,
+            "id": 47,
             "isNew": true,
             "links": [],
             "options": {
@@ -3385,7 +3555,7 @@
                 "x": 0,
                 "y": 74
             },
-            "id": 46,
+            "id": 48,
             "panels": [],
             "repeat": "",
             "title": "Cache",
@@ -3409,7 +3579,7 @@
                 "x": 0,
                 "y": 75
             },
-            "id": 47,
+            "id": 49,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -3473,7 +3643,7 @@
                 "x": 0,
                 "y": 77
             },
-            "id": 48,
+            "id": 50,
             "isNew": true,
             "links": [],
             "options": {
@@ -3554,7 +3724,7 @@
                 "x": 12,
                 "y": 77
             },
-            "id": 49,
+            "id": 51,
             "isNew": true,
             "links": [],
             "options": {
@@ -3635,7 +3805,7 @@
                 "x": 0,
                 "y": 83
             },
-            "id": 50,
+            "id": 52,
             "isNew": true,
             "links": [],
             "options": {
@@ -3716,7 +3886,7 @@
                 "x": 6,
                 "y": 83
             },
-            "id": 51,
+            "id": 53,
             "isNew": true,
             "links": [],
             "options": {
@@ -3797,7 +3967,7 @@
                 "x": 12,
                 "y": 83
             },
-            "id": 52,
+            "id": 54,
             "isNew": true,
             "links": [],
             "options": {
@@ -3878,7 +4048,7 @@
                 "x": 18,
                 "y": 83
             },
-            "id": 53,
+            "id": 55,
             "isNew": true,
             "links": [],
             "options": {
@@ -3959,7 +4129,7 @@
                 "x": 0,
                 "y": 89
             },
-            "id": 54,
+            "id": 56,
             "isNew": true,
             "links": [],
             "options": {
@@ -4040,7 +4210,7 @@
                 "x": 6,
                 "y": 89
             },
-            "id": 55,
+            "id": 57,
             "isNew": true,
             "links": [],
             "options": {
@@ -4124,7 +4294,7 @@
                 "x": 12,
                 "y": 89
             },
-            "id": 56,
+            "id": 58,
             "isNew": true,
             "links": [],
             "options": {
@@ -4205,7 +4375,7 @@
                 "x": 18,
                 "y": 89
             },
-            "id": 57,
+            "id": 59,
             "isNew": true,
             "links": [],
             "options": {
@@ -4289,7 +4459,7 @@
                 "x": 0,
                 "y": 95
             },
-            "id": 58,
+            "id": 60,
             "isNew": true,
             "links": [],
             "options": {
@@ -4373,7 +4543,7 @@
                 "x": 6,
                 "y": 95
             },
-            "id": 59,
+            "id": 61,
             "isNew": true,
             "links": [],
             "options": {
@@ -4457,7 +4627,7 @@
                 "x": 12,
                 "y": 95
             },
-            "id": 60,
+            "id": 62,
             "isNew": true,
             "links": [],
             "options": {
@@ -4541,7 +4711,7 @@
                 "x": 18,
                 "y": 95
             },
-            "id": 61,
+            "id": 63,
             "isNew": true,
             "links": [],
             "options": {
@@ -4625,7 +4795,7 @@
                 "x": 0,
                 "y": 101
             },
-            "id": 62,
+            "id": 64,
             "isNew": true,
             "links": [],
             "options": {
@@ -4706,7 +4876,7 @@
                 "x": 6,
                 "y": 101
             },
-            "id": 63,
+            "id": 65,
             "isNew": true,
             "links": [],
             "options": {
@@ -4787,7 +4957,7 @@
                 "x": 12,
                 "y": 101
             },
-            "id": 64,
+            "id": 66,
             "isNew": true,
             "links": [],
             "options": {
@@ -4868,7 +5038,7 @@
                 "x": 18,
                 "y": 101
             },
-            "id": 65,
+            "id": 67,
             "isNew": true,
             "links": [],
             "options": {
@@ -4949,7 +5119,7 @@
                 "x": 0,
                 "y": 107
             },
-            "id": 66,
+            "id": 68,
             "isNew": true,
             "links": [],
             "options": {
@@ -5030,7 +5200,7 @@
                 "x": 6,
                 "y": 107
             },
-            "id": 67,
+            "id": 69,
             "isNew": true,
             "links": [],
             "options": {
@@ -5068,7 +5238,7 @@
                 "x": 0,
                 "y": 113
             },
-            "id": 68,
+            "id": 70,
             "panels": [
                 {
                     "class": "text_panel",
@@ -5088,7 +5258,7 @@
                         "x": 0,
                         "y": 114
                     },
-                    "id": 69,
+                    "id": 71,
                     "isNew": true,
                     "links": [],
                     "mode": "html",
@@ -5152,7 +5322,7 @@
                         "x": 0,
                         "y": 116
                     },
-                    "id": 70,
+                    "id": 72,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5233,7 +5403,7 @@
                         "x": 6,
                         "y": 116
                     },
-                    "id": 71,
+                    "id": 73,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5314,7 +5484,7 @@
                         "x": 12,
                         "y": 116
                     },
-                    "id": 72,
+                    "id": 74,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5395,7 +5565,7 @@
                         "x": 18,
                         "y": 116
                     },
-                    "id": 73,
+                    "id": 75,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5479,7 +5649,7 @@
                         "x": 0,
                         "y": 122
                     },
-                    "id": 74,
+                    "id": 76,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5560,7 +5730,7 @@
                         "x": 6,
                         "y": 122
                     },
-                    "id": 75,
+                    "id": 77,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5603,7 +5773,7 @@
                 "x": 0,
                 "y": 128
             },
-            "id": 76,
+            "id": 78,
             "panels": [
                 {
                     "class": "rps_panel",
@@ -5658,7 +5828,7 @@
                         "x": 0,
                         "y": 129
                     },
-                    "id": 77,
+                    "id": 79,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5739,7 +5909,7 @@
                         "x": 6,
                         "y": 129
                     },
-                    "id": 78,
+                    "id": 80,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5820,7 +5990,7 @@
                         "x": 12,
                         "y": 129
                     },
-                    "id": 79,
+                    "id": 81,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5901,7 +6071,7 @@
                         "x": 18,
                         "y": 129
                     },
-                    "id": 80,
+                    "id": 82,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5982,7 +6152,7 @@
                         "x": 0,
                         "y": 135
                     },
-                    "id": 81,
+                    "id": 83,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6063,7 +6233,7 @@
                         "x": 6,
                         "y": 135
                     },
-                    "id": 82,
+                    "id": 84,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6144,7 +6314,7 @@
                         "x": 12,
                         "y": 135
                     },
-                    "id": 83,
+                    "id": 85,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6187,7 +6357,7 @@
                 "x": 0,
                 "y": 141
             },
-            "id": 84,
+            "id": 86,
             "panels": [
                 {
                     "class": "text_panel",
@@ -6207,7 +6377,7 @@
                         "x": 0,
                         "y": 142
                     },
-                    "id": 85,
+                    "id": 87,
                     "isNew": true,
                     "links": [],
                     "mode": "html",
@@ -6271,7 +6441,7 @@
                         "x": 0,
                         "y": 144
                     },
-                    "id": 86,
+                    "id": 88,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6352,7 +6522,7 @@
                         "x": 6,
                         "y": 144
                     },
-                    "id": 87,
+                    "id": 89,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6436,7 +6606,7 @@
                         "x": 12,
                         "y": 144
                     },
-                    "id": 88,
+                    "id": 90,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6520,7 +6690,7 @@
                         "x": 18,
                         "y": 144
                     },
-                    "id": 89,
+                    "id": 91,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6601,7 +6771,7 @@
                         "x": 0,
                         "y": 150
                     },
-                    "id": 90,
+                    "id": 92,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6682,7 +6852,7 @@
                         "x": 6,
                         "y": 150
                     },
-                    "id": 91,
+                    "id": 93,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6766,7 +6936,7 @@
                         "x": 12,
                         "y": 150
                     },
-                    "id": 92,
+                    "id": 94,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6850,7 +7020,7 @@
                         "x": 18,
                         "y": 150
                     },
-                    "id": 93,
+                    "id": 95,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6931,7 +7101,7 @@
                         "x": 0,
                         "y": 156
                     },
-                    "id": 94,
+                    "id": 96,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7015,7 +7185,7 @@
                         "x": 6,
                         "y": 156
                     },
-                    "id": 95,
+                    "id": 97,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7096,7 +7266,7 @@
                         "x": 12,
                         "y": 156
                     },
-                    "id": 96,
+                    "id": 98,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7141,7 +7311,7 @@
                         "x": 18,
                         "y": 156
                     },
-                    "id": 97,
+                    "id": 99,
                     "isNew": true,
                     "links": [],
                     "mode": "html",
@@ -7206,7 +7376,7 @@
                         "x": 0,
                         "y": 162
                     },
-                    "id": 98,
+                    "id": 100,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7287,7 +7457,7 @@
                         "x": 6,
                         "y": 162
                     },
-                    "id": 99,
+                    "id": 101,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7368,7 +7538,7 @@
                         "x": 12,
                         "y": 162
                     },
-                    "id": 100,
+                    "id": 102,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7449,7 +7619,7 @@
                         "x": 18,
                         "y": 162
                     },
-                    "id": 101,
+                    "id": 103,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7530,7 +7700,7 @@
                         "x": 0,
                         "y": 168
                     },
-                    "id": 102,
+                    "id": 104,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7611,7 +7781,7 @@
                         "x": 6,
                         "y": 168
                     },
-                    "id": 103,
+                    "id": 105,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7692,7 +7862,7 @@
                         "x": 12,
                         "y": 168
                     },
-                    "id": 104,
+                    "id": 106,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7773,7 +7943,7 @@
                         "x": 18,
                         "y": 168
                     },
-                    "id": 105,
+                    "id": 107,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7854,7 +8024,7 @@
                         "x": 0,
                         "y": 174
                     },
-                    "id": 106,
+                    "id": 108,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7935,7 +8105,7 @@
                         "x": 6,
                         "y": 174
                     },
-                    "id": 107,
+                    "id": 109,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8019,7 +8189,7 @@
                         "x": 12,
                         "y": 174
                     },
-                    "id": 108,
+                    "id": 110,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8065,7 +8235,7 @@
                 "x": 0,
                 "y": 180
             },
-            "id": 109,
+            "id": 111,
             "panels": [
                 {
                     "class": "text_panel",
@@ -8085,7 +8255,7 @@
                         "x": 0,
                         "y": 181
                     },
-                    "id": 110,
+                    "id": 112,
                     "isNew": true,
                     "links": [],
                     "mode": "html",
@@ -8149,7 +8319,7 @@
                         "x": 0,
                         "y": 183
                     },
-                    "id": 111,
+                    "id": 113,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8233,7 +8403,7 @@
                         "x": 8,
                         "y": 183
                     },
-                    "id": 112,
+                    "id": 114,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8279,7 +8449,7 @@
                 "x": 0,
                 "y": 189
             },
-            "id": 113,
+            "id": 115,
             "panels": [],
             "repeat": "",
             "title": "Memory",
@@ -8303,7 +8473,7 @@
                 "x": 0,
                 "y": 190
             },
-            "id": 114,
+            "id": 116,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -8367,7 +8537,7 @@
                 "x": 0,
                 "y": 192
             },
-            "id": 115,
+            "id": 117,
             "isNew": true,
             "links": [],
             "options": {
@@ -8448,7 +8618,7 @@
                 "x": 8,
                 "y": 192
             },
-            "id": 116,
+            "id": 118,
             "isNew": true,
             "links": [],
             "options": {
@@ -8530,7 +8700,7 @@
                 "x": 16,
                 "y": 192
             },
-            "id": 117,
+            "id": 119,
             "isNew": true,
             "links": [],
             "options": {
@@ -8568,7 +8738,7 @@
                 "x": 0,
                 "y": 198
             },
-            "id": 118,
+            "id": 120,
             "panels": [],
             "repeat": "",
             "title": "Compaction",
@@ -8592,7 +8762,7 @@
                 "x": 0,
                 "y": 199
             },
-            "id": 119,
+            "id": 121,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -8656,7 +8826,7 @@
                 "x": 0,
                 "y": 201
             },
-            "id": 120,
+            "id": 122,
             "isNew": true,
             "links": [],
             "options": {
@@ -8738,7 +8908,7 @@
                 "x": 8,
                 "y": 201
             },
-            "id": 121,
+            "id": 123,
             "isNew": true,
             "links": [],
             "options": {
@@ -8823,7 +8993,7 @@
                 "x": 16,
                 "y": 201
             },
-            "id": 122,
+            "id": 124,
             "isNew": true,
             "links": [],
             "options": {
@@ -8860,7 +9030,7 @@
                 "x": 0,
                 "y": 207
             },
-            "id": 123,
+            "id": 125,
             "panels": [],
             "repeat": "sg",
             "title": "Latencies - $sg",
@@ -8919,7 +9089,7 @@
                 "x": 0,
                 "y": 208
             },
-            "id": 124,
+            "id": 126,
             "isNew": true,
             "links": [],
             "options": {
@@ -8999,7 +9169,7 @@
                 "x": 6,
                 "y": 208
             },
-            "id": 125,
+            "id": 127,
             "isNew": true,
             "links": [],
             "options": {
@@ -9089,7 +9259,7 @@
                 "x": 12,
                 "y": 208
             },
-            "id": 126,
+            "id": 128,
             "isNew": true,
             "links": [],
             "options": {
@@ -9180,7 +9350,7 @@
                 "x": 18,
                 "y": 208
             },
-            "id": 127,
+            "id": 129,
             "isNew": true,
             "links": [],
             "options": {
@@ -9272,7 +9442,7 @@
                 "x": 0,
                 "y": 214
             },
-            "id": 128,
+            "id": 130,
             "isNew": true,
             "links": [],
             "options": {
@@ -9352,7 +9522,7 @@
                 "x": 6,
                 "y": 214
             },
-            "id": 129,
+            "id": 131,
             "isNew": true,
             "links": [],
             "options": {
@@ -9442,7 +9612,7 @@
                 "x": 12,
                 "y": 214
             },
-            "id": 130,
+            "id": 132,
             "isNew": true,
             "links": [],
             "options": {
@@ -9533,7 +9703,7 @@
                 "x": 18,
                 "y": 214
             },
-            "id": 131,
+            "id": 133,
             "isNew": true,
             "links": [],
             "options": {
@@ -9629,7 +9799,7 @@
                 "x": 0,
                 "y": 220
             },
-            "id": 132,
+            "id": 134,
             "isNew": true,
             "links": [],
             "options": {
@@ -9715,7 +9885,7 @@
                 "x": 6,
                 "y": 220
             },
-            "id": 133,
+            "id": 135,
             "isNew": true,
             "links": [],
             "options": {
@@ -9801,7 +9971,7 @@
                 "x": 12,
                 "y": 220
             },
-            "id": 134,
+            "id": 136,
             "isNew": true,
             "links": [],
             "options": {
@@ -9887,7 +10057,7 @@
                 "x": 18,
                 "y": 220
             },
-            "id": 135,
+            "id": 137,
             "isNew": true,
             "links": [],
             "options": {
@@ -9973,7 +10143,7 @@
                 "x": 0,
                 "y": 226
             },
-            "id": 136,
+            "id": 138,
             "isNew": true,
             "links": [],
             "options": {
@@ -10059,7 +10229,7 @@
                 "x": 6,
                 "y": 226
             },
-            "id": 137,
+            "id": 139,
             "isNew": true,
             "links": [],
             "options": {
@@ -10099,7 +10269,7 @@
                 "x": 0,
                 "y": 232
             },
-            "id": 138,
+            "id": 140,
             "panels": [],
             "repeat": "",
             "title": "Your panels",
@@ -10122,7 +10292,7 @@
                 "x": 0,
                 "y": 233
             },
-            "id": 139,
+            "id": 141,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -10189,7 +10359,7 @@
                 "x": 0,
                 "y": 235
             },
-            "id": 140,
+            "id": 142,
             "isNew": true,
             "links": [],
             "options": {
@@ -10264,7 +10434,7 @@
                 "x": 12,
                 "y": 235
             },
-            "id": 141,
+            "id": 143,
             "isNew": true,
             "links": [],
             "options": {
@@ -10303,7 +10473,7 @@
                 "x": 0,
                 "y": 241
             },
-            "id": 142,
+            "id": 144,
             "isNew": true,
             "links": [],
             "mode": "html",
