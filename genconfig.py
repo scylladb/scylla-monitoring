@@ -9,7 +9,7 @@ import sys
 def gen_targets(servers, cluster):
     if ':' not in servers:
         raise Exception('Server list must contain a dc name')
-    dcs = servers.split(':')
+    dcs = servers.split(':', maxsplit=1)
     res = {"labels": {"cluster": cluster, "dc": dcs[0]}}
     res["targets"] = dcs[1].split(',')
     return res;
