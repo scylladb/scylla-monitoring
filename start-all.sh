@@ -99,7 +99,7 @@ Options:
   --enable-protobuf              - If set, enable the experimental Prometheus Protobuf with Native histograms support.
   --scrap [scrap duration]       - Change the default Prometheus scrap duration. Duration is in seconds.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
-                                   the file names should be scylla_server.yml, node_exporter_servers.yml, and  scylla_manager_servers.yml
+                                   the file names should be scylla_servers.yml, node_exporter_servers.yml, scylla_manager_agents.yml, and scylla_manager_servers.yml
   --stack id                     - Use this option when running a secondary stack, id could be 1-4
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
                                    prometheus, grafana, alertmanager, loki, sidecar, grafanarender
@@ -578,7 +578,19 @@ else
 fi
 
 if [ "$TARGET_DIRECTORY" != "" ]; then
-    SCYLLA_TARGET_FILE="-v "$($readlink_command $TARGET_DIRECTORY)":/etc/scylla.d/prometheus/targets/"
+    SCYLLA_TARGET_FILE="-v "$($readlink_command $TARGET_DIRECTORY)":/etc/scylla.d/prometheus/targets/:z"
+    if [ ! -f $TARGET_DIRECTORY/scylla_servers.yml ]; then
+        echo "Warning, using $TARGET_DIRECTORY for Prometheus traget directory, scylla_servers.yml is missing, make sure to create it, or ScyllaDB targets will be missing"
+    fi
+    if [ ! -f $TARGET_DIRECTORY/node_exporter_servers.yml ]; then
+        echo "Warning, using $TARGET_DIRECTORY for Prometheus traget directory, node_exporter_servers.yml is missing, make sure to create it, or node-exporter targets will be missing"
+    fi
+    if [ ! -f $TARGET_DIRECTORY/scylla_manager_agents.yml ]; then
+        echo "Warning, using $TARGET_DIRECTORY for Prometheus traget directory, scylla_manager_agents.yml is missing, make sure to create it, or ScyllaDB manager-agent targets will be missing"
+    fi
+    if [ ! -f $TARGET_DIRECTORY/scylla_manager_servers.yml ]; then
+        echo "Warning, using $TARGET_DIRECTORY for Prometheus traget directory, scylla_manager_servers.yml is missing, make sure to create it, or ScyllaDB manager target will be missing"
+    fi
 fi
 if [ -z $DATA_DIR ]
 then
