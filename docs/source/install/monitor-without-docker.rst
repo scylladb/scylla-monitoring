@@ -112,7 +112,7 @@ Loki has a configuration file and a rule file. You need to copy and modify the c
 
    mkdir -p /etc/loki/rules
    mkdir -p /etc/loki/config
-   cp loki/rules/* /etc/loki/rules
+   cp loki/rules/scylla/* /etc/loki/rules
    cp loki/conf/loki-config.template.yaml /etc/loki/config/loki-config.yaml
 
 Edit ``/etc/loki/config/loki-config.yaml`` and replace ``ALERTMANAGER`` with the alertmanager ip:port (i.e. localhost:9093)
@@ -124,7 +124,7 @@ Promtail has a configuration file. You need to copy and modify the configuration
 .. code-block:: shell
 
    mkdir -p /etc/promtail/
-   loki/promtail/promtail_config.template.yml /etc/promtail/config.yml
+   cp loki/promtail/promtail_config.template.yml /etc/promtail/config.yml
 
 Edit ``/etc/promtail/config.yml`` and replace ``LOKI_IP`` with Loki's ip:port (i.e. localhost:3100)
 
