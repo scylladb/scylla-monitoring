@@ -2487,7 +2487,7 @@
                         "spanNulls": false,
                         "stacking": {
                             "group": "A",
-                            "mode": "normal"
+                            "mode": "none"
                         },
                         "thresholdsStyle": {
                             "mode": "off"
@@ -3760,7 +3760,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "total number of rows needed by reads and found in cache",
             "editable": true,
@@ -3802,7 +3802,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -3827,6 +3827,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -3841,7 +3844,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "total number of rows needed by reads and missing in cache",
             "editable": true,
@@ -3883,7 +3886,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -3908,6 +3911,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -3922,7 +3928,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "number of partitions needed by reads and found in cache",
             "editable": true,
@@ -3964,7 +3970,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -3989,6 +3995,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -4003,7 +4012,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "number of partitions needed by reads and missing in cache",
             "editable": true,
@@ -4045,7 +4054,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -4070,6 +4079,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -4084,7 +4096,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "total number of rows added to cache",
             "editable": true,
@@ -4126,7 +4138,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -4151,6 +4163,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -4249,7 +4264,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "total number of partitions added to cache",
             "editable": true,
@@ -4291,7 +4306,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -4316,6 +4331,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -9289,7 +9307,7 @@
                 {
                     "expr": "(topk([[topk]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                     "metric": "",
                     "refId": "A",
                     "step": 1
@@ -9380,7 +9398,7 @@
                 {
                     "expr": "(topk([[topk]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]]) bottomk([[bottomk]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                     "metric": "",
                     "refId": "A",
                     "step": 1
@@ -9552,7 +9570,7 @@
                 {
                     "expr": "(topk([[topk]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]]) bottomk([[bottomk]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                     "refId": "A",
                     "step": 1
                 },
@@ -9642,7 +9660,7 @@
                 {
                     "expr": "(topk([[topk]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]]) bottomk([[bottomk]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                     "metric": "",
                     "refId": "A",
                     "step": 1
@@ -9733,7 +9751,7 @@
                 {
                     "expr": "(topk([[topk]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]]) bottomk([[bottomk]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                     "metric": "",
                     "refId": "A",
                     "step": 1
@@ -10485,7 +10503,7 @@
             "links": [],
             "mode": "html",
             "options": {
-                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - 4.8.0</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1&kiosk\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
+                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - 4.8.1</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1&kiosk\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
                 "mode": "html"
             },
             "span": 12,
@@ -10956,8 +10974,8 @@
                 "allValue": null,
                 "class": "monitor_version_var",
                 "current": {
-                    "text": "4.8.0",
-                    "value": "4.8.0"
+                    "text": "4.8.1",
+                    "value": "4.8.1"
                 },
                 "error": null,
                 "hide": 2,
@@ -10968,11 +10986,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "4.8.0",
-                        "value": "4.8.0"
+                        "text": "4.8.1",
+                        "value": "4.8.1"
                     }
                 ],
-                "query": "4.8.0",
+                "query": "4.8.1",
                 "skipUrlSync": false,
                 "type": "custom"
             }

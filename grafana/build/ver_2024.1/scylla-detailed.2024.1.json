@@ -2506,7 +2506,7 @@
                         "spanNulls": false,
                         "stacking": {
                             "group": "A",
-                            "mode": "normal"
+                            "mode": "none"
                         },
                         "thresholdsStyle": {
                             "mode": "off"
@@ -3171,7 +3171,7 @@
             },
             "gridPos": {
                 "h": 6,
-                "w": 3,
+                "w": 6,
                 "x": 0,
                 "y": 67
             },
@@ -3190,7 +3190,7 @@
                     "sort": "desc"
                 }
             },
-            "span": 5,
+            "span": 3,
             "targets": [
                 {
                     "expr": "topk([[topk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", algorithm!~\"raw\"}[$__rate_interval])) by ([[by]], algorithm)/$func(rate(scylla_rpc_compression_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", algorithm!~\"raw\"}[$__rate_interval])) by ([[by]], algorithm)) or on ([[by]]) bottomk([[bottomk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", algorithm!~\"raw\"}[$__rate_interval])) by ([[by]], algorithm)/$func(rate(scylla_rpc_compression_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", algorithm!~\"raw\"}[$__rate_interval])) by ([[by]], algorithm))",
@@ -3200,7 +3200,7 @@
                     "step": 1
                 }
             ],
-            "title": "Compressed sent compression by compression algorithm",
+            "title": "Compression Ratios by Algorithm",
             "type": "timeseries"
         },
         {
@@ -3255,8 +3255,8 @@
             },
             "gridPos": {
                 "h": 6,
-                "w": 3,
-                "x": 3,
+                "w": 6,
+                "x": 6,
                 "y": 67
             },
             "id": 43,
@@ -3274,186 +3274,17 @@
                     "sort": "desc"
                 }
             },
-            "span": 5,
-            "targets": [
-                {
-                    "expr": "topk([[topk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm)) or on ([[by]]) bottomk([[bottomk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm))",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "refId": "A",
-                    "step": 1
-                }
-            ],
-            "title": "Compressed bytes sent by compression algorithm",
-            "type": "timeseries"
-        },
-        {
-            "class": "percentunit_panel",
-            "dashversion": [
-                ">2024.1"
-            ],
-            "datasource": "prometheus",
-            "description": "Data compression percentage by using compressed algorithm\n\nscylla_rpc_compression_compressed_bytes_received",
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "class": "fieldConfig_defaults",
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "axisSoftMax": 1,
-                        "axisSoftMin": 0,
-                        "barAlignment": 0,
-                        "class": "fieldConfig_defaults_custom",
-                        "drawStyle": "line",
-                        "fillOpacity": 0,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "unit": "percentunit"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 6,
-                "w": 3,
-                "x": 6,
-                "y": 67
-            },
-            "id": 44,
-            "isNew": true,
-            "links": [],
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "hidden",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "maxHeight": 600,
-                    "mode": "multi",
-                    "sort": "desc"
-                }
-            },
             "span": 3,
             "targets": [
                 {
-                    "expr": "topk([[topk]], $func(rate(scylla_rpc_compression_compressed_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm)/$func(rate(scylla_rpc_compression_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm)) or on ([[by]]) bottomk([[bottomk]], $func(rate(scylla_rpc_compression_compressed_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm)/$func(rate(scylla_rpc_compression_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm))",
+                    "expr": "topk([[topk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", algorithm!~\"raw\"}[$__rate_interval])) by ([[by]], algorithm)) or on ([[by]]) bottomk([[bottomk]], $func(rate(scylla_rpc_compression_compressed_bytes_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", algorithm!~\"raw\"}[$__rate_interval])) by ([[by]], algorithm))",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A",
                     "step": 1
                 }
             ],
-            "title": "Compressed received compression by compression algorithm",
-            "type": "timeseries"
-        },
-        {
-            "class": "bytes_panel",
-            "dashversion": [
-                ">2024.1"
-            ],
-            "datasource": "prometheus",
-            "description": "Bytes sent using compressed algorithm\n\nscylla_rpc_compression_compressed_bytes_received",
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "class": "fieldConfig_defaults",
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "axisSoftMin": 0,
-                        "barAlignment": 0,
-                        "class": "fieldConfig_defaults_custom",
-                        "drawStyle": "line",
-                        "fillOpacity": 0,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 6,
-                "w": 3,
-                "x": 9,
-                "y": 67
-            },
-            "id": 45,
-            "isNew": true,
-            "links": [],
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "hidden",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "maxHeight": 600,
-                    "mode": "multi",
-                    "sort": "desc"
-                }
-            },
-            "span": 3,
-            "targets": [
-                {
-                    "expr": "topk([[topk]], $func(rate(scylla_rpc_compression_compressed_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm)) or on ([[by]]) bottomk([[bottomk]], $func(rate(scylla_rpc_compression_compressed_bytes_received{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], algorithm))",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "refId": "A",
-                    "step": 1
-                }
-            ],
-            "title": "Compressed bytes received by compression algorithm",
+            "title": "Compressed Bytes Sent by Algorithm",
             "type": "timeseries"
         },
         {
@@ -3509,7 +3340,7 @@
                 "x": 12,
                 "y": 67
             },
-            "id": 46,
+            "id": 44,
             "isNew": true,
             "links": [],
             "options": {
@@ -3590,7 +3421,7 @@
                 "x": 18,
                 "y": 67
             },
-            "id": 47,
+            "id": 45,
             "isNew": true,
             "links": [],
             "options": {
@@ -3628,7 +3459,7 @@
                 "x": 0,
                 "y": 73
             },
-            "id": 48,
+            "id": 46,
             "panels": [],
             "repeat": "",
             "title": "Storage",
@@ -3687,7 +3518,7 @@
                 "x": 0,
                 "y": 74
             },
-            "id": 49,
+            "id": 47,
             "isNew": true,
             "links": [],
             "options": {
@@ -3768,7 +3599,7 @@
                 "x": 6,
                 "y": 74
             },
-            "id": 50,
+            "id": 48,
             "isNew": true,
             "links": [],
             "options": {
@@ -3849,7 +3680,7 @@
                 "x": 12,
                 "y": 74
             },
-            "id": 51,
+            "id": 49,
             "isNew": true,
             "links": [],
             "options": {
@@ -3887,7 +3718,7 @@
                 "x": 0,
                 "y": 80
             },
-            "id": 52,
+            "id": 50,
             "panels": [],
             "repeat": "",
             "title": "Cache",
@@ -3911,7 +3742,7 @@
                 "x": 0,
                 "y": 81
             },
-            "id": 53,
+            "id": 51,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -3975,7 +3806,7 @@
                 "x": 0,
                 "y": 83
             },
-            "id": 54,
+            "id": 52,
             "isNew": true,
             "links": [],
             "options": {
@@ -4056,7 +3887,7 @@
                 "x": 12,
                 "y": 83
             },
-            "id": 55,
+            "id": 53,
             "isNew": true,
             "links": [],
             "options": {
@@ -4085,7 +3916,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "total number of rows needed by reads and found in cache",
             "editable": true,
@@ -4127,7 +3958,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -4137,7 +3968,7 @@
                 "x": 0,
                 "y": 89
             },
-            "id": 56,
+            "id": 54,
             "isNew": true,
             "links": [],
             "options": {
@@ -4152,6 +3983,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -4166,7 +4000,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "total number of rows needed by reads and missing in cache",
             "editable": true,
@@ -4208,7 +4042,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -4218,7 +4052,7 @@
                 "x": 6,
                 "y": 89
             },
-            "id": 57,
+            "id": 55,
             "isNew": true,
             "links": [],
             "options": {
@@ -4233,6 +4067,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -4247,7 +4084,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "number of partitions needed by reads and found in cache",
             "editable": true,
@@ -4289,7 +4126,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -4299,7 +4136,7 @@
                 "x": 12,
                 "y": 89
             },
-            "id": 58,
+            "id": 56,
             "isNew": true,
             "links": [],
             "options": {
@@ -4314,6 +4151,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -4328,7 +4168,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "number of partitions needed by reads and missing in cache",
             "editable": true,
@@ -4370,7 +4210,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -4380,7 +4220,7 @@
                 "x": 18,
                 "y": 89
             },
-            "id": 59,
+            "id": 57,
             "isNew": true,
             "links": [],
             "options": {
@@ -4395,6 +4235,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -4409,7 +4252,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "total number of rows added to cache",
             "editable": true,
@@ -4451,7 +4294,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -4461,7 +4304,7 @@
                 "x": 0,
                 "y": 95
             },
-            "id": 60,
+            "id": 58,
             "isNew": true,
             "links": [],
             "options": {
@@ -4476,6 +4319,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -4542,7 +4388,7 @@
                 "x": 6,
                 "y": 95
             },
-            "id": 61,
+            "id": 59,
             "isNew": true,
             "links": [],
             "options": {
@@ -4574,7 +4420,7 @@
             "type": "timeseries"
         },
         {
-            "class": "rps_panel",
+            "class": "ops_panel",
             "datasource": "prometheus",
             "description": "total number of partitions added to cache",
             "editable": true,
@@ -4616,7 +4462,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "si:reads/s"
+                    "unit": "si:ops/s"
                 },
                 "overrides": []
             },
@@ -4626,7 +4472,7 @@
                 "x": 12,
                 "y": 95
             },
-            "id": 62,
+            "id": 60,
             "isNew": true,
             "links": [],
             "options": {
@@ -4641,6 +4487,9 @@
                     "sort": "desc"
                 }
             },
+            "seriesOverrides": [
+                {}
+            ],
             "span": 3,
             "targets": [
                 {
@@ -4707,7 +4556,7 @@
                 "x": 18,
                 "y": 95
             },
-            "id": 63,
+            "id": 61,
             "isNew": true,
             "links": [],
             "options": {
@@ -4791,7 +4640,7 @@
                 "x": 0,
                 "y": 101
             },
-            "id": 64,
+            "id": 62,
             "isNew": true,
             "links": [],
             "options": {
@@ -4875,7 +4724,7 @@
                 "x": 6,
                 "y": 101
             },
-            "id": 65,
+            "id": 63,
             "isNew": true,
             "links": [],
             "options": {
@@ -4959,7 +4808,7 @@
                 "x": 12,
                 "y": 101
             },
-            "id": 66,
+            "id": 64,
             "isNew": true,
             "links": [],
             "options": {
@@ -5043,7 +4892,7 @@
                 "x": 18,
                 "y": 101
             },
-            "id": 67,
+            "id": 65,
             "isNew": true,
             "links": [],
             "options": {
@@ -5127,7 +4976,7 @@
                 "x": 0,
                 "y": 107
             },
-            "id": 68,
+            "id": 66,
             "isNew": true,
             "links": [],
             "options": {
@@ -5208,7 +5057,7 @@
                 "x": 6,
                 "y": 107
             },
-            "id": 69,
+            "id": 67,
             "isNew": true,
             "links": [],
             "options": {
@@ -5289,7 +5138,7 @@
                 "x": 12,
                 "y": 107
             },
-            "id": 70,
+            "id": 68,
             "isNew": true,
             "links": [],
             "options": {
@@ -5370,7 +5219,7 @@
                 "x": 18,
                 "y": 107
             },
-            "id": 71,
+            "id": 69,
             "isNew": true,
             "links": [],
             "options": {
@@ -5451,7 +5300,7 @@
                 "x": 0,
                 "y": 113
             },
-            "id": 72,
+            "id": 70,
             "isNew": true,
             "links": [],
             "options": {
@@ -5532,7 +5381,7 @@
                 "x": 6,
                 "y": 113
             },
-            "id": 73,
+            "id": 71,
             "isNew": true,
             "links": [],
             "options": {
@@ -5570,7 +5419,7 @@
                 "x": 0,
                 "y": 119
             },
-            "id": 74,
+            "id": 72,
             "panels": [
                 {
                     "class": "text_panel",
@@ -5590,7 +5439,7 @@
                         "x": 0,
                         "y": 120
                     },
-                    "id": 75,
+                    "id": 73,
                     "isNew": true,
                     "links": [],
                     "mode": "html",
@@ -5654,7 +5503,7 @@
                         "x": 0,
                         "y": 122
                     },
-                    "id": 76,
+                    "id": 74,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5735,7 +5584,7 @@
                         "x": 6,
                         "y": 122
                     },
-                    "id": 77,
+                    "id": 75,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5816,7 +5665,7 @@
                         "x": 12,
                         "y": 122
                     },
-                    "id": 78,
+                    "id": 76,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5897,7 +5746,7 @@
                         "x": 18,
                         "y": 122
                     },
-                    "id": 79,
+                    "id": 77,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -5981,7 +5830,7 @@
                         "x": 0,
                         "y": 128
                     },
-                    "id": 80,
+                    "id": 78,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6062,7 +5911,7 @@
                         "x": 6,
                         "y": 128
                     },
-                    "id": 81,
+                    "id": 79,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6105,7 +5954,7 @@
                 "x": 0,
                 "y": 134
             },
-            "id": 82,
+            "id": 80,
             "panels": [
                 {
                     "class": "rps_panel",
@@ -6160,7 +6009,7 @@
                         "x": 0,
                         "y": 135
                     },
-                    "id": 83,
+                    "id": 81,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6241,7 +6090,7 @@
                         "x": 6,
                         "y": 135
                     },
-                    "id": 84,
+                    "id": 82,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6322,7 +6171,7 @@
                         "x": 12,
                         "y": 135
                     },
-                    "id": 85,
+                    "id": 83,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6403,7 +6252,7 @@
                         "x": 18,
                         "y": 135
                     },
-                    "id": 86,
+                    "id": 84,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6484,7 +6333,7 @@
                         "x": 0,
                         "y": 141
                     },
-                    "id": 87,
+                    "id": 85,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6565,7 +6414,7 @@
                         "x": 6,
                         "y": 141
                     },
-                    "id": 88,
+                    "id": 86,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6646,7 +6495,7 @@
                         "x": 12,
                         "y": 141
                     },
-                    "id": 89,
+                    "id": 87,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6689,7 +6538,7 @@
                 "x": 0,
                 "y": 147
             },
-            "id": 90,
+            "id": 88,
             "panels": [
                 {
                     "class": "text_panel",
@@ -6709,7 +6558,7 @@
                         "x": 0,
                         "y": 148
                     },
-                    "id": 91,
+                    "id": 89,
                     "isNew": true,
                     "links": [],
                     "mode": "html",
@@ -6773,7 +6622,7 @@
                         "x": 0,
                         "y": 150
                     },
-                    "id": 92,
+                    "id": 90,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6854,7 +6703,7 @@
                         "x": 6,
                         "y": 150
                     },
-                    "id": 93,
+                    "id": 91,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -6938,7 +6787,7 @@
                         "x": 12,
                         "y": 150
                     },
-                    "id": 94,
+                    "id": 92,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7022,7 +6871,7 @@
                         "x": 18,
                         "y": 150
                     },
-                    "id": 95,
+                    "id": 93,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7103,7 +6952,7 @@
                         "x": 0,
                         "y": 156
                     },
-                    "id": 96,
+                    "id": 94,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7184,7 +7033,7 @@
                         "x": 6,
                         "y": 156
                     },
-                    "id": 97,
+                    "id": 95,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7268,7 +7117,7 @@
                         "x": 12,
                         "y": 156
                     },
-                    "id": 98,
+                    "id": 96,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7352,7 +7201,7 @@
                         "x": 18,
                         "y": 156
                     },
-                    "id": 99,
+                    "id": 97,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7433,7 +7282,7 @@
                         "x": 0,
                         "y": 162
                     },
-                    "id": 100,
+                    "id": 98,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7517,7 +7366,7 @@
                         "x": 6,
                         "y": 162
                     },
-                    "id": 101,
+                    "id": 99,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7598,7 +7447,7 @@
                         "x": 12,
                         "y": 162
                     },
-                    "id": 102,
+                    "id": 100,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7643,7 +7492,7 @@
                         "x": 18,
                         "y": 162
                     },
-                    "id": 103,
+                    "id": 101,
                     "isNew": true,
                     "links": [],
                     "mode": "html",
@@ -7708,7 +7557,7 @@
                         "x": 0,
                         "y": 168
                     },
-                    "id": 104,
+                    "id": 102,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7789,7 +7638,7 @@
                         "x": 6,
                         "y": 168
                     },
-                    "id": 105,
+                    "id": 103,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7870,7 +7719,7 @@
                         "x": 12,
                         "y": 168
                     },
-                    "id": 106,
+                    "id": 104,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -7951,7 +7800,7 @@
                         "x": 18,
                         "y": 168
                     },
-                    "id": 107,
+                    "id": 105,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8032,7 +7881,7 @@
                         "x": 0,
                         "y": 174
                     },
-                    "id": 108,
+                    "id": 106,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8113,7 +7962,7 @@
                         "x": 6,
                         "y": 174
                     },
-                    "id": 109,
+                    "id": 107,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8194,7 +8043,7 @@
                         "x": 12,
                         "y": 174
                     },
-                    "id": 110,
+                    "id": 108,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8275,7 +8124,7 @@
                         "x": 18,
                         "y": 174
                     },
-                    "id": 111,
+                    "id": 109,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8356,7 +8205,7 @@
                         "x": 0,
                         "y": 180
                     },
-                    "id": 112,
+                    "id": 110,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8437,7 +8286,7 @@
                         "x": 6,
                         "y": 180
                     },
-                    "id": 113,
+                    "id": 111,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8521,7 +8370,7 @@
                         "x": 12,
                         "y": 180
                     },
-                    "id": 114,
+                    "id": 112,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8567,7 +8416,7 @@
                 "x": 0,
                 "y": 186
             },
-            "id": 115,
+            "id": 113,
             "panels": [
                 {
                     "class": "text_panel",
@@ -8587,7 +8436,7 @@
                         "x": 0,
                         "y": 187
                     },
-                    "id": 116,
+                    "id": 114,
                     "isNew": true,
                     "links": [],
                     "mode": "html",
@@ -8651,7 +8500,7 @@
                         "x": 0,
                         "y": 189
                     },
-                    "id": 117,
+                    "id": 115,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8735,7 +8584,7 @@
                         "x": 8,
                         "y": 189
                     },
-                    "id": 118,
+                    "id": 116,
                     "isNew": true,
                     "links": [],
                     "options": {
@@ -8781,7 +8630,7 @@
                 "x": 0,
                 "y": 195
             },
-            "id": 119,
+            "id": 117,
             "panels": [],
             "repeat": "",
             "title": "Memory",
@@ -8805,7 +8654,7 @@
                 "x": 0,
                 "y": 196
             },
-            "id": 120,
+            "id": 118,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -8869,7 +8718,7 @@
                 "x": 0,
                 "y": 198
             },
-            "id": 121,
+            "id": 119,
             "isNew": true,
             "links": [],
             "options": {
@@ -8950,7 +8799,7 @@
                 "x": 8,
                 "y": 198
             },
-            "id": 122,
+            "id": 120,
             "isNew": true,
             "links": [],
             "options": {
@@ -9032,7 +8881,7 @@
                 "x": 16,
                 "y": 198
             },
-            "id": 123,
+            "id": 121,
             "isNew": true,
             "links": [],
             "options": {
@@ -9070,7 +8919,7 @@
                 "x": 0,
                 "y": 204
             },
-            "id": 124,
+            "id": 122,
             "panels": [],
             "repeat": "",
             "title": "Compaction",
@@ -9094,7 +8943,7 @@
                 "x": 0,
                 "y": 205
             },
-            "id": 125,
+            "id": 123,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -9158,7 +9007,7 @@
                 "x": 0,
                 "y": 207
             },
-            "id": 126,
+            "id": 124,
             "isNew": true,
             "links": [],
             "options": {
@@ -9240,7 +9089,7 @@
                 "x": 8,
                 "y": 207
             },
-            "id": 127,
+            "id": 125,
             "isNew": true,
             "links": [],
             "options": {
@@ -9325,7 +9174,7 @@
                 "x": 16,
                 "y": 207
             },
-            "id": 128,
+            "id": 126,
             "isNew": true,
             "links": [],
             "options": {
@@ -9362,7 +9211,7 @@
                 "x": 0,
                 "y": 213
             },
-            "id": 129,
+            "id": 127,
             "panels": [],
             "repeat": "sg",
             "title": "Latencies - $sg",
@@ -9421,7 +9270,7 @@
                 "x": 0,
                 "y": 214
             },
-            "id": 130,
+            "id": 128,
             "isNew": true,
             "links": [],
             "options": {
@@ -9501,7 +9350,7 @@
                 "x": 6,
                 "y": 214
             },
-            "id": 131,
+            "id": 129,
             "isNew": true,
             "links": [],
             "options": {
@@ -9591,7 +9440,7 @@
                 "x": 12,
                 "y": 214
             },
-            "id": 132,
+            "id": 130,
             "isNew": true,
             "links": [],
             "options": {
@@ -9614,7 +9463,7 @@
                 {
                     "expr": "(topk([[topk]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}) or on ([[by]],scheduling_group_name) bottomk([[bottomk]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                     "metric": "",
                     "refId": "A",
                     "step": 1
@@ -9682,7 +9531,7 @@
                 "x": 18,
                 "y": 214
             },
-            "id": 133,
+            "id": 131,
             "isNew": true,
             "links": [],
             "options": {
@@ -9705,7 +9554,7 @@
                 {
                     "expr": "(topk([[topk]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]]) bottomk([[bottomk]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                     "metric": "",
                     "refId": "A",
                     "step": 1
@@ -9774,7 +9623,7 @@
                 "x": 0,
                 "y": 220
             },
-            "id": 134,
+            "id": 132,
             "isNew": true,
             "links": [],
             "options": {
@@ -9854,7 +9703,7 @@
                 "x": 6,
                 "y": 220
             },
-            "id": 135,
+            "id": 133,
             "isNew": true,
             "links": [],
             "options": {
@@ -9877,7 +9726,7 @@
                 {
                     "expr": "(topk([[topk]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]]) bottomk([[bottomk]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                     "refId": "A",
                     "step": 1
                 },
@@ -9944,7 +9793,7 @@
                 "x": 12,
                 "y": 220
             },
-            "id": 136,
+            "id": 134,
             "isNew": true,
             "links": [],
             "options": {
@@ -9967,7 +9816,7 @@
                 {
                     "expr": "(topk([[topk]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]]) bottomk([[bottomk]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                     "metric": "",
                     "refId": "A",
                     "step": 1
@@ -10035,7 +9884,7 @@
                 "x": 18,
                 "y": 220
             },
-            "id": 137,
+            "id": 135,
             "isNew": true,
             "links": [],
             "options": {
@@ -10058,7 +9907,7 @@
                 {
                     "expr": "(topk([[topk]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) or on ([[by]]) bottomk([[bottomk]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}",
                     "metric": "",
                     "refId": "A",
                     "step": 1
@@ -10131,7 +9980,7 @@
                 "x": 0,
                 "y": 226
             },
-            "id": 138,
+            "id": 136,
             "isNew": true,
             "links": [],
             "options": {
@@ -10217,7 +10066,7 @@
                 "x": 6,
                 "y": 226
             },
-            "id": 139,
+            "id": 137,
             "isNew": true,
             "links": [],
             "options": {
@@ -10303,7 +10152,7 @@
                 "x": 12,
                 "y": 226
             },
-            "id": 140,
+            "id": 138,
             "isNew": true,
             "links": [],
             "options": {
@@ -10389,7 +10238,7 @@
                 "x": 18,
                 "y": 226
             },
-            "id": 141,
+            "id": 139,
             "isNew": true,
             "links": [],
             "options": {
@@ -10475,7 +10324,7 @@
                 "x": 0,
                 "y": 232
             },
-            "id": 142,
+            "id": 140,
             "isNew": true,
             "links": [],
             "options": {
@@ -10561,7 +10410,7 @@
                 "x": 6,
                 "y": 232
             },
-            "id": 143,
+            "id": 141,
             "isNew": true,
             "links": [],
             "options": {
@@ -10601,7 +10450,7 @@
                 "x": 0,
                 "y": 238
             },
-            "id": 144,
+            "id": 142,
             "panels": [],
             "repeat": "",
             "title": "Your panels",
@@ -10624,7 +10473,7 @@
                 "x": 0,
                 "y": 239
             },
-            "id": 145,
+            "id": 143,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -10691,7 +10540,7 @@
                 "x": 0,
                 "y": 241
             },
-            "id": 146,
+            "id": 144,
             "isNew": true,
             "links": [],
             "options": {
@@ -10766,7 +10615,7 @@
                 "x": 12,
                 "y": 241
             },
-            "id": 147,
+            "id": 145,
             "isNew": true,
             "links": [],
             "options": {
@@ -10805,12 +10654,12 @@
                 "x": 0,
                 "y": 247
             },
-            "id": 148,
+            "id": 146,
             "isNew": true,
             "links": [],
             "mode": "html",
             "options": {
-                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - 4.8.0</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1&kiosk\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
+                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - 4.8.1</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1&kiosk\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
                 "mode": "html"
             },
             "span": 12,
@@ -11281,8 +11130,8 @@
                 "allValue": null,
                 "class": "monitor_version_var",
                 "current": {
-                    "text": "4.8.0",
-                    "value": "4.8.0"
+                    "text": "4.8.1",
+                    "value": "4.8.1"
                 },
                 "error": null,
                 "hide": 2,
@@ -11293,11 +11142,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "4.8.0",
-                        "value": "4.8.0"
+                        "text": "4.8.1",
+                        "value": "4.8.1"
                     }
                 ],
-                "query": "4.8.0",
+                "query": "4.8.1",
                 "skipUrlSync": false,
                 "type": "custom"
             }
