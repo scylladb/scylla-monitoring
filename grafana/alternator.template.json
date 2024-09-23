@@ -260,34 +260,6 @@
                         "span": 4,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "BatchWriteItem by [[by]]"
-                    },
-                    {
-                        "class": "ops_panel",
-                        "span": 4,
-                        "targets": [
-                            {
-                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "refId": "A",
-                                "step": 1
-                            }
-                        ],
-                        "title": "BatchGetItem by [[by]]"
-                    },
-                    {
-                        "class": "ops_panel",
-                        "span": 4,
-                        "targets": [
-                            {
                                 "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"Query\"}[$__rate_interval])) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
@@ -310,6 +282,94 @@
                             }
                         ],
                         "title": "Scan by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "BatchWriteItem by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "The number of items processed as a result of BatchWriteItem",
+                        "title": "Operations from BatchWriteItem by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "The avarage batch size of BatchWriteItem",
+                        "title": "Average Batch size of BatchWriteItem by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "BatchGetItem by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "The number of items processed as a result of BatchGetItem",
+                        "title": "Operations from BatchGetItem by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "The avarage batch size of BatchGetItem",
+                        "title": "Average Batch size of BatchGetItem by [[by]]"
                     }
                     ]
             },
@@ -873,6 +933,56 @@
                 {
                     "class": "template_variable_custom",
                     "name": "alternator_latency_ops",
+                    "dashversion":[">6.0", ">2024.1"],
+                    "multi": true,
+                    "includeAll": true,
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "All",
+                            "value": "$__all"
+                        },
+                        {
+                            "selected": false,
+                            "text": "GetItem",
+                            "value": "GetItem"
+                        },
+                        {
+                            "selected": false,
+                            "text": "PutItem",
+                            "value": "PutItem"
+                        },
+                        {
+                            "selected": false,
+                            "text": "UpdateItem",
+                            "value": "UpdateItem"
+                        },
+                        {
+                            "selected": false,
+                            "text": "DeleteItem",
+                            "value": "DeleteItem"
+                        },
+                        {
+                            "selected": false,
+                            "text": "BatchWriteItem",
+                            "value": "BatchWriteItem"
+                        },
+                        {
+                            "selected": false,
+                            "text": "BatchGetItem",
+                            "value": "BatchGetItem"
+                        }
+                    ],
+                    "query": "GetItem,PutItem,UpdateItem,DeleteItem,BatchWriteItem,BatchGetItem"
+                },
+                {
+                    "class": "template_variable_custom",
+                    "name": "alternator_latency_ops",
+                    "dashversion":["<6.0", "<2024.1"],
                     "multi": true,
                     "includeAll": true,
                     "current": {
