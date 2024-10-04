@@ -71,7 +71,7 @@ Options:
   -b Prometheus command          - Prometheus command line options.
   -g grafana port                - Override the default Grafana port.
   -p prometheus port             - Override the default Prometheus port.
-  -a admin password              - Set Grafna's Admin password.
+  -a admin password              - Set Grafana's Admin password.
   -m alertmanager port           - Override the default Prometheus port.
   -M scylla-manager version      - Override the default Scylla Manager version to use.
   -D docker param                - Encapsulate docker param, the parameter will be used by all containers.
