@@ -261,6 +261,23 @@
                         ],
                         "title": "Secondary indexes Reads [[by]]",
                         "description": "Number of reads using secondary indexes"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "pointradius": 1,
+                        "targets": [
+                            {
+                                "expr": "topk([[topk]], sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])>0) by ([[by]], consistency_level)) or on ([[by]],consistency_level) bottomk([[bottomk]], sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])>0) by ([[by]], consistency_level))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "title": "Requests by Consistency Level [[by]]",
+                        "description": "Requests by Consistency Level"
                     }
                 ],
                 "title": "New row"
