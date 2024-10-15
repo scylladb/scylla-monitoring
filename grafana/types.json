@@ -2751,7 +2751,7 @@
       },
       "targets":[
          {
-            "expr":"0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}",
+            "expr":"0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() (scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}!= 3 or on (instance) ((scylla_gossip_live{cluster=\"$cluster\", dc=~\"$dc\"}+1<  bool scalar(count(scylla_node_operation_mode==3)))*6 + 3))",
             "legendFormat":"",
             "interval":"",
             "format":"table",
@@ -2785,27 +2785,10 @@
             "format":"table"
          },
          {
-            "expr":"(sum(scylla_cql:non_system_prepared1m{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 1) + (sum(rate(scylla_cql_reverse_queries{cluster=~\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by(instance) >bool 1) + (sum(scylla_cql:non_paged_no_system1m{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 1)",
-            "legendFormat":"",
-            "interval":"",
-            "refId":"E",
-            "instant":true,
-            "format":"table"
-         },
-         {
-            "expr":"sum(scylla_gossip_live{cluster=\"$cluster\"})by (instance)",
-            "legendFormat":"",
-            "interval":"",
-            "refId":"F",
-            "instant":true,
-            "dashversion":[">5.1", ">2022.2"],
-            "format":"table"
-         },
-         {
             "expr":"(min(scylla_streaming_finished_percentage{cluster=\"$cluster\", dc=~\"$dc\"}*100) by (instance) < 100) or on (instance)  0*sum(scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"}) by (instance)",
             "legendFormat":"",
             "interval":"",
-            "refId":"G",
+            "refId":"E",
             "instant":true,
             "dashversion":[">5.2", ">2023.1"],
             "format":"table"
@@ -2814,12 +2797,28 @@
             "expr":"100-100*node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", instance=~\"$node\"}/node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}",
             "legendFormat":"",
             "interval":"",
+            "refId":"F",
+            "instant":true,
+            "format":"table"
+         },
+         {
+            "expr":"histogram_quantile(0.5, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=~\"GetItem|PutItem|UpdateItem|DeleteItem\"}[$__rate_interval])>0) by (le, instance))",
+            "legendFormat":"",
+            "interval":"",
+            "refId":"G",
+            "instant":true,
+            "format":"table"
+         },
+         {
+            "expr":"histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"GetItem\"}[$__rate_interval])>0) by (le, instance))",
+            "legendFormat":"",
+            "interval":"",
             "refId":"H",
             "instant":true,
             "format":"table"
          },
          {
-            "expr":"sum(scylla_compaction_manager_compactions{dc=~\"$dc\", instance=~\"$node\"}) by (instance)",
+            "expr":"histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"PutItem\"}[$__rate_interval])>0) by (le, instance))",
             "legendFormat":"",
             "interval":"",
             "refId":"I",
@@ -2827,7 +2826,7 @@
             "format":"table"
          },
          {
-            "expr":"100*sum(rate(scylla_cache_row_misses{dc=~\"$dc\"}[$__rate_interval])) by (instance)/(sum(rate(scylla_cache_row_hits{dc=~\"$dc\"}[$__rate_interval])) by (instance) + sum(rate(scylla_cache_row_misses{dc=~\"$dc\"}[$__rate_interval])) by (instance))",
+            "expr":"histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"UpdateItem\"}[$__rate_interval])>0) by (le, instance))",
             "legendFormat":"",
             "interval":"",
             "refId":"J",
@@ -2835,26 +2834,10 @@
             "format":"table"
          },
          {
-            "expr":"histogram_quantile(0.5, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[$__rate_interval])>0) by (le, instance))",
+            "expr":"histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"DeleteItem\"}[$__rate_interval])>0) by (le, instance))",
             "legendFormat":"",
             "interval":"",
             "refId":"K",
-            "instant":true,
-            "format":"table"
-         },
-         {
-            "expr":"histogram_quantile(0.9, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[$__rate_interval])>0) by (le, instance))",
-            "legendFormat":"",
-            "interval":"",
-            "refId":"L",
-            "instant":true,
-            "format":"table"
-         },
-         {
-            "expr":"histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\"}[$__rate_interval])>0) by (le, instance))",
-            "legendFormat":"",
-            "interval":"",
-            "refId":"M",
             "instant":true,
             "format":"table"
          }
@@ -2885,70 +2868,6 @@
             }
          },
          "overrides":[
-            {
-               "matcher":{
-                  "id":"byName",
-                  "options":"Value #B"
-               },
-               "properties":[
-                  {
-                     "id":"custom.displayMode",
-                     "value":"lcd-gauge"
-                  },
-                  {
-                     "id":"min",
-                     "value":0
-                  },
-                  {
-                     "id":"max",
-                     "value":101
-                  },
-                  {
-                     "id":"displayName",
-                     "value":"Load"
-                  },
-                  {
-                     "id":"custom.width",
-                     "value":120
-                  },
-                  {
-                     "id":"custom.filterable",
-                     "value":false
-                  },
-                  {
-                     "id":"decimals",
-                     "value":0
-                  }
-               ]
-            },
-            {
-               "matcher":{
-                  "id":"byName",
-                  "options":"svr"
-               },
-               "properties":[
-                  {
-                     "id":"custom.width",
-                     "value":90
-                  },
-                  {
-                     "id":"displayName",
-                     "value":"Version"
-                  }
-               ]
-            },
-            {
-               "matcher":{
-                  "id":"byName",
-                  "options":"instance"
-               },
-               "properties":[
-                  {
-                     "id":"custom.width",
-                     "value":105
-                  }
-               ]
-            },
             {
                "matcher":{
                   "id":"byName",
@@ -3057,6 +2976,14 @@
                            "to":"",
                            "text":"Moving",
                            "value":"8"
+                        },
+                        {
+                           "id":9,
+                           "type":1,
+                           "from":"",
+                           "to":"",
+                           "text":"Split-Cluster",
+                           "value":"9"
                         }
                      ]
                   }
@@ -3065,74 +2992,68 @@
             {
                "matcher":{
                   "id":"byName",
-                  "options":"Value #E"
+                  "options":"Value #B"
                },
                "properties":[
                   {
-                     "id":"links",
-                     "value":[
-                        {
-                           "title":"CQL Information Dashboard. Warning indicates that there are potential issues in the CQL Optimization",
-                           "url":"/d/cql-[[dash_version]]/scylla-cql?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}&from=${__from}&to=${__to}"
-                        }
-                     ]
+                     "id":"custom.displayMode",
+                     "value":"lcd-gauge"
+                  },
+                  {
+                     "id":"min",
+                     "value":0
+                  },
+                  {
+                     "id":"max",
+                     "value":101
+                  },
+                  {
+                     "id":"displayName",
+                     "value":"Load"
                   },
                   {
                      "id":"custom.width",
-                     "value":90
+                     "value":120
                   },
                   {
                      "id":"custom.filterable",
                      "value":false
                   },
                   {
-                     "id":"mappings",
-                     "value":[
-                        {
-                           "id":1,
-                           "type":1,
-                           "from":"",
-                           "to":"",
-                           "text":"CQL Info",
-                           "value":"0"
-                        },
-                        {
-                           "id":1,
-                           "type":2,
-                           "from":"1",
-                           "to":"20",
-                           "text":"CQL Warnings",
-                           "value":""
-                        }
-                     ]
+                     "id":"decimals",
+                     "value":0
                   },
                   {
-                     "id":"thresholds",
-                     "value":{
-                        "mode":"absolute",
-                        "steps":[
-                           {
-                              "color":"rgb(87, 128, 193)",
-                              "value":null
-                           },
-                           {
-                              "color":"dark-orange",
-                              "value":1
-                           }
-                        ]
-                     }
-                  },
+                    "id": "unit",
+                    "value": "percent"
+                  }
+               ]
+            },
+            {
+               "matcher":{
+                  "id":"byName",
+                  "options":"svr"
+               },
+               "properties":[
                   {
-                     "id":"custom.displayMode",
-                     "value":"color-text"
-                  },
-                  {
-                     "id":"custom.align",
-                     "value":"left"
+                     "id":"custom.width",
+                     "value":90
                   },
                   {
                      "id":"displayName",
-                     "value":"CQL"
+                     "value":"Version"
+                  }
+               ]
+            },
+            {
+               "matcher":{
+                  "id":"byName",
+                  "options":"instance"
+               },
+               "properties":[
+                  {
+                     "id":"custom.width",
+                     "value":105
                   }
                ]
             },
@@ -3287,44 +3208,6 @@
             {
                "matcher":{
                   "id":"byName",
-                  "options":"Value #F"
-               },
-               "dashversion":[">5.1", ">2022.2"],
-               "properties":[
-                  {
-                     "id":"links",
-                     "value":[
-                        {
-                           "title":"How many live nodes this node sees",
-                           "url":"/d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}&from=${__from}&to=${__to}"
-                        }
-                     ]
-                  },
-                  {
-                     "id":"custom.width",
-                     "value":80
-                  },
-                  {
-                     "id":"custom.filterable",
-                     "value":true
-                  },
-                  {
-                     "id":"custom.displayMode",
-                     "value":"color-text"
-                  },
-                  {
-                     "id":"custom.align",
-                     "value":"left"
-                  },
-                  {
-                     "id":"displayName",
-                     "value":"Live"
-                  }
-               ]
-            },
-            {
-               "matcher":{
-                  "id":"byName",
                   "options":"instance"
                },
                "properties":[
@@ -3342,7 +3225,7 @@
             {
                "matcher":{
                   "id":"byName",
-                  "options":"Value #G"
+                  "options":"Value #E"
                },
                "dashversion":[">5.2", ">2023.1"],
                "properties":[
@@ -3375,6 +3258,10 @@
                      "value":0
                   },
                   {
+                    "id": "unit",
+                    "value": "percent"
+                  },
+                  {
                     "id": "thresholds",
                     "value": {
                       "mode": "absolute",
@@ -3391,7 +3278,7 @@
             {
                "matcher":{
                   "id":"byName",
-                  "options":"Value #H"
+                  "options":"Value #F"
                },
                "properties":[
                   {
@@ -3423,76 +3310,8 @@
                      "value":0
                   },
                   {
-                    "id": "thresholds",
-                    "value": {
-                      "mode": "absolute",
-                      "steps": [
-                        {
-                          "color": "green",
-                          "value": null
-                        }
-                      ]
-                    }
-                  }
-               ]
-            },
-            {
-               "matcher":{
-                  "id":"byName",
-                  "options":"Value #I"
-               },
-               "properties":[
-                  {
-                     "id":"displayName",
-                     "value":"Compaction"
-                  },
-                  {
-                     "id":"custom.width",
-                     "value":100
-                  },
-                  {
-                     "id":"custom.filterable",
-                     "value":false
-                  },
-                  {
-                     "id":"decimals",
-                     "value":0
-                  }
-               ]
-            },
-            {
-               "matcher":{
-                  "id":"byName",
-                  "options":"Value #J"
-               },
-               "properties":[
-                  {
-                     "id":"custom.displayMode",
-                     "value":"lcd-gauge"
-                  },
-                  {
-                     "id":"min",
-                     "value":0
-                  },
-                  {
-                     "id":"max",
-                     "value":101
-                  },
-                  {
-                     "id":"displayName",
-                     "value":"Cache Misses"
-                  },
-                  {
-                     "id":"custom.width",
-                     "value":120
-                  },
-                  {
-                     "id":"custom.filterable",
-                     "value":false
-                  },
-                  {
-                     "id":"decimals",
-                     "value":0
+                    "id": "unit",
+                    "value": "percent"
                   },
                   {
                     "id": "thresholds",
@@ -3511,7 +3330,7 @@
             {
                "matcher":{
                   "id":"byName",
-                  "options":"Value #K"
+                  "options":"Value #G"
                },
                "properties":[
                   {
@@ -3539,12 +3358,12 @@
             {
                "matcher":{
                   "id":"byName",
-                  "options":"Value #L"
+                  "options":"Value #H"
                },
                "properties":[
                   {
                      "id":"displayName",
-                     "value":"P95"
+                     "value":"Get P99"
                   },
                   {
                      "id":"custom.width",
@@ -3567,12 +3386,68 @@
             {
                "matcher":{
                   "id":"byName",
-                  "options":"Value #M"
+                  "options":"Value #I"
                },
                "properties":[
                   {
                      "id":"displayName",
-                     "value":"P99"
+                     "value":"Put P99"
+                  },
+                  {
+                     "id":"custom.width",
+                     "value":100
+                  },
+                  {
+                     "id":"custom.filterable",
+                     "value":false
+                  },
+                  {
+                     "id":"decimals",
+                     "value":0
+                  },
+                  {
+                    "id": "unit",
+                    "value": "µs"
+                  }
+               ]
+            },
+            {
+               "matcher":{
+                  "id":"byName",
+                  "options":"Value #J"
+               },
+               "properties":[
+                  {
+                     "id":"displayName",
+                     "value":"Update P99"
+                  },
+                  {
+                     "id":"custom.width",
+                     "value":100
+                  },
+                  {
+                     "id":"custom.filterable",
+                     "value":false
+                  },
+                  {
+                     "id":"decimals",
+                     "value":0
+                  },
+                  {
+                    "id": "unit",
+                    "value": "µs"
+                  }
+               ]
+            },
+            {
+               "matcher":{
+                  "id":"byName",
+                  "options":"Value #K"
+               },
+               "properties":[
+                  {
+                     "id":"displayName",
+                     "value":"Delete P99"
                   },
                   {
                      "id":"custom.width",
@@ -3639,15 +3514,18 @@
                },
                "indexByName":{
                   "instance":0,
-                  "Value #D":1,
-                  "Value #E":2,
-                  "Value #C":3,
-                  "svr":4,
-                  "Value #A":5,
-                  "Value #F":6,
-                  "Value #H":7,
-                  "Value #G":9,
-                  "Value #B":8
+                  "Value #C":1,
+                  "svr":2,
+                  "Value #A":3,
+                  "Value #F":4,
+                  "Value #B":5,
+                  "Value #E":6,
+                  "Value #G":7,
+                  "Value #H":8,
+                  "Value #I":9,
+                  "Value #J":10,
+                  "Value #K":11,
+                  "Value #D":12
                },
                "renameByName":{
                }
@@ -3661,7 +3539,7 @@
       "span":8,
       "targets":[
          {
-            "expr":"0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}",
+            "expr":"0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() (scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}!= 3 or on (instance) ((scylla_gossip_live{cluster=\"$cluster\", dc=~\"$dc\"}+1<  bool scalar(count(scylla_node_operation_mode==3)))*6 + 3))",
             "legendFormat":"",
             "interval":"",
             "format":"table",
@@ -3708,7 +3586,6 @@
             "interval":"",
             "refId":"F",
             "instant":true,
-            "dashversion":[">5.1", ">2022.2"],
             "format":"table"
          },
          {
@@ -3780,6 +3657,10 @@
                   {
                      "id":"decimals",
                      "value":0
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percent"
                   }
                ]
             },
@@ -3928,82 +3809,16 @@
                            "to":"",
                            "text":"Moving",
                            "value":"8"
-                        }
-                     ]
-                  }
-               ]
-            },
-            {
-               "matcher":{
-                  "id":"byName",
-                  "options":"Value #E"
-               },
-               "properties":[
-                  {
-                     "id":"links",
-                     "value":[
+                        },
                         {
-                           "title":"CQL Information Dashboard. Warning indicates that there are potential issues in the CQL Optimization",
-                           "url":"/d/cql-[[dash_version]]/scylla-cql?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}&from=${__from}&to=${__to}"
-                        }
-                     ]
-                  },
-                  {
-                     "id":"custom.width",
-                     "value":90
-                  },
-                  {
-                     "id":"custom.filterable",
-                     "value":false
-                  },
-                  {
-                     "id":"mappings",
-                     "value":[
-                        {
-                           "id":1,
+                           "id":9,
                            "type":1,
                            "from":"",
                            "to":"",
-                           "text":"CQL Info",
-                           "value":"0"
-                        },
-                        {
-                           "id":1,
-                           "type":2,
-                           "from":"1",
-                           "to":"20",
-                           "text":"CQL Warnings",
-                           "value":""
+                           "text":"Split-Cluster",
+                           "value":"9"
                         }
                      ]
-                  },
-                  {
-                     "id":"thresholds",
-                     "value":{
-                        "mode":"absolute",
-                        "steps":[
-                           {
-                              "color":"rgb(87, 128, 193)",
-                              "value":null
-                           },
-                           {
-                              "color":"dark-orange",
-                              "value":1
-                           }
-                        ]
-                     }
-                  },
-                  {
-                     "id":"custom.displayMode",
-                     "value":"color-text"
-                  },
-                  {
-                     "id":"custom.align",
-                     "value":"left"
-                  },
-                  {
-                     "id":"displayName",
-                     "value":"CQL"
                   }
                ]
             },
@@ -4158,44 +3973,6 @@
             {
                "matcher":{
                   "id":"byName",
-                  "options":"Value #F"
-               },
-               "dashversion":[">5.1", ">2022.2"],
-               "properties":[
-                  {
-                     "id":"links",
-                     "value":[
-                        {
-                           "title":"How many live nodes this node sees",
-                           "url":"/d/detailed-[[dash_version]]/detailed?refresh=30s&orgId=1&var-by=instance&var-node=${__data.fields[0]}&from=${__from}&to=${__to}"
-                        }
-                     ]
-                  },
-                  {
-                     "id":"custom.width",
-                     "value":80
-                  },
-                  {
-                     "id":"custom.filterable",
-                     "value":true
-                  },
-                  {
-                     "id":"custom.displayMode",
-                     "value":"color-text"
-                  },
-                  {
-                     "id":"custom.align",
-                     "value":"left"
-                  },
-                  {
-                     "id":"displayName",
-                     "value":"Live"
-                  }
-               ]
-            },
-            {
-               "matcher":{
-                  "id":"byName",
                   "options":"Value #G"
                },
                "dashversion":[">5.2", ">2023.1"],
@@ -4239,6 +4016,10 @@
                         }
                       ]
                     }
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percent"
                   }
                ]
             }
