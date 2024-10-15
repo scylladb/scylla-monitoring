@@ -2751,7 +2751,7 @@
       },
       "targets":[
          {
-            "expr":"0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}",
+            "expr":"0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() (scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}!= 3 or on (instance) ((scylla_gossip_live{cluster=\"$cluster\", dc=~\"$dc\"}+1<  bool scalar(count(scylla_node_operation_mode==3)))*6 + 3))",
             "legendFormat":"",
             "interval":"",
             "format":"table",
@@ -3056,6 +3056,14 @@
                            "to":"",
                            "text":"Moving",
                            "value":"8"
+                        },
+                        {
+                           "id":9,
+                           "type":1,
+                           "from":"",
+                           "to":"",
+                           "text":"Split-Cluster",
+                           "value":"9"
                         }
                      ]
                   }
@@ -3659,7 +3667,7 @@
       "span":8,
       "targets":[
          {
-            "expr":"0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}",
+            "expr":"0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() (scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}!= 3 or on (instance) ((scylla_gossip_live{cluster=\"$cluster\", dc=~\"$dc\"}+1<  bool scalar(count(scylla_node_operation_mode==3)))*6 + 3))",
             "legendFormat":"",
             "interval":"",
             "format":"table",
@@ -3925,6 +3933,14 @@
                            "to":"",
                            "text":"Moving",
                            "value":"8"
+                        },
+                        {
+                           "id":9,
+                           "type":1,
+                           "from":"",
+                           "to":"",
+                           "text":"Split-Cluster",
+                           "value":"9"
                         }
                      ]
                   }
