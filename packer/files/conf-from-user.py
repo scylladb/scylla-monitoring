@@ -3,12 +3,10 @@
 import urllib.request
 import json
 import subprocess
-import shutil
 import shlex
 import yaml
 import argparse
 import email
-from pathlib import Path
 
 HOME_DIR='/home/centos/'
 USER='centos'
@@ -100,7 +98,7 @@ def getVersions(version):
 
 def mk_servers(obj):
     with open(HOME_DIR + 'scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_servers.yml', 'w') as f:
-        documents = yaml.dump(obj, f)
+        yaml.dump(obj, f)
 
 def getDataDir(data):
     if 'prometheus_data' in data:
@@ -116,7 +114,7 @@ def mk_env(data):
 def setupStartAll(data):
     try:
         run('sudo -u {_USER} cp {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/rule_config.original.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/rule_config.yml')
-    except Exception as e:
+    except Exception:
         print("Error while running:")
     if 'env' in data: 
         mk_env(data['env']['obj'])
@@ -136,18 +134,19 @@ def add_dashboard(scylla_monitoring, data):
                 if 'name' in dashboard and dashboard['name'] in data:
                     f.write(data[dashboard['name']]['payload'])
 
-parser = argparse.ArgumentParser(description='Setup Scylla Monitoring from userdata', conflict_handler="resolve")
-parser.add_argument('-u', '--user', default="centos", help='The username that is being used')
-parser.add_argument('-c', '--cloud', default="aws", help='The cloud to connect to (aws/gcp)')
-parser.add_argument('-a', '--address', default="", help='If set uses the provided address to fetch the data from')
-args = parser.parse_args()
-data = getData(args)
-USER = args.user
-HOME_DIR='/home/' + USER + '/'
-if "scylla-monitoring" not in data or "version" not in data["scylla-monitoring"]['obj']:
-    exit(0)
-scylla_monitoring = data["scylla-monitoring"]['obj']
-setupStartAll(data)
-generate_dashboard(scylla_monitoring)
-add_dashboard(scylla_monitoring, data)
-run('sudo -u {_USER} ./start-all.sh')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Setup Scylla Monitoring from userdata', conflict_handler="resolve")
+    parser.add_argument('-u', '--user', default="centos", help='The username that is being used')
+    parser.add_argument('-c', '--cloud', default="aws", help='The cloud to connect to (aws/gcp)')
+    parser.add_argument('-a', '--address', default="", help='If set uses the provided address to fetch the data from')
+    args = parser.parse_args()
+    data = getData(args)
+    USER = args.user
+    HOME_DIR='/home/' + USER + '/'
+    if "scylla-monitoring" not in data or "version" not in data["scylla-monitoring"]['obj']:
+        exit(0)
+    scylla_monitoring = data["scylla-monitoring"]['obj']
+    setupStartAll(data)
+    generate_dashboard(scylla_monitoring)
+    add_dashboard(scylla_monitoring, data)
+    run('sudo -u {_USER} ./start-all.sh')

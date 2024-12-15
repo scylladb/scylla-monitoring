@@ -119,7 +119,7 @@ def get_delta(s):
 
 def get_time(s):
     t = get_delta(s)
-    if t != None:
+    if t is not None:
         return datetime.now() - t
     return str2time(s)
 
@@ -163,7 +163,7 @@ def do_range_query_by_host(host, args):
         # range_to_openmatrics(range_query(host, params), name=args.query_name)
     if args.rules:
         rules = get_rules(args.rules)
-        i = 0
+        # i = 0
         for r in rules:
             if 'record' in r and args.skip_rules or 'record' not in r and args.skip_alerts:
                 continue 
@@ -183,10 +183,10 @@ def do_range_query(args):
     if args.host_file:
         print("using host file", args.host_file)
         with open(args.host_file) as file:
-            for l in file:
-                print(l.strip())
-                if l.strip() != "":
-                    do_range_query_by_host(add_port_if_needed(l.strip()), args)
+            for line in file:
+                print(line.strip())
+                if line.strip() != "":
+                    do_range_query_by_host(add_port_if_needed(line.strip()), args)
     else:
         do_range_query_by_host(add_port_if_needed(args.host), args)
     terminate_output(args.out_file, args.format, args.new_file, args.skip_eof)

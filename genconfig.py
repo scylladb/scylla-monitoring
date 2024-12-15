@@ -12,18 +12,18 @@ def gen_targets(servers, cluster):
     dcs = servers.split(':', maxsplit=1)
     res = {"labels": {"cluster": cluster, "dc": dcs[0]}}
     res["targets"] = dcs[1].split(',')
-    return res;
+    return res
 
 def get_servers_from_nodetool_status():
     res = []
     dc = None
     ips = []
-    for l in sys.stdin:
+    for line in sys.stdin:
         if dc:
-            ip = re.search(r"..  ([\d\.]+)\s", l)
+            ip = re.search(r"..  ([\d\.]+)\s", line)
             if ip:
                 ips.append(ip.group(1))
-        m = re.search(r"Datacenter: ([^\s]+)\s*$", l)
+        m = re.search(r"Datacenter: ([^\s]+)\s*$", line)
         if m:
             if dc:
                 res.append(dc + ":" + ",".join(ips))

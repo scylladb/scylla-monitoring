@@ -22,7 +22,6 @@
 
 import os
 import sys
-import tempfile
 import tarfile
 from scylla_util import *
 import argparse
@@ -45,8 +44,8 @@ if __name__ == '__main__':
             try:
                 node_exporter = systemd_unit('node-exporter.service')
                 node_exporter.stop()
-            except:
-                pass
+            except Exception as e:
+                print("could not create node-exporter.service file", e)
         else:
             print('node_exporter already installed, you can use `--force` to force reinstallation')
             sys.exit(1)

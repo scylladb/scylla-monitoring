@@ -27,22 +27,8 @@ import re
 import os
 import yaml
 
-parser = argparse.ArgumentParser(description='Dashboards creating tool', conflict_handler="resolve")
-parser.add_argument('-t', '--type', action='append', help='Types file')
-parser.add_argument('-R', '--replace', action='append', help='Search and replace a value, it should be in a format of old_value=new_value')
-parser.add_argument('-rf', '--replace-file', action='append', help='Search and replace a value from file')
-parser.add_argument('-d', '--dashboards', action='append', help='dashbaords file')
-parser.add_argument('-ar', '--add-row', action='append', help='merge a templated row, format number:file', default=[])
-parser.add_argument('-r', '--reverse', action='store_true', default=False, help='Reverse mode, take a dashboard and try to minimize it')
-parser.add_argument('-G', '--grafana4', action='store_true', default=False, help='Do not Migrate the dashboard to the grafa 5 format, if not set the script will remove and emulate the rows with a single panels')
-parser.add_argument('-h', '--help', action='store_true', default=False, help='Print help information')
-parser.add_argument('-kt', '--key-tips', action='store_true', default=False, help='Add key tips when there are conflict values between the template and the value')
-parser.add_argument('-af', '--as-file', type=str, default="", help='Make the dashboard ready to be loaded as files and not with http, when not empty, state the directory the file will be written to')
-parser.add_argument('-V', '--dash-version', type=str, default="", help='When set, create a dashboard for a specific version, looking at the dashversion tags')
-parser.add_argument('-P', '--product', action='append', default=[], help='when added will look at the dashproduct tag')
 
 def help(args):
-    parser.print_help()
     print("""
 The utility can be used to create dashboards from templates or templates from dashboards.
 
@@ -223,7 +209,7 @@ def update_object(obj, types, version, products, exact_match_replace):
             obj[v] = id
             id = id + 1
         elif isinstance(obj[v], list):
-            obj[v] = [m for m in [update_object(o, types, version, products, exact_match_replace) for o in obj[v]] if m != None]
+            obj[v] = [m for m in [update_object(o, types, version, products, exact_match_replace) for o in obj[v]] if m is not None]
         elif isinstance(obj[v], dict):
             obj[v] = update_object(obj[v], types, version, products, exact_match_replace)
         else:
@@ -299,7 +285,7 @@ def set_grid_pos(x, y, panel, h, gridpos):
     return gridpos["h"]
 
 def add_row(y, panels, row, args):
-    total_span = 0
+    # total_span = 0
     h = 6
     x = 0
     max_h = 0
@@ -335,7 +321,7 @@ def is_collapsable_row(row):
 
 def make_grafna_5(results, args):
     rows = results["dashboard"]["rows"]
-    panels = [];
+    panels = []
     y = 0
     in_collapsable_panel = False
     collapsible_row = []
@@ -398,17 +384,33 @@ def compact_dashboard(name, type, args):
     result = compact_obj(result, types, args)
     write_json(new_name, result)
 
-args = parser.parse_args()
-if args.help:
-    help(args)
-    exit(0)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Dashboards creating tool', conflict_handler="resolve")
+    parser.add_argument('-t', '--type', action='append', help='Types file')
+    parser.add_argument('-R', '--replace', action='append', help='Search and replace a value, it should be in a format of old_value=new_value')
+    parser.add_argument('-rf', '--replace-file', action='append', help='Search and replace a value from file')
+    parser.add_argument('-d', '--dashboards', action='append', help='dashbaords file')
+    parser.add_argument('-ar', '--add-row', action='append', help='merge a templated row, format number:file', default=[])
+    parser.add_argument('-r', '--reverse', action='store_true', default=False, help='Reverse mode, take a dashboard and try to minimize it')
+    parser.add_argument('-G', '--grafana4', action='store_true', default=False, help='Do not Migrate the dashboard to the grafa 5 format, if not set the script will remove and emulate the rows with a single panels')
+    parser.add_argument('-h', '--help', action='store_true', default=False, help='Print help information')
+    parser.add_argument('-kt', '--key-tips', action='store_true', default=False, help='Add key tips when there are conflict values between the template and the value')
+    parser.add_argument('-af', '--as-file', type=str, default="", help='Make the dashboard ready to be loaded as files and not with http, when not empty, state the directory the file will be written to')
+    parser.add_argument('-V', '--dash-version', type=str, default="", help='When set, create a dashboard for a specific version, looking at the dashversion tags')
+    parser.add_argument('-P', '--product', action='append', default=[], help='when added will look at the dashproduct tag')
 
-exact_match_replace = get_exact_match(args.replace_file)
+    args = parser.parse_args()
+    if args.help:
+        parser.print_help()
+        help(args)
+        exit(0)
 
-types = merge_json_files(args.type)
-replace_strings = make_replace_strings(args.replace)
-for d in args.dashboards:
-    if args.reverse:
-        compact_dashboard(d, types, args)
-    else:
-        get_dashboard(d, types, args, replace_strings, exact_match_replace)
+    exact_match_replace = get_exact_match(args.replace_file)
+
+    types = merge_json_files(args.type)
+    replace_strings = make_replace_strings(args.replace)
+    for d in args.dashboards:
+        if args.reverse:
+            compact_dashboard(d, types, args)
+        else:
+            get_dashboard(d, types, args, replace_strings, exact_match_replace)
