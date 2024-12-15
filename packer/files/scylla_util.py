@@ -3,15 +3,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import configparser
-import glob
 import io
 import os
 import re
-import shlex
-import shutil
 import subprocess
 import yaml
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -20,9 +18,7 @@ from subprocess import run, DEVNULL
 
 import distro
 from scylla_sysconfdir import SYSCONFDIR
-from scylla_product import PRODUCT
 
-from multiprocessing import cpu_count
 
 import traceback
 import traceback_with_variables
