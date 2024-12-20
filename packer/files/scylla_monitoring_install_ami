@@ -21,14 +21,9 @@
 
 import os
 import sys
-import glob
-import re
-import shutil
 import shlex
-import tarfile
 import argparse
 import subprocess
-from pathlib import Path
 HOME_DIR='/home/centos/'
 USER='centos'
 COPY_OR_MOVE='mv'
@@ -43,7 +38,7 @@ def install_pip_dep():
     run('pip3 install traceback-with-variables')
 
 def get_swap_scripts():
-    with open("{_HOME}/scylla_product.py".format(_HOME=HOME_DIR, _USER=USER), "w") as f:
+    with open("{_HOME}/scylla_product.py".format(_HOME=HOME_DIR, ), "w") as f:
         f.write('PRODUCT="scylla-monitoring"')
     run('chown {_USER}:{_USER} {_HOME}/scylla_product.py')
 
@@ -101,7 +96,7 @@ def install_docker():
         run('add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"')
         run('apt-cache policy docker-ce')
         run('apt install -y docker-ce')
-    run('usermod -aG docker {_USER}'.format(_HOME=HOME_DIR, _USER=USER))
+    run('usermod -aG docker {_USER}'.format(_USER=USER))
     run('systemctl enable docker')
     run('systemctl start docker')
 
@@ -126,9 +121,9 @@ def install_monitoring(version):
     run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/{NAME} {_HOME}/scylla-grafana-monitoring-scylla-monitoring'.format(NAME=name, _HOME=HOME_DIR, _USER=USER, _COPY_OR_MOVE=COPY_OR_MOVE))
 
 def run_monitoring():
-    if os.path.exists('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_servers.example.yml'.format(_HOME=HOME_DIR, _USER=USER)):
+    if os.path.exists('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_servers.example.yml'.format(_HOME=HOME_DIR, )):
         run('sudo -u {_USER} cp {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_servers.example.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_servers.yml')
-    if os.path.exists('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_manager_servers.example.yml'.format(_HOME=HOME_DIR, _USER=USER)):
+    if os.path.exists('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_manager_servers.example.yml'.format(_HOME=HOME_DIR, )):
         run('sudo -u {_USER} cp {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_manager_servers.example.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_manager_servers.yml')
     run('sudo -u {_USER} mkdir -p {_HOME}/scylla-grafana-monitoring-scylla-monitoring/data')
     chdir('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/')
@@ -154,7 +149,7 @@ def install_dbaas(version):
     run('sudo -u {_USER} cp  {_HOME}/scylla-centralized.template.json {_HOME}/scylla-grafana-monitoring-scylla-monitoring/grafana/')
     run('sudo -u {_USER} cp {_HOME}/prometheus.dbaas.yml.template {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/')
     chdir('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/')
-    run('sudo -u {_USER} ./generate-dashboards.sh -F -v master'.format(VERSION="master", _USER=USER))
+    run('sudo -u {_USER} ./generate-dashboards.sh -F -v master'.format(_USER=USER))
     run_monitoring()
 
 def install_node_exporter():
