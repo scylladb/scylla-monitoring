@@ -104,6 +104,7 @@ Options:
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
                                    prometheus, grafana, alertmanager, loki, sidecar, grafanarender
   --archive  data-directory      - Treat data directory as an archive. This disables Prometheus time-to-live (infinite retention), and would run a minimal mode
+  --quick-startup                - If set, the script will not validate that each of the processes start correctly.
 The script starts Scylla Monitoring stack.
 "
 	echo "$__usage"
@@ -216,6 +217,9 @@ for arg; do
 		--no-alertmanager)
 			SKIP_ALERTMANAGER=1
 			;;
+        --quick-startup)
+            QUICK_STARTUP=1
+            ;;
 		--loki-port)
 			LIMIT="1"
 			PARAM="loki-port"
@@ -535,6 +539,9 @@ if [ -z "$VERSIONS" ]; then
 	echo "Scylla-version was not not found, add the -v command-line with a specific version (i.e. -v 2021.1)"
 	exit 1
 fi
+if [ "$QUICK_STARTUP" = "1" ]; then
+    QUICK_STARTUP_CMD="--quick-startup"
+fi
 
 if [ "$CURRENT_VERSION" = "master" ]; then
 	if [ "$ARCHIVE" = "" ]; then
@@ -681,7 +688,7 @@ if [ "$SKIP_ALERTMANAGER" = "1" ]; then
 	AM_ADDRESS="127.0.0.1:9093"
 else
 	echo "Wait for alert manager container to start"
-	AM_ADDRESS=$(./start-alertmanager.sh $ALERTMANAGER_PORT $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG)
+	AM_ADDRESS=$(./start-alertmanager.sh $ALERTMANAGER_PORT "$QUICK_STARTUP_CMD" $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG)
 	if [ $? -ne 0 ]; then
 		echo "$AM_ADDRESS"
 		exit 1
@@ -690,7 +697,7 @@ fi
 LOKI_ADDRESS=""
 if [ $RUN_LOKI -eq 1 ]; then
 	echo "Wait for Loki container to start."
-	LOKI_ADDRESS=$(./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR $LOKI_PORT -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS)
+	LOKI_ADDRESS=$(./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR $LOKI_PORT "$QUICK_STARTUP_CMD" -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS)
 	if [ $? -ne 0 ]; then
 		echo "$LOKI_ADDRESS"
 		exit 1
@@ -778,16 +785,18 @@ if [ $? -ne 0 ]; then
 fi
 
 # Number of retries waiting for a Docker container to start
-RETRIES=7
+RETRIES=35
 
 # Wait till Prometheus is available
 printf "Wait for Prometheus container to start."
 TRIES=0
-until $(curl --output /dev/null -f --silent http://localhost:$PROMETHEUS_PORT) || [ $TRIES -eq $RETRIES ]; do
-	printf '.'
-	((TRIES = TRIES + 1))
-	sleep 5
-done
+if [ ! "$QUICK_STARTUP" = "1" ]; then
+    until $(curl --output /dev/null -f --silent http://localhost:$PROMETHEUS_PORT) || [ $TRIES -eq $RETRIES ]; do
+    	printf '.'
+    	((TRIES = TRIES + 1))
+    	sleep 1 
+    done
+fi
 echo
 
 if [ ! "$(docker ps -q -f name=$PROMETHEUS_NAME)" ]; then
@@ -847,4 +856,4 @@ fi
 if [ "$RUN_ALTERNATOR" = 1 ]; then
 	GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --alternator"
 fi
-./start-grafana.sh $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD
+./start-grafana.sh "$QUICK_STARTUP_CMD" $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD
