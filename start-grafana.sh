@@ -49,6 +49,9 @@ for arg; do
 		--limit)
 			LIMIT="1"
 			;;
+        --quick-startup)
+            QUICK_STARTUP=1
+            ;;
 		--alternator)
 			RUN_ALTERNATOR="1"
 			;;
@@ -356,13 +359,15 @@ fi
 
 # Wait till Grafana API is available
 printf "Wait for Grafana container to start."
-RETRIES=7
+RETRIES=35
 TRIES=0
-until $(curl --output /dev/null -f --silent http://localhost:$GRAFANA_PORT/api/org) || [ $TRIES -eq $RETRIES ]; do
-	printf '.'
-	((TRIES = TRIES + 1))
-	sleep 5
-done
+if [ ! "$QUICK_STARTUP" = "1" ]; then
+    until $(curl --output /dev/null -f --silent http://localhost:$GRAFANA_PORT/api/org) || [ $TRIES -eq $RETRIES ]; do
+    	printf '.'
+    	((TRIES = TRIES + 1))
+    	sleep 1 
+    done
+fi
 echo
 if [ ! "$(docker ps -q -f name=$GRAFANA_NAME)" ]; then
 	echo "Error: Grafana container failed to start"
