@@ -29,6 +29,9 @@ for arg; do
 		--limit)
 			LIMIT="1"
 			;;
+        --quick-startup)
+            QUICK_STARTUP=1
+            ;;
 		--volume)
 			LIMIT="1"
 			VOLUME="1"
@@ -174,13 +177,13 @@ if [ $? -ne 0 ]; then
 fi
 
 # Wait till Loki is available
-RETRIES=5
 TRIES=0
-until $(curl --output /dev/null -f --silent http://localhost:$LOKI_PORT) || [ $TRIES -eq $RETRIES ]; do
-	((TRIES = TRIES + 1))
-	sleep 5
-done
-
+if [ ! "$QUICK_STARTUP" = "1" ]; then
+    until $(curl --output /dev/null -f --silent http://localhost:$LOKI_PORT) || [ $TRIES -eq $RETRIES ]; do
+    	((TRIES = TRIES + 1))
+    	sleep 1
+    done
+fi
 if [ ! "$(docker ps -q -f name=$LOKI_NAME)" ]; then
 	echo "Error: Loki container failed to start"
 	exit 1
@@ -229,12 +232,14 @@ if [ $? -ne 0 ]; then
 fi
 
 # Wait till Loki is available
-RETRIES=5
+RETRIES=25
 TRIES=0
-until $(curl --output /dev/null -f --silent http://localhost:$PROMTAIL_PORT) || [ $TRIES -eq $RETRIES ]; do
-	((TRIES = TRIES + 1))
-	sleep 5
-done
+if [ ! "$QUICK_STARTUP" = "1" ]; then
+    until $(curl --output /dev/null -f --silent http://localhost:$PROMTAIL_PORT) || [ $TRIES -eq $RETRIES ]; do
+    	((TRIES = TRIES + 1))
+    	sleep 1
+    done
+fi
 
 if [ ! "$(docker ps -q -f name=$PROMTAIL_NAME)" ]; then
 	echo "Error: Promtail container failed to start"
