@@ -27,6 +27,8 @@ You cannot use port mapping when using the ``-l`` flag
 
 **--scrap scrap-interval** Allows changing Prometheus scrap interval.
 
+**--quick-startup** When set, the script will not validate that each of the processes start correctly. The benefit is a quicker startup time. The lack of validation makes handling errors harder, use at your own risk.
+
 Grafana Related Commands
 ------------------------
 
