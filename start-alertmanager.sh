@@ -31,6 +31,9 @@ for arg; do
 			LIMIT="1"
 			VOLUME="1"
 			;;
+        --quick-startup)
+            QUICK_STARTUP=1
+            ;;
 		--param)
 			LIMIT="1"
 			PARAM="1"
@@ -148,13 +151,14 @@ if [ $? -ne 0 ]; then
 fi
 
 # Wait till Alertmanager is available
-RETRIES=5
+RETRIES=25
 TRIES=0
-until $(curl --output /dev/null -f --silent http://localhost:$ALERTMANAGER_PORT) || [ $TRIES -eq $RETRIES ]; do
-	((TRIES = TRIES + 1))
-	sleep 5
-done
-
+if [ ! "$QUICK_STARTUP" = "1" ]; then
+    until $(curl --output /dev/null -f --silent http://localhost:$ALERTMANAGER_PORT) || [ $TRIES -eq $RETRIES ]; do
+    	((TRIES = TRIES + 1))
+    	sleep 1 
+    done
+fi
 if [ ! "$(docker ps -q -f name=$ALERTMANAGER_NAME)" ]; then
 	echo "Error: Alertmanager container failed to start"
 	exit 1
