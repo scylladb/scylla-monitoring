@@ -1074,7 +1074,7 @@
             "class":"small_stat",
             "targets":[
                {
-                  "expr":"sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*\"}[$__rate_interval]))+sum(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))",
+                  "expr":"(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*\"}[$__rate_interval])) or vector(0))+ on() (sum(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or vector(0))",
                   "intervalFactor":1,
                   "refId":"A",
                   "instant":true,
