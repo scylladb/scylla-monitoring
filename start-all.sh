@@ -774,7 +774,7 @@ else
 		$NODE_TARGET_FILE \
 		$SCYLLA_MANGER_AGENT_TARGET_FILE \
 		$PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
-		--web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
+		--web.enable-lifecycle --enable-feature=promql-experimental-functions --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
 		${DOCKER_PARAMS["prometheus"]}
 fi
 
