@@ -178,6 +178,7 @@ fi
 
 # Wait till Loki is available
 TRIES=0
+RETRIES=25
 if [ ! "$QUICK_STARTUP" = "1" ]; then
     until $(curl --output /dev/null -f --silent http://localhost:$LOKI_PORT) || [ $TRIES -eq $RETRIES ]; do
     	((TRIES = TRIES + 1))
