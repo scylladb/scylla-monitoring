@@ -26,6 +26,20 @@ if [ -f env.sh ]; then
 	. env.sh
 fi
 
+for arg; do
+    shift
+        case $arg in
+        --support-dashboard)
+            SUPPORT_DASHBOARD="1"
+            ;;
+        --clear)
+            CLEAR_DASHBOARD="1"
+            ;;
+        *)
+            set -- "$@" "$arg"
+            ;;
+        esac
+done
 usage="$(basename "$0") [-h] [-v comma separated versions ]  [-D] [-j additional dashboard to load to Grafana, multiple params are supported] [-M scylla-manager version ] [-t] [-F force update] [-S start with a system specific dashboard set] -- Generates the grafana dashboards and their load files"
 BASE_DASHBOARD_DIR="grafana/provisioning/dashboards"
 while getopts ':htDv:j:M:S:B:P:s:R:F' option; do
@@ -91,7 +105,12 @@ mkdir -p $BASE_DASHBOARD_DIR
 rm -f $BASE_DASHBOARD_DIR/load.*.yaml
 
 function set_loader {
-	sed "s/NAME/$1/" grafana/load.yaml | sed "s/FOLDER/$2/" | sed "s/VERSION/$3/" >"$BASE_DASHBOARD_DIR/load.$1.yaml"
+    if [ "$4" = "" ]; then
+        NAME=$1
+    else
+        NAME=$4
+    fi
+	sed "s/NAME/$NAME/" grafana/load.yaml | sed "s/FOLDER/$2/" | sed "s/VERSION/$3/" >"$BASE_DASHBOARD_DIR/load.$NAME.yaml"
 }
 
 IFS=','
@@ -112,14 +131,27 @@ for v in $VERSIONS; do
 	fi
 
 	VERDIR="grafana/build/$VERDIR_NAME"
+	SUPPORTVERDIR="grafana/build/support/$VERDIR_NAME"
 	if [[ -z "$TEST_ONLY" ]]; then
 		mkdir -p $VERDIR
+		if [ "$CLEAR_DASHBOARD" = "1" ]; then
+		    rm -f $VERDIR/*.json
+		fi
+		if [ "$SUPPORT_DASHBOARD" = "1" ]; then
+		  mkdir -p $SUPPORTVERDIR
+		  if [ "$CLEAR_DASHBOARD" = "1" ]; then
+            rm -f $SUPPORTVERDIR/*.json
+          fi
+		fi
 	fi
 
 	if [[ $VERSIONS = *","* ]]; then
 		set_loader $v "$v" "$VERDIR_NAME"
 	else
 		set_loader $v "" "$VERDIR_NAME"
+		if [ "$SUPPORT_DASHBOARD" = "1" ]; then
+		  set_loader $v "support" "support\/$VERDIR_NAME" "$v.support"
+		fi
 	fi
 
 	for f in "${DASHBOARDS[@]}"; do
@@ -127,7 +159,11 @@ for v in $VERSIONS; do
 			if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.template.json" ] || [ ! -z "$FORCEUPDATE" ]; then
 				if [[ -z "$TEST_ONLY" ]]; then
 					echo "updating dashboard grafana/$f.$v.template.json"
-					./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -R "__REFRESH_INTERVAL__=$DASHBOARD_REFRESH" --replace-file docs/source/reference/metrics.yaml -V $v
+					if [ -z "$SUPPORT_DASHBOARD" ] || [[  $f != "scylla-advanced"* ]]; then
+					   ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -R "__REFRESH_INTERVAL__=$DASHBOARD_REFRESH" --replace-file docs/source/reference/metrics.yaml -V $v
+					else
+					    ./make_dashboards.py ${PRODUCTS[@]} -af $SUPPORTVERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -R "__REFRESH_INTERVAL__=$DASHBOARD_REFRESH" --replace-file docs/source/reference/metrics.yaml -V $v
+ 				    fi
 				fi
 			fi
 		else
