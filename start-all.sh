@@ -250,6 +250,12 @@ for arg; do
 		--auth)
 			GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --auth"
 			;;
+        --support-dashboard)
+            SUPPORT_DASHBOARD="1"
+            ;;
+        --clear)
+            GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --clear"
+            ;;
 		--disable-anonymous)
 			GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --disable-anonymous"
 			;;
@@ -542,7 +548,10 @@ fi
 if [ "$QUICK_STARTUP" = "1" ]; then
     QUICK_STARTUP_CMD="--quick-startup"
 fi
-
+if [ ! "$SUPPORT_DASHBOARD" = "" ]; then
+    SUPPORT_DASHBOARD="--support-dashboard"
+    GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --support-dashboard"
+fi
 if [ "$CURRENT_VERSION" = "master" ]; then
 	if [ "$ARCHIVE" = "" ]; then
 		echo ""
@@ -550,9 +559,8 @@ if [ "$CURRENT_VERSION" = "master" ]; then
 		echo "* WARNING: You are using the unstable master branch *"
 		echo "* Check the README.md file for the stable releases  *"
 		echo "*****************************************************"
-		./generate-dashboards.sh -v $VERSIONS -m $MANAGER_VERSION $STACK_CMD
+		./generate-dashboards.sh -v $VERSIONS -m $MANAGER_VERSION $STACK_CMD "$SUPPORT_DASHBOARD"
 	else
-		echo ./generate-dashboards.sh -v $VERSIONS -F -R 0 -m $MANAGER_VERSION $STACK_CMD
 		./generate-dashboards.sh -v $VERSIONS -F -R 0 -m $MANAGER_VERSION $STACK_CMD
 	fi
 	echo "Generating the dashboards"
@@ -856,4 +864,4 @@ fi
 if [ "$RUN_ALTERNATOR" = 1 ]; then
 	GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --alternator"
 fi
-./start-grafana.sh "$QUICK_STARTUP_CMD" $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD
+./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD
