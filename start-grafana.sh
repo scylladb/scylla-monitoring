@@ -73,6 +73,12 @@ for arg; do
 		--disable-anonymous)
 			GRAFANA_AUTH_ANONYMOUS=false
 			;;
+        --clear)
+            GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND --clear"
+            ;;
+        --support-dashboard)
+            SUPPORT_DASHBOARD="1"
+            ;;
 		*)
 			set -- "$@" "$arg"
 			;;
@@ -207,7 +213,11 @@ while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:s:' option; do
 		;;
 	esac
 done
-
+if [ "$SUPPORT_DASHBOARD" = "1" ]; then
+    GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND --support-dashboard"
+    GRAFANA_AUTH=true
+    QUICK_STARTUP=""
+fi
 if [ -z $GRAFANA_PORT ]; then
 	GRAFANA_PORT=3000
 	if [ -z $GRAFANA_NAME ]; then
@@ -344,6 +354,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
 	-e "GF_ANALYTICS_CHECK_FOR_UPDATES=$ANALYTICS_CHECK_FOR_UPDATES" \
 	-e "GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=$ANALYTICS_CHECK_FOR_PLUGIN_UPDATES" \
 	-e "GF_SECURITY_ANGULAR_SUPPORT_ENABLED=$SECURITY_ANGULAR_SUPPORT_ENABLED" \
+	-e "GF_DATABASE_WAL=true" \
 	-e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource" \
 	-e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=$HOME_DASHBOARD" \
 	-e "GF_SERVER_ENABLE_GZIP=$SERVER_ENABLE_GZIP" \
@@ -376,5 +387,10 @@ if [ ! "$(docker ps -q -f name=$GRAFANA_NAME)" ]; then
 fi
 if [ -z "$BIND_ADDRESS" ]; then
 	BIND_ADDRESS="localhost:"
+fi
+
+if [ ! -z "$SUPPORT_DASHBOARD" ]; then
+    FOLDER_ID=`curl -s 'http://admin:'"$GRAFANA_ADMIN_PASSWORD@$BIND_ADDRESS$GRAFANA_PORT"'/api/search?/query=support&type=dash-folder' | jq . |& grep '"uid"'|cut -d'"' -f4`
+    curl -s -X POST -H "Content-Type: application/json" -d '{"items": [{ "role": "Editor", "permission": 2 }]}' "http://admin:$GRAFANA_ADMIN_PASSWORD@$BIND_ADDRESS$GRAFANA_PORT/api/folders/$FOLDER_ID/permissions" >& /dev/null
 fi
 printf "Start completed successfully, check http://$BIND_ADDRESS$GRAFANA_PORT\n"
