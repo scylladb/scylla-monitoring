@@ -44,6 +44,9 @@ for arg; do
 		--limit)
 			LIMIT="1"
 			;;
+        --no-thanos-datasource)
+            NO_THANOS_DATASOURCE="1"
+            ;;
 		--volume)
 			LIMIT="1"
 			VOLUME="1"
@@ -94,7 +97,7 @@ else
 	DOCKER_PARAM=""
 fi
 
-while getopts ':hlp:S:D:' option; do
+while getopts ':hlp:S:N:D:' option; do
 	case "$option" in
 	l)
 		if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
@@ -118,6 +121,8 @@ while getopts ':hlp:S:D:' option; do
 		fi
 		DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
 		;;
+	N) THANOS_NAME=$OPTARG
+	    ;;
 	:)
 		printf "missing argument for -%s\n" "$OPTARG" >&2
 		echo "$usage" >&2
@@ -131,15 +136,22 @@ while getopts ':hlp:S:D:' option; do
 	esac
 done
 
-docker run ${DOCKER_LIMITS["thanos"]} -d $DOCKER_PARAM -i --name thanos -- docker.io/thanosio/thanos:$THANOS_VERSION \
+if [ -z "$THANOS_NAME" ]; then
+    THANOS_NAME=thanos
+fi
+
+docker run ${DOCKER_LIMITS["thanos"]} -d $DOCKER_PARAM -i --name $THANOS_NAME -- docker.io/thanosio/thanos:$THANOS_VERSION \
 	query \
 	"--debug.name=query0" \
 	"--grpc-address=0.0.0.0:10903" \
 	"--grpc-grace-period=1s" \
 	"--http-address=0.0.0.0:10904" \
 	"--http-grace-period=1s" \
-	"--query.replica-label=prometheus" \
+    "--query.promql-engine=thanos" \
+	"--query.replica-label=cluster" \
 	${DOCKER_PARAMS["thanos"]} \
 	${SIDECAR[@]}
 
-update_data_source
+if [ -z "$NO_THANOS_DATASOURCE" ]; then
+    update_data_source
+fi
