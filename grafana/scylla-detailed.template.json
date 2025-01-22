@@ -950,6 +950,81 @@
                 "panels": [
                     {
                         "class": "collapsible_row_panel",
+                        "collapsed": true,
+                        "title": "S3 Information"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], $func(rate(scylla_s3_total_write_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "S3 Writes, bytes rate \n\nscylla_s3_total_write_bytes",
+                        "title": "S3 Writes Bytes/s by [[by]]"
+                    },
+                    {
+                        "class": "seconds_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], $func(rate(scylla_s3_total_write_latency_sec{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_s3_total_write_requests{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "S3 Writes latency\n\nscylla_s3_total_write_latency_sec",
+                        "title": "S3 Writes latency"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], $func(rate(scylla_s3_total_read_bytes{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "S3 reads, bytes rate \n\nscylla_s3_total_read_bytes",
+                        "title": "S3 reads Bytes/s by [[by]]"
+                    },
+                    {
+                        "class": "seconds_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], $func(rate(scylla_s3_total_read_latency_sec{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_s3_total_read_requests{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "S3 reads latency\n\nscylla_s3_total_read_latency_sec",
+                        "title": "S3 reads latency"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
                         "title": "Cache"
                     }
                 ]
