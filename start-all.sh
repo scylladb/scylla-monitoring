@@ -94,8 +94,9 @@ Options:
   --no-cdc                       - If set, Prometheus will drop all cdc related metrics while scrapping
   --auto-restart                 - If set, auto restarts the containers on failure.
   --no-renderer                  - If set, do not run the Grafana renderer container.
-  --thanos-sc                    - If set, run thanos side car with the Prometheus server.
+  --thanos-sc                    - If set, run thanos sidecar with the Prometheus server.
   --thanos                       - If set, run thanos query as a Grafana datasource.
+  --local-thanos                 - If set, run thanos query as a front end to the local thanos sidecar.
   --enable-protobuf              - If set, enable the experimental Prometheus Protobuf with Native histograms support.
   --scrap [scrap duration]       - Change the default Prometheus scrap duration. Duration is in seconds.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
@@ -241,6 +242,12 @@ for arg; do
 		--thanos)
 			RUN_THANOS=1
 			;;
+		--local-thanos)
+		    RUN_LOCAL_THANOS=1
+		    ;;
+        --no-thanos-datasource)
+            NO_THANOS_DATASOURCE="1"
+            ;;
 		--auto-restart)
 			DOCKER_PARAM="--restart=unless-stopped"
 			;;
@@ -847,8 +854,14 @@ if [ $RUN_THANOS_SC -eq 1 ]; then
 	fi
 fi
 
+if [ ! -z "$NO_THANOS_DATASOURCE" ]; then
+    NO_THANOS_DATASOURCE="--no-thanos-datasource"
+fi
 if [ $RUN_THANOS -eq 1 ]; then
-	./start-thanos.sh -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG
+	./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG
+elif [ "$RUN_LOCAL_THANOS" = "1" ]; then
+    STORE_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sidecar1):10911"
+    ./start-thanos.sh $NO_THANOS_DATASOURCE -S $STORE_ADDRESS
 fi
 
 for val in "${GRAFANA_ENV_ARRAY[@]}"; do
