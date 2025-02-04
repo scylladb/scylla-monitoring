@@ -14,7 +14,7 @@ If this is the case, you can do one of the following:
   You may start by setting the value ``100``. If read latency is impacted, which indicates that compaction is overly slowed down,
   you can increase the value to reach the balance between the system performance and read latency.
 
-* Enforce ``min_threshold`` by setting ``compaction_enforce_min_threshold: true`` in the ``scylla.yml`` configuration file.
+* Enforce ``min_threshold`` by setting ``compaction_enforce_min_threshold: true`` in the ``scylla.yml`` configuration file (`default is False <https://docs.scylladb.com/manual/stable/reference/configuration-parameters.html#confval-compaction_enforce_min_threshold>`_).
   As a result, ScyllaDB will compact only the buckets that contain the number of SSTables specified with ``min_threshold``
   or more. See `STCS options <https://docs.scylladb.com/getting-started/compaction/#stcs-options>`_ for details.
 
