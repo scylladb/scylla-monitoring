@@ -46,13 +46,13 @@ Copy the ``scylla_servers.yml`` and ``scylla_manager_servers.yml`` from the vers
 Validate the new version is running the correct version
 -------------------------------------------------------
 
-run:
+Run the following command to validate the Scylla-Monitoring version:
 
 .. code-block:: bash
 
                 ./start-all.sh --version
 
-To validate the Scylla-Monitoring version.
+
 
 Running in test mode
 ====================
@@ -76,7 +76,7 @@ Note that we are using different port numbers for Grafana, Prometheus, and the A
 
 .. caution::
 
-   Important: do not use the local dir flag when testing!
+   Important: Do not use the local dir flag when testing!
 
 When you are satisfied with the data in the dashboard, you can shut down the containers.
 
@@ -101,7 +101,7 @@ Migrating
 Move to version 4.y (the new version)
 -------------------------------------
 
-Note: migrating will cause a few seconds of blackout in the system.
+Note: Migrating will cause a few seconds of blackout in the system.
 
 We assume that you are using external volume to store the metrics data.
 
@@ -109,8 +109,7 @@ We assume that you are using external volume to store the metrics data.
 Backup
 ^^^^^^
 
-We suggest to copy the Prometheus external directory first and use the copy as the data directory for the new monitoring stack.
-Newer Monitoring stack uses newer Promethues versions, and keeping a backup of the prometheus dir would allow you to rollback.
+We suggest to make a copy of Prometheus' external directory and use it as the data directory for the new monitoring stack. The new monitoring stack uses newer versions of Prometheus and keeping a backup would enable you to rollback to the previous version of Prometheus.
 
 Kill all containers
 ^^^^^^^^^^^^^^^^^^^
@@ -120,7 +119,7 @@ At this point you have two monitoring stacks installed with the older version ru
 If you run the new version in testing mode kill it by following the instructions on how to `Killing the new 4.y Monitoring stack in testing mode`_
 in the previous section.
 
-kill the older 3.x version containers by running:
+Kill the older 3.x version containers by running:
 
 .. code-block:: bash
 
@@ -145,7 +144,7 @@ Rollback to version 3.x
 To rollback during the testing mode, follow `Killing the new 4.y Monitoring stack in testing mode`_ as explained previously
 and the system will continue to operate normally.
 
-To rollback to version 3.x after you completed moving to version 4.y (as shown above), run:
+To rollback to version 3.x, run the following commands after you have completed moving to version 4.y (as shown above):
 
 .. code-block:: bash
 
@@ -199,7 +198,7 @@ When you run the backfilling process you need to determine the start time and en
 
 Determine the start time
 ^^^^^^^^^^^^^^^^^^^^^^^^
-The start time is your Prometheus retention time, by default it is set to 15 days. if you are not sure what Prometheus retention time is, you can check by
+The start time is your Prometheus retention time, by default it is set to 15 days. If you are not sure what Prometheus retention time is, you can check by
 logging in to your Prometheus server: `http://{ip}:9090/status`.
 
 If you are running Scylla Monitoring version 3.8 or newer for longer than the retention period, you are done! You can skip the rest of this section.
@@ -212,37 +211,34 @@ Typically, you need to back-fill the recording rules when you are using a long r
 and you upgraded to Scylla Monitoring 3.8 about three months ago.
 
 If you open the Overview dashboard and look at your entire retention time (in our example 1 year) you will see that while most of the graphs do
-show the data, the latency graphs have a missing period, in our example - from the entire year, the latency graph will only show the last three months.
-
-That nine months gap (12 months minus 3) is what we want to fill with back-filling.
+display the data, the latency graphs are missing a period of time.  The latency graph will only show the last three months in our example from the entire year. That nine months gap (12 months minus 3) is what we want to fill with back-filling.
 
 The point in time that the graphs start will be your back-filling end time. Check in the graph for the exact time.
 
 Backfilling Process
 -------------------
-backup
+Backup
 ^^^^^^
-If you have a long retention period you are using an external directory that holds the Prometheus data, back it up, in case
-If you have a long retention period, you are using an external directory that holds the Prometheus data back it up; if something goes wrong in the process, you can revert the process.
+Backup the external directory containing Prometheus data; if something goes wrong, you can revert the changes.
 
-To complete the process you will need to restart the monitoring stack at least once. If you are not using an external directory (The ``-d``
-command-line option) You cannot complete it.
+To complete the process, you must restart Monitoring Stack at least once. You cannot complete the process without providing the path to the external directory with Prometheus data using the ``-d`` command line option. 
+
 
 Restart the monitoring stack
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-You need to stop the monitoring stack and run the ``stat-all.sh`` command with an additional flag:
+You need to stop the monitoring stack and run the ``start-all.sh`` command with an additional flag (The 365d retention time used here is used only as an example):
 
-``-b "--storage.tsdb.allow-overlapping-blocks"``
+``start-all.sh -d data_dir -b "--storage.tsdb.allow-overlapping-blocks --storage.tsdb.retention.time=365d"``
 
 Create the data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-We will use the Promtool utility; it's already installed for you if you are using the docker container. 
-You will need the start time and end time for the process, in our example the start time is 360 days ago and the end time is 90 days ago.
+We will create the data files using the Promtool utility, which is installed in the Prometheus Docker container. To run the utility, you must pass the start time and end time in the epoch format. The following example shows one of the ways to convert the times to epoch when the start time is 360 and the end time is 90 days ago:
 
-The start and end times are in epoc, so you will need to translate the times to epoc.  There are many ways to do this - for example, from the command line.
-Run the following command to get the epoc time for 90 days ago: : ``echo $((`date +%s` - 3600*24*90))``
+``echo $((`date +%s` - 3600*24*360))``
 
-Log in to your docker container and run the following (``start`` and ``end`` should be the start and end in epoc time):
+``echo $((`date +%s` - 3600*24*90))``
+
+Log in to your Docker container and run the following (``start`` and ``end`` should be in epoch format):
 
 .. code-block:: bash
 
@@ -254,20 +250,15 @@ Log in to your docker container and run the following (``start`` and ``end`` sho
                 --url http://localhost:9090 \
                 /etc/prometheus/prom_rules/back_fill/3.8/rules.1.yml
 
-It will create a ``data`` directory in the directory where you run it.
-The reason to run it under the ``/prometheus/data/`` is you can be sure Prometheus has write privileges there.
+The previous bash script will create a ``data`` directory in the directory where it is executed. The reason to run the bash script under the ``/prometheus/data/`` is to ensure Prometheus has write privileges to the directory.
 
-    .. note::
-       Depending on the time range and the number of cores, the process can take a long time. During testing it took an hour for every week of data,
-       for a cluster with a total of 100 cores. Make sure that the creation process is not inerupt. You can split the time range to smaller durations
-       (e.g. instead of an entire year, do it a weeks at a time).
+    .. note:
+       This process may take a long time, depending on the time range and number of cores. For instance, for a cluster with 100 cores, the process took an hour for every week of data during testing. Please be patient and make sure that the creation process is not interrupted. Note that the time range can be split into smaller intervals (e.g., instead of an entire year, break it down into weeks).
 
 
 Copy the data files
 ^^^^^^^^^^^^^^^^^^^
-Make sure that the process is completed successfully - don't start this section before you complete the previous sections.
-
-Copy the data files to the Prometheus directory:
+You should not start this section until all the previous sections have been completed. Copy the data files to the Prometheus directory using the following command:
 
 .. code-block:: bash
 
