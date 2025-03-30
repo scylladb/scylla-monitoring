@@ -8,21 +8,21 @@
                 "class": "row",
                 "panels": [
                     {
-                      "collapsed": false,
-                      "datasource": null,
-                      "id": "auto",
-                      "gridPos": {
-                        "h": 1,
-                        "w": 24
-                      },
-                      "panels": [],
-                      "title": "Cluster overview $cluster",
-                      "type": "row"
+                        "collapsed": false,
+                        "datasource": null,
+                        "id": "auto",
+                        "gridPos": {
+                            "h": 1,
+                            "w": 24
+                        },
+                        "panels": [],
+                        "title": "Cluster overview $cluster",
+                        "type": "row"
                     }
                 ]
             },
             {
-                "class" : "small_stat_rows"
+                "class": "small_stat_rows"
             },
             {
                 "class": "row",
@@ -116,17 +116,1085 @@
                 "class": "row",
                 "panels": [
                     {
-                      "collapsed": false,
-                      "datasource": null,
-                      "id": "auto",
-                      "gridPos": {
-                        "h": 1,
-                        "w": 24
-                      },
-                      "panels": [],
-                      "title": "",
-                      "repeat": "dc",
-                      "type": "row"
+                        "class": "collapsible_row_panel",
+                        "title": "SCT Information",
+                        "dashproduct": "sct-tests"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "dashproduct": "sct-tests",
+                "panels": [
+                    {
+                        "class": "percent_panel",
+                        "gridPos": {
+                            "h": 12,
+                            "w": 12
+                        },
+                        "targets": [
+                            {
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"} ) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Load per [[by]]",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "gridPos": {
+                            "x": 12,
+                            "h": 6,
+                            "w": 12
+                        },
+                        "targets": [
+                            {
+                                "expr": "(sum(irate(scylla_transport_requests_served{cluster=~\"$cluster|$^\"}[60s])) or vector(0)) + (sum(irate(scylla_alternator_operation{cluster=~\"$cluster|$^\"}[60s])) or vector(0))",
+                                "interval": "",
+                                "legendFormat": "Total Requests",
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "Total Requests",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "gridPos": {
+                            "x": 12,
+                            "h": 6,
+                            "w": 12
+                        },
+                        "fieldConfig": {
+                            "overrides": [
+                                {
+                                    "matcher": {
+                                      "id": "byRegexp",
+                                      "options": "/method=\"[a-zA-Z]/"
+                                    },
+                                    "properties": [
+                                      {
+                                        "id": "custom.fillOpacity",
+                                        "value": 20
+                                      },
+                                      {
+                                        "id": "custom.drawStyle",
+                                        "value": "line"
+                                      },
+                                      {
+                                        "id": "unit",
+                                        "value": "short"
+                                      },
+                                      {
+                                        "id": "max",
+                                        "value": 1
+                                      },
+                                      {
+                                        "id": "custom.axisPlacement",
+                                        "value": "right"
+                                      },
+                                      {
+                                        "id": "custom.axisLabel",
+                                        "value": "Nemesis"
+                                      }
+                                    ]
+                                  }
+                            ]
+                        },
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "{__name__=~'nemesis(.*)(?:gauge)(.*)'}",
+                                "intervalFactor": 2,
+                                "refId": "B"
+                            }
+                        ],
+                        "title": "Requests Served per [[by]]",
+                        "type": "timeseries"
+                    },
+                    {
+                        "datasource": {
+                            "type": "datasource",
+                            "uid": "grafana"
+                        },
+                        "gridPos": {
+                            "h": 13,
+                            "w": 24
+                        },
+                        "links": [],
+                        "options": {
+                            "onlyFromThisDashboard": false,
+                            "onlyInTimeRange": true,
+                            "limit": 1000,
+                            "showUser": true,
+                            "showTime": true,
+                            "showTags": true,
+                            "navigateToPanel": true,
+                            "navigateBefore": "10m",
+                            "navigateAfter": "10m"
+                        },
+                        "repeat": "cluster",
+                        "repeatDirection": "v",
+                        "title": "SCT Events",
+                        "type": "annolist",
+                        "id": "auto",
+                        "scopedVars": {
+                            "cluster": {
+                                "text": "None",
+                                "value": "",
+                                "isNone": true,
+                                "selected": true
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "cassandra-stress 95% latency",
+                        "dashproduct": "sct-tests"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "dashproduct": "sct-tests",
+                "panels": [
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_write_gauge{type=\"lat_perc_95\"}",
+                                "interval": "",
+                                "legendFormat": "",
+                                "refId": "A"
+                            },
+                            {
+                                "expr": "sct_cassandra_stress_counter_write_gauge{type=\"lat_perc_95\"}",
+                                "interval": "",
+                                "legendFormat": "",
+                                "refId": "B"
+                            }
+                        ],
+                        "title": "C-S stress tools write latency 95%"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_write_gauge{type=\"lat_perc_95\"}",
+                                "interval": "",
+                                "legendFormat": "",
+                                "refId": "A"
+                            },
+                            {
+                                "expr": "sct_cassandra_stress_counter_write_gauge{type=\"lat_perc_95\"}",
+                                "interval": "",
+                                "legendFormat": "",
+                                "refId": "B"
+                            }
+                        ],
+                        "title": "C-S stress tools write latency 95% histogram",
+                        "type": "histogram"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_write_gauge{type=\"lat_perc_95\"}",
+                                "interval": "",
+                                "legendFormat": "",
+                                "refId": "A"
+                            },
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_counter_write_gauge{type=\"lat_perc_95\"}",
+                                "interval": "",
+                                "legendFormat": "",
+                                "refId": "B"
+                            }
+                        ],
+                        "title": "cql-stress C-S write latency 95%"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_write_gauge{type=\"lat_perc_95\"}",
+                                "interval": "",
+                                "legendFormat": "",
+                                "refId": "A"
+                            },
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_counter_write_gauge{type=\"lat_perc_95\"}",
+                                "interval": "",
+                                "legendFormat": "",
+                                "refId": "B"
+                            }
+                        ],
+                        "title": "cql-stress C-S write latency 95% histogram",
+                        "type": "histogram"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_read_gauge{type=\"lat_perc_95\"}",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "C"
+                            },
+                            {
+                                "expr": "sct_cassandra_stress_counter_read_gauge{type=\"lat_perc_95\"}",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "E"
+                            }
+                        ],
+                        "title": "C-S stress tool read latency 95%",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_read_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "C"
+                            },
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_counter_read_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "E"
+                            }
+                        ],
+                        "title": "cql-stress C-S read latency 95%",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_read_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "C"
+                            },
+                            {
+                                "expr": "sct_cassandra_stress_counter_read_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "E"
+                            }
+                        ],
+                        "title": "C-S stress tool read latency 95% histogram",
+                        "type": "histogram"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_read_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "C"
+                            },
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_counter_read_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "E"
+                            }
+                        ],
+                        "title": "cql-stress C-S read latency 95% histogram",
+                        "type": "histogram"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_mixed_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "C-S stress tool mixed latency 95%",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_mixed_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "C-S stress tool mixed latency 95% histogram",
+                        "type": "histogram"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_user_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "F"
+                            }
+                        ],
+                        "title": "C-S stress tool user profile latency 95%",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_user_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "F"
+                            }
+                        ],
+                        "title": "C-S stress tool user profile latency 95% histogram",
+                        "type": "histogram"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "cassandra-stress 99% latency",
+                        "dashproduct": "sct-tests"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "dashproduct": "sct-tests",
+                "panels": [
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_write_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "B"
+                            },
+                            {
+                                "expr": "sct_cassandra_stress_counter_write_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "D"
+                            }
+                        ],
+                        "title": "C-S stress tools write latency 99%",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_write_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "B"
+                            },
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_counter_write_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "D"
+                            }
+                        ],
+                        "title": "cql-stress C-S write latency 99%",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_write_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "B"
+                            },
+                            {
+                                "expr": "sct_cassandra_stress_counter_write_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "D"
+                            }
+                        ],
+                        "title": "C-S stress tools write latency 99% histogram",
+                        "type": "histogram"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_write_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "B"
+                            },
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_counter_write_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "D"
+                            }
+                        ],
+                        "title": "cql-stress C-S write latency 99% histogram",
+                        "type": "histogram"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_read_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "C"
+                            },
+                            {
+                                "expr": "sct_cassandra_stress_counter_read_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "E"
+                            }
+                        ],
+                        "title": "C-S stress tool read latency 99%",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_read_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "C"
+                            },
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_counter_read_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "E"
+                            }
+                        ],
+                        "title": "cql-stress C-S read latency 99%",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_read_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "C"
+                            },
+                            {
+                                "expr": "sct_cassandra_stress_counter_read_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "E"
+                            }
+                        ],
+                        "title": "C-S stress tool read latency 99% histogram",
+                        "type": "histogram"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_read_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "C"
+                            },
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_counter_read_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "E"
+                            }
+                        ],
+                        "title": "cql-stress C-S read latency 99% histogram",
+                        "type": "histogram"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_mixed_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "C-S stress tool mixed latency 99%",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_mixed_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "C-S stress tool mixed latency 99% histogram",
+                        "type": "histogram"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_user_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "F"
+                            }
+                        ],
+                        "title": "C-S stress tool user profile latency 99%",
+                        "type": "timeseries"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "title": "C-S stress tool user profile latency 99% histogram",
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_user_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "F"
+                            }
+                        ],
+                        "type": "histogram"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "title": "Miscellaneous stress tools Latency",
+                        "dashproduct": "sct-tests"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "dashproduct": "sct-tests",
+                "panels": [
+
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "title": "Other(YCSB/Scylla-bench) Stress tools latency 95%",
+                        "targets": [
+                            {
+                                "expr": "avg(sct_ycsb_read_gauge{type=\"p90\"}) by (instance)",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "legendFormat": "YCSB READ [{{instance}}]",
+                                "refId": "G"
+                            },
+                            {
+                                "expr": "avg(sct_ycsb_update_gauge{type=\"p90\"}) by (instance)",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "legendFormat": "YCSB UPDATE [{{instance}}]",
+                                "refId": "H"
+                            },
+                            {
+                                "expr": "avg(sct_ycsb_insert_gauge{type=\"p90\"}) by (instance)",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "legendFormat": "YCSB INSERT [{{instance}}]",
+                                "refId": "I"
+                            },
+                            {
+                                "expr": "sct_scylla_bench_stress_write_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "J"
+                            },
+                            {
+                                "expr": "sct_scylla_bench_stress_read_gauge{type=\"lat_perc_95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "K"
+                            },
+                            {
+                                "expr": "sct_latte_read_gauge{type=\"p95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "L"
+                            },
+                            {
+                                "expr": "sct_latte_update_gauge{type=\"p95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "M"
+                            },
+                            {
+                                "expr": "sct_latte_run_gauge{type=\"p95\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "N"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "title": "Other(YCSB/Scylla-bench) Stress tools latency 99%",
+                        "targets": [
+                            {
+                                "expr": "avg(sct_ycsb_read_gauge{type=\"p99\"}) by (instance)",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "legendFormat": "YCSB READ [{{instance}}]",
+                                "refId": "G"
+                            },
+                            {
+                                "expr": "avg(sct_ycsb_update_gauge{type=\"p99\"}) by (instance)",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "legendFormat": "YCSB UPDATE [{{instance}}]",
+                                "refId": "H"
+                            },
+                            {
+                                "expr": "avg(sct_ycsb_insert_gauge{type=\"p99\"}) by (instance)",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "legendFormat": "YCSB INSERT [{{instance}}]",
+                                "refId": "I"
+                            },
+                            {
+                                "expr": "sct_scylla_bench_stress_write_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "J"
+                            },
+                            {
+                                "expr": "sct_scylla_bench_stress_read_gauge{type=\"lat_perc_99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "K"
+                            },
+                            {
+                                "expr": "sct_latte_read_gauge{type=\"p99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "L"
+                            },
+                            {
+                                "expr": "sct_latte_update_gauge{type=\"p99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "M"
+                            },
+                            {
+                                "expr": "sct_latte_run_gauge{type=\"p99\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "N"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 6,
+                        "title": "YCSB Error metrics",
+                        "targets": [
+                            {
+                                "expr": "rate(sct_ycsb_read_failed_gauge{type=\"count\"}[1m])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 1,
+                                "refId": "A"
+                            },
+                            {
+                                "expr": "rate(sct_ycsb_insert_failed_gauge{type=\"count\"}[1m])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 1,
+                                "refId": "B"
+                            },
+                            {
+                                "expr": "rate(sct_ycsb_verify_gauge{type=\"ERROR\"}[1m])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 1,
+                                "refId": "C"
+                            },
+                            {
+                                "expr": "rate(sct_ycsb_update_failed_gauge{type=\"count\"}[1m])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 1,
+                                "refId": "D"
+                            },
+                            {
+                                "expr": "rate(sct_ycsb_verify_gauge{type=\"UNEXPECTED_STATE\"}[1m])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 1,
+                                "refId": "E"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 6,
+                        "title": "Ops vs successful ops / minute",
+                        "targets": [
+                            {
+                                "exemplar": true,
+                                "expr": "result{type=\"avg_rate\",avg_of=\"1m\"}",
+                                "format": "time_series",
+                                "hide": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{instance}}-allops",
+                                "refId": "A"
+                            },
+                            {
+                                "exemplar": true,
+                                "expr": "result_success{type=\"avg_rate\",avg_of=\"1m\"}",
+                                "hide": false,
+                                "interval": "",
+                                "legendFormat": "{{instance}}-success",
+                                "refId": "B"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "percent_panel",
+                        "span": 6,
+                        "title": "Service time distribution",
+                        "targets": [
+                            {
+                                "exemplar": true,
+                                "expr": "result_success{type=\"pctile\"}",
+                                "format": "time_series",
+                                "hide": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{instance}}-{{step}}-p{{pctile}}",
+                                "refId": "A"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "seconds_panel",
+                        "span": 6,
+                        "title": "Service time range",
+                        "targets": [
+                            {
+                                "exemplar": true,
+                                "expr": "result_success{type=\"pctile\",pctile=\"0\"}",
+                                "format": "time_series",
+                                "hide": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{instance}}-{{step}}-min",
+                                "refId": "A"
+                            },
+                            {
+                                "exemplar": true,
+                                "expr": "result_success{type=\"pctile\",pctile=\"100\"}",
+                                "hide": false,
+                                "interval": "",
+                                "legendFormat": "{{instance}}-{{step}}-max",
+                                "refId": "B"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "seconds_panel",
+                        "span": 6,
+                        "title": "Service time median",
+                        "targets": [
+                            {
+                                "exemplar": true,
+                                "expr": "result_success{type=\"pctile\",pctile=\"50\"}",
+                                "hide": false,
+                                "interval": "",
+                                "legendFormat": "{{instance}}-{{step}}-median",
+                                "refId": "B"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 6,
+                        "title": "Write ops / minute",
+                        "targets": [
+                            {
+                                "exemplar": true,
+                                "expr": "main_write__main_write__success{property=\"m1_rate\"}",
+                                "format": "time_series",
+                                "hide": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{instance}}-{{step}}",
+                                "refId": "A"
+                            },
+                            {
+                                "exemplar": true,
+                                "expr": "main_write__main_write__error{property=\"m1_rate\"}",
+                                "hide": false,
+                                "interval": "",
+                                "legendFormat": "{{instance}}-{{step}}",
+                                "refId": "B"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 6,
+                        "title": "Read ops / minute",
+                        "targets": [
+                            {
+                                "exemplar": true,
+                                "expr": "main_read__main_select_all__success{property=\"m1_rate\"}",
+                                "format": "time_series",
+                                "hide": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{instance}}-{{step}}",
+                                "refId": "A"
+                            },
+                            {
+                                "exemplar": true,
+                                "expr": "main_read__main_select_all__error{property=\"m1_rate\"}",
+                                "hide": false,
+                                "interval": "",
+                                "legendFormat": "{{instance}}-{{step}}",
+                                "refId": "B"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 6,
+                        "title": "Cycle count",
+                        "targets": [
+                            {
+                                "exemplar": true,
+                                "expr": "cycles_servicetime{type=\"counter\"}",
+                                "format": "time_series",
+                                "hide": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{instance}}-{{step}}",
+                                "refId": "A"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "ms_panel",
+                        "span": 6,
+                        "title": "p99 client overhead",
+                        "targets": [
+                            {
+                                "exemplar": true,
+                                "expr": "{__name__=~\"read_input|bind|execute\",type=\"pctile\",pctile=\"99\"}",
+                                "format": "time_series",
+                                "hide": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{instance}}-{{__name__}}-p{{pctile}}",
+                                "refId": "A"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 6,
+                        "title": "Errors",
+                        "targets": [
+                            {
+                                "exemplar": true,
+                                "expr": "{__name__=~\"errorcounts.*\"}",
+                                "format": "time_series",
+                                "hide": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{instance}}-{{error}}",
+                                "refId": "A"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 6,
+                        "title": "cassandra-stress ops",
+                        "targets": [
+                            {
+                                "expr": "sct_cassandra_stress_read_gauge{type=\"ops\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "C"
+                            },
+                            {
+                                "expr": "sct_cassandra_stress_write_gauge{type=\"ops\"}",
+                                "format": "time_series",
+                                "intervalFactor": 1,
+                                "refId": "A"
+                            }
+                        ],
+                        "type": "graph"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 6,
+                        "title": "cql-stress-cassandra-stress ops",
+                        "targets": [
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_read_gauge{type=\"ops\"}",
+                                "format": "time_series",
+                                "interval": "15s",
+                                "intervalFactor": 1,
+                                "refId": "C"
+                            },
+                            {
+                                "expr": "sct_cql_stress_cassandra_stress_write_gauge{type=\"ops\"}",
+                                "format": "time_series",
+                                "intervalFactor": 1,
+                                "refId": "A"
+                            }
+                        ],
+                        "type": "graph"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "collapsed": false,
+                        "datasource": null,
+                        "id": "auto",
+                        "gridPos": {
+                            "h": 1,
+                            "w": 24
+                        },
+                        "panels": [],
+                        "title": "",
+                        "repeat": "dc",
+                        "type": "row"
                     }
                 ]
             },
@@ -147,19 +1215,19 @@
                         "class": "vertical_lcd",
                         "targets": [
                             {
-                              "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"} )",
-                              "interval": "",
-                              "legendFormat": "",
-                              "instant": true,
-                              "refId": "A"
+                                "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"} )",
+                                "interval": "",
+                                "legendFormat": "",
+                                "instant": true,
+                                "refId": "A"
                             }
-                          ],
-                          "title": "Load"
+                        ],
+                        "title": "Load"
                     },
                     {
                         "class": "bytes_panel",
                         "gridPos": {
-                        "w": 3
+                            "w": 3
                         },
                         "targets": [
                             {
@@ -171,44 +1239,44 @@
                                 "step": 1
                             },
                             {
-                              "expr": "avg(node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}) by ([[by]])",
-                              "legendFormat": "Size {{instance}} {{shard}}",
-                              "interval": "",
-                              "refId": "B"
+                                "expr": "avg(node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}) by ([[by]])",
+                                "legendFormat": "Size {{instance}} {{shard}}",
+                                "interval": "",
+                                "refId": "B"
                             }
                         ],
                         "fieldConfig": {
                             "defaults": {
-                              "class": "fieldConfig_defaults",
-                              "unit": "bytes"
+                                "class": "fieldConfig_defaults",
+                                "unit": "bytes"
                             },
                             "overrides": [
-                              {
-                                "matcher": {
-                                  "id": "byFrameRefID",
-                                  "options": "B"
-                                },
-                                "properties": [
-                                  {
-                                    "id": "custom.lineStyle",
-                                    "value": {
-                                      "fill": "dash",
-                                      "dash": [
-                                        10,
-                                        10
-                                      ]
-                                    }
-                                  },
-                                  {
-                                    "id": "custom.lineWidth",
-                                    "value": 2
-                                  }
-                                ]
-                              }
+                                {
+                                    "matcher": {
+                                        "id": "byFrameRefID",
+                                        "options": "B"
+                                    },
+                                    "properties": [
+                                        {
+                                            "id": "custom.lineStyle",
+                                            "value": {
+                                                "fill": "dash",
+                                                "dash": [
+                                                    10,
+                                                    10
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "id": "custom.lineWidth",
+                                            "value": 2
+                                        }
+                                    ]
+                                }
                             ]
                         },
                         "options": {
-                            "class":"desc_tooltip_options"
+                            "class": "desc_tooltip_options"
                         },
                         "description": "The average Disk usage per [[by]].\n\n The dashed line represent the total size.",
                         "title": "Average Disk Usage"
@@ -255,11 +1323,11 @@
                         "title": "Cache Hits/Misses"
                     },
                     {
-                      "class":"small_nodes_table",
-                      "gridPos": {
-                        "h": 17,
-                        "w": 10
-                      }
+                        "class": "small_nodes_table",
+                        "gridPos": {
+                            "h": 17,
+                            "w": 10
+                        }
                     },
                     {
                         "class": "ops_panel",
@@ -273,20 +1341,20 @@
                                 "step": 1
                             },
                             {
-                              "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1d)) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1d))",
-                              "legendFormat": "1 Day Ago",
-                              "interval": "",
-                              "intervalFactor": 1,
-                              "refId": "B",
-                              "step": 1
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1d)) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1d))",
+                                "legendFormat": "1 Day Ago",
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "refId": "B",
+                                "step": 1
                             },
                             {
-                              "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1w)) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1w))",
-                              "legendFormat": "1 Week Ago",
-                              "interval": "",
-                              "intervalFactor": 1,
-                              "refId": "C",
-                              "step": 1
+                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1w)) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1w))",
+                                "legendFormat": "1 Week Ago",
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "refId": "C",
+                                "step": 1
                             }
                         ],
                         "legend": {
@@ -294,16 +1362,16 @@
                         },
                         "seriesOverrides": [
                             {
-                              "alias": "1 Day Ago",
-                              "dashes": true,
-                              "dashLength": 4
+                                "alias": "1 Day Ago",
+                                "dashes": true,
+                                "dashLength": 4
                             },
                             {
-                              "alias": "1 Week Ago",
-                              "dashes": true,
-                              "dashLength": 2
+                                "alias": "1 Week Ago",
+                                "dashes": true,
+                                "dashLength": 2
                             }
-                          ],
+                        ],
                         "description": "Write attempts - include all writes that reached the coordinator node, even if they will eventually fail",
                         "title": "Writes"
                     },
@@ -383,16 +1451,16 @@
                         },
                         "seriesOverrides": [
                             {
-                              "alias": "1 Day Ago",
-                              "dashes": true,
-                              "dashLength": 4
+                                "alias": "1 Day Ago",
+                                "dashes": true,
+                                "dashLength": 4
                             },
                             {
-                              "alias": "1 Week Ago",
-                              "dashes": true,
-                              "dashLength": 2
+                                "alias": "1 Week Ago",
+                                "dashes": true,
+                                "dashLength": 2
                             }
-                          ],
+                        ],
                         "description": "Read attempts - include all reads that reached the coordinator node, even if they will eventually fail",
                         "title": "Reads"
                     },
@@ -451,12 +1519,12 @@
                             "w": 10,
                             "x": 14,
                             "h": 1
-                          },
+                        },
                         "options": {
                             "mode": "html",
                             "content": "<img src=\"https://repositories.scylladb.com/scylla/imgversion/$all_scyllas_versions/scylla\"></img>"
-                          }
-                        },
+                        }
+                    },
                     {
                         "class": "plain_text",
                         "dashproduc": "no-version-check",
@@ -464,28 +1532,28 @@
                             "w": 10,
                             "x": 14,
                             "h": 1
-                          },
+                        },
                         "options": {
                             "mode": "html",
                             "content": ""
-                          }
                         }
+                    }
                 ]
             },
             {
                 "class": "row",
                 "panels": [
                     {
-                      "collapsed": false,
-                      "datasource": null,
-                      "id": "auto",
-                      "gridPos": {
-                        "h": 1,
-                        "w": 24
-                      },
-                      "panels": [],
-                      "title": "",
-                      "type": "row"
+                        "collapsed": false,
+                        "datasource": null,
+                        "id": "auto",
+                        "gridPos": {
+                            "h": 1,
+                            "w": 24
+                        },
+                        "panels": [],
+                        "title": "",
+                        "type": "row"
                     }
                 ]
             },
@@ -559,7 +1627,7 @@
                     "class": "template_variable_all",
                     "label": "shard",
                     "name": "shard",
-                    "allValue":".+",
+                    "allValue": ".+",
                     "query": "label_values(scylla_reactor_utilization{cluster=\"$cluster\"},shard)",
                     "sort": 3
                 },
@@ -579,13 +1647,19 @@
                     "class": "template_variable_all",
                     "label": "SG",
                     "name": "sg",
-                    "includeAll":true,
-                    "multi":true,
+                    "includeAll": true,
+                    "multi": true,
                     "query": "label_values(scylla_scheduler_runtime_ms{cluster=~\"$cluster\", group!~\"atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache\"},group)",
                     "sort": 3
                 },
                 {
                     "class": "aggregation_function"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "Events[Custom Filter]",
+                    "name": "event_filter",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
                 },
                 {
                     "class": "template_variable_custom",
@@ -605,27 +1679,27 @@
                 },
                 {
                     "class": "template_variable_all",
-                    "hide":2,
+                    "hide": 2,
                     "name": "all_scyllas_versions",
-                    "current":{
-                       "selected":true,
-                       "text":[
-                          "All"
-                       ],
-                       "value":[
-                          "$__all"
-                       ]
+                    "current": {
+                        "selected": true,
+                        "text": [
+                            "All"
+                        ],
+                        "value": [
+                            "$__all"
+                        ]
                     },
                     "query": "label_values(scylla_scylladb_current_version{cluster=\"$cluster\"}, version)"
                 },
                 {
                     "class": "template_variable_all",
-                    "hide":2,
+                    "hide": 2,
                     "name": "count_dc",
                     "definition": "query_result(count(up{job=\"scylla\"}) by (dc))",
                     "query": {
-                      "query": "query_result(count(up{job=\"scylla\"}) by (dc))",
-                      "refId": "StandardVariableQuery"
+                        "query": "query_result(count(up{job=\"scylla\"}) by (dc))",
+                        "refId": "StandardVariableQuery"
                     },
                     "regex": "/(?<dc>\\{dc=\"[^\"]+\".* \\d+) .*/"
                 },
