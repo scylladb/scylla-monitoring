@@ -95,7 +95,7 @@ if [[ -z "$TEST_ONLY" ]]; then
 fi
 
 if [[ -z "$DASHBOARD_REFRESH" ]]; then
-	DASHBOARD_REFRESH="30s"
+	DASHBOARD_REFRESH="5m"
 fi
 
 if [ "$DASHBOARD_REFRESH" = "0" ]; then
