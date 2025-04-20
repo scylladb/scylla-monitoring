@@ -319,7 +319,7 @@ def is_collapsed_row(row):
 def is_collapsable_row(row):
     return len(row["panels"]) == 1 and row["panels"][0]["type"] == "row"
 
-def make_grafna_5(results, args):
+def make_grafana_5(results, args):
     rows = results["dashboard"]["rows"]
     panels = []
     y = 0
@@ -372,7 +372,7 @@ def get_dashboard(name, types, args, replace_strings, exact_match_replace):
 
     update_object(result, types, version, args.product, exact_match_replace)
     if not args.grafana4:
-        make_grafna_5(result, args)
+        make_grafana_5(result, args)
     if args.as_file:
         write_as_file(new_name, result, args.as_file, replace_strings)
     else:
