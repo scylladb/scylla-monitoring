@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-usage="$(basename "$0") [-h] [-p ip:port address of prometheus ] [-m alert_manager address] [-L loki address] [--compose] -- Generate grafna's datasource file"
+usage="$(basename "$0") [-h] [-p ip:port address of prometheus ] [-m alert_manager address] [-L loki address] [--compose] -- Generate grafana's datasource file"
 
 if [ "$1" = "" ]; then
 	echo "$usage"

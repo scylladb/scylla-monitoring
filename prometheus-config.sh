@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [--compose] -- Generate grafna's datasource file"
+usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [--compose] -- Generate grafana's datasource file"
 CONSUL_ADDRESS=""
 COMPOSE=0
 BASE_DIR="$PWD/prometheus/build"
