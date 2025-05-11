@@ -850,6 +850,22 @@
                         ],
                         "description": "the number of requests waiting for the reply\n\nscylla_rpc_client_wait_reply",
                         "title": "RPC Wait for Reply by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], sum(rate(scylla_rpc_client_delay_samples{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", domain=\"$domain\"}[$__rate_interval])>0) by ([[by]],domain))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "The total time it takes an RPC message to travel back and forth between verb caller and server.\n\nscylla_rpc_client_delay_samples",
+                        "title": "RPC Delay [[by]]"
                     }
                 ]
             },
