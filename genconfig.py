@@ -5,14 +5,26 @@ import os
 import yaml
 import re
 import sys
+from copy import deepcopy
 
 def gen_targets(servers, cluster):
     if ':' not in servers:
         raise Exception('Server list must contain a dc name')
     dcs = servers.split(':', maxsplit=1)
     res = {"labels": {"cluster": cluster, "dc": dcs[0]}}
-    res["targets"] = dcs[1].split(',')
-    return res
+    ips = dcs[1].split(',')
+    res["targets"] = [ip for ip in ips if ':' not in ip]
+    if len(res["targets"]) == len(ips):
+        return res
+    multi_resutls = [res] if len(res["targets"]) > 0 else []
+    for ip in ips:
+        if ':' in ip:
+            res = deepcopy(res)
+            ip_part = ip.split(':')
+            res["targets"] = [ip_part[0]]
+            res["labels"]["instance"] = ip_part[1]
+            multi_resutls.append(res)
+    return multi_resutls
 
 def get_servers_from_nodetool_status():
     res = []
@@ -51,7 +63,9 @@ def dump_yaml(directory, filename, servers, cluster):
             raise
         pass
     with open(os.path.join(directory, filename), 'w') as yml_file:
-        yaml.dump([gen_targets(s, cluster) for s in servers], yml_file, default_flow_style=False)
+        targets = [gen_targets(s, cluster) for s in servers]
+        res = [target for sublist in targets for target in (sublist if isinstance(sublist, list) else [sublist])]
+        yaml.dump(res, yml_file, default_flow_style=False)
 
 
 if __name__ == "__main__":
@@ -63,7 +77,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--output-file', help="The servers output file", type=str, default="scylla_servers.yml")
     parser.add_argument('-NS', '--nodetool-status', help="Use nodetool status output. Output is read from stdin", action='store_true')
     parser.add_argument('servers', help="list of nodes to configure, separated by space", nargs='*', type=str, metavar='node_ip')
-    parser.add_argument('-dc', '--datacenters', action='append', help="list of dc and nodes to configure separated by space. Each dc/node entry is a combination of {dc}:ip1,ip2..ipn")
+    parser.add_argument('-dc', '--datacenters', action='append', help="list of dc and nodes to configure separated by comma. Each dc/nodes entry is a combination of {dc}:ip1,ip2..ipn. You can add an alias to an IP by adding ip:alias")
     arguments = parser.parse_args()
 
     if arguments.nodetool_status:
