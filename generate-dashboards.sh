@@ -175,8 +175,9 @@ for v in $VERSIONS; do
 done
 
 IFS=','
-for v in $MANAGER_VERSION; do
+for oring_v in $MANAGER_VERSION; do
 	if [ -e grafana/scylla-manager.template.json ]; then
+	    v=$(echo $oring_v | cut -d'.' -f1)
 		VERDIR="grafana/build/manager_$v"
 		mkdir -p $VERDIR
 		set_loader "manager_$v" "" "manager_$v"
