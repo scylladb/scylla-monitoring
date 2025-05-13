@@ -157,60 +157,21 @@
                           "title": "Load"
                     },
                     {
-                        "class": "bytes_panel",
+                        "class": "percentunit_panel",
                         "gridPos": {
                         "w": 3
                         },
                         "targets": [
                             {
-                                "expr": "Avg(node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}) by ([[by]])-avg(node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", instance=~\"$node\"}) by ([[by]])",
+                                "expr": "1-avg(node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", instance=~\"$node\"}) by ([[by]])/Avg(node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "Avg Usage {{instance}} {{shard}}",
+                                "legendFormat": "Avg Usage {{instance}}",
                                 "metric": "",
                                 "refId": "A",
                                 "step": 1
-                            },
-                            {
-                              "expr": "avg(node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}) by ([[by]])",
-                              "legendFormat": "Size {{instance}} {{shard}}",
-                              "interval": "",
-                              "refId": "B"
                             }
                         ],
-                        "fieldConfig": {
-                            "defaults": {
-                              "class": "fieldConfig_defaults",
-                              "unit": "bytes"
-                            },
-                            "overrides": [
-                              {
-                                "matcher": {
-                                  "id": "byFrameRefID",
-                                  "options": "B"
-                                },
-                                "properties": [
-                                  {
-                                    "id": "custom.lineStyle",
-                                    "value": {
-                                      "fill": "dash",
-                                      "dash": [
-                                        10,
-                                        10
-                                      ]
-                                    }
-                                  },
-                                  {
-                                    "id": "custom.lineWidth",
-                                    "value": 2
-                                  }
-                                ]
-                              }
-                            ]
-                        },
-                        "options": {
-                            "class":"desc_tooltip_options"
-                        },
-                        "description": "The average Disk usage per [[by]].\n\n The dashed line represent the total size.",
+                        "description": "The average Disk usage per [[by]]",
                         "title": "Average Disk Usage"
                     },
                     {
