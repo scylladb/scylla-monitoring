@@ -860,6 +860,44 @@
                             }
                         ],
                         "title": "Read Timeouts/Minutes by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "description": "The current number of opened connections",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(scylla_httpd_connections_total{service=\"http-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "HTTP Opened connections by [[by]]"
+                    },
+                    {
+                        "class": "rpm_panel",
+                        "description": "Rate of new HTTP connections creation. High number may indicate a problem",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "round($func(rate(scylla_httpd_connections_total{service=\"http-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "fieldConfig": {
+                            "defaults": {
+                              "class": "fieldConfig_defaults",
+                              "decimals": 0,
+                              "unit": "si:C/s"
+                            },
+                            "overrides": []
+                         },
+                        "title": "HTTP New connections by [[by]]"
                     }
                 ],
                 "title": "New row"
