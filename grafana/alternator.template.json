@@ -117,6 +117,101 @@
                 "title": "New row"
             },
             {
+                "class": "header_row",
+                "dashversion":[">2025.3"],
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">$table Operations</h1>"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "dashversion":[">2025.3"],
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "repeat": "ops",
+                      "title": "$ops",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "repeat": "ops",
+                "dashversion":[">2025.3"],
+                "panels": [
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_table_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$ops\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Completed $ops"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_table_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$ops\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_alternator_table_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$ops\"}[$__rate_interval])) by ([[by]]) + 1)",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Average $ops latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$ops\"}[$__rate_interval])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "95th percentile $ops latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$ops\"}[$__rate_interval])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "99th percentile $ops latency by [[by]]"
+                    }
+                ],
+                "title": "New row"
+            },
+            {
                 "class": "row",
                 "panels": [
                     {
@@ -155,7 +250,6 @@
                         "dashproductreject": "no-version-check",
                         "gridPos": {
                             "w": 10,
-                            "x": 14,
                             "h": 1
                           },
                         "options": {
@@ -168,7 +262,6 @@
                         "dashproduct": "no-version-check",
                         "gridPos": {
                             "w": 10,
-                            "x": 14,
                             "h": 1
                           },
                         "options": {
@@ -183,7 +276,7 @@
                 "panels": [
                     {
                         "class": "collapsible_row_panel",
-                        "title": "Data Plane Actions"
+                        "title": "Cluster wide Data Plane Actions"
                     }
                 ]
             },
@@ -192,7 +285,7 @@
                 "panels": [
                     {
                         "class": "plain_text",
-                        "content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Data Plane Actions</h1>"
+                        "content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Cluster wide Data Plane Actions</h1>"
                     }
                 ]
             },
@@ -411,6 +504,7 @@
             },
             {
                 "class": "header_row",
+                "dashversion":["<2025.3"],
                 "panels": [
                     {
                         "class": "plain_text",
@@ -420,6 +514,7 @@
             },
             {
                 "class": "row",
+                "dashversion":["<2025.3"],
                 "panels": [
                     {
                       "collapsed": false,
@@ -438,6 +533,7 @@
             },
             {
                 "class": "row",
+                "dashversion":["<2025.3"],
                 "panels": [
                     {
                         "class": "ops_panel",
@@ -996,9 +1092,17 @@
                     "class": "monitor_version_var"
                 },
                 {
+                    "class": "template_variable_single",
+                    "label": "Table",
+                    "dashversion":[">2025.3"],
+                    "name": "table",
+                    "query": "label_values(scylla_alternator_table_operation, cf)"
+                },
+
+                {
                     "class": "template_variable_custom",
                     "name": "alternator_latency_ops",
-                    "dashversion":[">6.0", ">2024.1"],
+                    "dashversion":["<2025.3"],
                     "multi": true,
                     "includeAll": true,
                     "current": {
@@ -1045,43 +1149,12 @@
                     "query": "GetItem,PutItem,UpdateItem,DeleteItem,BatchWriteItem,BatchGetItem"
                 },
                 {
-                    "class": "template_variable_custom",
-                    "name": "alternator_latency_ops",
-                    "dashversion":["<6.0", "<2024.1"],
-                    "multi": true,
-                    "includeAll": true,
-                    "current": {
-                        "text": "All",
-                        "value": "$__all"
-                    },
-                    "options": [
-                        {
-                            "selected": true,
-                            "text": "All",
-                            "value": "$__all"
-                        },
-                        {
-                            "selected": false,
-                            "text": "GetItem",
-                            "value": "GetItem"
-                        },
-                        {
-                            "selected": false,
-                            "text": "PutItem",
-                            "value": "PutItem"
-                        },
-                        {
-                            "selected": false,
-                            "text": "UpdateItem",
-                            "value": "UpdateItem"
-                        },
-                        {
-                            "selected": false,
-                            "text": "DeleteItem",
-                            "value": "DeleteItem"
-                        }
-                    ],
-                    "query": "GetItem,PutItem,UpdateItem,DeleteItem"
+                    "class": "template_variable_all",
+                    "name": "ops",
+                    "label": "ops",
+                    "dashversion":[">2025.3"],
+                    "allValue":"",
+                    "query": "label_values(scylla_alternator_table_operation{cf=\"$table\"}, op)"
                 },
                 {
                     "class": "template_variable_custom",
@@ -1108,6 +1181,7 @@
                 },
                 {
                     "class": "template_variable_all",
+                    "dashversion":["<2025.3"],
                     "label": "ops",
                     "name": "ops",
                     "allValue":".+",
