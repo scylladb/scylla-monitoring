@@ -32,7 +32,7 @@ def get_servers_from_nodetool_status():
     ips = []
     for line in sys.stdin:
         if dc:
-            ip = re.search(r"..  ([\d\.]+)\s", line)
+            ip = re.search(r"..\s+([\d\.]+)\s", line)
             if ip:
                 ips.append(ip.group(1))
         m = re.search(r"Datacenter: ([^\s]+)\s*$", line)
