@@ -333,12 +333,24 @@
                     "sort": 3
                 },
                 {
+                    "allValue": ".*",
+                    "current": {
+                      "text": "All",
+                      "value": [
+                        "$__all"
+                      ]
+                    },
                     "class": "template_variable_all",
+                    "definition": "query_result(topk(scalar(clamp_min(count(sum(scylla_column_family_read_latency_count{cluster=\"$cluster\", ks=\"$ks\"}-scylla_column_family_read_latency_count{cluster=\"$cluster\",ks=\"$ks\"} offset 3d) by (cf) + sum(scylla_column_family_write_latency_count{cluster=\"$cluster\",ks=\"$ks\"}-scylla_column_family_write_latency_count{cluster=\"$cluster\",ks=\"$ks\"} offset 3d) by (cf)>0),10) ), sum(scylla_column_family_read_latency_count{cluster=\"$cluster\", ks=\"$ks\"}-scylla_column_family_read_latency_count{cluster=\"$cluster\",ks=\"$ks\"} offset 3d) by (cf) + sum(scylla_column_family_write_latency_count{cluster=\"$cluster\",ks=\"$ks\"}-scylla_column_family_write_latency_count{cluster=\"$cluster\",ks=\"$ks\"} offset 3d) by (cf)))",
                     "label": "table",
                     "name": "table",
-                    "query": "label_values(scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks=\"$ks\"},cf)",
-                    "sort": 3
-                },
+                    "options": [],
+                    "query": {
+                      "qryType": 3,
+                      "query": "query_result(topk(scalar(clamp_min(count(sum(scylla_column_family_read_latency_count{cluster=\"$cluster\", ks=\"$ks\"}-scylla_column_family_read_latency_count{cluster=\"$cluster\",ks=\"$ks\"} offset 3d) by (cf) + sum(scylla_column_family_write_latency_count{cluster=\"$cluster\",ks=\"$ks\"}-scylla_column_family_write_latency_count{cluster=\"$cluster\",ks=\"$ks\"} offset 3d) by (cf)>0),10) ), sum(scylla_column_family_read_latency_count{cluster=\"$cluster\", ks=\"$ks\"}-scylla_column_family_read_latency_count{cluster=\"$cluster\",ks=\"$ks\"} offset 3d) by (cf) + sum(scylla_column_family_write_latency_count{cluster=\"$cluster\",ks=\"$ks\"}-scylla_column_family_write_latency_count{cluster=\"$cluster\",ks=\"$ks\"} offset 3d) by (cf)))"
+                    },
+                    "regex": "/.*cf=\"([^\"]+)\".*/"
+                  },
                 {
                     "class": "aggregation_function"
                 },
