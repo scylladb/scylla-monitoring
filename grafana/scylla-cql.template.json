@@ -183,23 +183,6 @@
                         "pointradius": 1,
                         "targets": [
                             {
-                                "expr": "topk([[topk]], sum(rate(scylla_cql_batches_pure_logged{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])) or on ([[by]]) bottomk([[bottomk]], sum(rate(scylla_cql_batches_pure_logged{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
-                                "intervalFactor": 1,
-                                "legendFormat": "",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 30
-                            }
-                        ],
-                        "title": "CQL Logged Batches by [[by]]",
-                        "description": "Number of Logged CQL batches command, each batched command is counted once.\n\nIs used to make sure that multiple mutations across multiple partitions happen atomically, that is, all the included mutations will eventually succeed. However, there is a performance penalty imposed by atomicity guarantee."
-                    },
-                    {
-                        "class": "graph_panel",
-                        "span": 3,
-                        "pointradius": 1,
-                        "targets": [
-                            {
                                 "expr": "topk([[topk]], sum(rate(scylla_cql_batches_pure_unlogged{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])) or on ([[by]]) bottomk([[bottomk]], sum(rate(scylla_cql_batches_pure_unlogged{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
@@ -1085,6 +1068,39 @@
                         "title": "CQL ALL CL Queries"
                     }
 
+                    ,
+                    {
+                        "class": "gauge_errors_panel",
+                        "description": "Using a multi partition Logged BATCH is considered bad practice.\n\nIt does not provide atomicity guarantees, and reduces performance, as a request sent to a random node, not the right replica or shard.",
+                        "targets": [
+                            {
+                                "expr": "(100 *sum(rate(scylla_cql_batches_pure_logged{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))/sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))) OR vector(0)",
+                                "format": "time_series",
+                                "hide": false,
+                                "instant": false,
+                                "interval": "",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "Multi partition BATCH"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Using a multi partition Logged BATCH is considered bad practice.\n\nIt does not provide atomicity guarantees, and reduces performance, as a request sent to a random node, not the right replica or shard.",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_cql_batches_pure_logged{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "format": "time_series",
+                                "hide": false,
+                                "intervalFactor": 2,
+                                "refId": "A"
+                            }
+                        ],
+                        "title": "Multi partition BATCH"
+                    }
                 ]
             },
             {
