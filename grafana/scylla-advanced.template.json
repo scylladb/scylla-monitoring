@@ -405,11 +405,22 @@
                         "description": "Number of write requests that failed due to an 'unavailable' error"
                     },
                     {
-                        "class": "text_panel",
-                        "content": "##  ",
-                        "mode": "markdown",
+                        "class": "graph_panel",
                         "span": 4,
-                        "style": {}
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], avg(rate(scylla_stall_detector_reported{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "options": {
+                            "class":"desc_tooltip_options"
+                        },
+                        "title": "Stall per seconds by [[by]]",
+                        "description": "Number of Stalls per seconds."
                     }
                  ],
                 "title": "New row"
