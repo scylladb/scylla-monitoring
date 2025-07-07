@@ -99,6 +99,7 @@ Options:
   --local-thanos                 - If set, run thanos query as a front end to the local thanos sidecar.
   --enable-protobuf              - If set, enable the experimental Prometheus Protobuf with Native histograms support.
   --scrap [scrap duration]       - Change the default Prometheus scrap duration. Duration is in seconds.
+  --vector-store path/to/file.yml- Specifiy a vector store target file, the file should contain a list of vector store servers.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
                                    the file names should be scylla_servers.yml, node_exporter_servers.yml, scylla_manager_agents.yml, and scylla_manager_servers.yml
   --stack id                     - Use this option when running a secondary stack, id could be 1-4
@@ -307,6 +308,11 @@ for arg; do
 			LIMIT="1"
 			PARAM="scrap"
 			;;
+		--vector-store)
+			LIMIT="1"
+			PARAM="vector-store"
+			VECTOR_STORE_CMD="--vector-store"
+			;;
 		--no-cas-cdc)
 			PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
 			;;
@@ -380,6 +386,9 @@ for arg; do
 			unset PARAM
 		elif [ "$PARAM" = "scrap" ]; then
 			SCRAP_CMD="--scrap $NOSPACE"
+			unset PARAM
+		elif [ "$PARAM" = "vector-store" ]; then
+			VECTOR_STORE="$NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "archive" ]; then
 			DATA_DIR="$NOSPACE"
@@ -627,7 +636,11 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
 			echo ""
 		fi
 	fi
-
+	if [ -z "$VECTOR_STORE" ]; then
+		VECTOR_STORE=""
+	else
+		VECTOR_STORE="-v "$($readlink_command $VECTOR_STORE)":/etc/scylla.d/prometheus/targets/vector_store_servers.yml"
+	fi
 	SCYLLA_TARGET_FILE="-v "$($readlink_command $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_servers.yml"
 	SCYLLA_MANGER_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_servers.yml"
 	NODE_TARGET_FILE="-v "$($readlink_command $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/targets/node_exporter_servers.yml"
@@ -748,7 +761,7 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
 	fi
 done
 
-./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS
+./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_STORE_CMD
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
 	DATE=$(date +"%Y-%m-%d_%H_%M_%S")
 	if [ -f $DATA_DIR/scylla.txt ]; then
@@ -787,6 +800,7 @@ else
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
 		$NODE_TARGET_FILE \
+		$VECTOR_STORE \
 		$SCYLLA_MANGER_AGENT_TARGET_FILE \
 		$PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
 		--web.enable-lifecycle --enable-feature=promql-experimental-functions --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
