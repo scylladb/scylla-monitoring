@@ -2770,7 +2770,8 @@
                 "custom":{
                    "align":null,
                    "filterable":true
-                },
+                }
+               },
                "overrides": [
                   {
                      "matcher": {
@@ -2855,9 +2856,25 @@
                            "value": "sishort"
                         }
                      ]
+                  },
+                  {
+                     "matcher": {
+                        "id": "byName",
+                        "options": "table"
+                     },
+                     "properties": [
+                        {
+                           "id": "links",
+                           "value": [
+                           {
+                              "title": "",
+                              "url": "${__url}?var-table=${__value.text}"
+                           }
+                           ]
+                        }
+                     ]
                   }
-               ]
-              },
+               ],
               "mappings": [],
               "unit": "short",
               "decimals": 0
@@ -2879,7 +2896,6 @@
               "options": {
                 "include": {
                   "names": [
-                    "ks 1",
                     "Value #A",
                     "Value #B",
                     "Value #C",
@@ -2888,6 +2904,8 @@
                     "Value #F",
                     "Value #G",
                     "Value #H",
+                    "Value #I",
+                    "Value #J",
                     "cf"
                   ]
                 }
@@ -2898,16 +2916,17 @@
               "options": {
                 "excludeByName": {},
                 "indexByName": {
-                  "ks 1": 0,
-                  "cf": 1,
-                  "Value #H": 2,
-                  "Value #A": 3,
-                  "Value #B": 4,
+                  "cf": 0,
+                  "Value #H": 1,
+                  "Value #A": 2,
+                  "Value #B": 3,
+                  "Value #I": 4,
                   "Value #C": 5,
                   "Value #D": 6,
                   "Value #E": 7,
-                  "Value #F": 8,
-                  "Value #G": 9
+                  "Value #J": 8,
+                  "Value #F": 9,
+                  "Value #G": 10
                 },
                 "renameByName": {
                   "ks 1": "keyspace",
@@ -2919,7 +2938,9 @@
                   "Value #E": "reads/s",
                   "Value #F": "R P95",
                   "Value #G": "R P99",
-                  "Value #H": "Disk space"
+                  "Value #H": "Disk space",
+                  "Value #I": "24h Max W",
+                  "Value #J": "24h Max R"
 
                 },
                 "includeByName": {}
@@ -3007,6 +3028,28 @@
             {
               "refId": "H",
               "expr": "sum(scylla_column_family_total_disk_space{ks=\"$ks\", cf=~\"$table\", cluster=\"$cluster\"}) by (cf)",
+              "range": false,
+              "instant": true,
+              "hide": false,
+              "editorMode": "code",
+              "legendFormat": "__auto",
+              "format": "table",
+              "exemplar": false
+            },
+            {
+              "refId": "I",
+              "expr": "max_over_time(sum(rate(scylla_column_family_write_latency_count{ks=\"$ks\", cf=~\"$table\"}[1m])) by(cf)[24h:])",
+              "range": false,
+              "instant": true,
+              "hide": false,
+              "editorMode": "code",
+              "legendFormat": "__auto",
+              "format": "table",
+              "exemplar": false
+            },
+            {
+              "refId": "J",
+              "expr": "max_over_time(sum(rate(scylla_column_family_read_latency_count{ks=\"$ks\", cf=~\"$table\"}[1m])) by(cf)[24h:])",
               "range": false,
               "instant": true,
               "hide": false,
