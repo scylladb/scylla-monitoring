@@ -23,6 +23,9 @@ fi
 if [ -z "$MANAGER_VERSION" ]; then
 	MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
 fi
+if [[ ! -v GRAFANA_ENV_ARRAY ]]; then
+    GRAFANA_ENV_ARRAY=()
+fi
 
 if [ "$1" = "--version" ]; then
 	echo "Scylla-Monitoring Stack version: $CURRENT_VERSION"
@@ -256,16 +259,16 @@ for arg; do
 			VICTORIA_METRICS="1"
 			;;
 		--auth)
-			GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --auth"
+			GRAFANA_ENV_ARRAY+=(--auth)
 			;;
         --support-dashboard)
             SUPPORT_DASHBOARD="1"
             ;;
         --clear)
-            GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --clear"
+            GRAFANA_ENV_ARRAY+=(--clear)
             ;;
 		--disable-anonymous)
-			GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --disable-anonymous"
+			GRAFANA_ENV_ARRAY+=(--disable-anonymous)
 			;;
 		--enable-protobuf)
 			PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--enable-feature=native-histograms)
@@ -493,7 +496,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
 		GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
 		;;
 	c)
-		GRAFANA_ENV_ARRAY+=("$OPTARG")
+		GRAFANA_ENV_ARRAY+=(-c "$OPTARG")
 		;;
 	C)
 		ALERTMANAGER_COMMANDS+=("$OPTARG")
@@ -566,7 +569,7 @@ if [ "$QUICK_STARTUP" = "1" ]; then
 fi
 if [ ! "$SUPPORT_DASHBOARD" = "" ]; then
     SUPPORT_DASHBOARD="--support-dashboard"
-    GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --support-dashboard"
+    GRAFANA_ENV_ARRAY+=(--support-dashboard)
 fi
 if [ "$CURRENT_VERSION" = "master" ]; then
 	if [ "$ARCHIVE" = "" ]; then
@@ -878,10 +881,6 @@ elif [ "$RUN_LOCAL_THANOS" = "1" ]; then
     ./start-thanos.sh $NO_THANOS_DATASOURCE -S $STORE_ADDRESS
 fi
 
-for val in "${GRAFANA_ENV_ARRAY[@]}"; do
-	GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -c $val"
-done
-
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
@@ -889,6 +888,6 @@ if [ ! -z "$DATDOGPARAM" ]; then
 	./start-datadog.sh $DATDOGPARAM -p $DB_ADDRESS
 fi
 if [ "$RUN_ALTERNATOR" = 1 ]; then
-	GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND --alternator"
+	GRAFANA_ENV_ARRAY+=(--alternator)
 fi
-./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS $GRAFANA_ENV_COMMAND $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD
+./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD

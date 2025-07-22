@@ -278,15 +278,18 @@ proxy_args=()
 if [[ -n "$HTTP_PROXY" ]]; then
 	proxy_args=(-e http_proxy="$HTTP_PROXY")
 fi
+if [[ ! -v GRAFANA_ENV_COMMAND ]]; then
+    GRAFANA_ENV_COMMAND=()
+fi
 
 for val in "${GRAFANA_ENV_ARRAY[@]}"; do
-	GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e $val"
+	GRAFANA_ENV_COMMAND+=(-e "$val")
 	if [[ $val == GF_USERS_DEFAULT_THEME=* ]]; then
 		DEFAULT_THEME=""
 	fi
 done
 if [[ $DEFAULT_THEME != "" ]]; then
-	GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_USERS_DEFAULT_THEME=$DEFAULT_THEME"
+	GRAFANA_ENV_COMMAND+=(-e "GF_USERS_DEFAULT_THEME=$DEFAULT_THEME")
 fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
@@ -330,7 +333,7 @@ if [ ! -z $RUN_RENDERER ]; then
 		HOST_ADDRESS=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
 	fi
 	RENDERING_SERVER_URL=$(./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS -D "$DOCKER_PARAM")
-	GRAFANA_ENV_COMMAND="$GRAFANA_ENV_COMMAND -e GF_RENDERING_SERVER_URL=http://$HOST_ADDRESS:8081/render -e GF_RENDERING_CALLBACK_URL=http://$HOST_ADDRESS:$GRAFANA_PORT/"
+	GRAFANA_ENV_COMMAND+=(-e GF_RENDERING_SERVER_URL=http://$HOST_ADDRESS:8081/render -e GF_RENDERING_CALLBACK_URL=http://$HOST_ADDRESS:$GRAFANA_PORT/)
 fi
 
 if [ -z $STACK ]; then
@@ -358,7 +361,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
 	-e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource" \
 	-e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=$HOME_DASHBOARD" \
 	-e "GF_SERVER_ENABLE_GZIP=$SERVER_ENABLE_GZIP" \
-	$GRAFANA_ENV_COMMAND \
+	"${GRAFANA_ENV_COMMAND[@]}" \
 	"${proxy_args[@]}" \
 	--name $GRAFANA_NAME docker.io/grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]} >&/dev/null
 
