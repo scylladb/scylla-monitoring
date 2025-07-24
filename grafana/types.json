@@ -222,91 +222,63 @@
          {
             "class":"small_stat",
             "description":"The number of nodes configured in the cluster.",
-            "targets":[
-               {
-                  "expr":"count(scylla_scylladb_current_version{job=\"scylla\", cluster=\"$cluster\"})",
-                  "intervalFactor":1,
-                  "legendFormat":"Total Nodes",
-                  "refId":"A",
-                  "step":40
-               }
-            ],
-            "title":"# Nodes"
-         },
-         {
-            "class":"small_stat",
-            "description":"The number of unreachable nodes.\nUsually because a machine is down or unreachable.",
-            "targets":[
-               {
-                  "expr":"(count(scrape_samples_scraped{job=\"scylla\", cluster=\"$cluster\"}==0) OR vector(0))",
-                  "intervalFactor":1,
-                  "legendFormat":"Offline ",
-                  "refId":"A",
-                  "step":20
-               }
-            ],
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        },
-                        {
-                           "value":0,
-                           "color":"green"
-                        },
-                        {
-                           "value":1,
-                           "color":"red"
-                        }
-                     ]
+            "title":"# Nodes",
+            "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
                   }
-               }
+                ]
+              }
             },
-            "title":"Unreachable"
-         },
-         {
-            "class":"small_stat",
-            "description":"The number of joining and leaving nodes.\nThe number of nodes that are up but not actively part of the cluster, either because they are still joining or because they are leaving.",
-            "targets":[
-               {
-                  "expr":"count(scylla_node_operation_mode{cluster=\"$cluster\"}!=3)OR vector(0)",
-                  "intervalFactor":1,
-                  "legendFormat":"Offline ",
-                  "refId":"A",
-                  "step":20
-               }
-            ],
-            "thresholds":"1,2",
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Total"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
                         {
-                           "color":"green",
-                           "value":null
-                        },
-                        {
-                           "value":0,
-                           "color":"green"
-                        },
-                        {
-                           "value":1,
-                           "color":"red"
+                          "color": "green",
+                          "value": null
                         }
-                     ]
+                      ]
+                    }
                   }
-               }
+                ]
+              }
+            ]
+          },
+          "targets": [
+            {
+              "expr": "count(scylla_scylladb_current_version{job=\"scylla\", cluster=\"$cluster\"})",
+              "intervalFactor": 1,
+              "legendFormat": "Total",
+              "refId": "A"
             },
-            "title":"Inactive"
+            {
+              "refId": "B",
+              "expr": "count(scylla_node_operation_mode!=3) >0",
+              "legendFormat": "Inactive"
+            },
+            {
+              "refId": "C",
+              "expr": "(count(scrape_samples_scraped{job=\"scylla\", cluster=\"$cluster\"}==0) OR vector(0))>0",
+              "range": true,
+              "instant": false,
+              "legendFormat": "Unreachable"
+            }
+          ]
          },
          {
             "class":"small_stat",
