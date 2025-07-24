@@ -282,6 +282,33 @@
          },
          {
             "class":"small_stat",
+            "description":"The number of CPU Cores actively used in the cluster.\n\nNote that CPU Cores that belongs to unreachable nodes, or nodes that are not in normal mode, will not be counted",
+            "title":"# Cores",
+            "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(count(scylla_reactor_utilization{job=\"scylla\", cluster=\"$cluster\"}) by (instance) * on(instance) (scylla_node_operation_mode{job=\"scylla\", cluster=\"$cluster\"}== bool 3))",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+         },
+         {
+            "class":"small_stat",
             "options": {
                     "reduceOptions": {
                       "values": false,
