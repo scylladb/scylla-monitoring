@@ -304,47 +304,27 @@
                "overrides": [
                       {
                         "matcher": {
-                          "id": "byFrameRefID",
-                          "options": "A"
+                          "id": "byName",
+                          "options": "Manager"
                         },
                         "properties": [
                           {
                             "id": "mappings",
                             "value": [
                               {
-                                "type": "range",
+                                "type": "value",
                                 "options": {
-                                  "from": 0,
-                                  "to": null,
-                                  "result": {
-                                    "text": "Repair",
-                                    "color": "green",
-                                    "index": 0
-                                  }
-                                }
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "matcher": {
-                          "id": "byFrameRefID",
-                          "options": "B"
-                        },
-                        "properties": [
-                          {
-                            "id": "mappings",
-                            "value": [
-                              {
-                                "type": "range",
-                                "options": {
-                                  "from": 0,
-                                  "to": null,
-                                  "result": {
+                                  "1": {
                                     "text": "Backup",
-                                    "color": "green",
-                                    "index": 0
+                                    "index": 3
+                                  },
+                                  "2": {
+                                    "text": "Repair",
+                                    "index": 2
+                                  },
+                                  "3": {
+                                    "index": 1,
+                                    "text": "Backup Repair"
                                   }
                                 }
                               }
@@ -431,20 +411,14 @@
             },
             "targets":[
                {
-                  "expr":"max(scylla_manager_scheduler_run_indicator{type=~\"repair\",cluster=\"$cluster\"})>0",
+                  "expr":"(max(scylla_manager_scheduler_run_indicator{type=~\"repair\",cluster=\"$cluster\"})*2 + max(scylla_manager_scheduler_run_indicator{type=~\"backup\",cluster=\"$cluster\"}))>0",
                   "intervalFactor":1,
+                  "legendFormat":"Manager",
                   "refId":"A",
                   "step":40
                },
                {
-                  "expr":"max(scylla_manager_scheduler_run_indicator{type=~\"backup\",cluster=\"$cluster\"})>0",
-                  "legendFormat":"",
-                  "interval":"",
-                  "refId":"B",
-                  "instant":true
-               },
-               {
-                  "expr":"count(up{cluster=\"$cluster\", job=\"scylla\"})>0",
+                  "expr":"count(scrape_samples_scraped{job=\"scylla\", cluster=\"$cluster\"}==0) > 0",
                   "legendFormat":"Unreachable",
                   "interval":"",
                   "refId":"C",
@@ -470,65 +444,6 @@
       "class":"row",
       "height":"200px",
       "panels":[
-         {
-            "class":"text_panel",
-            "dashproductreject": "no-version-check",
-            "gridPos":{
-               "w":9,
-               "h":1
-            },
-            "transparent":false,
-            "options": {
-                "mode": "html",
-                "content": "<img src=\"https://repositories.scylladb.com/scylla/imgversion/$monitoring_version/scylla-monitoring\">"
-              }
-         },
-         {
-            "class":"text_panel",
-            "dashproduct": "no-version-check",
-            "gridPos":{
-               "w":9,
-               "h":1
-            },
-            "transparent":false,
-            "options": {
-                "mode": "html",
-                "content": ""
-              }
-         },
-         {
-            "class":"text_panel",
-            "gridPos":{
-               "w":4,
-               "h":1
-            },
-            "transparent":false,
-            "options":{
-               "content":"# "
-            }
-         },
-         {
-            "class":"text_panel",
-            "gridPos":{
-               "w":4,
-               "h":1
-            },
-            "transparent":false,
-            "options":{
-               "content":"# "
-            }
-         },
-         {
-            "class":"text_panel",
-            "gridPos":{
-               "w":7,
-               "h":1
-            },
-            "transparent":false,
-            "options":{
-               "content":"# "
-            }
-         },
          {
             "class": "cluster_stat_panel"
          },
@@ -647,6 +562,43 @@
             }
           ]
          },
+
+         {
+            "class":"small_stat",
+            "targets":[
+               {
+                  "expr":"sum(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) + (sum(rate(scylla_thrift_served{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or on() vector(0))",
+                  "intervalFactor":1,
+                  "refId":"A",
+                  "instant":true,
+                  "step":40
+               }
+            ],
+            "gridPos":{
+               "w":3,
+               "h":4
+            },
+            "fieldConfig":{
+               "defaults":{
+                  "custom":{
+                  },
+                  "unit":"si:",
+                  "decimals":1,
+                  "thresholds":{
+                     "mode":"absolute",
+                     "steps":[
+                        {
+                           "color":"green",
+                           "value":null
+                        }
+                     ]
+                  },
+                  "mappings":[]
+               },
+               "overrides":[]
+            },
+            "title":"Requests/s"
+         },
          {
             "class":"small_stat",
             "description":"Average Write Latency",
@@ -721,7 +673,7 @@
                   "step":4
                }
             ],
-            "title":"99% Write"
+            "title":"P99 Write"
          },
          {
             "class":"small_stat",
@@ -797,43 +749,7 @@
                   "step":4
                }
             ],
-            "title":"99% Read"
-         },
-         {
-            "class":"small_stat",
-            "targets":[
-               {
-                  "expr":"sum(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) + (sum(rate(scylla_thrift_served{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or on() vector(0))",
-                  "intervalFactor":1,
-                  "refId":"A",
-                  "instant":true,
-                  "step":40
-               }
-            ],
-            "gridPos":{
-               "w":3,
-               "h":4
-            },
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"si:",
-                  "decimals":1,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-            "title":"Requests/s"
+            "title":"P99"
          },
          {
             "class":"small_stat",
