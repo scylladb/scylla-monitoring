@@ -680,8 +680,7 @@
             },
             "targets":[
                {
-                  "expr":"wlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0",
-                  "legendFormat":"{{scheduling_group_name}}",
+                  "expr":"avg(wlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0)",
                   "refId":"A"
                }
             ],
@@ -750,8 +749,8 @@
             },
             "targets":[
                {
-                  "expr":"rlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0",
-                  "legendFormat":"{{scheduling_group_name}}",
+                  "expr":"avg(rlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0)",
+                  "legendFormat":"",
                   "refId":"A"
                }
             ],
@@ -3540,6 +3539,202 @@
             }
           }
       },
+    "groups_table": {
+          "class": "single_value_table",
+          "title": "Service Groups",
+          "gridPos": {
+            "h": 12,
+            "w": 8
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false,
+                "filterable": true
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              },
+              "noValue": "-",
+              "decimals": 0
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Trend #A"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "load"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 0
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 80
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Trend #B"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Reads/s"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "sishort"
+                  }
+                ]
+              },
+
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Trend #C"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Writes/s"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "sishort"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "group"
+                },
+                "properties": [
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "title": "Group",
+                        "url": "/d/${__dashboard.uid}/${__dashboard.slug}?from=${__from}&to=${__to}&var-cluster=${cluster}&var-dc=${dc}&var-node=${node}&var-shard=${shard}&var-func=${func}&var-sg=${__value.text}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "transformations": [
+            {
+              "id": "timeSeriesTable",
+              "options": {
+                "A": {
+                  "timeField": "Time"
+                },
+                "B": {
+                  "timeField": "Time"
+                }
+              }
+            },
+            {
+              "id": "joinByField",
+              "options": {
+                "byField": "group",
+                "mode": "outer"
+              }
+            },
+            {
+              "id": "filterFieldsByName",
+              "options": {
+                "include": {
+                  "names": [
+                    "group",
+                    "Trend #A",
+                    "Trend #B",
+                    "Trend #C"
+                  ]
+                }
+              }
+            }
+          ],
+          "targets": [
+            {
+              "refId": "A",
+              "editorMode": "code",
+              "expr": "avg(rate(scylla_scheduler_runtime_ms{cluster=\"$cluster\", group=~\"sl:.*\"}[$__rate_interval])) by (group)/10",
+              "legendFormat": "runtime",
+              "range": false,
+              "format": "time_series",
+              "hide": false,
+              "instant": true,
+              "exemplar": false
+            },
+            {
+              "refId": "B",
+              "expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
+              "range": true,
+              "instant": false,
+              "datasource": {
+                "type": "prometheus"
+              },
+              "hide": false,
+              "editorMode": "code",
+              "legendFormat": "__auto"
+            },
+            {
+              "refId": "C",
+              "expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
+              "range": true,
+              "instant": false,
+              "datasource": {
+                "type": "prometheus"
+              },
+              "hide": false,
+              "editorMode": "code",
+              "legendFormat": "__auto"
+            }
+          ],
+          "datasource": {
+            "type": "prometheus"
+          },
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm",
+            "footer": {
+              "show": false,
+              "reducer": [
+                "sum"
+              ],
+              "countRows": false,
+              "fields": ""
+            }
+          }
+        },
     "dc_nodes_table":{
       "datasource":"prometheus",
       "id":"auto",
@@ -4331,6 +4526,257 @@
          }
       ]
    },
+   "dcs_table": {
+      "class": "single_value_table",
+      "title": "DCs Data",
+      "gridPos": {
+        "h": 8,
+        "w": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "filterable": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "displayName",
+                "value": "# Nodes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #B"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "displayName",
+                "value": "Cores"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #C"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Storage"
+              },
+              {
+                "id": "unit",
+                "value": "decbytes"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #D"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Writes/s"
+              },
+              {
+                "id": "unit",
+                "value": "sishort"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #E"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Reads/s"
+              },
+              {
+                "id": "unit",
+                "value": "sishort"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dc"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "DC",
+                    "url": "/d/${__dashboard.uid}/${__dashboard.slug}?from=${__from}&to=${__to}&var-cluster=${cluster}&var-dc=${__value.text}&var-node=${node}&var-shard=${shard}&var-func=${func}&var-sg=${sg}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "dc",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "dc",
+                "Value #A",
+                "Value #B",
+                "Value #C",
+                "Value #D",
+                "Value #E"
+              ]
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "count(scylla_scylladb_current_version ) by (dc)",
+          "legendFormat": "nodes",
+          "range": false,
+          "format": "table",
+          "instant": true,
+          "exemplar": false
+        },
+        {
+          "refId": "B",
+          "expr": "count(scylla_reactor_utilization) by (dc)",
+          "range": false,
+          "instant": true,
+          "datasource": {
+            "type": "prometheus"
+          },
+          "hide": false,
+          "editorMode": "code",
+          "legendFormat": "cores",
+          "format": "table",
+          "exemplar": false
+        },
+        {
+          "refId": "C",
+          "expr": "sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", cluster=\"$cluster\", dc=~\"..*\"} - node_filesystem_avail_bytes{mountpoint=\"$mount_point\",cluster=\"$cluster\", dc=~\"..*\"}) by (dc)",
+          "range": false,
+          "instant": true,
+          "datasource": {
+            "type": "prometheus"
+          },
+          "hide": false,
+          "editorMode": "code",
+          "legendFormat": "used_bytes",
+          "format": "table",
+          "exemplar": false
+        },
+        {
+          "refId": "D",
+          "expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)",
+          "range": false,
+          "instant": true,
+          "datasource": {
+            "type": "prometheus"
+          },
+          "hide": false,
+          "editorMode": "code",
+          "legendFormat": "writes",
+          "format": "table",
+          "exemplar": false
+        },
+        {
+          "refId": "E",
+          "expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)",
+          "range": false,
+          "instant": true,
+          "datasource": {
+            "type": "prometheus"
+          },
+          "hide": false,
+          "editorMode": "code",
+          "legendFormat": "reads",
+          "format": "table",
+          "exemplar": false
+        }
+      ],
+      "datasource": {
+        "type": "prometheus"
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        }
+      }
+    },
    "small_nodes_table":{
       "datasource":"prometheus",
       "id":"auto",

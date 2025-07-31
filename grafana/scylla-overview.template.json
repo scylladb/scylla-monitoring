@@ -29,23 +29,58 @@
                 "panels": [
                     {
                         "class": "alert_table",
-                        "span": 4,
+                        "gridPos": {
+                            "h": 6,
+                            "w": 8
+                        },
                         "title": "Active Alerts"
+                    },
+                    {
+                        "class": "groups_table",
+                        "gridPos": {
+                            "h": 6,
+                            "w": 8
+                        }
+                    },
+                    {
+                        "class": "dcs_table",
+                        "gridPos": {
+                            "h": 6,
+                            "w": 8
+                        },
+                        "span": 4
                     },
                     {
                         "class": "ops_panel",
                         "span": 2,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))",
+                                "expr": "round($func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by (scheduling_group_name))",
                                 "intervalFactor": 1,
-                                "legendFormat": "Writes",
+                                "legendFormat": "{{scheduling_group_name}} Writes/s",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
                         "description": "Write attempts - include all writes that reached the coordinator node, even if they will eventually fail",
-                        "title": "Writes"
+                        "title": "Writes/s"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "wlatencya{by=\"cluster\", cluster=\"$cluster\",scheduling_group_name=~\"$sg\"}>0",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}}",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "title": "Average Write Latencies"
                     },
                     {
                         "class": "us_panel",
@@ -76,15 +111,32 @@
                         "span": 2,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))",
+                                "expr": "round($func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by (scheduling_group_name))",
                                 "intervalFactor": 1,
-                                "legendFormat": "Reads",
+                                "legendFormat": "{{scheduling_group_name}} Reads/s",
                                 "refId": "A",
                                 "step": 1
                             }
                         ],
                         "description": "Read attempts - include all reads that reached the coordinator node, even if they will eventually fail",
-                        "title": "Reads"
+                        "title": "Reads/s"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "rlatencya{by=\"cluster\", cluster=\"$cluster\",scheduling_group_name=~\"$sg\"}>0",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}}",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "title": "Average Read Latencies"
                     },
                     {
                         "class": "us_panel",
