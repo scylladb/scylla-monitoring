@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [--compose] -- Generate grafana's datasource file"
+usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [-G grafana address] [--compose] -- Generate grafana's datasource file"
 CONSUL_ADDRESS=""
 COMPOSE=0
 BASE_DIR="$PWD/prometheus/build"
@@ -62,7 +62,7 @@ for arg; do
 	fi
 done
 
-while getopts ':hL:m:T:E:s:' option; do
+while getopts ':hL:m:T:E:G:s:' option; do
 	case "$option" in
 	h)
 		echo "$usage"
@@ -83,6 +83,8 @@ while getopts ':hL:m:T:E:s:' option; do
 	E)
 		EVALUATION_INTERVAL="$OPTARG"
 		;;
+	G)  GRAFANA_ADDRESS="$OPTARG"
+        ;;
 	:)
 		printf "missing argument for -%s\n" "$OPTARG" >&2
 		echo "$usage" >&2
@@ -96,14 +98,18 @@ while getopts ':hL:m:T:E:s:' option; do
 	esac
 done
 
+if [ "$GRAFANA_ADDRESS" = "" ]; then
+    GRAFANA_ADDRESS="agraf:3000"
+fi
+
 mkdir -p $BASE_DIR/
 if [ -z $CONSUL_ADDRESS ]; then
-	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template >$BASE_DIR/prometheus.yml
+	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template| sed "s/GRAFANA_ADDRESS/$GRAFANA_ADDRESS/" >$BASE_DIR/prometheus.yml
 else
 	if [[ ! $CONSUL_ADDRESS = *":"* ]]; then
 		CONSUL_ADDRESS="$CONSUL_ADDRESS:5090"
 	fi
-	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template | sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" >$BASE_DIR/prometheus.yml
+	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template | sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" | sed "s/GRAFANA_ADDRESS/$GRAFANA_ADDRESS/" >$BASE_DIR/prometheus.yml
 fi
 
 if [[ "$EVALUATION_INTERVAL" != "" ]]; then

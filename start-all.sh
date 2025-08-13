@@ -591,7 +591,17 @@ if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
 		echo "Port mapping is not supported with host network, remove the -l flag from the command line"
 		exit 1
 	fi
-	HOST_NETWORK=1
+	HOST_NETWORK=host
+	GRAFANA_ADDRESS="-G localhost:3000"
+elif [[ ! $DOCKER_PARAM = *"--net"* ]]; then
+    HOST_NETWORK="monitor-net"
+    if [ "$STACK_ID" != "" ]; then
+        HOST_NETWORK="$HOST_NETWORK$STACK_ID"
+    fi
+    if ! docker network inspect $HOST_NETWORK >/dev/null 2>&1; then
+      docker network create $HOST_NETWORK
+    fi
+    DOCKER_PARAM="$DOCKER_PARAM --net=$HOST_NETWORK"
 fi
 
 if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
@@ -764,7 +774,7 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
 	fi
 done
 
-./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_STORE_CMD
+./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_STORE_CMD
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
 	DATE=$(date +"%Y-%m-%d_%H_%M_%S")
 	if [ -f $DATA_DIR/scylla.txt ]; then
@@ -780,7 +790,7 @@ if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
 		echo RUN_ALTERNATOR=1 >>$DATA_DIR/scylla.txt
 	fi
 fi
-if [ -z $HOST_NETWORK ]; then
+if [  "$HOST_NETWORK" != "host" ]; then
 	PORT_MAPPING="-p $BIND_ADDRESS$PROMETHEUS_PORT:9090"
 fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then

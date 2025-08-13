@@ -113,3 +113,8 @@ if [ -z $STACK_ID ]; then
 	./kill-container.sh -b thanos
 	./kill-container.sh -b datadog-agent
 fi
+HOST_NETWORK="monitor-net"
+if [ "$STACK_ID" != "" ]; then
+    HOST_NETWORK="$HOST_NETWORK$STACK_ID"
+fi
+docker network rm $HOST_NETWORK  >/dev/null 2>&1 || true
