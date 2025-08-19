@@ -152,6 +152,21 @@ if [ ! -z "$VECTOR_STORE" ]; then
     - source_labels: [__address__, __port__]
       regex:  '(.+);$'
       target_label: __address__
-      replacement: '\${1}:6080'"
+      replacement: '\${1}:6080'
+- job_name: vector_store_os
+  honor_labels: false
+  file_sd_configs:
+    - files:
+      - /etc/scylla.d/prometheus/targets/vector_store_servers.yml
+  relabel_configs:
+    - source_labels: [__address__]
+      regex:  '(.+)[:]\d+$'
+      target_label: __address__
+      replacement: '\${1}'
+    - source_labels: [__address__]
+      regex:  '(.+)'
+      target_label: __address__
+      replacement: '\${1}:9100'
+      "
 	echo "$__target" >>$BASE_DIR/prometheus.yml
 fi
