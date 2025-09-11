@@ -14,6 +14,11 @@ The following table shows which version of Scylla Monitoring Stack supports dash
      - Scylla Enterprise Version
      - Node_exporter[1] Version
      - Scylla Manager Version
+   * - 4.12
+     -
+     - 2024.x, 2025.1, 2025.2, 2025.3, 2025.4
+     - 1.7.0
+     - 3.x
    * - 4.11
      -
      - 2024.x, 2025.1, 2025.2, 2025.3
