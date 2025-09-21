@@ -12,6 +12,7 @@ if [ -z ${DEFAULT_VERSION[$CURRENT_VERSION]} ]; then
 	VERSION_FOR_DEFAULTS=$BRANCH_VERSION
 fi
 MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$VERSION_FOR_DEFAULTS]}
+VECTOR_VERSION=${VECTOR_DEFAULT_VERSION[$VERSION_FOR_DEFAULTS]}
 if [ "$1" = "-e" ]; then
 	DEFAULT_VERSION=${DEFAULT_ENTERPRISE_VERSION[$VERSION_FOR_DEFAULTS]}
 fi
@@ -34,6 +35,9 @@ for arg; do
             ;;
         --clear)
             CLEAR_DASHBOARD="1"
+            ;;
+        --vector-store)
+            VECTOR_STORE="1"
             ;;
         *)
             set -- "$@" "$arg"
@@ -192,6 +196,23 @@ for oring_v in $MANAGER_VERSION; do
 	fi
 done
 
+if [ "$VECTOR_STORE" != "" ]; then
+    if [ -e grafana/scylla-vector-store.template.json ]; then
+        oring_v=$VECTOR_VERSION
+        v=$(echo $oring_v | cut -d'.' -f1)
+        VERDIR="grafana/build/vector_$v"
+        mkdir -p $VERDIR
+        set_loader "vector_$v" "" "vector_$v"
+        if [ ! -f "$VERDIR/scylla-vector-store.$v.json" ] || [ "$VERDIR/scylla-vector-store.$v.json" -ot "grafana/scylla-vector-store.template.json" ] || [ "$VERDIR/scylla-vector-store.$v.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
+            if [[ -z "$TEST_ONLY" ]]; then
+                echo "updating grafana/scylla-vector-store.$v.template.json"
+                ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/scylla-vector-store.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -R "__REFRESH_INTERVAL__=$DASHBOARD_REFRESH" --replace-file docs/source/reference/metrics.yaml -V $v
+            else
+                echo "notice: grafana/scylla-vector-store.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
+            fi
+        fi
+    fi
+fi
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	VERDIR="grafana/build/default"
 	set_loader "default" "" "default"
