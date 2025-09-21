@@ -10,7 +10,10 @@
                 "panels": [
                     {
                         "class": "small_stat",
-                        "span": 3,
+                        "gridPos": {
+                            "w": 4,
+                            "h": 5
+                        },
                         "title": "Status",
                         "targets": [
                             {
@@ -58,38 +61,105 @@
                         }
                     },
                     {
-                        "class": "vertical_lcd",
+                        "class": "small_stat",
+                        "targets": [
+                            {
+                                "expr": "count(index_size{job=\"vector_store\"})",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "gridPos": {
+                            "w": 3,
+                            "h": 5
+                        },
+                        "title": "# Indexes"
+                    },
+                    {
+                        "class": "small_stat",
+                        "type": "piechart",
                         "fieldConfig": {
                             "defaults": {
-                                "custom": {},
-                                "unit": "percent",
-                                "decimals": 0,
-                                "thresholds": {
-                                    "mode": "absolute",
-                                    "steps": [
-                                        {
-                                            "color": "green",
-                                            "value": null
-                                        }
-                                    ]
-                                },
-                                "mappings": []
+                              "custom": {
+                                "hideFrom": {
+                                  "tooltip": false,
+                                  "viz": false,
+                                  "legend": false
+                                }
+                              },
+                              "color": {
+                                "mode": "palette-classic"
+                              },
+                              "mappings": [],
+                              "decimals": 0,
+                              "min": 0,
+                              "unit": "decbytes"
                             },
                             "overrides": []
-                        },
+                          },
                         "gridPos": {
-                            "w": 1,
-                            "h": 4
+                            "w": 3,
+                            "h": 5
                         },
                         "targets": [
                             {
-                                "expr": "100-100*sum(node_filesystem_avail_bytes{job=\"vector_store_os\"})/sum(node_filesystem_size_bytes{job=\"vector_store_os\"})",
-                                "legendFormat": "",
-                                "interval": "",
-                                "refId": "A",
-                                "instant": true
+                              "expr": "sum(node_filesystem_size_bytes{job=\"vector_store_os\"}) - sum(node_filesystem_avail_bytes{job=\"vector_store_os\"})",
+                              "instant": true,
+                              "interval": "",
+                              "legendFormat": "Used",
+                              "refId": "A",
+                              "datasource": {
+                                "uid": "P1809F7CD0C75ACF3",
+                                "type": "prometheus"
+                              },
+                              "editorMode": "code"
+                            },
+                            {
+                              "refId": "B",
+                              "expr": "sum(node_filesystem_avail_bytes{job=\"vector_store_os\"})",
+                              "range": true,
+                              "instant": false,
+                              "datasource": {
+                                "uid": "P1809F7CD0C75ACF3",
+                                "type": "prometheus"
+                              },
+                              "hide": false,
+                              "editorMode": "code",
+                              "legendFormat": "Free"
                             }
-                        ]
+                          ],
+                          "options": {
+                            "reduceOptions": {
+                              "values": false,
+                              "calcs": [
+                                "last"
+                              ],
+                              "fields": ""
+                            },
+                            "pieType": "pie",
+                            "tooltip": {
+                              "mode": "single",
+                              "sort": "none",
+                              "hideZeros": false
+                            },
+                            "legend": {
+                              "showLegend": false,
+                              "displayMode": "list",
+                              "placement": "bottom"
+                            },
+                            "colorMode": "value",
+                            "graphMode": "none",
+                            "justifyMode": "auto",
+                            "orientation": "auto",
+                            "textMode": "auto",
+                            "displayLabels": [
+                              "percent",
+                              "value",
+                              "name"
+                            ]
+                          }
                     },
                     {
                         "class": "small_stat",
@@ -108,6 +178,10 @@
                                 "unit": "decbytes"
                             },
                             "overrides": []
+                        },
+                        "gridPos": {
+                            "w": 3,
+                            "h": 5
                         },
                         "targets": [
                             {
@@ -151,20 +225,44 @@
                                 "refId": "A"
                             }
                         ],
+                        "gridPos": {
+                            "w": 3,
+                            "h": 5
+                        },
                         "title": "CPU"
                     },
                     {
-                        "class": "small_stat",
+                        "class": "small_stat_area",
+                        "fieldConfig": {
+                            "defaults": {
+                                "mappings": [],
+                                "thresholds": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "green",
+                                            "value": null
+                                        }
+                                    ]
+                                },
+                                "unit": "decbytes"
+                            },
+                            "overrides": []
+                        },
+                        "gridPos": {
+                            "w": 3,
+                            "h": 5
+                        },
                         "targets": [
                             {
-                                "expr": "count(index_size{job=\"vector_store\"})",
+                                "expr": "avg(node_memory_MemTotal_bytes{job=\"vector_store_os\"})-avg(node_memory_MemAvailable_bytes{job=\"vector_store_os\"})",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "Used",
                                 "refId": "A",
                                 "step": 40
                             }
                         ],
-                        "title": "# Indexes"
+                        "title": "Memory Usage"
                     }
                 ],
                 "title": "Summary row"
