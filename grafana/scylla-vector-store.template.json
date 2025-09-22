@@ -192,7 +192,7 @@
                                 "step": 40
                             }
                         ],
-                        "title": "Disk"
+                        "title": "Disk Usage"
                     },
                     {
                         "class": "small_stat_area",
@@ -282,6 +282,34 @@
                 "class": "row",
                 "panels": [
                     {
+                        "class": "graph_panel",
+                        "targets": [
+                            {
+                                "expr": "index_size{index_name=\"$index\"}",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "refId": "A",
+                                "legendFormat": "{{keyspace}} {{index_name}}"
+                            }
+                        ],
+                        "span": 2,
+                        "title": "Index Size"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "targets": [
+                            {
+                                "expr": "rate(index_size{index_name=\"$index\"}[$__rate_interval])",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "refId": "A",
+                                "legendFormat": "{{keyspace}} {{index_name}}"
+                            }
+                        ],
+                        "span": 2,
+                        "title": "Index build rate"
+                    },
+                    {
                         "class": "ops_panel",
                         "targets": [
                             {
@@ -292,7 +320,7 @@
                                 "legendFormat": "{{keyspace}} {{index_name}}"
                             }
                         ],
-                        "span": 3,
+                        "span": 2,
                         "title": "Index requests rate"
                     },
                     {
@@ -306,7 +334,7 @@
                                 "legendFormat": "{{keyspace}} {{index_name}}"
                             }
                         ],
-                        "span": 3,
+                        "span": 2,
                         "title": "Average Latency"
                     },
                     {
@@ -320,7 +348,7 @@
                                 "legendFormat": "{{keyspace}} {{index_name}}"
                             }
                         ],
-                        "span": 3,
+                        "span": 2,
                         "title": "P95 Latency"
                     },
                     {
@@ -334,7 +362,7 @@
                                 "legendFormat": "{{keyspace}} {{index_name}}"
                             }
                         ],
-                        "span": 3,
+                        "span": 2,
                         "title": "P99 Latency"
                     }
 
