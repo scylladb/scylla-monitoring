@@ -232,7 +232,6 @@
                     {
                         "class": "graph_panel",
                         "span": 3,
-                        "dashversion":[">6.0"],
                         "targets": [
                             {
                                 "expr": "$func(scylla_column_family_tablet_count{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}) by([[by]])",
@@ -247,9 +246,85 @@
                     }
                 ]
             },
-           {
+            {
+                "class": "row",
+                "dashversion":[">2025.4"],
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "repeat":"index",
+                        "collapsed": false,
+                        "title": "$ks:$index"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "dashversion":[">2025.4"],
+                "panels": [
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_index_query_latencies_count{ks=\"$ks\", idx=\"$index\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Read by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_index_query_latencies_sum{ks=\"$ks\", idx=\"$index\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_index_query_latencies_count{ks=\"$ks\", idx=\"$index\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "Average read latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95,sum(rate(scylla_index_query_latencies_bucket{ks=\"$ks\", idx=\"$index\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "P95 read latency by [[by]]"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.99,sum(rate(scylla_index_query_latencies_bucket{ks=\"$ks\", idx=\"$index\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]], le))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "title": "P99 read latency by [[by]]"
+                    }
+                ]
+            },
+
+
+
+                       {
            "class": "row",
-           "dashversion":[">6.0"],
                 "panels": [
                  {
                  "title": "Tablets over time per [[by]]",
@@ -359,7 +434,14 @@
                       "query": "query_result(topk(20, sum by (cf) (rate(scylla_column_family_read_latency_count{cluster=\"$cluster\", ks=\"$ks\"}[${__range_s}s])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks=\"$ks\"}*0) + sum by (cf) (rate(scylla_column_family_write_latency_count{cluster=\"$cluster\", ks=\"$ks\"}[${__range_s}s])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks=\"$ks\"}*0)))"
                     },
                     "regex": "/.*cf=\"([^\"]+)\".*/"
-                  },
+                },
+                {
+                    "class": "template_variable_all",
+                    "dashversion":[">2025.4"],
+                    "label": "index",
+                    "name": "index",
+                    "query": "label_values(scylla_index_query_latencies_count{cluster=\"$cluster\", dc=~\"$dc\", ks=\"$ks\"}, idx)"
+                },
                 {
                     "class": "aggregation_function"
                 },
