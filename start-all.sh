@@ -659,6 +659,12 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
 	NODE_TARGET_FILE="-v "$($readlink_command $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/targets/node_exporter_servers.yml"
 	SCYLLA_MANGER_AGENT_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_AGENT_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_agents.yml"
 else
+    if [ ! -z "$VECTOR_STORE" ]; then
+        if [ "$VECTOR_STORE" != "vector_store_servers.yml" ]; then
+            echo "When using target directory the vector-store file is called vector_store_servers.yml and should be inside the target directory"
+        fi
+    fi
+    VECTOR_STORE=""
 	SCYLLA_TARGET_FILE=""
 	SCYLLA_MANGER_TARGET_FILE=""
 	SCYLLA_MANGER_AGENT_TARGET_FILE=""

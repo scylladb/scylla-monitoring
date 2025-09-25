@@ -8,7 +8,7 @@ The `start-all.sh` script is a small utility that sets the dashboards and starts
 General Options
 ---------------
 
-**-h** Help, Print the help, and exit.
+**-h, --help** Help, Print the help, and exit.
 
 **--version** print the current Scylla-Monitoring stack version, and exit.
 
@@ -28,6 +28,14 @@ You cannot use port mapping when using the ``-l`` flag
 **--scrap scrap-interval** Allows changing Prometheus scrap interval.
 
 **--quick-startup** When set, the script will not validate that each of the processes start correctly. The benefit is a quicker startup time. The lack of validation makes handling errors harder, use at your own risk.
+
+**--alternator** When set, the monitoring stack starts with Alternator as the main dashboard.
+
+**--archive /path/to/prometheus/data** Run the monitoring stack using downloaded data.
+
+**--vector-store /path/to/vector-store/vector_store_servers.yml** Read metrics from a vector-store service machine. This will also include the
+vector-store service dashboard. When used with --target-directory, the file path
+is ignored and the file is expected to be named vector_store_servers.yml.
 
 Grafana Related Commands
 ------------------------
@@ -87,7 +95,15 @@ This flag places the Prometheus data directory outside of its container and by d
 **--evaluation-interval duration** Override the default recording rules evaluation-interval.
 
 **--no-cas** An optimization for users who do not use cas, Prometheus will drop all cas related metrics while scrapping
+
 **--no-cdc** An optimization for users who do not use cdc, Prometheus will drop all cdc related metrics while scrapping
+
+**--target-directory** Bind a target directory instead of specific files.
+This is safer when replacing files while a container is running.
+When using this option, the following files need to be added explicitly:
+scylla_servers.yml, node_exporter_servers.yml, scylla_manager_agents.yml,
+scylla_manager_servers.yml, and vector_store_servers.yml (if using the vector service).
+
 
 Prometheus Retention Period
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
