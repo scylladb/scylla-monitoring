@@ -2558,7 +2558,41 @@
                         ],
                         "description": "This is a ballpark estimation of the read-messages size (like select).\n\nIt is based on the assumption that read-messages are responsible for most outbound traffic.",
                         "title": "Estimated read message size by [[by]]"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], sum(scylla_storage_proxy_coordinator_foreground_reads{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) by (scheduling_group_name, [[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} {{dc}} {{instance}} {{shard}}",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "",
+                        "title": "Foreground Reads by [[by]]"
+                    },
+                    {
+                        "class": "wps_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], sum(scylla_storage_proxy_coordinator_foreground_writes{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) by (scheduling_group_name, [[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} {{dc}} {{instance}} {{shard}}",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "",
+                        "title": "Foreground Writes by [[by]]"
                     }
+
+
                 ]
             },
             {
