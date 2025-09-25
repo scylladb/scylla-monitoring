@@ -52,6 +52,10 @@ If not used, each run of the containers will clear all of Grafana's information.
 **-j dashboard** Allows adding dashboards to Grafana. Multiple parameters are supported.
 
 **-c Grafana environment variable** Use this parameter to override Grafana's configuration settings.  The ``-c`` flag allows adding an environment variable to Grafana and, by doing so, alters its configuration.
+How Grafana Configuration_ work. For example to enable the new navigation, you add -c 'GF_FEATURE_TOGGLES_ENABLE=newNavigation' to start-all.sh.
+
+.. _Configuration: https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#override-configuration-with-environment-variables
+
 
 **-g Grafana port** Override the default Grafana port. This is done using port mapping. Note that port mapping does not work when using the host network.
 
