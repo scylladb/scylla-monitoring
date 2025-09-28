@@ -102,7 +102,8 @@ Options:
   --local-thanos                 - If set, run thanos query as a front end to the local thanos sidecar.
   --enable-protobuf              - If set, enable the experimental Prometheus Protobuf with Native histograms support.
   --scrap [scrap duration]       - Change the default Prometheus scrap duration. Duration is in seconds.
-  --vector-store path/to/file.yml- Specifiy a vector store target file, the file should contain a list of vector store servers.
+  --vector-store path/to/file.yml - [depricated] see vector-search
+  --vector-search path/to/file.yml- Specifiy a vector search target file, the file should contain a list of vector search servers.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
                                    the file names should be scylla_servers.yml, node_exporter_servers.yml, scylla_manager_agents.yml, and scylla_manager_servers.yml
   --stack id                     - Use this option when running a secondary stack, id could be 1-4
@@ -313,9 +314,14 @@ for arg; do
 			;;
 		--vector-store)
 			LIMIT="1"
-			PARAM="vector-store"
-			VECTOR_STORE_CMD="--vector-store"
+			PARAM="vector-search"
+			VECTOR_SEARCH_CMD="--vector-search"
 			;;
+        --vector-search)
+            LIMIT="1"
+            PARAM="vector-search"
+            VECTOR_SEARCH_CMD="--vector-search"
+            ;;
 		--no-cas-cdc)
 			PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
 			;;
@@ -390,8 +396,8 @@ for arg; do
 		elif [ "$PARAM" = "scrap" ]; then
 			SCRAP_CMD="--scrap $NOSPACE"
 			unset PARAM
-		elif [ "$PARAM" = "vector-store" ]; then
-			VECTOR_STORE="$NOSPACE"
+		elif [ "$PARAM" = "vector-search" ]; then
+			VECTOR_SEARCH="$NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "archive" ]; then
 			DATA_DIR="$NOSPACE"
@@ -649,22 +655,22 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
 			echo ""
 		fi
 	fi
-	if [ -z "$VECTOR_STORE" ]; then
-		VECTOR_STORE=""
+	if [ -z "$VECTOR_SEARCH" ]; then
+		VECTOR_SEARCH=""
 	else
-		VECTOR_STORE="-v "$($readlink_command $VECTOR_STORE)":/etc/scylla.d/prometheus/targets/vector_store_servers.yml"
+		VECTOR_SEARCH="-v "$($readlink_command $VECTOR_SEARCH)":/etc/scylla.d/prometheus/targets/vector_search_servers.yml"
 	fi
 	SCYLLA_TARGET_FILE="-v "$($readlink_command $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_servers.yml"
 	SCYLLA_MANGER_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_servers.yml"
 	NODE_TARGET_FILE="-v "$($readlink_command $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/targets/node_exporter_servers.yml"
 	SCYLLA_MANGER_AGENT_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_AGENT_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_agents.yml"
 else
-    if [ ! -z "$VECTOR_STORE" ]; then
-        if [ "$VECTOR_STORE" != "vector_store_servers.yml" ]; then
-            echo "When using target directory the vector-store file is called vector_store_servers.yml and should be inside the target directory"
+    if [ ! -z "$VECTOR_SEARCH" ]; then
+        if [ "$VECTOR_SEARCH" != "vector_search_servers.yml" ]; then
+            echo "When using target directory the vector-search file is called vector_search_servers.yml and should be inside the target directory"
         fi
     fi
-    VECTOR_STORE=""
+    VECTOR_SEARCH=""
 	SCYLLA_TARGET_FILE=""
 	SCYLLA_MANGER_TARGET_FILE=""
 	SCYLLA_MANGER_AGENT_TARGET_FILE=""
@@ -780,7 +786,7 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
 	fi
 done
 
-./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_STORE_CMD
+./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
 	DATE=$(date +"%Y-%m-%d_%H_%M_%S")
 	if [ -f $DATA_DIR/scylla.txt ]; then
@@ -819,7 +825,7 @@ else
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
 		$NODE_TARGET_FILE \
-		$VECTOR_STORE \
+		$VECTOR_SEARCH \
 		$SCYLLA_MANGER_AGENT_TARGET_FILE \
 		$PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
 		--web.enable-lifecycle --enable-feature=promql-experimental-functions --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
@@ -906,4 +912,4 @@ fi
 if [ "$RUN_ALTERNATOR" = 1 ]; then
 	GRAFANA_ENV_ARRAY+=(--alternator)
 fi
-./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD $VECTOR_STORE_CMD
+./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD $VECTOR_SEARCH_CMD

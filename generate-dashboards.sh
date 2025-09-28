@@ -38,7 +38,10 @@ for arg; do
             CLEAR_DASHBOARD="1"
             ;;
         --vector-store)
-            VECTOR_STORE="1"
+            VECTOR_SEARCH="1"
+            ;;
+        --vector-search)
+            VECTOR_SEARCH="1"
             ;;
         *)
             set -- "$@" "$arg"
@@ -197,19 +200,19 @@ for oring_v in $MANAGER_VERSION; do
 	fi
 done
 
-if [ "$VECTOR_STORE" != "" ]; then
-    if [ -e grafana/scylla-vector-store.template.json ]; then
+if [ "$VECTOR_SEARCH" != "" ]; then
+    if [ -e grafana/scylla-vector-search.template.json ]; then
         oring_v=$VECTOR_VERSION
         v=$(echo $oring_v | cut -d'.' -f1)
         VERDIR="grafana/build/vector_$v"
         mkdir -p $VERDIR
         set_loader "vector_$v" "" "vector_$v"
-        if [ ! -f "$VERDIR/scylla-vector-store.$v.json" ] || [ "$VERDIR/scylla-vector-store.$v.json" -ot "grafana/scylla-vector-store.template.json" ] || [ "$VERDIR/scylla-vector-store.$v.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
+        if [ ! -f "$VERDIR/scylla-vector-search.$v.json" ] || [ "$VERDIR/scylla-vector-search.$v.json" -ot "grafana/scylla-vector-search.template.json" ] || [ "$VERDIR/scylla-vector-search.$v.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
             if [[ -z "$TEST_ONLY" ]]; then
-                echo "updating grafana/scylla-vector-store.$v.template.json"
-                ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/scylla-vector-store.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -R "__REFRESH_INTERVAL__=$DASHBOARD_REFRESH" --replace-file docs/source/reference/metrics.yaml -V $v
+                echo "updating grafana/scylla-vector-search.$v.template.json"
+                ./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/scylla-vector-search.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -R "__REFRESH_INTERVAL__=$DASHBOARD_REFRESH" --replace-file docs/source/reference/metrics.yaml -V $v
             else
-                echo "notice: grafana/scylla-vector-store.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
+                echo "notice: grafana/scylla-vector-search.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
             fi
         fi
     fi

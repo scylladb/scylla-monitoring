@@ -33,8 +33,11 @@ for arg; do
 			PARAM="scrap"
 			;;
 		--vector-store)
-			VECTOR_STORE="1"
+			VECTOR_SEARCH="1"
 			;;
+        --vector-search)
+            VECTOR_SEARCH="1"
+            ;;
 		--no-node-exporter-file)
 			NO_NODE_EXPORTER_FILE="1"
 			;;
@@ -142,22 +145,22 @@ for val in "${PROMETHEUS_TARGETS[@]}"; do
 	cat $val >>$BASE_DIR/prometheus.yml
 done
 
-if [ ! -z "$VECTOR_STORE" ]; then
-	__target="- job_name: vector_store
+if [ ! -z "$VECTOR_SEARCH" ]; then
+	__target="- job_name: vector_search
   honor_labels: false
   file_sd_configs:
     - files:
-      - /etc/scylla.d/prometheus/targets/vector_store_servers.yml
+      - /etc/scylla.d/prometheus/targets/vector_search_servers.yml
   relabel_configs:
     - source_labels: [__address__, __port__]
       regex:  '(.+);$'
       target_label: __address__
       replacement: '\${1}:6080'
-- job_name: vector_store_os
+- job_name: vector_search_os
   honor_labels: false
   file_sd_configs:
     - files:
-      - /etc/scylla.d/prometheus/targets/vector_store_servers.yml
+      - /etc/scylla.d/prometheus/targets/vector_search_servers.yml
   relabel_configs:
     - source_labels: [__address__]
       regex:  '(.+)[:]\d+$'
