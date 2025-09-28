@@ -33,9 +33,9 @@ You cannot use port mapping when using the ``-l`` flag
 
 **--archive /path/to/prometheus/data** Run the monitoring stack using downloaded data.
 
-**--vector-store /path/to/vector-store/vector_store_servers.yml** Read metrics from a vector-store service machine. This will also include the
-vector-store service dashboard. When used with --target-directory, the file path
-is ignored and the file is expected to be named vector_store_servers.yml.
+**--vector-search /path/to/vector-search/vector_search_servers.yml** Read metrics from a vector-search service machine. This will also include the
+vector-search service dashboard. When used with --target-directory, the file path
+is ignored and the file is expected to be named vector_search_servers.yml.
 
 Grafana Related Commands
 ------------------------
@@ -106,7 +106,7 @@ This flag places the Prometheus data directory outside of its container and by d
 This is safer when replacing files while a container is running.
 When using this option, the following files need to be added explicitly:
 scylla_servers.yml, node_exporter_servers.yml, scylla_manager_agents.yml,
-scylla_manager_servers.yml, and vector_store_servers.yml (if using the vector service).
+scylla_manager_servers.yml, and vector_search_servers.yml (if using the vector service).
 
 
 Prometheus Retention Period

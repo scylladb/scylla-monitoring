@@ -74,7 +74,10 @@ for arg; do
 			GRAFANA_AUTH_ANONYMOUS=false
 			;;
         --vector-store)
-            VECTOR_STORE="--vector-store"
+            VECTOR_SEARCH="--vector-search"
+            ;;
+        --vector-search)
+            VECTOR_SEARCH="--vector-search"
             ;;
         --clear)
             GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND --clear"
@@ -298,7 +301,7 @@ fi
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
-./generate-dashboards.sh $VECTOR_STORE -t $SPECIFIC_SOLUTION -v $VERSIONS -M $MANAGER_VERSION $STACK_CMD $GRAFANA_DASHBOARD_COMMAND
+./generate-dashboards.sh $VECTOR_SEARCH -t $SPECIFIC_SOLUTION -v $VERSIONS -M $MANAGER_VERSION $STACK_CMD $GRAFANA_DASHBOARD_COMMAND
 ./grafana-datasource.sh $DATA_SOURCES $STACK_CMD $SCRAP_INTERVAL
 
 if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
