@@ -994,6 +994,38 @@
                             "overrides": []
                          },
                         "title": "HTTP New connections by [[by]]"
+                    },
+                    {
+                        "class": "percentunit_panel",
+                        "dashversion":[">2025.4"],
+                        "description": "Alterantor expression cache",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression)/($func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression) + $func(rate(scylla_alternator_expression_cache_misses{cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Expression Cache hit ratio [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "dashversion":[">2025.4"],
+                        "description": "Alterantor expression cache eviction rate",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$func(rate(scylla_alternator_expression_cache_evictions{cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "title": "Expression Cache eviction rate [[by]]"
                     }
                 ],
                 "title": "New row"
