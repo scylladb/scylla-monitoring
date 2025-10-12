@@ -305,7 +305,7 @@
                             {
                               "refId": "A",
                               "queryText": "select address, port, shard_id, connection_stage, client_type, ssl_enabled, username, driver_name, driver_version, protocol_version from system.clients",
-                              "queryHost": "$node",
+                              "queryHost": "$original_ip",
                               "allHosts": true
                             }
                           ],
@@ -336,7 +336,7 @@
                             {
                               "refId": "A",
                               "queryText": "select keyspace_name, table_name,partition_key, clustering_key, row_size,compaction_time from system.large_rows",
-                              "queryHost": "$node",
+                              "queryHost": "$original_ip",
       						  "allHosts": true
                             }
                           ],
@@ -403,7 +403,7 @@
                             {
                               "refId": "A",
                               "queryText": "select keyspace_name, table_name,partition_key, clustering_key, column_name,cell_size, collection_elements, compaction_time from system.large_cells",
-                              "queryHost": "$node",
+                              "queryHost": "$original_ip",
       						  "allHosts": true
                             }
                           ],
@@ -470,14 +470,14 @@
                             {
                               "refId": "A",
                               "queryText": "select keyspace_name, table_name, partition_key, partition_size, compaction_time, rows from system.large_partitions",
-                              "queryHost": "$node",
+                              "queryHost": "$original_ip",
                               "dashversion":["<6.0", "<2024.2"],
       						  "allHosts": true
                             },
                             {
                               "refId": "A",
                               "queryText": "select keyspace_name, table_name, partition_key, partition_size, compaction_time, rows, dead_rows, range_tombstones from system.large_partitions",
-                              "queryHost": "$node",
+                              "queryHost": "$original_ip",
                               "dashversion":[">6.0", ">2024.2"],
                               "allHosts": true
                             }
@@ -1256,6 +1256,14 @@
                     "name": "shard",
                     "query": "label_values(scylla_reactor_utilization,shard)",
                     "sort": 3
+                },
+                {
+                    "class": "template_variable_all",
+                    "definition": "label_values(scylla_scylladb_current_version{instance=~\"$node\"},original_address)",
+                    "hide": 2,
+                    "name": "original_ip",
+                    "includeAll": false,
+                    "query":  "label_values(scylla_scylladb_current_version{instance=~\"$node\"},original_address)"
                 },
                 {
                     "class": "topk_limit"
