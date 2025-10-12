@@ -38,7 +38,7 @@ scrape_configs:
       replacement: '${1}:9180'
     - source_labels: [__address__]
       regex:  '(.*):.+$'
-      target_label: __tmp_address
+      target_label: original_address
       replacement: '${1}'
     - source_labels: [instance, __address__]
       regex: ';(.+):.+'
@@ -96,11 +96,18 @@ scrape_configs:
       regex: '(atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache)'
       replacement: ''
       target_label: dd
-    - source_labels: [__name__, __tmp_address]
-      regex: scylla_scylladb_current_version;(.+)(:?.*)
+    - action: replace
+      source_labels: [__name__, original_address]
+      regex: scylla_scylladb_current_version;(.*)
+      target_label: _saved_original_address
+      replacement: '${1}'
+    - action: labeldrop
+      regex: '^original_address$'
+    - action: replace
+      source_labels: [_saved_original_address]
+      regex: (.+)
       target_label: original_address
       replacement: '${1}'
-      action: replace
 - job_name: node_exporter
   honor_labels: false
   scrape_interval: 1m # By default, scrape targets every 20 second.
