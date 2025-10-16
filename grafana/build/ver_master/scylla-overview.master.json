@@ -1116,6 +1116,18 @@
                                 ]
                             }
                         ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Trend #D"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Shares"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1164,7 +1176,7 @@
                         "type": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
+                    "expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
                     "hide": false,
                     "instant": false,
                     "legendFormat": "__auto",
@@ -1176,12 +1188,26 @@
                         "type": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
+                    "expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
                     "hide": false,
                     "instant": false,
                     "legendFormat": "__auto",
                     "range": true,
                     "refId": "C"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "P1809F7CD0C75ACF3"
+                    },
+                    "editorMode": "code",
+                    "exemplar": false,
+                    "expr": "max(scylla_scheduler_shares{cluster=\"$cluster\", group=~\"sl.*\"}) by (group)",
+                    "hide": false,
+                    "instant": true,
+                    "legendFormat": "__auto",
+                    "range": false,
+                    "refId": "D"
                 }
             ],
             "title": "Service Groups",
@@ -1202,7 +1228,7 @@
                     "id": "joinByField",
                     "options": {
                         "byField": "group",
-                        "mode": "outer"
+                        "mode": "outerTabular"
                     }
                 },
                 {
@@ -1213,7 +1239,8 @@
                                 "group",
                                 "Trend #A",
                                 "Trend #B",
-                                "Trend #C"
+                                "Trend #C",
+                                "Trend #D"
                             ]
                         }
                     }
