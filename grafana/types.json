@@ -3656,6 +3656,18 @@
                     ]
                   }
                 ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Trend #D"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Shares"
+                  }
+                ]
               }
             ]
           },
@@ -3675,7 +3687,7 @@
               "id": "joinByField",
               "options": {
                 "byField": "group",
-                "mode": "outer"
+                "mode": "outerTabular"
               }
             },
             {
@@ -3686,7 +3698,8 @@
                     "group",
                     "Trend #A",
                     "Trend #B",
-                    "Trend #C"
+                    "Trend #C",
+                    "Trend #D"
                   ]
                 }
               }
@@ -3706,7 +3719,7 @@
             },
             {
               "refId": "B",
-              "expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
+              "expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
               "range": true,
               "instant": false,
               "datasource": {
@@ -3718,7 +3731,7 @@
             },
             {
               "refId": "C",
-              "expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
+              "expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
               "range": true,
               "instant": false,
               "datasource": {
@@ -3727,6 +3740,20 @@
               "hide": false,
               "editorMode": "code",
               "legendFormat": "__auto"
+            },
+            {
+              "refId": "D",
+              "expr": "max(scylla_scheduler_shares{cluster=\"$cluster\", group=~\"sl.*\"}) by (group)",
+              "range": false,
+              "instant": true,
+              "datasource": {
+                "uid": "P1809F7CD0C75ACF3",
+                "type": "prometheus"
+              },
+              "hide": false,
+              "editorMode": "code",
+              "legendFormat": "__auto",
+              "exemplar": false
             }
           ],
           "datasource": {
