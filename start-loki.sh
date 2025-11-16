@@ -158,7 +158,11 @@ if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
 fi
 
 if [ -z $ALERT_MANAGER_ADDRESS ]; then
-	ALERT_MANAGER_ADDRESS="$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' aalert):9093"
+	IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' aalert)
+        if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
+           IP=""
+        fi
+	ALERT_MANAGER_ADDRESS="$IP:9093"
 fi
 
 sed "s/ALERTMANAGER/$ALERT_MANAGER_ADDRESS/" loki/conf/loki-config.template.yaml >loki/conf/loki-config.yaml
@@ -190,7 +194,11 @@ if [ ! "$(docker ps -q -f name=$LOKI_NAME)" ]; then
 	exit 1
 fi
 
-LOKI_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $LOKI_NAME):3100"
+IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $LOKI_NAME)
+if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
+   IP=""
+fi
+LOKI_ADDRESS="$IP:3100"
 if [ "$LOKI_ADDRESS" = ":3100" ]; then
 	if [[ $(uname) == "Linux" ]]; then
 		HOST_IP=$(hostname -I | awk '{print $1}')

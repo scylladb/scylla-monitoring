@@ -164,7 +164,12 @@ if [ ! "$(docker ps -q -f name=$ALERTMANAGER_NAME)" ]; then
 	exit 1
 fi
 
-AM_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $ALERTMANAGER_NAME):9093"
+IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $ALERTMANAGER_NAME)
+if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
+   IP=""
+fi
+
+AM_ADDRESS="$IP:9093"
 if [ "$AM_ADDRESS" = ":9093" ]; then
 	if [[ $(uname) == "Linux" ]]; then
 		HOST_IP=$(hostname -I | awk '{print $1}')

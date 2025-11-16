@@ -4,7 +4,12 @@ if [ -f env.sh ]; then
 	. env.sh
 fi
 
-PROM_ADRESS=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' aprom):9090
+IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' aprom)
+if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
+   IP=""
+fi
+
+PROM_ADRESS="$IP:9090"
 DATADIR="/prometheus-data/"
 DOCKER_PARAM=""
 NAME="1"
