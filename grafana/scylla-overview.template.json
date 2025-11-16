@@ -55,7 +55,7 @@
                         "span": 2,
                         "targets": [
                             {
-                                "expr": "round($func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by (scheduling_group_name))",
+                                "expr": "round(sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by (scheduling_group_name))",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{scheduling_group_name}} Writes/s",
                                 "refId": "A",
@@ -111,7 +111,7 @@
                         "span": 2,
                         "targets": [
                             {
-                                "expr": "round($func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by (scheduling_group_name))",
+                                "expr": "round(sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by (scheduling_group_name))",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{scheduling_group_name}} Reads/s",
                                 "refId": "A",
@@ -145,7 +145,7 @@
                             {
                                 "expr": "rlatencyp95{by=\"cluster\", cluster=\"$cluster\",scheduling_group_name=~\"$sg\"}>0",
                                 "intervalFactor": 1,
-                                "legendFormat": "{{scheduling_group_name}} {{instance}} {{shard}} 95%",
+                                "legendFormat": "{{scheduling_group_name}} 95%",
                                 "refId": "A",
                                 "step": 1
                             },
@@ -199,7 +199,7 @@
                         "class": "vertical_lcd",
                         "targets": [
                             {
-                              "expr": "avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=~\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"} )",
+                              "expr": "avg(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\"} )",
                               "interval": "",
                               "legendFormat": "",
                               "instant": true,
@@ -215,7 +215,7 @@
                         },
                         "targets": [
                             {
-                                "expr": "1-(node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", instance=~\"$node\"})/(node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"})",
+                                "expr": "1-(node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\"})/(node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\"})",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{dc}} {{instance}}",
                                 "metric": "",
@@ -231,7 +231,7 @@
                         "span": 2,
                         "targets": [
                             {
-                                "expr": "$func(scylla_compaction_manager_compactions{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]])",
+                                "expr": "sum(scylla_compaction_manager_compactions{cluster=\"$cluster\", dc=~\"$dc\"}) by ([[by]])",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "metric": "",
@@ -248,16 +248,16 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_cache_row_hits{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "expr": "sum(rate(scylla_cache_row_hits{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "Hit {{instance}} {{shard}}",
+                                "legendFormat": "Hit {{instance}}",
                                 "refId": "A",
                                 "step": 10
                             },
                             {
-                                "expr": "$func(rate(scylla_cache_row_misses{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "expr": "sum(rate(scylla_cache_row_misses{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "Misses {{instance}} {{shard}}",
+                                "legendFormat": "Misses {{instance}}",
                                 "refId": "B",
                                 "step": 10
                             }
@@ -279,14 +279,14 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) or on([[by]]) $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])",
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "Writes {{instance}} {{shard}}",
+                                "legendFormat": "Writes {{instance}}",
                                 "refId": "A",
                                 "step": 1
                             },
                             {
-                              "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1d)) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1d))",
+                              "expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1d)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1d))",
                               "legendFormat": "1 Day Ago",
                               "interval": "",
                               "intervalFactor": 1,
@@ -294,7 +294,7 @@
                               "step": 1
                             },
                             {
-                              "expr": "$func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1w)) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval] offset 1w))",
+                              "expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1w)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1w))",
                               "legendFormat": "1 Week Ago",
                               "interval": "",
                               "intervalFactor": 1,
@@ -325,16 +325,16 @@
                         "span": 2,
                         "targets": [
                             {
-                                "expr": "avg(wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}>0) by (scheduling_group_name, [[by]])",
+                                "expr": "avg(wlatencyp95{by=\"[[by]]\", cluster=\"$cluster\", dc=~\"$dc\" ,scheduling_group_name=~\"$sg\"}>0) by (scheduling_group_name, [[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "{{scheduling_group_name}} 95% {{instance}} {{shard}}",
+                                "legendFormat": "{{scheduling_group_name}} 95% {{instance}}",
                                 "refId": "A",
                                 "step": 1
                             },
                             {
-                                "expr": "avg(wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}>0) by (scheduling_group_name, [[by]])",
+                                "expr": "avg(wlatencyp99{by=\"[[by]]\", cluster=\"$cluster\", dc=~\"$dc\" ,scheduling_group_name=~\"$sg\"}>0) by (scheduling_group_name, [[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "{{scheduling_group_name}} 99% {{instance}} {{shard}}",
+                                "legendFormat": "{{scheduling_group_name}} 99% {{instance}}",
                                 "refId": "B",
                                 "step": 1
                             }
@@ -350,9 +350,9 @@
                         "span": 2,
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])",
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_write_timeouts{cluster=\"$cluster\", dc=~\"$dc\" }[$__rate_interval])) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "Writes {{instance}} {{shard}}",
+                                "legendFormat": "Writes {{instance}}",
                                 "refId": "A",
                                 "step": 10
                             }
@@ -370,21 +370,21 @@
                         },
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on([[by]]) $func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])",
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "Reads {{instance}} {{shard}}",
+                                "legendFormat": "Reads {{instance}}",
                                 "refId": "A",
                                 "step": 1
                             },
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1d)) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1d))",
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1d)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1d))",
                                 "intervalFactor": 1,
                                 "legendFormat": "1 Day Ago",
                                 "refId": "B",
                                 "step": 1
                             },
                             {
-                                "expr": "$func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1w)) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1w))",
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1w)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1w))",
                                 "intervalFactor": 1,
                                 "legendFormat": "1 Week Ago",
                                 "refId": "C",
@@ -417,16 +417,16 @@
                         },
                         "targets": [
                             {
-                                "expr": "avg(rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}>0) by(scheduling_group_name, [[by]])",
+                                "expr": "avg(rlatencyp95{by=\"[[by]]\", cluster=\"$cluster\", dc=~\"$dc\" ,scheduling_group_name=~\"$sg\"}>0) by(scheduling_group_name, [[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "{{scheduling_group_name}} 95% {{instance}} {{shard}}",
+                                "legendFormat": "{{scheduling_group_name}} 95% {{instance}}",
                                 "refId": "A",
                                 "step": 1
                             },
                             {
-                                "expr": "avg(rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}>0) by(scheduling_group_name, [[by]])",
+                                "expr": "avg(rlatencyp99{by=\"[[by]]\", cluster=\"$cluster\", dc=~\"$dc\" ,scheduling_group_name=~\"$sg\"}>0) by(scheduling_group_name, [[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "{{scheduling_group_name}} 99% {{instance}} {{shard}}",
+                                "legendFormat": "{{scheduling_group_name}} 99% {{instance}}",
                                 "refId": "B",
                                 "step": 1
                             }
@@ -445,9 +445,9 @@
                         },
                         "targets": [
                             {
-                                "expr": "($func(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) or vector(0))+on([[by]]) ($func(rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) or vector(0))+on([[by]]) ($func(rate(scylla_storage_proxy_coordinator_range_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) or vector(0))",
+                                "expr": "(sum(rate(scylla_storage_proxy_coordinator_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]]) or vector(0))+on([[by]]) (sum(rate(scylla_storage_proxy_coordinator_cas_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]]) or vector(0))+on([[by]]) (sum(rate(scylla_storage_proxy_coordinator_range_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]]) or vector(0))",
                                 "intervalFactor": 1,
-                                "legendFormat": "Read {{instance}} {{shard}}",
+                                "legendFormat": "Read {{dc}}",
                                 "refId": "A",
                                 "step": 10
                             }
@@ -521,6 +521,21 @@
         "templating": {
             "list": [
                 {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "dashproductreject": "no-version-check",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "hide": 2,
+                    "dashproduct": "no-version-check",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
                     "class": "by_template_var",
                     "current": {
                         "tags": [],
@@ -551,30 +566,10 @@
                     ]
                 },
                 {
-                    "class": "template_variable_single",
-                    "label": "cluster",
-                    "name": "cluster",
-                    "query": "label_values(scylla_reactor_utilization, cluster)"
-                },
-                {
                     "class": "template_variable_all",
                     "label": "dc",
                     "name": "dc",
                     "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
-                },
-                {
-                    "class": "template_variable_all",
-                    "label": "node",
-                    "name": "node",
-                    "query": "label_values(scylla_reactor_utilization{cluster=\"$cluster\", dc=~\"$dc\"}, instance)"
-                },
-                {
-                    "class": "template_variable_all",
-                    "label": "shard",
-                    "name": "shard",
-                    "allValue":".+",
-                    "query": "label_values(scylla_reactor_utilization{cluster=\"$cluster\"},shard)",
-                    "sort": 3
                 },
                 {
                     "class": "template_variable_single",
@@ -585,6 +580,21 @@
                     "label": "Mount path",
                     "name": "mount_point",
                     "query": "node_filesystem_avail_bytes",
+                    "hide": 2,
+                    "dashproduct": "no-version-check",
+                    "regex": "/mountpoint=\"([^\"]*)\".*/",
+                    "sort": 0
+                },
+                {
+                    "class": "template_variable_single",
+                    "current": {
+                        "text": "/var/lib/scylla",
+                        "value": "/var/lib/scylla"
+                    },
+                    "label": "Mount path",
+                    "name": "mount_point",
+                    "query": "node_filesystem_avail_bytes",
+                    "dashproductreject": "no-version-check",
                     "regex": "/mountpoint=\"([^\"]*)\".*/",
                     "sort": 0
                 },
@@ -601,15 +611,24 @@
                 },
                 {
                     "class": "template_variable_all",
-                    "label": "SL",
+                    "label": "Service Level",
                     "name": "sg",
                     "includeAll":true,
                     "multi":true,
+                    "dashproductreject": "no-version-check",
                     "query": "label_values(scylla_scheduler_runtime_ms{cluster=~\"$cluster\", group=~\"sl:.*|commitlog\"},group)",
                     "sort": 3
                 },
                 {
-                    "class": "aggregation_function"
+                    "class": "template_variable_all",
+                    "label": "",
+                    "name": "sg",
+                    "includeAll":true,
+                    "multi":true,
+                    "hide": 2,
+                    "dashproduct": "no-version-check",
+                    "query": "label_values(scylla_scheduler_runtime_ms{cluster=~\"$cluster\", group=~\"sl:.*|commitlog\"},group)",
+                    "sort": 3
                 },
                 {
                     "class": "template_variable_custom",
@@ -679,6 +698,31 @@
             "to": "now"
         },
         "title": "Overview",
+        "annotations": {
+            "list":[
+             {
+                "builtIn": 1,
+                "datasource": {
+                  "type": "datasource",
+                  "uid": "grafana"
+                },
+                "enable": false,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+             },
+             {
+                "class":"annotation_restart"
+             },
+             {
+                "class":"ops_annotation"
+             },
+             {
+                "class":"stream_annotation"
+             }
+         ]
+        },
         "uid": "overview-__SCYLLA_VERSION_DASHED__",
         "version": 1
     }
