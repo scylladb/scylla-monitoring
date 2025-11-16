@@ -863,7 +863,6 @@ fi
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
 IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME)
 if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
-   echo "$IP setting to empty"
    IP=""
 fi
 DB_ADDRESS="$IP:9090"
