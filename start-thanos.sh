@@ -19,7 +19,7 @@ The script starts Thanos query, it connect to external Thanos side carts and act
 
 function update_data_source {
 	THANOS_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' thanos)"
-	if [[ $THANOS_ADDRESS = "" ]]; then
+	if [ $THANOS_ADDRESS = "" ] || [ $THANOS_ADDRESS = "invalid IP" ]; then
 		THANOS_ADDRESS=$(hostname -I | awk '{print $1}')
 	fi
 	THANOS_ADDRESS="$THANOS_ADDRESS:10904"

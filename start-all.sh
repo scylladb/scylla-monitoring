@@ -861,7 +861,12 @@ fi
 
 # Can't use localhost here, because the monitoring may be running remotely.
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
-DB_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME):9090"
+IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME)
+if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
+   echo "$IP setting to empty"
+   IP=""
+fi
+DB_ADDRESS="$IP:9090"
 
 if [ "$DB_ADDRESS" = ":9090" ]; then
 	if [[ $(uname) == "Linux" ]]; then
@@ -899,6 +904,11 @@ fi
 if [ $RUN_THANOS -eq 1 ]; then
 	./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG
 elif [ "$RUN_LOCAL_THANOS" = "1" ]; then
+    IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME)
+    if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
+       echo "$IP setting to empty"
+       IP=""
+    fi
     STORE_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sidecar1):10911"
     ./start-thanos.sh $NO_THANOS_DATASOURCE -S $STORE_ADDRESS
 fi
