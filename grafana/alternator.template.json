@@ -65,7 +65,7 @@
                           },
                         "targets": [
                             {
-                                "expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", op=~\"$ops\"}[$__rate_interval])>0) by (op)",
+                                "expr": "sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", op=~\"$ops\"}[$__rate_interval])>0) by (op)",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{op}}",
                                 "metric": "",
@@ -73,7 +73,7 @@
                                 "step": 4
                             }
                         ],
-                        "title": "Operations/s"
+                        "title": "Total Operations/s"
                     },
                     {
                         "class": "us_panel",
@@ -162,7 +162,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Completed $ops"
+                        "title": "Completed $ops $func by [[by]]"
                     },
                     {
                         "class": "us_panel",
@@ -176,7 +176,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Average $ops latency by [[by]]"
+                        "title": "Average $ops latency $func by [[by]]"
                     },
                     {
                         "class": "us_panel",
@@ -304,7 +304,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "GetItem by [[by]]"
+                        "title": "GetItem $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -318,7 +318,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "PutItem by [[by]]"
+                        "title": "PutItem $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -332,7 +332,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "UpdateItem by [[by]]"
+                        "title": "UpdateItem $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -346,7 +346,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "DeleteItem by [[by]]"
+                        "title": "DeleteItem $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -360,7 +360,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Query by [[by]]"
+                        "title": "Query $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -374,7 +374,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Scan by [[by]]"
+                        "title": "Scan $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -388,7 +388,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "BatchWriteItem by [[by]]"
+                        "title": "BatchWriteItem $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -412,7 +412,7 @@
                             }
                         ],
                         "description": "The number of items processed as a result of BatchWriteItem",
-                        "title": "Operations from BatchWriteItem by [[by]]"
+                        "title": "Operations from BatchWriteItem $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -436,7 +436,7 @@
                             }
                         ],
                         "description": "The avarage batch size of BatchWriteItem",
-                        "title": "Average Batch size of BatchWriteItem by [[by]]"
+                        "title": "Average Batch size of BatchWriteItem $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -450,7 +450,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "BatchGetItem by [[by]]"
+                        "title": "BatchGetItem $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -474,7 +474,7 @@
                             }
                         ],
                         "description": "The number of items processed as a result of BatchGetItem",
-                        "title": "Operations from BatchGetItem by [[by]]"
+                        "title": "Operations from BatchGetItem $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -498,11 +498,11 @@
                             }
                         ],
                         "description": "The avarage batch size of BatchGetItem",
-                        "title": "Average Batch size of BatchGetItem by [[by]]"
+                        "title": "Average Batch size of BatchGetItem $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
-                        "description": "The number of items deleted by their TTL",
+                        "description": "The number of items deleted $func by their TTL",
                         "span": 4,
                         "targets": [
                             {
@@ -513,7 +513,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Expired Item Deleted by [[by]]"
+                        "title": "Expired Item Deleted $func by [[by]]"
                     }
                     ]
             },
@@ -562,7 +562,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Completed $alternator_latency_ops"
+                        "title": "Completed $alternator_latency_ops $func by [[by]]"
                     },
                     {
                         "class": "us_panel",
@@ -576,7 +576,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Average $alternator_latency_ops latency by [[by]]"
+                        "title": "Average $alternator_latency_ops latency $func by [[by]]"
                     },
                     {
                         "class": "us_panel",
@@ -591,7 +591,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "95th percentile $alternator_latency_ops latency by [[by]]"
+                        "title": "95th percentile $alternator_latency_ops latency $func by [[by]]"
                     },
                     {
                         "class": "us_panel",
@@ -606,7 +606,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "99th percentile $alternator_latency_ops latency by [[by]]"
+                        "title": "99th percentile $alternator_latency_ops latency $func by [[by]]"
                     }
                 ],
                 "title": "New row"
@@ -644,7 +644,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "ListStreams by [[by]]"
+                        "title": "ListStreams $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -658,7 +658,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "DescribeStream by [[by]]"
+                        "title": "DescribeStream $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -672,7 +672,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "GetShardIterator by [[by]]"
+                        "title": "GetShardIterator $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -686,7 +686,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "GetRecords by [[by]]"
+                        "title": "GetRecords $func by [[by]]"
                     }
                 ]
             },
@@ -732,7 +732,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "Completed $alternator_streams_latency_ops"
+                        "title": "Completed $alternator_streams_latency_ops $func by [[by]"
                     },
                     {
                         "class": "us_panel",
@@ -814,7 +814,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "CreateTable by [[by]]"
+                        "title": "CreateTable $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -828,7 +828,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "DeleteTable by [[by]]"
+                        "title": "DeleteTable $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -842,7 +842,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "DescribeTable by [[by]]"
+                        "title": "DescribeTable $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -856,7 +856,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "ListTables by [[by]]"
+                        "title": "ListTables $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -870,7 +870,7 @@
                                 "step": 1
                             }
                         ],
-                        "title": "DescribeEndpoints by [[by]]"
+                        "title": "DescribeEndpoints $func by [[by]]"
                     }
                     ]
             },
@@ -910,7 +910,7 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Cache Hits"
+                        "title": "Cache Hits $func by [[by]]"
                     },
                     {
                         "class": "ops_panel",
@@ -925,7 +925,7 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Cache Misses"
+                        "title": "Cache Misses $func by [[by]]"
                     },
                     {
                         "class": "wps_panel",
@@ -940,7 +940,7 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Write Timeouts/s by [[by]]"
+                        "title": "Write Timeouts/s $func by [[by]]"
                     },
                     {
                         "class": "rps_panel",
@@ -955,7 +955,7 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Read Timeouts/s by [[by]]"
+                        "title": "Read Timeouts/s $func by [[by]]"
                     },
                     {
                         "class": "graph_panel",
@@ -970,7 +970,7 @@
                                 "step": 10
                             }
                         ],
-                        "title": "HTTP Opened connections by [[by]]"
+                        "title": "HTTP Opened connections $func by [[by]]"
                     },
                     {
                         "class": "connectionsps_panel",
@@ -985,7 +985,7 @@
                                 "step": 10
                             }
                         ],
-                        "title": "HTTP New connections by [[by]]"
+                        "title": "HTTP New connections $func by [[by]]"
                     },
                     {
                         "class": "percentunit_panel",
@@ -1001,7 +1001,7 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Expression Cache hit ratio [[by]]"
+                        "title": "Expression Cache hit ratio $func by [[by]]"
                     },
                     {
                         "class": "graph_panel",
@@ -1017,7 +1017,7 @@
                                 "step": 10
                             }
                         ],
-                        "title": "Expression Cache eviction rate [[by]]"
+                        "title": "Expression Cache eviction rate $func by [[by]]"
                     }
                 ],
                 "title": "New row"
