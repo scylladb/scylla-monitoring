@@ -308,7 +308,7 @@
         "title":"Status",
         "gridPos": {
             "h": 4,
-            "w": 3
+            "w": 2
         },
         "fieldConfig":{
                "defaults":{
@@ -584,24 +584,23 @@
             }
           ]
          },
-
          {
             "class":"small_stat_area",
             "targets":[
                {
-                  "expr":"sum(rate(scylla_transport_requests_served{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) + (sum(rate(scylla_thrift_served{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or on() vector(0))",
+                  "expr":"sum(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
                   "refId":"A"
                }
             ],
             "gridPos":{
-               "w":3,
+               "w":2,
                "h":4
             },
             "fieldConfig":{
                "defaults":{
                   "custom":{
                   },
-                  "unit":"si:",
+                  "unit":"wps",
                   "decimals":1,
                   "thresholds":{
                      "mode":"absolute",
@@ -616,7 +615,8 @@
                },
                "overrides":[]
             },
-            "title":"Requests/s"
+           "description":"Writes operations reaching the cluster",
+            "title":"Writes/s"
          },
          {
             "class":"small_stat_area",
@@ -685,6 +685,40 @@
                }
             ],
             "title":"P99 Write"
+         },
+         {
+            "class":"small_stat_area",
+            "targets":[
+               {
+                  "expr":"sum(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
+                  "refId":"A"
+               }
+            ],
+            "gridPos":{
+               "w":2,
+               "h":4
+            },
+            "fieldConfig":{
+               "defaults":{
+                  "custom":{
+                  },
+                  "unit":"rps",
+                  "decimals":1,
+                  "thresholds":{
+                     "mode":"absolute",
+                     "steps":[
+                        {
+                           "color":"green",
+                           "value":null
+                        }
+                     ]
+                  },
+                  "mappings":[]
+               },
+               "overrides":[]
+            },
+           "description":"Reads operations reaching the cluster",
+            "title":"Reads/s"
          },
          {
             "class":"small_stat_area",
