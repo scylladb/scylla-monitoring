@@ -18,29 +18,23 @@ CANDIDATES=(
 MAX_RETRIES=3
 RETRY_DELAY=5
 
-echo "==> Attempting to pull ${IMG}..."
-echo ""
-
 for ref in "${CANDIDATES[@]}"; do
+	echo "Trying to pull ${ref}"
     for attempt in $(seq 1 $MAX_RETRIES); do
-        echo "==> Trying ${ref} (attempt ${attempt}/${MAX_RETRIES})..."
-
         if docker pull --quiet "$ref"; then
-            echo "==> Successfully pulled from ${ref}"
+            echo "Successfully pulled from ${ref}"
             docker tag "$ref" "$IMG"
-            echo "==> Tagged as ${IMG}"
+            echo "Tagged as ${IMG}"
             exit 0
         fi
 
         if [ "$attempt" -lt $MAX_RETRIES ]; then
-            echo "==> Pull failed, retrying in ${RETRY_DELAY}s..." >&2
+        	printf '.'
             sleep $RETRY_DELAY
         fi
     done
 
-    echo "==> Failed to pull from ${ref} after ${MAX_RETRIES} attempts" >&2
-    echo "" >&2
+    echo "Failed to pull from ${ref} after ${MAX_RETRIES} attempts" >&2
 done
 
-echo "ERROR: Failed to pull ${IMG} from any registry" >&2
 exit 1
