@@ -97,3 +97,13 @@ groups:
     expr: sum(rate(scylla_column_family_read_latency_sum{}[60s])) by (cluster,ks,cf)/sum(rate(scylla_column_family_read_latency_count{}[60s])) by (cluster,ks,cf)
     labels:
       by: "cluster"
+  - record: scylla_column_family_write_total
+    expr: label_join(sum(scylla_column_family_write_latency_count) by (cluster,ks,cf) or  0 * sum(scylla_column_family_cache_hit_rate) by (cluster,ks,cf), "ks_cf", ":", "ks", "cf")
+    labels:
+      by: "cluster"
+      dd: "1"
+  - record: scylla_column_family_read_total
+    expr: label_join(sum(scylla_column_family_read_latency_count) by (cluster,ks,cf) or  0 * sum(scylla_column_family_cache_hit_rate) by (cluster,ks,cf), "ks_cf", ":", "ks", "cf")
+    labels:
+      by: "cluster"
+      dd: "1"
