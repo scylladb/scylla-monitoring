@@ -90,12 +90,13 @@ def install_docker():
         run('yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo')
         run('yum install -y docker-ce')
     else:
-        run('apt install -y apt-transport-https ca-certificates curl software-properties-common')
+        run('sudo apt-get update -y')
+        run('apt-get install -y apt-transport-https ca-certificates curl software-properties-common')
         run('curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o gpg')
         run('apt-key add ./gpg')
         run('add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"')
         run('apt-cache policy docker-ce')
-        run('apt install -y docker-ce')
+        run('apt-get install -y docker-ce')
     run('usermod -aG docker {_USER}'.format(_USER=USER))
     run('systemctl enable docker')
     run('systemctl start docker')
@@ -155,7 +156,7 @@ def install_dbaas(version):
 
 def install_node_exporter():
     if not is_centos():
-        run('apt install -y policycoreutils')
+        run('apt-get install -y policycoreutils')
     run('cp {_HOME}/node-exporter.service /etc/systemd/system/')
     try:
         run('cp {_HOME}/node-exporter.service /usr/lib/systemd/system/')
