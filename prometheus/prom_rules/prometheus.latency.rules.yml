@@ -30,11 +30,11 @@ groups:
   - record: cql:all_queries
     expr: sum(rate(scylla_query_processor_queries{consistency_level="ALL"}[60s])) by (cluster) >bool 0
   - record: errors:operation_unavailable
-    expr: sum(rate(scylla_storage_proxy_coordinator_read_unavailable[60s])) by (cluster, dc, instance) + sum(rate(scylla_storage_proxy_coordinator_write_unavailable[60s])) by (cluster, dc, instance) + sum(rate(scylla_storage_proxy_coordinator_range_unavailable[60s])) by (cluster, dc, instance)
+    expr: (sum(rate(scylla_storage_proxy_coordinator_write_unavailable[1m])) by (cluster, dc, instance) or on(cluster, dc, instance) scylla_scylladb_current_version) + on(cluster, dc, instance) (sum(rate(scylla_storage_proxy_coordinator_read_unavailable[1m])) by (cluster, dc, instance) or on(cluster, dc, instance) scylla_scylladb_current_version) + on(cluster, dc, instance) (sum(rate(scylla_storage_proxy_coordinator_range_unavailable[1m])) by (cluster, dc, instance) or on(cluster, dc, instance) scylla_scylladb_current_version)
   - record: errors:local_failed
-    expr: sum(rate(scylla_storage_proxy_coordinator_read_errors_local_node[60s])) by (cluster, dc, instance) + sum(rate(scylla_storage_proxy_coordinator_write_errors_local_node[60s])) by (cluster, dc, instance)
+    expr: (sum(rate(scylla_storage_proxy_coordinator_write_errors_local_node[1m])) by (cluster, dc, instance) or on(cluster, dc, instance) scylla_scylladb_current_version) + on(cluster, dc, instance) (sum(rate(scylla_storage_proxy_coordinator_read_errors_local_node[1m])) by (cluster, dc, instance) or on(cluster, dc, instance) scylla_scylladb_current_version)
   - record: errors:nodes_total
-    expr: errors:local_failed + errors:operation_unavailable
+    expr: errors:local_failed + on(cluster, dc, instance) errors:operation_unavailable
   - record: manager:repair_done_ts
     expr: timestamp(sum(changes(scylla_manager_scheduler_run_total{status="DONE",type="repair"}[2m])) by (cluster) > 0) or on(cluster) manager:repair_done_ts
     labels:

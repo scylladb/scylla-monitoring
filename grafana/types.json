@@ -4891,7 +4891,7 @@
             "format":"table"
          },
          {
-            "expr":"100-100*node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", instance=~\"$node\"}/node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}",
+            "expr":"100-100*node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\"}/node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\"}",
             "legendFormat":"",
             "interval":"",
             "refId":"F",
@@ -4913,7 +4913,15 @@
             "refId":"H",
             "instant":true,
             "format":"table"
-         }
+         },
+	     {
+	      "expr": "node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\"} - node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\"}",
+	      "format": "table",
+	      "instant": true,
+	      "interval": "",
+	      "legendFormat": "",
+	      "refId": "I"
+	    }
       ],
       "type":"table",
       "title":"Nodes",
@@ -4932,10 +4940,6 @@
                   {
                      "color":"green",
                      "value":null
-                  },
-                  {
-                     "color":"orange",
-                     "value":85
                   }
                ]
             }
@@ -5288,6 +5292,18 @@
                ]
             },
             {
+		        "matcher": {
+		          "id": "byName",
+		          "options": "rack"
+		        },
+		        "properties": [
+		          {
+		            "id": "custom.width",
+		            "value": 140
+		          }
+		        ]
+		    },
+            {
                "matcher":{
                   "id":"byName",
                   "options":"Value #G"
@@ -5356,6 +5372,34 @@
                   {
                      "id": "unit",
                      "value": "percent"
+                  },
+                  {
+                     "id":"custom.displayMode",
+                     "value":"lcd-gauge"
+                  },
+                  {
+                     "id":"max",
+                     "value":101
+                  },
+                  {
+                     "id":"decimals",
+                     "value":0
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        },
+                        {
+                          "color": "red",
+                  		  "value": 80.0002
+                		}
+                      ]
+                    }
                   }
                ]
             },
@@ -5372,6 +5416,26 @@
                   {
                      "id": "displayName",
                      "value": "Cores"
+                  }
+               ]
+            },
+            {
+               "matcher": {
+                  "id": "byName",
+                  "options": "Value #I"
+               },
+               "properties": [
+                  {
+                     "id": "custom.width",
+                     "value": 120
+                  },
+                  {
+                     "id": "displayName",
+                     "value": "Disk"
+                  },
+                  {
+                     "id": "unit",
+                     "value": "decbytes"
                   }
                ]
             }
@@ -5391,6 +5455,7 @@
                "include":{
                   "names":[
                      "instance",
+                     "rack",
                      "svr",
                      "Value #A",
                      "Value #B",
@@ -5399,7 +5464,8 @@
                      "Value #E",
                      "Value #F",
                      "Value #G",
-                     "Value #H"
+                     "Value #H",
+                     "Value #I"
                   ]
                }
             }
@@ -5413,18 +5479,22 @@
          {
             "id":"organize",
             "options":{
-               "excludeByName":{
-               },
+               "excludeByName": {
+		          "rack 2": true,
+		          "rack 3": true
+		        },
                "indexByName":{
-                  "instance":0,
-                  "Value #D":1,
-                  "Value #E":2,
-                  "Value #C":3,
-                  "svr":4,
-                  "Value #A":5,
-                  "Value #F":6,
-                  "Value #G":8,
-                  "Value #B":7
+               	  "rack 1": 0,
+                  "instance":1,
+                  "Value #D":2,
+                  "Value #E":3,
+                  "Value #C":4,
+                  "svr":5,
+                  "Value #A":6,
+                  "Value #F":7,
+                  "Value #I": 8,
+                  "Value #G":9,
+                  "Value #B":10
                },
                "renameByName":{
                }
