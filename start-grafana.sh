@@ -351,6 +351,8 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
 	-e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
 	-e "GF_AUTH_ANONYMOUS_ORG_ROLE=$ANONYMOUS_ROLE" \
 	-e "GF_PANELS_DISABLE_SANITIZE_HTML=true" \
+        -e "GF_RENDERING_DEFAULT_WIDTH=1920" \
+        -e "GF_RENDERING_DEFAULT_HEIGHT=1080" \
 	$LDAP_FILE \
 	"${group_args[@]}" \
 	-v $PWD/grafana/build:/var/lib/grafana/dashboards:z \
