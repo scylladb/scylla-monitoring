@@ -156,6 +156,11 @@ if [ ! -z "$VECTOR_SEARCH" ]; then
       regex:  '(.+);$'
       target_label: __address__
       replacement: '\${1}:6080'
+    - source_labels: [instance, __address__]
+      regex: ';(.+):.+'
+      action: replace
+      target_label: instance
+      replacement: '\${1}'
 - job_name: vector_search_os
   honor_labels: false
   file_sd_configs:
@@ -170,6 +175,11 @@ if [ ! -z "$VECTOR_SEARCH" ]; then
       regex:  '(.+)'
       target_label: __address__
       replacement: '\${1}:9100'
+    - source_labels: [instance, __address__]
+      regex: ';(.+):.+'
+      action: replace
+      target_label: instance
+      replacement: '\${1}'
       "
 	echo "$__target" >>$BASE_DIR/prometheus.yml
 fi

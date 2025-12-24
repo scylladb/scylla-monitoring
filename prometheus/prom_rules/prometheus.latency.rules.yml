@@ -298,6 +298,26 @@ groups:
       by: "cluster"
       quantile: "0.99"
       dd: "1"
+  - record: vector_store_indexes
+    expr: max(count(index_size{job="vector_search"}) by (instance, cluster)) by (cluster)
+    labels:
+      by: "cluster"
+      dd: "1"
+  - record: vector_store_index_sizes
+    expr: max(sum(index_size{job="vector_search"}) by (instance, cluster)) by (cluster)
+    labels:
+      by: "cluster"
+      dd: "1"
+  - record: vector_store_nodes
+    expr: count(up{job="vector_search"}) by (cluster)
+    labels:
+      by: "cluster"
+      dd: "1"
+  - record: vector_store_disk_total
+    expr: avg(sum(node_filesystem_size_bytes{job="vector_search_os"} - node_filesystem_avail_bytes{job="vector_search_os"}) by (instance, cluster)) by (cluster)
+    labels:
+      by: "cluster"
+      dd: "1"
   - record: wlatencyp99
     expr: scylla_storage_proxy_coordinator_write_latency_summary{quantile="0.99"}
   - record: rlatencyp99
