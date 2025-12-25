@@ -100,7 +100,8 @@ Options:
   --thanos-sc                    - If set, run thanos sidecar with the Prometheus server.
   --thanos                       - If set, run thanos query as a Grafana datasource.
   --local-thanos                 - If set, run thanos query as a front end to the local thanos sidecar.
-  --enable-protobuf              - If set, enable the experimental Prometheus Protobuf with Native histograms support.
+  --enable-protobuf              - [Deprecated]If set, enable the experimental Prometheus Protobuf with Native histograms support.
+  --native-histogram             - If set, enable the Prometheus Protobuf with Native histograms support.
   --scrap [scrap duration]       - Change the default Prometheus scrap duration. Duration is in seconds.
   --vector-store path/to/file.yml - [depricated] see vector-search
   --vector-search path/to/file.yml- Specifiy a vector search target file, the file should contain a list of vector search servers.
@@ -272,7 +273,10 @@ for arg; do
 			GRAFANA_ENV_ARRAY+=(--disable-anonymous)
 			;;
 		--enable-protobuf)
-			PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--enable-feature=native-histograms)
+			NATIVE_HISTOGRAM="1"
+			;;
+		--native-histogram)
+			NATIVE_HISTOGRAM="1"
 			;;
 		--alternator)
 			RUN_ALTERNATOR="1"
@@ -785,8 +789,12 @@ for val in "${PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]}"; do
 		PROMETHEUS_COMMAND_LINE_OPTIONS+=" -$val"
 	fi
 done
-
-./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD
+if [ "$NATIVE_HISTOGRAM" = "1" ]; then
+	NATIVE_HISTOGRAM="--native-histogram"
+else
+	NATIVE_HISTOGRAM=""
+fi
+./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $NATIVE_HISTOGRAM $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
 	DATE=$(date +"%Y-%m-%d_%H_%M_%S")
 	if [ -f $DATA_DIR/scylla.txt ]; then
