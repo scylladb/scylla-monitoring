@@ -2,6 +2,7 @@
 usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [-G grafana address] [--compose] -- Generate grafana's datasource file"
 CONSUL_ADDRESS=""
 COMPOSE=0
+
 BASE_DIR="$PWD/prometheus/build"
 if [ -f env.sh ]; then
 	. env.sh
@@ -37,6 +38,9 @@ for arg; do
 			;;
         --vector-search)
             VECTOR_SEARCH="1"
+            ;;
+        --native-histogram)
+        	NATIVE_HISTOGRAM="1"
             ;;
 		--no-node-exporter-file)
 			NO_NODE_EXPORTER_FILE="1"
@@ -117,6 +121,10 @@ fi
 
 if [[ "$EVALUATION_INTERVAL" != "" ]]; then
 	sed -i "s/  evaluation_interval: [[:digit:]]*.*/  evaluation_interval: ${EVALUATION_INTERVAL}/g" $BASE_DIR/prometheus.yml
+fi
+
+if [ "$NATIVE_HISTOGRAM" = "1" ]; then
+	sed -i "s/  scrape_native_histograms:.*/  scrape_native_histograms: true/g" $BASE_DIR/prometheus.yml
 fi
 if [[ "$SCRAP_INTERVAL" != "" ]]; then
 	sed -i "s/  scrape_interval: [[:digit:]]*.*# *Default.*/  scrape_interval: ${SCRAP_INTERVAL}s/g" $BASE_DIR/prometheus.yml
