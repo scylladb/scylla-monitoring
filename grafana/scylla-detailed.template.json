@@ -2380,9 +2380,25 @@
             {
                 "class": "row",
                 "panels": [
+                	{
+                        "class": "graph_panel",
+                        "gridPos": {
+						   "w": 3
+                        },
+                        "targets": [
+                            {
+                                "refId": "A",
+                                "expr": "$topbottom([[filter_limit]], avg(scylla_scheduler_shares{group=\"compaction\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "format": "time_series"
+                            }
+                        ],
+                        "description": "Shares assigned to the compaction",
+                        "title": "Compactions Shares"
+                    },
                     {
                         "class": "graph_panel_int",
-                        "span": 4,
+                        "gridPos": { "w": 5 },
                         "targets": [
                             {
                                 "expr": "$topbottom([[filter_limit]], $func(scylla_compaction_manager_compactions{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
@@ -2398,7 +2414,7 @@
                     },
                     {
                         "class": "percent_panel",
-                        "span": 4,
+                        "gridPos": { "w": 5 },
                         "targets": [
                             {
                                 "expr": "$topbottom([[filter_limit]], ($func(rate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", group=\"compaction\"}[$__rate_interval])) by ([[by]]))/10)",
@@ -2413,18 +2429,38 @@
                         "title": "Compactions CPU Runtime"
                     },
                     {
-                        "class": "graph_panel",
-                        "span": 4,
+                        "class": "graph_panel_int",
+                        "dashversion":[">2026.1"],
+                        "gridPos": { "w": 5 },
                         "targets": [
                             {
-                                "refId": "A",
-                                "expr": "$topbottom([[filter_limit]], avg(scylla_scheduler_shares{group=\"compaction\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                                "expr": "$topbottom([[filter_limit]], $func(scylla_compaction_manager_backlog{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
                                 "intervalFactor": 1,
-                                "format": "time_series"
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
                             }
                         ],
-                        "description": "Shares assigned to the compaction",
-                        "title": "Compactions Shares"
+                        "description": "scylla_compaction_manager_backlog",
+                        "title": "Compactions backlog $func by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "dashversion":[">2026.1"],
+                        "gridPos": { "w": 5 },
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], $func(scylla_compaction_manager_normalized_backlog{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "the sum of normalized compaction backlog for all tables in the system.\n\nBacklog is normalized by dividing backlog by shard's available memory.",
+                        "title": "Normalized Compactions backlog $func by [[by]]"
                     }
 
                 ],
