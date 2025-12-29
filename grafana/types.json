@@ -305,7 +305,7 @@
    "cluster_stat_panel": {
        "class":"small_stat",
         "description":"The cluster status",
-        "title":"Status",
+        "title":"Cluster Status",
         "gridPos": {
             "h": 4,
             "w": 2
@@ -428,6 +428,31 @@
             ]
           }
         ]
+      },
+      {
+        "matcher": {
+          "id": "byName",
+          "options": "Timeouts"
+        },
+        "properties": [
+          {
+            "id": "mappings",
+            "value": [
+              {
+                "type": "range",
+                "options": {
+                  "from": 0,
+                  "to": null,
+                  "result": {
+                    "color": "red",
+                    "index": 0,
+                    "text": "Timeouts"
+                  }
+                }
+              }
+            ]
+          }
+        ]
       }
               ]
             },
@@ -439,6 +464,21 @@
                   "refId":"A",
                   "step":40
                },
+			    {
+			      "refId": "B",
+			      "expr": "(sum(rate(scylla_storage_proxy_coordinator_write_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) or on() vector(0)) + (sum(rate(scylla_storage_proxy_coordinator_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) or on() vector(0))>0",
+			      "range": false,
+			      "instant": true,
+			      "datasource": {
+			        "uid": "P1809F7CD0C75ACF3",
+			        "type": "prometheus"
+			      },
+			      "hide": false,
+			      "editorMode": "code",
+			      "legendFormat": "Timeouts",
+			      "format": "time_series",
+			      "exemplar": false
+			    },
                {
                   "expr":"count(scrape_samples_scraped{job=\"scylla\", cluster=\"$cluster\"}==0) > 0",
                   "legendFormat":"Unreachable",
@@ -559,8 +599,9 @@
          },
          {
             "class":"small_stat",
-            "description":"The number of tables",
-            "title":"# Tables",
+            "description":"Compression success rate, how much diskspace was saved due to compression",
+            "dashversion":[">2026.1"],
+            "title":"Compression",
             "fieldConfig": {
             "defaults": {
               "mappings": [],
@@ -572,12 +613,42 @@
                     "value": null
                   }
                 ]
-              }
+              },
+   			"unit": "percentunit",
+      		"decimals": 0
             }
           },
           "targets": [
             {
-              "expr": "count(count(scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks!~\"system.*\"}) by(cf, ks))",
+              "expr": "1-sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})/sum(scylla_column_family_total_disk_space_before_compression{cluster=\"$cluster\", ks!~\"system.*\"})",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+         },
+         {
+            "class":"small_stat",
+            "description":"Disk Usage",
+            "title":"Disk",
+            "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+   			"unit": "decbytes"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})",
               "intervalFactor": 1,
               "legendFormat": "",
               "refId": "A"
@@ -690,7 +761,7 @@
             "class":"small_stat_area",
             "targets":[
                {
-                  "expr":"sum(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
+                  "expr":"sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
                   "refId":"A"
                }
             ],
@@ -818,44 +889,12 @@
             },
             "targets":[
                {
-                  "expr":"sum(avg(rate(scylla_scheduler_runtime_ms{group=~\"sl:.*|commitlog\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[1m])) by (group)/10)",
+                  "expr":"sum(avg(rate(scylla_scheduler_runtime_ms{group=~\"sl:.*|commitlog\",cluster=\"$cluster\", dc=~\"$dc\"}[1m])) by (group)/10)",
                   "legendFormat":"",
                   "refId":"A"
                }
             ],
             "title":"Load"
-         },
-         {
-            "class":"small_stat_area",
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        },
-                        {
-                           "color":"red",
-                           "value":1
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-            "targets":[
-               {
-                  "expr":"(sum(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) or on() vector(0)) + (sum(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) or on() vector(0))",
-                  "refId":"A"
-               }
-            ],
-            "description":"The rate of timeouts (read and write).\n\nTimeouts are an indication of an overloaded system",
-            "title":"Timeouts"
          }
       ],
       "title":"New row"
@@ -3038,7 +3077,23 @@
                            ]
                         }
                      ]
-                  }
+                  },
+			      {
+			        "matcher": {
+			          "id": "byName",
+			          "options": "Compressed"
+			        },
+			        "properties": [
+			          {
+			            "id": "unit",
+			            "value": "percentunit"
+			          },
+			          {
+			            "id": "decimals",
+			            "value": 0
+			          }
+			        ]
+			      }
                ],
               "mappings": [],
               "unit": "short",
@@ -3071,7 +3126,8 @@
                     "Value #H",
                     "Value #I",
                     "Value #J",
-                    "cf"
+                    "cf",
+            		"Value #K"
                   ]
                 }
               }
@@ -3083,15 +3139,16 @@
                 "indexByName": {
                   "cf": 0,
                   "Value #H": 1,
-                  "Value #A": 2,
-                  "Value #B": 3,
-                  "Value #I": 4,
-                  "Value #C": 5,
-                  "Value #D": 6,
-                  "Value #E": 7,
-                  "Value #J": 8,
-                  "Value #F": 9,
-                  "Value #G": 10
+                  "Value #K": 2,
+                  "Value #A": 3,
+                  "Value #B": 4,
+                  "Value #I": 5,
+                  "Value #C": 6,
+                  "Value #D": 7,
+                  "Value #E": 8,
+                  "Value #J": 9,
+                  "Value #F": 10,
+                  "Value #G": 11
                 },
                 "renameByName": {
                   "ks 1": "keyspace",
@@ -3105,7 +3162,8 @@
                   "Value #G": "R P99",
                   "Value #H": "Disk space",
                   "Value #I": "24h Max W",
-                  "Value #J": "24h Max R"
+                  "Value #J": "24h Max R",
+                  "Value #K": "Compressed"
 
                 },
                 "includeByName": {}
@@ -3222,7 +3280,23 @@
               "legendFormat": "__auto",
               "format": "table",
               "exemplar": false
-            }
+            },
+		    {
+		      "refId": "K",
+		      "dashversion":[">2026.1"],
+		      "expr": "1- sum(scylla_column_family_total_disk_space{ks=\"$ks\", cf=~\"$table\", cluster=\"$cluster\"}) by (cf)/sum(scylla_column_family_total_disk_space_before_compression{ks=\"$ks\", cf=~\"$table\", cluster=\"$cluster\"}) by (cf)",
+		      "range": false,
+		      "instant": true,
+		      "datasource": {
+		        "uid": "P1809F7CD0C75ACF3",
+		        "type": "prometheus"
+		      },
+		      "hide": false,
+		      "editorMode": "code",
+		      "legendFormat": "__auto",
+		      "format": "table",
+		      "exemplar": false
+		    }
           ],
           "options": {
             "showHeader": true,
