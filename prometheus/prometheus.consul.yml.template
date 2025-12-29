@@ -47,26 +47,6 @@ scrape_configs:
     - source_labels: [__name__, scheduling_group_name]
       regex: '(scylla_storage_proxy_coordinator_.*_bucket;)(atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache)'
       action: drop
-    - source_labels: [version]
-      regex:  '(.+)'
-      target_label: CPU
-      replacement: 'cpu'
-    - source_labels: [version]
-      regex:  '(.+)'
-      target_label: CQL
-      replacement: 'cql'
-    - source_labels: [version]
-      regex:  '(.+)'
-      target_label: OS
-      replacement: 'os'
-    - source_labels: [version]
-      regex:  '(.+)'
-      target_label: IO
-      replacement: 'io'
-    - source_labels: [version]
-      regex:  '(.+)'
-      target_label: Errors
-      replacement: 'errors'
     - regex: 'help|exported_instance'
       action: labeldrop
     - source_labels: [version]
@@ -141,6 +121,92 @@ scrape_configs:
       regex: '(atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache)'
       replacement: ''
       target_label: dd
+    - source_labels: [__name__, tablets_mode]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_tablets_mode
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, account_name]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_account_name
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, account_id]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_account_id
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, cluster_name]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_cluster_name
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, rack]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_rack
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, serverExternalId]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_serverExternalId
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, serverId]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_serverId
+      replacement: "$1"
+      action: replace
+    - action: labeldrop
+      regex: "^(tablets_mode|account_name|account_id|cluster_name|rack|serverExternalId|serverId)$"
+    - source_labels: [__name__, __tmp_tablets_mode]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: tablets_mode
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, __tmp_account_name]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: account_name
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, __tmp_account_id]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: account_id
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, __tmp_cluster_name]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: cluster_name
+      replacement: "$1"
+      action: replace
+    - source_labels: [__name__, __tmp_rack]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: rack
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, __tmp_serverExternalId]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: serverExternalId
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, __tmp_serverId]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: serverId
+      replacement: "$1"
+      action: replace
+
+    - action: labeldrop
+      regex: "^__tmp_(tablets_mode|account_name|account_id|cluster_name|rack|serverExternalId|serverId)$"
 - job_name: node_exporter
   honor_labels: false
   scrape_interval: 1m # By default, scrape targets every 20 second.
