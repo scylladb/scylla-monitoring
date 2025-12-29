@@ -10012,6 +10012,86 @@
             "type": "text"
         },
         {
+            "class": "graph_panel",
+            "datasource": "prometheus",
+            "description": "Shares assigned to the compaction",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 3,
+                "x": 0,
+                "y": 232
+            },
+            "id": 138,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 5,
+            "targets": [
+                {
+                    "expr": "$topbottom([[filter_limit]], avg(scylla_scheduler_shares{group=\"compaction\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                    "format": "time_series",
+                    "intervalFactor": 1,
+                    "refId": "A"
+                }
+            ],
+            "title": "Compactions Shares",
+            "type": "timeseries"
+        },
+        {
             "class": "graph_panel_int",
             "datasource": "prometheus",
             "description": "Holds the number of currently active compactions.",
@@ -10060,11 +10140,11 @@
             },
             "gridPos": {
                 "h": 6,
-                "w": 8,
-                "x": 0,
+                "w": 5,
+                "x": 3,
                 "y": 232
             },
-            "id": 138,
+            "id": 139,
             "isNew": true,
             "links": [],
             "options": {
@@ -10079,7 +10159,7 @@
                     "sort": "desc"
                 }
             },
-            "span": 4,
+            "span": 5,
             "targets": [
                 {
                     "expr": "$topbottom([[filter_limit]], $func(scylla_compaction_manager_compactions{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
@@ -10142,93 +10222,8 @@
             },
             "gridPos": {
                 "h": 6,
-                "w": 8,
+                "w": 5,
                 "x": 8,
-                "y": 232
-            },
-            "id": 139,
-            "isNew": true,
-            "links": [],
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "hidden",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "maxHeight": 600,
-                    "mode": "multi",
-                    "sort": "desc"
-                }
-            },
-            "seriesOverrides": [
-                {}
-            ],
-            "span": 4,
-            "targets": [
-                {
-                    "expr": "$topbottom([[filter_limit]], ($func(rate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", group=\"compaction\"}[$__rate_interval])) by ([[by]]))/10)",
-                    "intervalFactor": 1,
-                    "legendFormat": "",
-                    "metric": "",
-                    "refId": "A",
-                    "step": 1
-                }
-            ],
-            "title": "Compactions CPU Runtime",
-            "type": "timeseries"
-        },
-        {
-            "class": "graph_panel",
-            "datasource": "prometheus",
-            "description": "Shares assigned to the compaction",
-            "editable": true,
-            "error": false,
-            "fieldConfig": {
-                "defaults": {
-                    "class": "fieldConfig_defaults",
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisLabel": "",
-                        "axisPlacement": "auto",
-                        "axisSoftMin": 0,
-                        "barAlignment": 0,
-                        "class": "fieldConfig_defaults_custom",
-                        "drawStyle": "line",
-                        "fillOpacity": 0,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "legend": false,
-                            "tooltip": false,
-                            "viz": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": false,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "none"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "unit": "short"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 6,
-                "w": 8,
-                "x": 16,
                 "y": 232
             },
             "id": 140,
@@ -10246,16 +10241,21 @@
                     "sort": "desc"
                 }
             },
-            "span": 4,
+            "seriesOverrides": [
+                {}
+            ],
+            "span": 5,
             "targets": [
                 {
-                    "expr": "$topbottom([[filter_limit]], avg(scylla_scheduler_shares{group=\"compaction\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
-                    "format": "time_series",
+                    "expr": "$topbottom([[filter_limit]], ($func(rate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", group=\"compaction\"}[$__rate_interval])) by ([[by]]))/10)",
                     "intervalFactor": 1,
-                    "refId": "A"
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
                 }
             ],
-            "title": "Compactions Shares",
+            "title": "Compactions CPU Runtime",
             "type": "timeseries"
         },
         {
