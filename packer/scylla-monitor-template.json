@@ -4,7 +4,13 @@
       "type": "amazon-ebs",
       "region": "{{user `aws_region`}}",
       "ami_name": "{{ user `monitor_image_name` }}",
-      "source_ami": "{{user `aws_source_ami`}}",
+      "source_ami_filter": {
+        "filters": {
+          "name": "ubuntu-minimal/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64*"
+        },
+        "owners": ["099720109477"],
+        "most_recent": true
+      },
       "instance_type": "{{user `aws_instance_type`}}",
       "ami_regions": "us-west-2,eu-west-2,eu-west-1,eu-central-1,eu-north-1,eu-west-3,ca-central-1",
       "user_data_file": "files/user_data.txt",
@@ -115,14 +121,13 @@
     "monitor_image_name": "scylladb-monitor-{{ user `monitor_version` | replace_all \".\" \"-\" }}-{{ isotime \"2006-01-02t03-04-05z\" }}",
 
     "aws_region": "us-east-1",
-    "aws_source_ami": "ami-02988665c2dd38448",
     "aws_instance_type": "c4.xlarge",
     "aws_ssh_username": "ubuntu",
     "aws_install_args": "--cloud aws --os ubuntu --verbose --version {{ user `monitor_version` }}",
 
     "gcp_project_id": "scylla-images",
     "gcp_zone": "europe-west1-b",
-    "gcp_source_image_family": "ubuntu-minimal-2204-lts",
+    "gcp_source_image_family": "ubuntu-minimal-2404-lts",
     "gcp_image_storage_location": "europe-west1",
     "gcp_instance_type": "n1-standard-1",
     "gcp_ssh_username": "ubuntu",
