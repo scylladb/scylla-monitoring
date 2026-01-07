@@ -111,7 +111,7 @@ while getopts ':hlp:S:N:D:' option; do
 	S)
 		IFS=','
 		for s in $OPTARG; do
-			SIDECAR+=(--store=$s)
+			SIDECAR+=(--endpoint=$s)
 		done
 		;;
 	D)
