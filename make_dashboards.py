@@ -85,6 +85,7 @@ When creating templates, the -kt is useful to find conflicts.
 
 #TRACE=["version", "version-reject"]
 TRACE=[]
+MASTER_VERSION=666
 
 def trace(part, *str):
     if part in TRACE:
@@ -99,6 +100,8 @@ def is_version_bigger(version, cmp_version):
             cmp_op = 1
         elif m.group(1) == "<":
             cmp_op = -1
+    if version[0] == MASTER_VERSION:
+        return cmp_op == 1
     cmp = cmp_version.split('.')
     if len(cmp) == 0 or (version[0] > 1900) != (int(cmp[0]) > 1900):
         trace("version","wrong type returning false", cmp_version, version, cmp_op, cmp[0], version[0] > 1900, int(cmp[0]) > 1900)
@@ -350,9 +353,10 @@ def make_grafana_5(results, args):
 def write_as_file(name_path, result, dir, replace_strings):
     name = os.path.basename(name_path)
     write_json(os.path.join(dir, name), result["dashboard"], replace_strings)
+
 def parse_version(v):
     if v == 'master':
-        return 666
+        return MASTER_VERSION
     return int(v)
 
 def get_dashboard(name, types, args, replace_strings, exact_match_replace):
