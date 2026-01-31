@@ -11,7 +11,7 @@
       "datasource":"prometheus",
       "gridPos":{
          "w":2,
-         "h":4
+         "h":6
       },
       "fieldConfig":{
          "defaults":{
@@ -305,9 +305,14 @@
    "cluster_stat_panel": {
        "class":"small_stat",
         "description":"The cluster status",
-        "title":"Cluster Status",
+        "title":"Status",
+        "options": {
+           "class":"stats_area_options",
+           "graphMode": "none",
+           "colorMode": "background_solid"
+        },
         "gridPos": {
-            "h": 4,
+            "h": 6,
             "w": 2
         },
         "fieldConfig":{
@@ -502,14 +507,7 @@
                }
             ]
    },
-   "small_stat_rows":{
-      "class":"row",
-      "height":"200px",
-      "panels":[
-         {
-            "class": "cluster_stat_panel"
-         },
-         {
+  "num_nodes_panel": {
             "class":"small_stat",
             "description":"The number of nodes configured in the cluster.",
             "title":"# Nodes",
@@ -570,8 +568,13 @@
             }
           ]
          },
-         {
+        "num_cores_panel": {
             "class":"small_stat",
+            "options": {
+	           "class":"stats_area_options",
+	           "graphMode": "none",
+	           "colorMode": "background_solid"
+	        },
             "description":"The number of CPU Cores actively used in the cluster.\n\nNote that CPU Cores that belongs to unreachable nodes, or nodes that are not in normal mode, will not be counted",
             "title":"# Cores",
             "fieldConfig": {
@@ -581,7 +584,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
+                    "color": "dark-blue",
                     "value": null
                   }
                 ]
@@ -597,269 +600,12 @@
             }
           ]
          },
+   "small_stat_rows":{
+      "class":"row",
+      "height":"200px",
+      "panels":[
          {
-            "class":"small_stat",
-            "description":"Data Reduction Ratio, percentage of disk space saved due to compression",
-            "dashversion":[">2026.1"],
-            "title":"DRR",
-            "fieldConfig": {
-            "defaults": {
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-   			"unit": "percentunit",
-      		"decimals": 0
-            }
-          },
-          "targets": [
-            {
-              "expr": "1-sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})/sum(scylla_column_family_total_disk_space_before_compression{cluster=\"$cluster\", ks!~\"system.*\"})",
-              "intervalFactor": 1,
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ]
-         },
-         {
-            "class":"small_stat",
-            "description":"Disk Usage",
-            "title":"Disk",
-            "fieldConfig": {
-            "defaults": {
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-   			"unit": "decbytes"
-            }
-          },
-          "targets": [
-            {
-              "expr": "sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})",
-              "intervalFactor": 1,
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ]
-         },
-         {
-            "class":"small_stat_area",
-            "targets":[
-               {
-                  "expr":"sum(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
-                  "refId":"A"
-               }
-            ],
-            "gridPos":{
-               "w":2,
-               "h":4
-            },
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"wps",
-                  "decimals":1,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-           "description":"Writes operations reaching the cluster",
-            "title":"Writes/s"
-         },
-         {
-            "class":"small_stat_area",
-            "description":"Average Write Latency",
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"\u00b5s",
-                  "decimals":0,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        },
-                        {
-                           "color":"red",
-                           "value":50000
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-            "targets":[
-               {
-                  "expr":"avg(wlatencya{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0)",
-                  "refId":"A"
-               }
-            ],
-            "title":"Avg Write"
-         },
-         {
-            "class":"small_stat_area",
-            "description":"P99 write Latency",
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"\u00b5s",
-                  "decimals":0,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        },
-                        {
-                           "color":"red",
-                           "value":100000
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-            "targets":[
-               {
-                  "expr":"avg(wlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0)",
-                  "refId":"A"
-               }
-            ],
-            "title":"P99 Write"
-         },
-         {
-            "class":"small_stat_area",
-            "targets":[
-               {
-                  "expr":"sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
-                  "refId":"A"
-               }
-            ],
-            "gridPos":{
-               "w":2,
-               "h":4
-            },
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"rps",
-                  "decimals":1,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-           "description":"Reads operations reaching the cluster",
-            "title":"Reads/s"
-         },
-         {
-            "class":"small_stat_area",
-            "description":"Average Read Latency",
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"\u00b5s",
-                  "decimals":0,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        },
-                        {
-                           "color":"red",
-                           "value":50000
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-            "targets":[
-               {
-                  "expr":"avg(rlatencya{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0)",
-                  "legendFormat":"",
-                  "refId":"A"
-               }
-            ],
-            "title":"Avg Read"
-         },
-         {
-            "class":"small_stat_area",
-            "description":"P99 read Latency",
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"\u00b5s",
-                  "decimals":0,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        },
-                        {
-                           "color":"red",
-                           "value":100000
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-            "targets":[
-               {
-                  "expr":"avg(rlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"$sg\"}>0)",
-                  "legendFormat":"",
-                  "refId":"A"
-               }
-            ],
-            "title":"P99"
+            "class": "cluster_stat_panel"
          },
          {
             "class":"small_stat_area",
@@ -895,6 +641,204 @@
                }
             ],
             "title":"Load"
+         },
+        {
+        	"class": "num_nodes_panel"
+        },
+         {
+         	"class": "num_cores_panel"
+         },
+         {
+            "class":"small_stat",
+            "description":"Data Reduction Ratio, percentage of disk space saved due to compression",
+            "options": {
+	           "class":"stats_area_options",
+	           "graphMode": "none",
+	           "colorMode": "background_solid"
+	        },
+            "dashversion":[">2026.1"],
+            "title":"DRR",
+            "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "dark-blue",
+                    "value": null
+                  }
+                ]
+              },
+   			"unit": "percentunit",
+      		"decimals": 0
+            }
+          },
+          "targets": [
+            {
+              "expr": "1-sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})/sum(scylla_column_family_total_disk_space_before_compression{cluster=\"$cluster\", ks!~\"system.*\"})",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+         },
+         {
+            "class":"small_stat",
+            "description":"Disk Usage",
+            "options": {
+	           "class":"stats_area_options",
+	           "graphMode": "none",
+	           "colorMode": "background_solid"
+	        },
+            "title":"Disk",
+            "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "dark-blue",
+                    "value": null
+                  }
+                ]
+              },
+   			"unit": "decbytes"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+         },
+         {
+            "class":"small_stat_area",
+            "options": {
+	           "class":"stats_area_options",
+	           "colorMode": "background_solid"
+	        },
+            "targets":[
+               {
+                  "expr":"sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
+                  "refId":"A",
+                  "legendFormat": "Writes/s"
+               },
+              {
+                  "expr":"avg(wlatencya{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"}>0)",
+                  "refId":"B",
+   				  "legendFormat": "Avg Write Latency"
+               },
+              {
+                  "expr":"avg(wlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"}>0)",
+                  "refId":"C",
+                  "legendFormat": "P99 Write Latency"
+               }
+            ],
+            "gridPos":{
+               "w":6,
+               "h":6
+            },
+            "fieldConfig":{
+               "defaults":{
+                  "custom":{
+                  },
+                  "unit":"\u00b5s",
+                  "decimals":0,
+                  "thresholds":{
+                     "mode":"absolute",
+                     "steps":[
+                        {
+                           "color":"dark-blue",
+                           "value":null
+                        }
+                     ]
+                  },
+                  "mappings":[]
+               },
+               "overrides":[
+               	{
+			        "matcher": {
+			          "id": "byName",
+			          "options": "Writes/s"
+			        },
+			        "properties": [
+			          {
+			            "id": "unit",
+			            "value": "wps"
+			          }
+			        ]
+			      }
+               ]
+            },
+           "description":"Writes operations reaching the cluster",
+            "title":"Writes"
+         },
+         {
+            "class":"small_stat_area",
+            "options": {
+	           "class":"stats_area_options",
+	           "colorMode": "background_solid"
+	        },
+            "targets":[
+               {
+                  "expr":"sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
+                  "refId":"A",
+                  "legendFormat": "Reads/s"
+               },
+              {
+                  "expr":"avg(rlatencya{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"}>0)",
+                  "refId":"B",
+   				  "legendFormat": "Avg Read Latency"
+               },
+              {
+                  "expr":"avg(rlatencyp99{by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"}>0)",
+                  "refId":"C",
+                  "legendFormat": "P99 Read Latency"
+               }
+            ],
+            "gridPos":{
+               "w":6,
+               "h":6
+            },
+            "fieldConfig":{
+               "defaults":{
+                  "custom":{
+                  },
+                  "unit":"\u00b5s",
+                  "decimals":0,
+                  "thresholds":{
+                     "mode":"absolute",
+                     "steps":[
+                        {
+                           "color":"dark-blue",
+                           "value":null
+                        }
+                     ]
+                  },
+                  "mappings":[]
+               },
+               "overrides":[
+               	{
+			        "matcher": {
+			          "id": "byName",
+			          "options": "Reads/s"
+			        },
+			        "properties": [
+			          {
+			            "id": "unit",
+			            "value": "rps"
+			          }
+			        ]
+			      }
+               ]
+            },
+           "description":"Reads operations reaching the cluster",
+            "title":"Reads"
          }
       ],
       "title":"New row"
@@ -904,423 +848,10 @@
       "height":"200px",
       "panels":[
          {
-            "class":"text_panel",
-            "dashproductreject": "no-version-check",
-            "gridPos":{
-               "w":6,
-               "h":1
-            },
-            "transparent":false,
-            "options": {
-                "mode": "html",
-                "content": "<img src=\"https://repositories.scylladb.com/scylla/imgversion/$monitoring_version/scylla-monitoring\">"
-              }
+            "class": "cluster_stat_panel"
          },
          {
-            "class":"text_panel",
-            "dashproduct": "no-version-check",
-            "gridPos":{
-               "w":6,
-               "h":1
-            },
-            "transparent":false,
-            "options": {
-                "mode": "html",
-                "content": ""
-              }
-         },
-         {
-            "class":"text_panel",
-            "title":"Manager",
-            "gridPos":{
-               "w":3,
-               "h":1
-            },
-            "transparent":false,
-            "options": {
-                "mode": "html",
-                "content": ""
-              }
-         },
-         {
-            "class":"text_panel",
-            "title":"Average latencies",
-            "gridPos":{
-               "w":4,
-               "h":1
-            },
-            "transparent":false,
-            "options":{
-               "content":""
-            }
-         },
-         {
-            "class":"text_panel",
-            "title":"P99 Latencies",
-            "gridPos":{
-               "w":4,
-               "h":1
-            },
-            "transparent":false,
-            "options":{
-               "content":""
-            }
-         },
-         {
-            "class":"text_panel",
-            "gridPos":{
-               "w":7,
-               "h":1
-            },
-            "transparent":false,
-            "options":{
-               "content":"# "
-            }
-         },
-         {
-            "class":"small_stat",
-            "description":"The number of nodes configured in the cluster.",
-            "targets":[
-               {
-                  "expr":"count(scylla_scylladb_current_version{job=\"scylla\", cluster=\"$cluster\"})",
-                  "intervalFactor":1,
-                  "legendFormat":"Total Nodes",
-                  "refId":"A",
-                  "step":40
-               }
-            ],
-            "title":"# Nodes"
-         },
-         {
-            "class":"small_stat",
-            "description":"The number of unreachable nodes.\nUsually because a machine is down or unreachable.",
-            "targets":[
-               {
-                  "expr":"(count(scrape_samples_scraped{job=\"scylla\", cluster=\"$cluster\"}==0) OR vector(0))",
-                  "intervalFactor":1,
-                  "legendFormat":"Offline ",
-                  "refId":"A",
-                  "step":20
-               }
-            ],
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        },
-                        {
-                           "value":0,
-                           "color":"green"
-                        },
-                        {
-                           "value":1,
-                           "color":"red"
-                        }
-                     ]
-                  }
-               }
-            },
-            "title":"Unreachable"
-         },
-         {
-            "class":"small_stat",
-            "description":"The number of joining and leaving nodes.\nThe number of nodes that are up but not actively part of the cluster, either because they are still joining or because they are leaving.",
-            "targets":[
-               {
-                  "expr":"count(scylla_node_operation_mode{cluster=\"$cluster\"}!=3)OR vector(0)",
-                  "intervalFactor":1,
-                  "legendFormat":"Offline ",
-                  "refId":"A",
-                  "step":20
-               }
-            ],
-            "thresholds":"1,2",
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        },
-                        {
-                           "value":0,
-                           "color":"green"
-                        },
-                        {
-                           "value":1,
-                           "color":"red"
-                        }
-                     ]
-                  }
-               }
-            },
-            "title":"Inactive"
-         },
-         {
-            "class":"small_stat",
-                "options": {
-                    "": {
-                      "values": false,
-                      "calcs": [
-                        "last"
-                      ],
-                      "fields": ""
-                    },
-                    "orientation": "auto",
-                    "textMode": "value",
-                    "wideLayout": true,
-                    "colorMode": "value",
-                    "graphMode": "none",
-                    "justifyMode": "auto",
-                    "showPercentChange": false
-                  },
-                "fieldConfig":{
-               "defaults":{
-                  "noValue":" Offline",
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"red",
-                           "value":null
-                        },
-                        {
-                           "color":"green",
-                           "value":0
-                        }
-                     ]
-                  },
-                  "mappings":[
-                     {
-                        "from":"",
-                        "id":0,
-                        "text":"Backup",
-                        "to":"",
-                        "type":1,
-                        "value":"2"
-                     },
-                     {
-                        "from":"",
-                        "id":1,
-                        "text":"Repair",
-                        "to":"",
-                        "type":1,
-                        "value":"1"
-                     },
-                     {
-                        "from":"",
-                        "id":2,
-                        "text":"Online",
-                        "to":"",
-                        "type":1,
-                        "value":"0"
-                     },
-                     {
-                        "from":"",
-                        "id":3,
-                        "text":"Offline",
-                        "to":"",
-                        "type":1,
-                        "value":"-1"
-                     },
-                     {
-                        "from":"",
-                        "id":4,
-                        "text":"Backup Repair",
-                        "to":"",
-                        "type":1,
-                        "value":"3"
-                     }
-                  ]
-               }
-            },
-            "targets":[
-               {
-                  "expr":"(max(scylla_manager_scheduler_run_indicator{type=~\"repair\",cluster=\"$cluster\"}) or on() vector(0)) + (max(scylla_manager_scheduler_run_indicator{type=~\"backup\",cluster=\"$cluster\"})*2 or on() vector(0)) + (sum(scylla_manager_server_current_version{}) or on() vector(-1))",
-                  "intervalFactor":1,
-                  "refId":"A",
-                  "step":40
-               }
-            ],
-            "title":""
-         },
-         {
-            "class":"vertical_lcd",
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"percent",
-                  "decimals":0,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-            "gridPos":{
-               "w":1,
-               "h":4
-            },
-            "targets":[
-               {
-                  "expr":"(avg(scylla_manager_repair_progress{cluster=\"$cluster\", job=\"scylla_manager\"}) * max(scylla_manager_scheduler_run_indicator{type=\"repair\",cluster=\"$cluster\"})) or on ()  (100*avg(manager:backup_progress{cluster=\"$cluster\"}) * max(scylla_manager_scheduler_run_indicator{type=\"backup\",cluster=\"$cluster\"})) or on () vector(0)",
-                  "legendFormat":"",
-                  "interval":"",
-                  "refId":"A",
-                  "instant":true
-               }
-            ]
-         },
-         {
-            "class":"small_stat",
-            "description":"",
-            "gridPos": {
-                "h": 4,
-                "w": 4
-             },
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"\u00b5s",
-                  "decimals":0,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        },
-                        {
-                           "color":"red",
-                           "value":50000
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-            "targets":[
-               {
-                  "expr":"sum(rate(scylla_alternator_op_latency_sum{cluster=~\"$cluster\", op=~\"$ops\"}[$__rate_interval])) by (op)/sum(rate(scylla_alternator_op_latency_count{cluster=~\"$cluster|^$\", op=~\"$ops\"}[$__rate_interval])>0) by (op)",
-                  "intervalFactor":1,
-                  "legendFormat": "{{op}}",
-                  "refId":"A",
-                  "instant":true,
-                  "step":4
-               }
-            ],
-            "title":""
-         },
-         {
-            "class":"small_stat",
-            "description":"",
-            "gridPos": {
-                "h": 4,
-                "w": 4
-              },
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"\u00b5s",
-                  "decimals":0,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        },
-                        {
-                           "color":"red",
-                           "value":50000
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-            "targets":[
-               {
-                  "expr":"histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
-                  "intervalFactor":1,
-                  "legendFormat": "{{op}}",
-                  "refId":"A",
-                  "instant":true,
-                  "step":4
-               }
-            ],
-            "title":""
-         },
-         {
-            "class":"small_stat",
-            "targets":[
-               {
-                  "expr":"(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*\"}[$__rate_interval])) or vector(0))+ on() (sum(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or vector(0))",
-                  "intervalFactor":1,
-                  "dashversion":[">2025.1"],
-                  "refId":"A",
-                  "instant":true,
-                  "step":40
-               },
-               {
-                  "expr":"(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*Item\"}[$__rate_interval])) or vector(0))",
-                  "intervalFactor":1,
-                  "dashversion":["<2025.1"],
-                  "refId":"A",
-                  "instant":true,
-                  "step":40
-               }
-            ],
-            "gridPos":{
-               "w":3,
-               "h":4
-            },
-            "fieldConfig":{
-               "defaults":{
-                  "custom":{
-                  },
-                  "unit":"si:",
-                  "decimals":1,
-                  "thresholds":{
-                     "mode":"absolute",
-                     "steps":[
-                        {
-                           "color":"green",
-                           "value":null
-                        }
-                     ]
-                  },
-                  "mappings":[]
-               },
-               "overrides":[]
-            },
-            "description":"Total Operations per seconds",
-            "title":"Total Operations/s"
-         },
-         {
-            "class":"small_stat",
+            "class":"small_stat_area",
             "description":"The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
             "fieldConfig":{
                "defaults":{
@@ -1347,32 +878,161 @@
             },
             "targets":[
                {
-                  "expr":"avg(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"} )",
-                  "intervalFactor":1,
+                  "expr":"sum(avg(rate(scylla_scheduler_runtime_ms{group=~\"sl:.*|commitlog\",cluster=\"$cluster\", dc=~\"$dc\"}[1m])) by (group)/10)",
                   "legendFormat":"",
-                  "refId":"A",
-                  "instant":true,
-                  "step":4
+                  "refId":"A"
                }
             ],
             "title":"Load"
          },
+        {
+        	"class": "num_nodes_panel"
+        },
+         {
+         	"class": "num_cores_panel"
+         },
          {
             "class":"small_stat",
+            "description":"Data Reduction Ratio, percentage of disk space saved due to compression",
+            "options": {
+	           "class":"stats_area_options",
+	           "graphMode": "none",
+	           "colorMode": "background_solid"
+	        },
+            "dashversion":[">2026.1"],
+            "title":"DRR",
+            "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "dark-blue",
+                    "value": null
+                  }
+                ]
+              },
+   			"unit": "percentunit",
+      		"decimals": 0
+            }
+          },
+          "targets": [
+            {
+              "expr": "1-sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})/sum(scylla_column_family_total_disk_space_before_compression{cluster=\"$cluster\", ks!~\"system.*\"})",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+         },
+         {
+            "class":"small_stat",
+            "description":"Disk Usage",
+            "options": {
+	           "class":"stats_area_options",
+	           "graphMode": "none",
+	           "colorMode": "background_solid"
+	        },
+            "title":"Disk",
+            "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "dark-blue",
+                    "value": null
+                  }
+                ]
+              },
+   			"unit": "decbytes"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+         },
+         {
+            "class":"small_stat",
+            "targets":[
+               {
+                  "expr":"(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*\"}[$__rate_interval])) or vector(0))+ on() (sum(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or vector(0))",
+                  "intervalFactor":1,
+                  "dashversion":[">2025.1"],
+                  "refId":"A",
+                  "instant":true,
+                  "step":40
+               },
+               {
+                  "expr":"(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*Item\"}[$__rate_interval])) or vector(0))",
+                  "intervalFactor":1,
+                  "dashversion":["<2025.1"],
+                  "refId":"A",
+                  "instant":true,
+                  "step":40
+               }
+            ],
+            "gridPos":{
+               "w":2,
+               "h":6
+            },
             "fieldConfig":{
                "defaults":{
                   "custom":{
                   },
+                  "unit":"si:",
+                  "decimals":1,
                   "thresholds":{
                      "mode":"absolute",
                      "steps":[
                         {
-                           "color":"green",
+                           "color":"dark-blue",
+                           "value":null
+                        }
+                     ]
+                  },
+                  "mappings":[]
+               },
+               "overrides":[]
+            },
+           	"options": {
+	           "class":"stats_area_options",
+	           "graphMode": "none",
+	           "colorMode": "background_solid"
+	        },
+            "description":"Total Operations per seconds",
+            "title":"Total Operations/s"
+         },
+         {
+            "class":"small_stat",
+            "description":"",
+            "gridPos": {
+                "h": 6,
+                "w": 5
+             },
+            "fieldConfig":{
+               "defaults":{
+                  "custom":{
+                  },
+                  "unit":"\u00b5s",
+                  "decimals":0,
+                  "thresholds":{
+                     "mode":"absolute",
+                     "steps":[
+                        {
+                           "color":"dark-blue",
                            "value":null
                         },
                         {
                            "color":"red",
-                           "value":1
+                           "value":50000
                         }
                      ]
                   },
@@ -1382,15 +1042,71 @@
             },
             "targets":[
                {
-                  "expr":"(sum(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) or on() vector(0)) + (sum(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) or on() vector(0))",
+                  "expr":"sum(rate(scylla_alternator_op_latency_sum{cluster=~\"$cluster\", op=~\"$ops\"}[$__rate_interval])) by (op)/sum(rate(scylla_alternator_op_latency_count{cluster=~\"$cluster|^$\", op=~\"$ops\"}[$__rate_interval])>0) by (op)",
                   "intervalFactor":1,
+                  "legendFormat": "{{op}}",
                   "refId":"A",
                   "instant":true,
-                  "step":40
+                  "step":4
                }
             ],
-            "description":"The rate of timeouts (read and write).\n\nTimeouts are an indication of an overloaded system",
-            "title":"Timeouts"
+           	"options": {
+	           "class":"stats_area_options",
+	           "graphMode": "none",
+	           "textMode": "value_and_name",
+    			"wideLayout": false,
+	           "colorMode": "background_solid"
+	        },
+            "title":"Avg Latencies"
+         },
+         {
+            "class":"small_stat",
+            "description":"",
+            "gridPos": {
+                "h": 6,
+                "w": 5
+              },
+            "fieldConfig":{
+               "defaults":{
+                  "custom":{
+                  },
+                  "unit":"\u00b5s",
+                  "decimals":0,
+                  "thresholds":{
+                     "mode":"absolute",
+                     "steps":[
+                        {
+                           "color":"dark-blue",
+                           "value":null
+                        },
+                        {
+                           "color":"red",
+                           "value":50000
+                        }
+                     ]
+                  },
+                  "mappings":[]
+               },
+               "overrides":[]
+            },
+			"options": {
+	           "class":"stats_area_options",
+	           "graphMode": "none",
+	           "textMode": "value_and_name",
+    			"wideLayout": false,
+	           "colorMode": "background_solid"
+	        },
+            "targets":[
+               {
+                  "expr":"histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
+                  "intervalFactor":1,
+                  "legendFormat": "{{op}}",
+                  "refId":"A",
+                  "instant":true,
+                  "step":4
+               }
+            ],
+            "title":"P99 Latencies"
          }
       ],
       "title":"New row"
