@@ -156,7 +156,7 @@ TRIES=0
 if [ ! "$QUICK_STARTUP" = "1" ]; then
     until $(curl --output /dev/null -f --silent http://localhost:$ALERTMANAGER_PORT) || [ $TRIES -eq $RETRIES ]; do
     	((TRIES = TRIES + 1))
-    	sleep 1 
+    	sleep 1
     done
 fi
 if [ ! "$(docker ps -q -f name=$ALERTMANAGER_NAME)" ]; then
@@ -169,14 +169,17 @@ if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
    IP=""
 fi
 
-AM_ADDRESS="$IP:9093"
-if [ "$AM_ADDRESS" = ":9093" ]; then
-	if [[ $(uname) == "Linux" ]]; then
+AM_ADDRESS="$IP:$ALERTMANAGER_PORT"
+if [ "$AM_ADDRESS" = ":$ALERTMANAGER_PORT" ]; then
+	if [ ! -z "$BIND_ADDRESS" ]; then
+		# Use the bind address if provided
+		HOST_IP=$(echo $BIND_ADDRESS | sed 's/:$//')
+	elif [[ $(uname) == "Linux" ]]; then
 		HOST_IP=$(hostname -I | awk '{print $1}')
 	elif [[ $(uname) == "Darwin" ]]; then
 		HOST_IP=$(ifconfig en0 | awk '/inet / {print $2}')
 	fi
-	AM_ADDRESS="$HOST_IP:9093"
+	AM_ADDRESS="$HOST_IP:$ALERTMANAGER_PORT"
 fi
 
 echo $AM_ADDRESS
