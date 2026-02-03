@@ -505,6 +505,44 @@
                         "title": "AIO Error by [[by]]",
                         "description": "Number of AIO Errors"
                     },
+                   {
+                        "class": "ops_panel",
+                        "dashversion":[">2026.1"],
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], $func(rate(scylla_reactor_aio_retries{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "options": {
+                            "class":"desc_tooltip_options"
+                        },
+                        "title": "AIO Retries $func by [[by]]",
+                        "description": "Number of IOCB-s re-submitted via thread-pool"
+                    },
+                   {
+                        "class": "percentunit_panel",
+                        "dashversion":[">2026.1"],
+                        "span": 4,
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], $func(rate(scylla_reactor_aio_retries{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_reactor_aio_writes{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]) + rate(scylla_reactor_aio_reads{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 30
+                            }
+                        ],
+                        "options": {
+                            "class":"desc_tooltip_options"
+                        },
+                        "title": "Percent of AIO operations with Retries $func by [[by]]",
+                        "description": "% of IOCB-s re-submitted via thread-pool"
+                    },
                     {
                         "class": "ops_panel",
                         "span": 4,
