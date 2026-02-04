@@ -1429,6 +1429,36 @@
                         ],
                         "description": "Counts querier cache lookups that failed to find a cached querier\n\nscylla_database_querier_cache_misses",
                         "title": "Querier Cache Misses $func by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], $func(rate(scylla_database_clustering_filter_sstables_checked{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Counts sstables checked after applying the bloom filter. High value indicates that bloom filter is not very efficient.",
+                        "title": "SStables checked after applying the bloom filter $func by [[by]]"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "$topbottom([[filter_limit]], $func(rate(scylla_database_clustering_filter_surviving_sstables{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Counts sstables that survived the clustering key filtering. High value indicates that bloom filter is not very efficient and still have to access a lot of sstables to get data.",
+                        "title": "SStables that survived the clustering key filtering $func by [[by]]"
                     }
                 ],
                 "title": "New row"
