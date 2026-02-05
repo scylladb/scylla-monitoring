@@ -427,20 +427,24 @@
             "targets": [
                 {
                     "expr": "count(scylla_scylladb_current_version{job=\"scylla\", cluster=\"$cluster\"})",
+                    "instant": true,
                     "intervalFactor": 1,
                     "legendFormat": "Total",
+                    "range": false,
                     "refId": "A"
                 },
                 {
                     "expr": "count(scylla_node_operation_mode!=3) >0",
+                    "instant": true,
                     "legendFormat": "Inactive",
+                    "range": false,
                     "refId": "B"
                 },
                 {
                     "expr": "(count(scrape_samples_scraped{job=\"scylla\", cluster=\"$cluster\"}==0) OR vector(0))>0",
-                    "instant": false,
+                    "instant": true,
                     "legendFormat": "Unreachable",
-                    "range": true,
+                    "range": false,
                     "refId": "C"
                 }
             ],
@@ -555,7 +559,7 @@
             },
             "targets": [
                 {
-                    "expr": "1-sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})/sum(scylla_column_family_total_disk_space_before_compression{cluster=\"$cluster\", ks!~\"system.*\"})",
+                    "expr": "1-sum(scylla_column_family_total_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})/sum(scylla_column_family_total_disk_space_before_compression{cluster=\"$cluster\", ks!~\"system.*\"})",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A"
@@ -4878,7 +4882,7 @@
                 "multi": true,
                 "name": "classes",
                 "options": [],
-                "query": "label_values(scylla_io_queue_total_delay,class)",
+                "query": "label_values(scylla_io_queue_activations,class)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,
