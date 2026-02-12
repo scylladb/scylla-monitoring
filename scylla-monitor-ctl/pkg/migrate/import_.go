@@ -21,6 +21,7 @@ type RestoreOptions struct {
 	GrafanaUser     string
 	GrafanaPassword string
 	GrafanaPort     int
+	PrometheusURL   string // if set, rewrite Prometheus datasource URLs to this value
 }
 
 // RestoreStack restores a monitoring stack from an export archive.
@@ -99,6 +100,10 @@ func RestoreStack(opts RestoreOptions) error {
 					continue
 				}
 				ds.ID = 0 // Clear ID for create
+				if opts.PrometheusURL != "" && ds.Type == "prometheus" {
+					slog.Info("rewriting datasource URL", "datasource", ds.Name, "old", ds.URL, "new", opts.PrometheusURL)
+					ds.URL = opts.PrometheusURL
+				}
 				if err := gc.CreateDatasource(ds); err != nil {
 					slog.Warn("creating datasource", "datasource", ds.Name, "error", err)
 				}

@@ -21,7 +21,8 @@ var backupCreateFlags struct {
 
 var backupRestoreFlags struct {
 	GrafanaConnFlags
-	Archive string
+	Archive       string
+	PrometheusURL string
 }
 
 var backupCmd = &cobra.Command{
@@ -69,6 +70,7 @@ func init() {
 	backupRestoreFlags.GrafanaConnFlags.Register(backupRestoreCmd, "")
 	rf := backupRestoreCmd.Flags()
 	rf.StringVar(&backupRestoreFlags.Archive, "archive", "", "Backup archive path (required)")
+	rf.StringVar(&backupRestoreFlags.PrometheusURL, "prometheus-url", "", "Rewrite Prometheus datasource URLs to this address")
 	backupRestoreCmd.MarkFlagRequired("archive")
 }
 
@@ -99,6 +101,7 @@ func runBackupCreate(cmd *cobra.Command, args []string) error {
 func runBackupRestore(cmd *cobra.Command, args []string) error {
 	opts := migrate.RestoreOptions{
 		ArchivePath:     backupRestoreFlags.Archive,
+		PrometheusURL:   backupRestoreFlags.PrometheusURL,
 		GrafanaURL:      backupRestoreFlags.URL,
 		GrafanaUser:     backupRestoreFlags.User,
 		GrafanaPassword: backupRestoreFlags.Password,

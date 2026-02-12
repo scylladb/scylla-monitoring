@@ -26,6 +26,7 @@ var migrateImportFlags struct {
 	DataDir        string
 	GrafanaDataDir string
 	GrafanaPort    int
+	PrometheusURL  string
 }
 
 var migrateCopyFlags struct {
@@ -54,7 +55,10 @@ Without it, only configuration files and Grafana dashboards/datasources are expo
 var migrateImportCmd = &cobra.Command{
 	Use:   "import",
 	Short: "Import a monitoring stack from an archive",
-	Long:  `Restore dashboards, configs, and optionally data from an export archive.`,
+	Long: `Restore dashboards, configs, and optionally data from an export archive.
+
+When --prometheus-url is provided, imported Prometheus datasource URLs are
+rewritten to point to the given address instead of the original source.`,
 	RunE:  runMigrateImport,
 }
 
@@ -86,6 +90,7 @@ func init() {
 	migrateImportFlags.GrafanaConnFlags.Register(migrateImportCmd, "")
 	imf := migrateImportCmd.Flags()
 	imf.StringVar(&migrateImportFlags.Archive, "archive", "", "Path to export archive (required)")
+	imf.StringVar(&migrateImportFlags.PrometheusURL, "prometheus-url", "", "Rewrite Prometheus datasource URLs to this address")
 	imf.StringVar(&migrateImportFlags.DataDir, "data-dir", "", "Prometheus data directory")
 	imf.StringVar(&migrateImportFlags.GrafanaDataDir, "grafana-data-dir", "", "Grafana data directory")
 	imf.IntVar(&migrateImportFlags.GrafanaPort, "grafana-port", 3000, "Grafana port")
@@ -129,6 +134,7 @@ func runMigrateExport(cmd *cobra.Command, args []string) error {
 func runMigrateImport(cmd *cobra.Command, args []string) error {
 	opts := migrate.RestoreOptions{
 		ArchivePath:     migrateImportFlags.Archive,
+		PrometheusURL:   migrateImportFlags.PrometheusURL,
 		DataDir:         migrateImportFlags.DataDir,
 		GrafanaDataDir:  migrateImportFlags.GrafanaDataDir,
 		GrafanaURL:      migrateImportFlags.URL,
