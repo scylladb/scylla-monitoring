@@ -1,0 +1,61 @@
+name: "Go / Build & Test"
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "scylla-monitor-ctl/**"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scylla-monitor-ctl
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: scylla-monitor-ctl/go.mod
+
+      - name: Build
+        run: go build -o scylla-monitor-ctl .
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test -v -count=1 ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.9
+          working-directory: scylla-monitor-ctl
+          only-new-issues: true
+
+  integration-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scylla-monitor-ctl
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: scylla-monitor-ctl/go.mod
+
+      - name: Pull test images
+        run: |
+          docker pull nginx:alpine
+          docker pull prom/prometheus:v3.2.1
+
+      - name: Integration tests
+        run: go test -v -count=1 -tags=integration -timeout=300s ./pkg/docker/ ./pkg/stack/

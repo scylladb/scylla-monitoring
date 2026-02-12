@@ -1,0 +1,294 @@
+global:
+  scrape_interval: 20s # Default Scrape
+  scrape_timeout: 15s # # Default Scrape timeout
+  evaluation_interval: 20s
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'scylla-monitor'
+rule_files:
+  - /etc/prometheus/prometheus.rules.yml
+  - /etc/prometheus/prom_rules/*.yml
+  - /etc/prometheus/prom_rules/*.yaml
+    #
+# Alerting specifies settings related to the Alertmanager.
+alerting:
+        #  alert_relabel_configs:
+        #    [ - <relabel_config> ... ]
+  alertmanagers:
+  - static_configs:
+    - targets:
+        - AM_ADDRESS
+
+scrape_configs:
+- job_name: scylla
+  honor_labels: false
+  consul_sd_configs:
+  - server: 'MANAGER_ADDRESS'
+    services:
+      - 'scylla'
+  relabel_configs:
+    - source_labels: [__meta_consul_tags]
+      separator: ','
+      regex: '([^=]+)=([^,]+)'
+      target_label: ${1}
+      replacement: ${2}
+    - source_labels: [__meta_consul_service_metadata_dc]
+      target_label: dc
+    - source_labels: [__meta_consul_service_metadata_cluster_name]
+      target_label: cluster
+    - source_labels: [__address__]
+      regex:  '(.*):\d+'
+      target_label: instance
+      replacement: '${1}'
+  metric_relabel_configs:
+# FILTER_METRICS
+    - source_labels: [__name__, scheduling_group_name]
+      regex: '(scylla_storage_proxy_coordinator_.*_bucket;)(atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache)'
+      action: drop
+    - regex: 'help|exported_instance'
+      action: labeldrop
+    - source_labels: [version]
+      regex: '([0-9]+\.[0-9]+)(\.?[0-9]*).*'
+      replacement: '$1$2'
+      target_label: svr
+    - source_labels: [cluster]
+      regex: '^$'
+      replacement: 'my-cluster'
+      target_label: cluster
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_write_latency_summary;0.990*)'
+      target_label: __name__
+      replacement: 'wlatencyp99'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_write_latency_summary;0.950*)'
+      target_label: __name__
+      replacement: 'wlatencyp95'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_write_latency_summary;0.50*)'
+      target_label: __name__
+      replacement: 'wlatencya'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_read_latency_summary;0.990*)'
+      target_label: __name__
+      replacement: 'rlatencyp99'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_read_latency_summary;0.950*)'
+      target_label: __name__
+      replacement: 'rlatencyp95'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_read_latency_summary;0.50*)'
+      target_label: __name__
+      replacement: 'rlatencya'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_cas_write_latency_summary;0.950*)'
+      target_label: __name__
+      replacement: 'caswlatencyp95'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_cas_write_latency_summary;0.990*)'
+      target_label: __name__
+      replacement: 'caswlatencyp99'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_cas_write_latency_summary;0.50*)'
+      target_label: __name__
+      replacement: 'caswlatencya'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_cas_read_latency_summary;0.950*)'
+      target_label: __name__
+      replacement: 'casrlatencyp95'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_cas_read_latency_summary;0.990*)'
+      target_label: __name__
+      replacement: 'casrlatencyp99'
+    - source_labels: [__name__, quantile]
+      regex: '(scylla_storage_proxy_coordinator_cas_read_latency_summary;0.50*)'
+      target_label: __name__
+      replacement: 'casrlatencya'
+    - source_labels: [__name__]
+      regex: '(.latency..?.?|cas.latency..?.?)'
+      target_label: by
+      replacement: 'instance,shard'
+    - source_labels: [__name__]
+      regex: '(scylla_storage_proxy_coordinator_read_timeouts|scylla_reactor_utilization|scylla_storage_proxy_coordinator_read_timeouts|scylla_storage_proxy_coordinator_read_unavailable|scylla_storage_proxy_coordinator_write_timeouts|scylla_storage_proxy_coordinator_write_unavailable|.latency..?.?)'
+      replacement: '2'
+      target_label: dd
+    - source_labels: [__name__]
+      regex: '(scylla_node_operation_mode)'
+      replacement: '1'
+      target_label: dd
+    - source_labels: [scheduling_group_name]
+      regex: '(atexit|gossip|mem_compaction|memtable|streaming|background_reclaim|compaction|main|memtable_to_cache)'
+      replacement: ''
+      target_label: dd
+    - source_labels: [__name__, tablets_mode]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_tablets_mode
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, account_name]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_account_name
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, account_id]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_account_id
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, cluster_name]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_cluster_name
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, rack]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_rack
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, serverExternalId]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_serverExternalId
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, serverId]
+      regex: "scylla_scylladb_current_version;(.*)"
+      target_label: __tmp_serverId
+      replacement: "$1"
+      action: replace
+    - action: labeldrop
+      regex: "^(tablets_mode|account_name|account_id|cluster_name|rack|serverExternalId|serverId)$"
+    - source_labels: [__name__, __tmp_tablets_mode]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: tablets_mode
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, __tmp_account_name]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: account_name
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, __tmp_account_id]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: account_id
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, __tmp_cluster_name]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: cluster_name
+      replacement: "$1"
+      action: replace
+    - source_labels: [__name__, __tmp_rack]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: rack
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, __tmp_serverExternalId]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: serverExternalId
+      replacement: "$1"
+      action: replace
+
+    - source_labels: [__name__, __tmp_serverId]
+      regex: "scylla_scylladb_current_version;(..*)"
+      target_label: serverId
+      replacement: "$1"
+      action: replace
+
+    - action: labeldrop
+      regex: "^__tmp_(tablets_mode|account_name|account_id|cluster_name|rack|serverExternalId|serverId)$"
+- job_name: node_exporter
+  honor_labels: false
+  scrape_interval: 1m # By default, scrape targets every 20 second.
+  scrape_timeout: 20s # Timeout before trying to scape a target again
+  consul_sd_configs:
+  - server: 'MANAGER_ADDRESS'
+    services:
+      - 'scylla'
+  relabel_configs:
+    - source_labels: [__meta_consul_tags]
+      separator: ','
+      regex: '([^=]+)=([^,]+)'
+      target_label: ${1}
+      replacement: ${2}
+    - source_labels: [__address__]
+      regex:  '(.*):\d+'
+      target_label: instance
+      replacement: '${1}'
+    - source_labels: [__meta_consul_service_metadata_dc]
+      target_label: dc
+    - source_labels: [instance]
+      regex:  '(.*)'
+      target_label: __address__
+      replacement: '${1}:9100'
+  metric_relabel_configs:
+    - regex: 'help|exported_instance|type'
+      action: labeldrop
+    - source_labels: [__name__]
+      regex: '(node_filesystem_size_bytes|node_filesystem_avail_bytes|node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total|node_ethtool_.*)'
+      target_label: dd
+      replacement: '1'
+- job_name: manager_agent
+  honor_labels: false
+  consul_sd_configs:
+  - server: 'MANAGER_ADDRESS'
+    services:
+      - 'scylla'
+  relabel_configs:
+    - source_labels: [__meta_consul_tags]
+      separator: ','
+      regex: '([^=]+)=([^,]+)'
+      target_label: ${1}
+      replacement: ${2}
+    - source_labels: [__address__]
+      regex:  '(.*):\d+'
+      target_label: instance
+      replacement: '${1}'
+    - source_labels: [__meta_consul_service_metadata_dc]
+      target_label: dc
+    - source_labels: [instance]
+      regex:  '(.*)'
+      target_label: __address__
+      replacement: '${1}:5090'
+  metric_relabel_configs:
+    - regex: 'help|exported_instance|type'
+      action: labeldrop
+
+- job_name: scylla_manager
+  honor_labels: false
+  static_configs:
+    - targets:
+      - MANAGER_ADDRESS
+  metric_relabel_configs:
+    - source_labels: [host]
+      target_label: instance
+    - source_labels: [__name__]
+      regex: '(scylla_manager_scheduler_last_duration)'
+      target_label: dd
+      replacement: '1'
+    - source_labels: [__name__]
+      regex: '(scylla_manager_scheduler_last_duration)'
+      target_label: by
+      replacement: 'cluster'
+
+- job_name: 'prometheus'
+  # Override the global default and scrape targets from this job every 5 seconds.
+  scrape_interval: 30s
+  static_configs:
+    - targets:
+      - localhost:9090
+- job_name: 'grafana'
+  scrape_interval: 30s
+  static_configs:
+    - targets:
+      - GRAFANA_ADDRESS

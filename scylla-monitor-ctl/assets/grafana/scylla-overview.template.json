@@ -1,0 +1,749 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "originalTitle": "Scylla Cluster Metrics",
+        "overwrite": true,
+        "rows": [
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "title": "Cluster overview $cluster $account_name $cluster_name ",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class" : "small_stat_rows"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "alert_table",
+                        "gridPos": {
+                            "h": 6,
+                            "w": 8
+                        },
+                        "title": "Active Alerts"
+                    },
+                    {
+                        "class": "groups_table",
+                        "gridPos": {
+                            "h": 6,
+                            "w": 8
+                        }
+                    },
+                    {
+                        "class": "dcs_table",
+                        "gridPos": {
+                            "h": 6,
+                            "w": 8
+                        },
+                        "span": 4
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "round(sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by (scheduling_group_name))",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} Writes/s",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Write attempts - include all writes that reached the coordinator node, even if they will eventually fail",
+                        "title": "Writes/s"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "wlatencya{by=\"cluster\", cluster=\"$cluster\",scheduling_group_name=~\"$sg\"}>0",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}}",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "title": "Average Write Latencies"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "wlatencyp95{by=\"cluster\", cluster=\"$cluster\",scheduling_group_name=~\"$sg\"}>0",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} 95%",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "wlatencyp99{by=\"cluster\", cluster=\"$cluster\",scheduling_group_name=~\"$sg\"}>0",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} 99%",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "title": "Write Latencies"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "round(sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by (scheduling_group_name))",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} Reads/s",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Read attempts - include all reads that reached the coordinator node, even if they will eventually fail",
+                        "title": "Reads/s"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "rlatencya{by=\"cluster\", cluster=\"$cluster\",scheduling_group_name=~\"$sg\"}>0",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}}",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "title": "Average Read Latencies"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "rlatencyp95{by=\"cluster\", cluster=\"$cluster\",scheduling_group_name=~\"$sg\"}>0",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} 95%",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "rlatencyp99{by=\"cluster\", cluster=\"$cluster\",scheduling_group_name=~\"$sg\"}>0",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} 99%",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "title": "Read Latencies"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "title": "",
+                      "repeat": "dc",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "header_row",
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "options": {
+						    "mode": "html",
+						    "code": {
+						      "language": "plaintext",
+						      "showLineNumbers": false,
+						      "showMiniMap": false
+						    },
+						    "content": "<h1 style=\"color:#FFF; background-color:#1250b0; line-height: 150%; padding-left: 5px\">Information for $dc</h1>"
+						  }
+
+                    }
+                ],
+                "title": "New row"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "vertical_lcd",
+                        "targets": [
+                            {
+                              "expr": "avg(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\"} )",
+                              "interval": "",
+                              "legendFormat": "",
+                              "instant": true,
+                              "refId": "A"
+                            }
+                          ],
+                          "title": "Load"
+                    },
+                    {
+                        "class": "percentunit_panel",
+                        "gridPos": {
+                        "w": 3
+                        },
+                        "targets": [
+                            {
+                                "expr": "1-(node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\"})/(node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\"})",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{dc}} {{instance}}",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Disk percente usage",
+                        "title": "Disk Usage"
+                    },
+                    {
+                        "class": "graph_panel_int",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "sum(scylla_compaction_manager_compactions{cluster=\"$cluster\", dc=~\"$dc\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "metric": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "scylla_compaction_manager_compactions",
+                        "title": "Running Compactions"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "The Hits and Misses",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_cache_row_hits{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Hit {{instance}}",
+                                "refId": "A",
+                                "step": 10
+                            },
+                            {
+                                "expr": "sum(rate(scylla_cache_row_misses{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Misses {{instance}}",
+                                "refId": "B",
+                                "step": 10
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "title": "Cache Hits/Misses"
+                    },
+                    {
+                      "class":"small_nodes_table",
+                      "gridPos": {
+                        "h": 17,
+                        "w": 10
+                      }
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Writes {{instance}}",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                              "expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1d)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1d))",
+                              "legendFormat": "1 Day Ago",
+                              "interval": "",
+                              "intervalFactor": 1,
+                              "refId": "B",
+                              "step": 1
+                            },
+                            {
+                              "expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1w)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1w))",
+                              "legendFormat": "1 Week Ago",
+                              "interval": "",
+                              "intervalFactor": 1,
+                              "refId": "C",
+                              "step": 1
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "seriesOverrides": [
+                            {
+                              "alias": "1 Day Ago",
+                              "dashes": true,
+                              "dashLength": 4
+                            },
+                            {
+                              "alias": "1 Week Ago",
+                              "dashes": true,
+                              "dashLength": 2
+                            }
+                          ],
+                        "description": "Write attempts - include all writes that reached the coordinator node, even if they will eventually fail",
+                        "title": "Writes"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "avg(wlatencyp95{by=\"[[by]]\", cluster=\"$cluster\", dc=~\"$dc\" ,scheduling_group_name=~\"$sg\"}>0) by (scheduling_group_name, [[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} 95% {{instance}}",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "avg(wlatencyp99{by=\"[[by]]\", cluster=\"$cluster\", dc=~\"$dc\" ,scheduling_group_name=~\"$sg\"}>0) by (scheduling_group_name, [[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} 99% {{instance}}",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "title": "Write Latencies"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "span": 2,
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_write_timeouts{cluster=\"$cluster\", dc=~\"$dc\" }[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Writes {{instance}}",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "title": "Write Timeouts by [[by]]"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "span": 3,
+                        "gridPos": {
+                            "x": 0
+                        },
+                        "targets": [
+                            {
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "Reads {{instance}}",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1d)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1d))",
+                                "intervalFactor": 1,
+                                "legendFormat": "1 Day Ago",
+                                "refId": "B",
+                                "step": 1
+                            },
+                            {
+                                "expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1w)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1w))",
+                                "intervalFactor": 1,
+                                "legendFormat": "1 Week Ago",
+                                "refId": "C",
+                                "step": 1
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "seriesOverrides": [
+                            {
+                              "alias": "1 Day Ago",
+                              "dashes": true,
+                              "dashLength": 4
+                            },
+                            {
+                              "alias": "1 Week Ago",
+                              "dashes": true,
+                              "dashLength": 2
+                            }
+                          ],
+                        "description": "Read attempts - include all reads that reached the coordinator node, even if they will eventually fail",
+                        "title": "Reads"
+                    },
+                    {
+                        "class": "us_panel",
+                        "span": 2,
+                        "gridPos": {
+                            "x": 6
+                        },
+                        "targets": [
+                            {
+                                "expr": "avg(rlatencyp95{by=\"[[by]]\", cluster=\"$cluster\", dc=~\"$dc\" ,scheduling_group_name=~\"$sg\"}>0) by(scheduling_group_name, [[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} 95% {{instance}}",
+                                "refId": "A",
+                                "step": 1
+                            },
+                            {
+                                "expr": "avg(rlatencyp99{by=\"[[by]]\", cluster=\"$cluster\", dc=~\"$dc\" ,scheduling_group_name=~\"$sg\"}>0) by(scheduling_group_name, [[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "{{scheduling_group_name}} 99% {{instance}}",
+                                "refId": "B",
+                                "step": 1
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "title": "Read Latencies"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
+                        "span": 2,
+                        "gridPos": {
+                            "x": 10
+                        },
+                        "targets": [
+                            {
+                                "expr": "(sum(rate(scylla_storage_proxy_coordinator_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]]) or vector(0))+on([[by]]) (sum(rate(scylla_storage_proxy_coordinator_cas_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]]) or vector(0))+on([[by]]) (sum(rate(scylla_storage_proxy_coordinator_range_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]]) or vector(0))",
+                                "intervalFactor": 1,
+                                "legendFormat": "Read {{dc}}",
+                                "refId": "A",
+                                "step": 10
+                            }
+                        ],
+                        "legend": {
+                            "class": "show_legend"
+                        },
+                        "title": "Read Timeouts by [[by]]"
+                    },
+                    {
+                        "class": "plain_text",
+                        "dashproductreject": "no-version-check",
+                        "gridPos": {
+                            "w": 10,
+                            "x": 14,
+                            "h": 1
+                          },
+                        "options": {
+                            "mode": "html",
+                            "content": "<img src=\"https://repositories.scylladb.com/scylla/imgversion/$all_scyllas_versions/scylla\"></img>"
+                          }
+                        },
+                    {
+                        "class": "plain_text",
+                        "dashproduc": "no-version-check",
+                        "gridPos": {
+                            "w": 10,
+                            "x": 14,
+                            "h": 1
+                          },
+                        "options": {
+                            "mode": "html",
+                            "content": ""
+                          }
+                        }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "title": "",
+                      "type": "row"
+                    }
+                ]
+            },
+            {
+                "class": "user_panels_collapse"
+            },
+            {
+                "class": "user_panel_row_header"
+            },
+            {
+                "class": "user_panels_row"
+            },
+            {
+                "class": "monitoring_version_row"
+            }
+        ],
+        "tags": [
+            "__SCYLLA_VERSION_DOT__"
+        ],
+        "templating": {
+            "list": [
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "dashproductreject": "no-version-check",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
+                    "class": "template_variable_single",
+                    "label": "cluster",
+                    "name": "cluster",
+                    "hide": 2,
+                    "dashproduct": "no-version-check",
+                    "query": "label_values(scylla_reactor_utilization, cluster)"
+                },
+                {
+                    "class": "by_template_var",
+                    "current": {
+                        "tags": [],
+                        "text": "DC",
+                        "value": "dc"
+                    },
+                    "options": [
+                        {
+                            "selected": false,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": true,
+                            "text": "DC",
+                            "value": "dc"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Instance",
+                            "value": "instance"
+                        },
+                        {
+                            "selected": false,
+                            "text": "instance,shard",
+                            "value": "instance,shard"
+                        }
+                    ]
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "dc",
+                    "name": "dc",
+                    "query": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                },
+                {
+                    "class": "template_variable_single",
+                    "current": {
+                        "text": "/var/lib/scylla",
+                        "value": "/var/lib/scylla"
+                    },
+                    "label": "Mount path",
+                    "name": "mount_point",
+                    "query": "node_filesystem_avail_bytes",
+                    "hide": 2,
+                    "dashproduct": "no-version-check",
+                    "regex": "/mountpoint=\"([^\"]*)\".*/",
+                    "sort": 0
+                },
+                {
+                    "class": "template_variable_single",
+                    "current": {
+                        "text": "/var/lib/scylla",
+                        "value": "/var/lib/scylla"
+                    },
+                    "label": "Mount path",
+                    "name": "mount_point",
+                    "query": "node_filesystem_avail_bytes",
+                    "dashproductreject": "no-version-check",
+                    "regex": "/mountpoint=\"([^\"]*)\".*/",
+                    "sort": 0
+                },
+                {
+                    "class": "template_variable_single",
+                    "definition": "label_values(scylla_scylladb_current_version,cluster_name)",
+                    "query": {
+                      "qryType": 1,
+                      "query": "label_values(scylla_scylladb_current_version,cluster_name)"
+                    },
+                    "hide": 2,
+                    "label": "cluster_name",
+                    "name": "cluster_name"
+                },
+                {
+                    "class": "template_variable_single",
+                    "definition": "label_values(scylla_scylladb_current_version,account_name)",
+                    "query": {
+                      "qryType": 1,
+                      "query": "label_values(scylla_scylladb_current_version,account_name)"
+                    },
+                    "hide": 2,
+                    "label": "account_name",
+                    "name": "account_name"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "Service Level",
+                    "name": "sg",
+                    "includeAll":true,
+                    "multi":true,
+                    "dashproductreject": "no-version-check",
+                    "query": "label_values(scylla_scheduler_runtime_ms{cluster=~\"$cluster\", group=~\"sl:.*|commitlog\"},group)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "",
+                    "name": "sg",
+                    "includeAll":true,
+                    "multi":true,
+                    "hide": 2,
+                    "dashproduct": "no-version-check",
+                    "query": "label_values(scylla_scheduler_runtime_ms{cluster=~\"$cluster\", group=~\"sl:.*|commitlog\"},group)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "__SCYLLA_VERSION_DASHED__",
+                        "value": "__SCYLLA_VERSION_DASHED__"
+                    },
+                    "name": "dash_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "__SCYLLA_VERSION_DASHED__",
+                            "value": "__SCYLLA_VERSION_DASHED__"
+                        }
+                    ],
+                    "query": "__SCYLLA_VERSION_DASHED__"
+                },
+                {
+                    "class": "template_variable_all",
+                    "hide":2,
+                    "name": "all_scyllas_versions",
+                    "current":{
+                       "selected":true,
+                       "text":[
+                          "All"
+                       ],
+                       "value":[
+                          "$__all"
+                       ]
+                    },
+                    "query": "label_values(scylla_scylladb_current_version{cluster=\"$cluster\"}, version)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "hide":2,
+                    "name": "count_dc",
+                    "definition": "query_result(count(up{job=\"scylla\"}) by (dc))",
+                    "query": {
+                      "query": "query_result(count(up{job=\"scylla\"}) by (dc))",
+                      "refId": "StandardVariableQuery"
+                    },
+                    "regex": "/(?<dc>\\{dc=\"[^\"]+\".* \\d+) .*/"
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "__SCYLLA_VERSION_DOT__",
+                        "value": "__SCYLLA_VERSION_DOT__"
+                    },
+                    "name": "scylla_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "__SCYLLA_VERSION_DOT__",
+                            "value": "__SCYLLA_VERSION_DOT__"
+                        }
+                    ],
+                    "query": "__SCYLLA_VERSION_DOT__"
+                },
+                {
+                    "class": "monitor_version_var"
+                }
+            ]
+        },
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Overview",
+        "annotations": {
+            "list":[
+             {
+                "builtIn": 1,
+                "datasource": {
+                  "type": "datasource",
+                  "uid": "grafana"
+                },
+                "enable": false,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+             },
+             {
+                "class":"annotation_restart"
+             },
+             {
+                "class":"ops_annotation"
+             },
+             {
+                "class":"stream_annotation"
+             }
+         ]
+        },
+        "uid": "overview-__SCYLLA_VERSION_DASHED__",
+        "version": 1
+    }
+}

@@ -1,0 +1,542 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "uid": "vector-search-__SCYLLA_VERSION_DASHED__",
+        "originalTitle": "Vector Search",
+        "rows": [
+            {
+                "class": "row",
+                "height": "150px",
+                "panels": [
+                    {
+                        "class": "small_stat",
+                        "gridPos": {
+                            "w": 4,
+                            "h": 5
+                        },
+                        "title": "Status",
+                        "targets": [
+                            {
+                                "expr": "count(scrape_samples_scraped{job=\"vector_search\"}) OR vector(0)",
+                                "intervalFactor": 1,
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "fieldConfig": {
+                            "defaults": {
+                                "noValue": " Offline",
+                                "thresholds": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "red",
+                                            "value": null
+                                        },
+                                        {
+                                            "color": "green",
+                                            "value": 1
+                                        }
+                                    ]
+                                },
+                                "mappings": [
+                                    {
+                                        "from": "",
+                                        "id": 0,
+                                        "text": "Offline",
+                                        "to": "",
+                                        "type": 1,
+                                        "value": "0"
+                                    },
+                                    {
+							          "type": "range",
+							          "options": {
+							            "from": 1,
+							            "to": null,
+							            "result": {
+							              "text": "Online",
+							              "index": 1,
+							              "color": "green"
+							            }
+							          }
+							        }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "class": "small_stat",
+                        "targets": [
+                            {
+                                "expr": "max(count(index_size{job=\"vector_search\", instance=~\"$node\"}) by (instance))",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "gridPos": {
+                            "w": 3,
+                            "h": 5
+                        },
+                        "title": "# Indexes"
+                    },
+                    {
+                        "class": "small_stat",
+                        "title": "Disk Usage",
+                        "type": "piechart",
+                        "gridPos": {
+                            "w": 3,
+                            "h": 5
+                        },
+                        "targets": [
+                            {
+                              "expr": "avg(sum(node_filesystem_size_bytes{job=\"vector_search_os\", instance=~\"$node\"} - node_filesystem_avail_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by (instance, cluster))",
+                              "instant": true,
+                              "interval": "",
+                              "legendFormat": "Used",
+                              "refId": "A",
+                              "editorMode": "code"
+                            },
+                            {
+                              "refId": "B",
+                              "expr": "avg(sum(node_filesystem_avail_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by (instance))",
+                              "range": true,
+                              "instant": false,
+                              "hide": false,
+                              "editorMode": "code",
+                              "legendFormat": "Free"
+                            }
+                          ],
+                          "fieldConfig": {
+						    "defaults": {
+						      "custom": {
+						        "hideFrom": {
+						          "tooltip": false,
+						          "viz": false,
+						          "legend": false
+						        }
+						      },
+						      "color": {
+						        "mode": "palette-classic"
+						      },
+						      "mappings": [],
+						      "unit": "decbytes"
+						    },
+						    "overrides": []
+						  },
+                          "options": {
+						    "reduceOptions": {
+						      "values": false,
+						      "calcs": [
+						        "last"
+						      ],
+						      "fields": ""
+						    },
+						    "pieType": "pie",
+						    "sort": "desc",
+						    "tooltip": {
+						      "mode": "multi",
+						      "sort": "none",
+						      "hideZeros": false
+						    },
+						    "legend": {
+						      "showLegend": false,
+						      "displayMode": "list",
+						      "placement": "bottom",
+						      "values": [
+						        "value"
+						      ]
+						    },
+						    "displayLabels": [
+						      "value",
+						      "name"
+						    ]
+						  }
+                    },
+                    {
+                        "class": "small_stat",
+                        "fieldConfig": {
+                            "defaults": {
+                                "mappings": [],
+                                "thresholds": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "green",
+                                            "value": null
+                                        }
+                                    ]
+                                },
+                                "unit": "decbytes"
+                            },
+                            "overrides": []
+                        },
+                        "gridPos": {
+                            "w": 3,
+                            "h": 5
+                        },
+                        "targets": [
+                            {
+                                "expr": "avg(sum(node_filesystem_size_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by (instance, cluster) -sum(node_filesystem_avail_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by (instance, cluster)) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Disk Usage"
+                    },
+                    {
+                        "class": "small_stat_area",
+                        "description": "",
+                        "fieldConfig": {
+                            "defaults": {
+                                "custom": {},
+                                "unit": "percent",
+                                "decimals": 0,
+                                "thresholds": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "green",
+                                            "value": null
+                                        },
+                                        {
+                                            "color": "red",
+                                            "value": 90
+                                        }
+                                    ]
+                                },
+                                "mappings": []
+                            },
+                            "overrides": []
+                        },
+                        "targets": [
+                            {
+                                "expr": "100*avg(sum(rate(node_cpu_seconds_total{job=\"vector_search_os\", mode!~\"idle\", instance=~\"$node\"}[1m])) by(cpu)) by ([[by]])",
+                                "refId": "A"
+                            }
+                        ],
+                        "gridPos": {
+                            "w": 3,
+                            "h": 5
+                        },
+                        "title": "CPU"
+                    },
+                    {
+                        "class": "small_stat_area",
+                        "fieldConfig": {
+                            "defaults": {
+                                "mappings": [],
+                                "thresholds": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "green",
+                                            "value": null
+                                        },
+                                        {
+                                            "color": "red",
+                                            "value": 0.8
+                                        }
+                                    ]
+                                },
+                                "unit": "percentunit",
+                                "min": 0,
+                                "max": 1,
+                                "decimals": 0
+                            },
+                            "overrides": []
+                        },
+                        "gridPos": {
+                            "w": 3,
+                            "h": 5
+                        },
+                        "targets": [
+                            {
+                                "expr": "1-avg(node_memory_MemAvailable_bytes{job=\"vector_search_os\", instance=~\"$node\"})/avg(node_memory_MemTotal_bytes{job=\"vector_search_os\", instance=~\"$node\"})",
+                                "intervalFactor": 1,
+                                "legendFormat": "Used",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Memory % Usage"
+                    },
+                    {
+                        "class": "small_stat_area",
+                        "fieldConfig": {
+                            "defaults": {
+                                "mappings": [],
+                                "thresholds": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "green",
+                                            "value": null
+                                        }
+                                    ]
+                                },
+                                "unit": "decbytes",
+                                "min": 0
+                            },
+                            "overrides": []
+                        },
+                        "gridPos": {
+                            "w": 3,
+                            "h": 5
+                        },
+                        "targets": [
+                            {
+                                "expr": "avg(node_memory_MemTotal_bytes{job=\"vector_search_os\", instance=~\"$node\"} - node_memory_MemAvailable_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 40
+                            }
+                        ],
+                        "title": "Memory Usage"
+                    }
+                ],
+                "title": "Summary row"
+            },
+            {
+                "class": "row",
+                "panels": [
+					{
+                        "class": "bytes_panel",
+                        "gridPos": {
+						    "h": 12,
+						    "w": 6
+						  },
+                        "targets": [
+                            {
+                                "expr": "avg(sum(node_filesystem_size_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by (cluster, dc, instance, rack)-sum(node_filesystem_avail_bytes{job=\"vector_search_os\", instance=~\"$node\"})by (cluster, dc, instance, rack)) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Average Disk Usage",
+                        "title": "Disk Usage by [[by]]"
+                    },
+                    {
+                        "class": "bytes_panel",
+                        "gridPos": {
+						    "h": 12,
+						    "w": 6
+						  },
+                        "targets": [
+                            {
+                                "expr": "avg(node_memory_MemTotal_bytes{job=\"vector_search_os\", instance=~\"$node\"}-node_memory_MemAvailable_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Average Disk Usage",
+                        "title": "Memory Usage by [[by]]"
+                    },
+                    {
+                        "class": "percentunit_panel",
+                        "gridPos": {
+						    "h": 12,
+						    "w": 6
+						  },
+                        "targets": [
+                            {
+                                "expr": "avg(sum(rate(node_cpu_seconds_total{mode != \"idle\", instance=~\"$node\"}[1m])) by (cluster, cpu, instance)) by ([[by]])",
+                                "intervalFactor": 1,
+                                "legendFormat": "",
+                                "refId": "A",
+                                "step": 1
+                            }
+                        ],
+                        "description": "Average CPU Usage",
+                        "title": "CPU Usage by [[by]]"
+                    }
+                 ],
+                "title": "OS Information"
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "collapsible_row_panel",
+                        "repeat": "index",
+                        "collapsed": false,
+                        "title": "$index"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "panels": [
+                    {
+                        "class": "graph_panel",
+                        "targets": [
+                            {
+                                "expr": "avg(index_size{index_name=\"$index\", instance=~\"$node\"}) by ([[by]])",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "refId": "A",
+                                "legendFormat": "{{keyspace}} {{index_name}}"
+                            }
+                        ],
+                        "span": 2,
+                        "title": "Index Size"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "targets": [
+                            {
+                                "expr": "avg(rate(index_size{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]])",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "refId": "A",
+                                "legendFormat": "{{keyspace}} {{index_name}}"
+                            }
+                        ],
+                        "span": 2,
+                        "title": "Index build rate"
+                    },
+                    {
+                        "class": "ops_panel",
+                        "targets": [
+                            {
+                                "expr": "avg(rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]])",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "refId": "A",
+                                "legendFormat": "{{instance}} {{keyspace}} {{index_name}}"
+                            }
+                        ],
+                        "span": 2,
+                        "title": "Index requests rate"
+                    },
+                    {
+                        "class": "seconds_panel",
+                        "targets": [
+                            {
+                                "expr": "avg(rate(request_latency_seconds_sum{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])/rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]])",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "refId": "A",
+                                "legendFormat": "{{instance}} {{keyspace}} {{index_name}}"
+                            }
+                        ],
+                        "span": 2,
+                        "title": "Average Latency"
+                    },
+                    {
+                        "class": "seconds_panel",
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.95, sum(rate(request_latency_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "refId": "A",
+                                "legendFormat": "{{instance}} {{keyspace}} {{index_name}}"
+                            }
+                        ],
+                        "span": 2,
+                        "title": "P95 Latency"
+                    },
+                    {
+                        "class": "seconds_panel",
+                        "targets": [
+                            {
+                                "expr": "histogram_quantile(0.99, sum(rate(request_latency_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "refId": "A",
+                                "legendFormat": "{{instance}} {{keyspace}} {{index_name}}"
+                            }
+                        ],
+                        "span": 2,
+                        "title": "P99 Latency"
+                    }
+
+                ],
+                "title": "Index Row"
+            },
+            {
+                "class": "monitoring_version_row"
+            }
+        ],
+        "annotations": {
+            "list": []
+        },
+        "templating": {
+            "list": [
+                {
+                    "class": "by_template_var",
+                    "current": {
+                        "tags": [],
+                        "text": "Cluster",
+                        "value": "cluster"
+                    },
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "Cluster",
+                            "value": "cluster"
+                        },
+                        {
+                            "selected": false,
+                            "text": "Node",
+                            "value": "instance"
+                        }
+                    ],
+                   "query":"Cluster : cluster, Node : instance"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "Node",
+                    "name": "node",
+                    "allValue": "..*",
+                    "query": "label_values(node_memory_MemAvailable_bytes{job=\"vector_search_os\"}, instance)"
+                },
+                {
+                    "class": "template_variable_all",
+                    "label": "index",
+                    "name": "index",
+                    "query": "label_values(index_size{},index_name)",
+                    "sort": 3
+                },
+                {
+                    "class": "template_variable_custom",
+                    "current": {
+                        "text": "__SCYLLA_VERSION_DOT__",
+                        "value": "__SCYLLA_VERSION_DOT__"
+                    },
+                    "name": "scylla_version",
+                    "options": [
+                        {
+                            "selected": true,
+                            "text": "__SCYLLA_VERSION_DOT__",
+                            "value": "__SCYLLA_VERSION_DOT__"
+                        }
+                    ],
+                    "query": "__SCYLLA_VERSION_DOT__"
+                },
+                {
+                    "class": "monitor_version_var"
+                }
+            ]
+        },
+        "tags": [
+            "__SCYLLA_VERSION_DOT__"
+        ],
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "title": "Vector Search",
+        "overwrite": true,
+        "version": 3
+    }
+}
