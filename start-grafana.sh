@@ -333,13 +333,42 @@ if [[ -z "${DOCKER_HOST}" ]]; then
 fi
 
 if [ ! -z $RUN_RENDERER ]; then
-	if [ ! -z "$is_podman" ]; then
-		HOST_ADDRESS=$(hostname -I | awk '{print $1}')
-	else
-		HOST_ADDRESS=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+	# Extract network name from DOCKER_PARAM if it's a custom network (not host)
+	NETWORK_NAME=""
+	if [[ $DOCKER_PARAM =~ --net=([^[:space:]]+) ]] || [[ $DOCKER_PARAM =~ --network=([^[:space:]]+) ]]; then
+		NETWORK_NAME="${BASH_REMATCH[1]}"
 	fi
-	RENDERING_SERVER_URL=$(./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS -D "$DOCKER_PARAM")
-	GRAFANA_ENV_COMMAND+=(-e GF_RENDERING_SERVER_URL=http://$HOST_ADDRESS:8081/render -e GF_RENDERING_CALLBACK_URL=http://$HOST_ADDRESS:$GRAFANA_PORT/)
+
+	# Determine the address to use for communication
+	if [[ ! -z "$NETWORK_NAME" && "$NETWORK_NAME" != "host" ]]; then
+		# Using custom network - use container names and internal port for communication
+		RENDERER_ADDRESS="agrafrender"
+		GRAFANA_ADDRESS="$GRAFANA_NAME"
+		GRAFANA_CALLBACK_PORT="3000"  # Container internal port
+	else
+		# Using host network or default bridge - use IP addresses
+		if [ ! -z "$is_podman" ]; then
+			HOST_ADDRESS=$(hostname -I | awk '{print $1}')
+		else
+			HOST_ADDRESS=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+		fi
+		RENDERER_ADDRESS="$HOST_ADDRESS"
+		GRAFANA_ADDRESS="$HOST_ADDRESS"
+		GRAFANA_CALLBACK_PORT="$GRAFANA_PORT"  # External/mapped port
+	fi
+
+	./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS -D "$DOCKER_PARAM"
+
+	# Extract GF_SERVER_ROOT_URL if set to include in callback URL
+	# This ensures the renderer accesses Grafana at the same path the JavaScript expects
+	SERVER_ROOT_PATH=""
+	if [[ " ${GRAFANA_ENV_COMMAND[@]} " =~ " -e GF_SERVER_ROOT_URL="([^[:space:]]+) ]]; then
+		SERVER_ROOT_URL_VALUE="${BASH_REMATCH[1]}"
+		# Extract path from URL (remove trailing slash if present)
+		SERVER_ROOT_PATH="${SERVER_ROOT_URL_VALUE%/}"
+	fi
+
+	GRAFANA_ENV_COMMAND+=(-e GF_RENDERING_SERVER_URL=http://$RENDERER_ADDRESS:8081/render -e GF_RENDERING_CALLBACK_URL=http://$GRAFANA_ADDRESS:$GRAFANA_CALLBACK_PORT$SERVER_ROOT_PATH/)
 fi
 
 if [ -z $STACK ]; then
@@ -387,7 +416,7 @@ if [ ! "$QUICK_STARTUP" = "1" ]; then
     until $(curl --output /dev/null -f --silent http://localhost:$GRAFANA_PORT/api/org) || [ $TRIES -eq $RETRIES ]; do
     	printf '.'
     	((TRIES = TRIES + 1))
-    	sleep 1 
+    	sleep 1
     done
 fi
 echo
