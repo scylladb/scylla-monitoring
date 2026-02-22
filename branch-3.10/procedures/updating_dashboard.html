@@ -1,0 +1,1059 @@
+
+
+<!DOCTYPE html>
+<html class="no-js" lang="en" style="visibility: hidden;">
+    
+    
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width initial-scale=1" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>
+             Adding and Modifying Dashboards | ScyllaDB Docs 
+        </title>
+        <meta name="description" content="Scylla Monitoring Stack is a full stack for Scylla monitoring and alerting. The stack contains open source tools including Prometheus and Grafana, as well as custom Scylla dashboards and tooling." />
+        <link rel="icon" href="../_static/img/favicon.ico" type="image/x-icon" />
+        <link rel="icon" href="../_static/img/favicon-32x32.png" sizes="32x32" />
+        <link rel="icon" href="../_static/img/favicon-228x228.png" sizes="192x192" />
+        <link rel="apple-touch-icon" href="../_static/img/favicon-228x228.png" />
+        <meta name="msapplication-TileImage" href="../_static/img/favicon-228x228.png" />
+
+        
+            
+            
+        
+
+        
+            
+            <link rel="canonical" href="https://monitoring.docs.scylladb.com/stable/procedures/updating_dashboard.html"/>
+        
+
+        <link rel="author" href="mailto:info@scylladb.com" />
+
+        
+            
+        <!-- increase expertrec loading priority-->
+        <link rel="dns-prefetch" href="https://cse.expertrec.com">
+
+        <!-- increase font loading priority -->
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="preload" as="style"
+              href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" />
+
+        <!-- async CSS -->
+        <link rel="stylesheet" media="print" onload="this.onload=null;this.removeAttribute('media');"
+              href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" />
+
+        <!-- no-JS fallback -->
+        <noscript>
+            <link rel="stylesheet"
+                  href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" />
+        </noscript>
+
+        
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/biel-search@latest/dist/biel-search/biel-search.css">
+            <script type="module" src="https://cdn.jsdelivr.net/npm/biel-search@latest/dist/biel-search/biel-search.esm.js"></script>
+        
+
+        
+            
+                <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+            
+        
+            
+                <link rel="stylesheet" type="text/css" href="../_static/css/main.css?v=0ebb4bd5" />
+            
+        
+            
+                <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css?v=226d88b4" />
+            
+        
+            
+                <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+            
+        
+    
+        
+        
+            
+        <script type="text/javascript" src="../_static/js/runtime.bundle.js"></script>
+        <script type="text/javascript" src="../_static/js/main.bundle.js"></script>
+        
+            
+                <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+            
+        
+            
+                <script src="../_static/doctools.js?v=9a2dae69"></script>
+            
+        
+            
+                <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+            
+        
+            
+                <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+            
+        
+            
+                <script src="../_static/copybutton.js?v=f281be69"></script>
+            
+        
+    
+            
+                <!-- Local meta tags -->
+            
+            
+                <!-- Google Tag Manager docs -->
+<script>
+    (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+            "gtm.start": new Date().getTime(),
+            event: "gtm.js"
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s),
+            dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, "script", "dataLayer", "GTM-54NWVS4");
+</script>
+<!-- End Google Tag Manager -->
+
+<!-- Google Tag Manager global -->
+<script>
+    (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+            "gtm.start": new Date().getTime(),
+            event: "gtm.js"
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s),
+            dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, "script", "dataLayer", "GTM-T8P2JP");
+</script>
+<!-- End Google Tag Manager -->
+
+<!-- Expertrec -->
+<script>
+    var id = "e2077224-9ccf-11e9-a0c9-0242ac130002";
+    var ci_search = document.createElement("script");
+    ci_search.type = "text/javascript";
+    ci_search.async = true;
+    ci_search.src = "https://cse.expertrec.com/api/js/ci_common.js?id=" + id;
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(ci_search, s);
+</script>
+<!-- End Expertrec -->
+            
+        
+    </head>
+
+    <body class="brand-product">
+        <section class="promo-banner  promo-banner--hide" style="display: none;">
+    <div class="promo-banner-wrapper">
+        <div class="promo-banner__content">
+            
+            <div class="promo-banner__title">ScyllaDB University Live | Free Virtual Training Event</div>
+            <a class="promo-banner__button button button--reverse" href="#"
+               target="_blank" rel="noopener noreferrer">Learn more</a>
+        </div>
+        <button class="promo-banner__close">
+            <i class="icon-cancel"></i>
+        </button>
+    </div>
+</section>
+        <header class="header">
+    <div class="header-logo">
+        <a class="header-logo__img" href="https://scylladb.com/">
+            <img src="../_static/img/scylladb-logo-horizontal.svg" alt="ScyllaDB Documentation Logo" />
+        </a>
+        <span class="header-logo__bar"></span>
+        <a class="header-logo__text" href="https://docs.scylladb.com/">
+            Documentation
+        </a>
+    </div>
+    <div class="header-navigation">
+        <ul class="dropdown menu scylla-dropdown scylla-dropdown--header" data-dropdown-menu>
+            <li class="scylla-dropdown__item">
+                <a href="#" class="scylla-dropdown__title">Deployments <i class="chevron icon-arrow-dropdown"></i></a>
+                <ul class="menu scylla-dropdown__content">
+                    <li>
+                        <a href="https://docs.scylladb.com/scylla-cloud/">
+                            <i class="icon-docs-cloud"></i>Cloud</a>
+                    </li>
+                    <li>
+                        <a href="https://docs.scylladb.com/manual/">
+                            <i class="icon-server"></i>Server</a>
+                    </li>
+                </ul>
+            </li>
+            <li class="scylla-dropdown__item">
+                <a href="#" class="scylla-dropdown__title">Tools <i class="chevron icon-arrow-dropdown"></i></a>
+                <ul class="menu scylla-dropdown__content">
+                    <li>
+                        <a href="https://manager.docs.scylladb.com/">
+                            <i class="icon-docs-manager"></i>ScyllaDB Manager</a>
+                    </li>
+                    <li>
+                        <a href="https://monitoring.docs.scylladb.com/">
+                            <i class="icon-docs-monitoring"></i>ScyllaDB
+                            Monitoring Stack</a>
+                    </li>
+                    <li>
+                        <a href="https://operator.docs.scylladb.com/">
+                            <i class="icon-docs-operator"></i>ScyllaDB Operator
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="scylla-dropdown__item">
+                <a href="#" class="scylla-dropdown__title">Drivers <i class="chevron icon-arrow-dropdown"></i></a>
+                <ul class="menu scylla-dropdown__content">
+                    <li>
+                        <a href="https://docs.scylladb.com/stable/drivers/cql-drivers">
+                            <i class="icon-docs-nsql-guides"></i>CQL Drivers
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://docs.scylladb.com/stable/drivers/dynamo-drivers">
+                            <i class="icon-docs-alternator"></i>DynamoDB Drivers
+                        </a>
+
+                        <li>
+                            <a href="https://docs.scylladb.com/stable/versioning/driver-support">
+                                <i class="icon-docs-blog"></i>Supported Driver Versions
+                            </a>
+                        </li>
+                    </li>
+                </ul>
+            </li>
+            <li class="scylla-dropdown__item">
+                <a href="#" class="scylla-dropdown__title">Resources
+                    <i class="chevron icon-arrow-dropdown"></i></a>
+                <ul class="menu scylla-dropdown__content">
+                    <li>
+                        <a href="https://university.scylladb.com">
+                            <i class="icon-university"></i>
+                            ScyllaDB University
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://forum.scylladb.com">
+                            <i class="icon-docs-community"></i>
+                            Community Forum
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://docs.scylladb.com/stable/get-started/develop-with-scylladb/tutorials-example-projects.html">
+                            <i class="icon-docs-training"></i>
+                            Tutorials
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <div class="header-button">
+            <a href="https://docs.scylladb.com/manual/stable/getting-started/installation-common/scylla-web-installer.html" class="button"><i class="icon-download me-2"></i> Install</a>
+        </div>
+    </div>
+    <div class="header-search-box">
+        <i class="dark-theme-toggler icon-theme"></i>
+        <div class="search-box">
+            <ci-search></ci-search>
+        </div>
+        
+            <biel-button class="header-ask-ai" project="ddfdo8m94k"
+                         header-title="ScyllaDB chatbot (beta)"
+                         button-position="default"
+                         modal-position="bottom-right"
+                         button-style="dark">
+                Ask AI
+            </biel-button>
+        
+    </div>
+    <div class="side-nav-toggle">
+    <i class="dark-theme-toggler icon-theme"></i>
+    <div class="side-nav-toggle__button" data-toggle="side-nav">
+        <i class="icon-menu"></i>
+    </div>
+</div>
+</header>
+        <div class="title"></div>
+        <section
+            class="layout  layout--sidebar layout--has-secondary-sidebar ">
+            <div class="content large-order-2">
+                
+                    <div class="pre-content">
+                        <div class="breadcrumbs">
+    <span class="bread__item">
+        <a href="https://docs.scylladb.com"
+           class="bread__highlight">
+            <i class="icon-home"></i> ScyllaDB Docs
+        </a>
+    </span>
+    <span class="bread__item">
+        <a href="../index.html"
+           class="bread__highlight">
+            ScyllaDB Monitoring
+        </a>
+    </span>
+    
+        <span class="bread__item">
+            <a href="index.html" class="bread__highlight">
+                Scylla Monitoring Stack Procedures
+            </a>
+        </span>
+    
+    <span class="bread__item bread__item--last">Adding and Modifying Dashboards</span>
+</div>
+                    </div>
+                
+                
+                    <div class="sidebar-right-layout">
+                        <div class="body-container">
+                
+
+                <div class="content-body">
+                    
+                        
+    <div class="admonition caution">
+        <p class="admonition-title">Caution</p>
+        <p>
+            
+                You're viewing documentation for a previous version of ScyllaDB Monitoring.
+            
+            <a href="../../stable/index.html">Switch to the latest stable version.</a>
+        </p>
+    </div>
+
+                    
+
+                    <section id="adding-and-modifying-dashboards">
+<h1>Adding and Modifying Dashboards<a class="headerlink" href="#adding-and-modifying-dashboards" title="Link to this heading">¶</a></h1>
+<p>This document explains how to update or create Grafana dashboards for the Scylla Monitoring Stack.</p>
+<p>It covers dashboard templates and how to modify them.</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#general-limitations" id="id1">General Limitations</a></p>
+<ul>
+<li><p><a class="reference internal" href="#consistency-between-restarts" id="id2">Consistency Between Restarts</a></p></li>
+<li><p><a class="reference internal" href="#consistency-between-upgrades" id="id3">Consistency Between Upgrades</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#using-templated-dashboards" id="id4">Using Templated Dashboards</a></p>
+<ul>
+<li><p><a class="reference internal" href="#the-template-class-system" id="id5">The Template Class System</a></p></li>
+<li><p><a class="reference internal" href="#panel-example" id="id6">Panel Example</a></p></li>
+<li><p><a class="reference internal" href="#grafana-formats-and-layouts" id="id7">Grafana Formats and Layouts</a></p></li>
+<li><p><a class="reference internal" href="#generating-the-dashboards-from-templates-generate-dashboards-sh" id="id8">Generating the dashboards from templates (generate-dashboards.sh)</a></p></li>
+<li><p><a class="reference internal" href="#validation" id="id9">Validation</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="general-limitations">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">General Limitations</a><a class="headerlink" href="#general-limitations" title="Link to this heading">¶</a></h2>
+<p>Scylla Monitoring Stack uses Grafana for its dashboards.
+The dashboards are provisioned from files and are stored in the Grafana internal storage.
+There are two potential consistency issues, covered below.</p>
+<section id="consistency-between-restarts">
+<h3><a class="toc-backref" href="#id2" role="doc-backlink">Consistency Between Restarts</a><a class="headerlink" href="#consistency-between-restarts" title="Link to this heading">¶</a></h3>
+<p>By default, the Grafana internal storage is within the container. That means that whenever you restart the Scylla Monitoring Stack (explicitly when restarting Grafana) any local changes will not be persisted.
+If you are making changes and saving changes from the GUI make sure to configure an external directory for Grafana.</p>
+</section>
+<section id="consistency-between-upgrades">
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">Consistency Between Upgrades</a><a class="headerlink" href="#consistency-between-upgrades" title="Link to this heading">¶</a></h3>
+<p>As mentioned earlier, the dashboards are provisioned from files, this means that when the files are changed, any changes stored locally will be overridden. For this reason, do not make permanent changes to a dashboard, or your changes eventually will be lost.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p> You can save a dashboard change you made from the GUI, but it can be overridden. This should be avoided.</p>
+</div>
+<p>At large, we suggest maintaining your dashboards as files, as Scylla Monitoring does.</p>
+</section>
+</section>
+<section id="using-templated-dashboards">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Using Templated Dashboards</a><a class="headerlink" href="#using-templated-dashboards" title="Link to this heading">¶</a></h2>
+<p>Scylla Monitoring uses dashboard templates as we found the Grafana dashboards in JSON format to be too verbose to be maintainable.</p>
+<p>Each element in the dashboard file (Each JSON  object) contains all of its attributes and values.</p>
+<p>For example a typical graph panel would look like this:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;aliasColors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">    </span><span class="nt">&quot;bars&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;datasource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prometheus&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;editable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;fill&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;grid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;threshold1&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;threshold1Color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rgba(216, 200, 27, 0.27)&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;threshold2&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;threshold2Color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rgba(234, 112, 112, 0.22)&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;gridPos&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;h&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;w&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;isNew&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;legend&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;avg&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;current&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;show&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;total&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;values&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;lines&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;linewidth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;links&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">&quot;nullPointMode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;connected&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;percentage&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;pointradius&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;points&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;renderer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flot&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;seriesOverrides&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;span&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;stack&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;steppedLine&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;targets&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;expr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sum(node_filesystem_avail) by (instance)&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;intervalFactor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;legendFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;refId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;step&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;timeFrom&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;timeShift&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Available Disk Size&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;tooltip&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;msResolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;shared&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;sort&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;value_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cumulative&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;transparent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;graph&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;xaxis&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;show&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;yaxes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;percent&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;logBase&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">101</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;show&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;short&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;logBase&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;max&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;min&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;show&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>As you can imagine, most panels would have similar values.</p>
+<p>To reduce the redundancy of the Grafana JSON format, we added dashboard templates.</p>
+<section id="the-template-class-system">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">The Template Class System</a><a class="headerlink" href="#the-template-class-system" title="Link to this heading">¶</a></h3>
+<p>The Scylla Monitoring Stack dashboard templates use a <code class="docutils literal notranslate"><span class="pre">class</span></code> attribute that can be added to any JSON object in a template file.
+The different classes are defined in a file.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">class</span></code> system resembles CSS classes. It is hierarchical, so a <code class="docutils literal notranslate"><span class="pre">class</span></code> type definition can have a <code class="docutils literal notranslate"><span class="pre">class</span></code> attribute and
+it would inherit that class attributes, the inherited class can add or override inherited attributes.</p>
+<p>In the template file, you can also add or override attributes.</p>
+<p>The Scylla Monitor generation script, uses the <cite>types.json</cite> file and a template file and creates a dashboard.</p>
+<p>When generating dashboards, each class will be replaced by its definition.</p>
+<p>For example, a row in the <cite>type.json</cite> is defined as:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w"> </span><span class="nt">&quot;base_row&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">     </span><span class="nt">&quot;collapse&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">     </span><span class="nt">&quot;editable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w"> </span><span class="p">},</span>
+<span class="w"> </span><span class="nt">&quot;row&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">     </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;base_row&quot;</span><span class="p">,</span>
+<span class="w">     </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;250px&quot;</span>
+<span class="w"> </span><span class="p">}</span>
+<span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Will be used like in a template:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">     </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;row&quot;</span><span class="p">,</span>
+<span class="w">     </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;150px&quot;</span><span class="p">,</span>
+<span class="w">     </span><span class="nt">&quot;panels&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">     </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>And the output will be:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">     </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;row&quot;</span><span class="p">,</span>
+<span class="w">     </span><span class="nt">&quot;collapse&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">     </span><span class="nt">&quot;editable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">     </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;150px&quot;</span><span class="p">,</span>
+<span class="w">     </span><span class="nt">&quot;panels&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+
+<span class="w">     </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>We can see that the template added the <code class="docutils literal notranslate"><span class="pre">panels</span></code> attribute and that it overrides the <code class="docutils literal notranslate"><span class="pre">height</span></code> attribute.</p>
+</section>
+<section id="panel-example">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Panel Example</a><a class="headerlink" href="#panel-example" title="Link to this heading">¶</a></h3>
+<p>Consider the following example that defines a row inside a dashboard with a graph
+panel for the available disk size.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">     </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;row&quot;</span><span class="p">,</span>
+<span class="w">     </span><span class="nt">&quot;panels&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">         </span><span class="p">{</span>
+<span class="w">             </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bytes_panel&quot;</span><span class="p">,</span>
+<span class="w">             </span><span class="nt">&quot;span&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">             </span><span class="nt">&quot;targets&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                 </span><span class="p">{</span>
+<span class="w">                     </span><span class="nt">&quot;expr&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sum(node_filesystem_avail) by (instance)&quot;</span><span class="p">,</span>
+<span class="w">                     </span><span class="nt">&quot;intervalFactor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">                     </span><span class="nt">&quot;legendFormat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">                     </span><span class="nt">&quot;metric&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">                     </span><span class="nt">&quot;refId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A&quot;</span><span class="p">,</span>
+<span class="w">                     </span><span class="nt">&quot;step&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">                 </span><span class="p">}</span>
+<span class="w">             </span><span class="p">],</span>
+<span class="w">             </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Available Disk Size&quot;</span>
+<span class="w">         </span><span class="p">}</span>
+<span class="w">     </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>In the example, the <cite>bytes_panel</cite> class generates a graph with bytes as units (that would mean that your
+<cite>Y</cite> axis units would adjust themselves to make the graph readable (i.e. GB, MB, bytes, etc’).</p>
+<p>You can also see that the <cite>span</cite> attribute is overridden to set the panel size.</p>
+<p>To get a grasp of the difference, take a look at the Grafana panel example and see how it looks originally.</p>
+</section>
+<section id="grafana-formats-and-layouts">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Grafana Formats and Layouts</a><a class="headerlink" href="#grafana-formats-and-layouts" title="Link to this heading">¶</a></h3>
+<p>The Grafana layout used to be based on rows, where each row contained multiple panels.
+Each row would have a total of 12 panels and if the total span of the panels was larger than 12, it would
+break them into multiple lines. This is no longer the case.</p>
+<p>Starting from  Grafana version 5.0 and later, rows were no longer supported, they were replaced with a layout that uses
+absolute positions (i.e. X,Y, height, width).</p>
+<p>The server should be backward compatible, but we’ve found it had issues with parsing it correctly.
+More so, absolute positions are impossible to get right when done by hand.</p>
+<p>To overcome these issues, the dashboard generation script will generate the dashboards in the Grafana version 5.0 format.
+In the transition, rows will be replaced with a calculated absolute position.</p>
+<p>The panel’s height will be taken from their row. The <cite>span</cite> attribute is still supported as is row height.</p>
+<p>You can use the <cite>gridPos</cite> attribute which is a Grafana 5.0 format, but unlike Grafana, you can use partial attributes.</p>
+<p><cite>gridPos</cite> has the following attributes:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">   </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;w&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;h&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
+<span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+<p>When using Scylla’s template you don’t need to supply all of the attributes, so for example to specify that a row is 2 units high you can use:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">   </span><span class="nt">&quot;gridPos&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;h&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="generating-the-dashboards-from-templates-generate-dashboards-sh">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Generating the dashboards from templates (generate-dashboards.sh)</a><a class="headerlink" href="#generating-the-dashboards-from-templates-generate-dashboards-sh" title="Link to this heading">¶</a></h3>
+<section id="prerequisite">
+<h4>Prerequisite<a class="headerlink" href="#prerequisite" title="Link to this heading">¶</a></h4>
+<p>Python 2.7</p>
+<p><cite>make_dashboards.py</cite> is a utility that generates dashboards from templates or helps you update the templates when working in reverse mode (the <cite>-r</cite> flag).</p>
+<p>Use the -h flag to get help information.</p>
+<p>You can use the <cite>make_dashboards.py</cite> to generate a single dashboard, but it’s usually easier to use the
+<cite>generate-dashboards.sh</cite> wrapper.</p>
+<p>When you’re done changing an existing dashboard template, run the <cite>generate-dashboards.sh</cite> with the current version,
+to replace your existing dashboards.</p>
+<p>For example, if you are changing a dashboard in Scylla Enterprise version 2020.1 run:</p>
+<p><code class="docutils literal notranslate"><span class="pre">.\generate-dashboards.sh</span> <span class="pre">-v</span> <span class="pre">2020.1</span></code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>generate-dashboards.sh will update the dashboards in place, there is no need for a restart for the changes to take effect, just refresh the dashboard.</p>
+</div>
+</section>
+</section>
+<section id="validation">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Validation</a><a class="headerlink" href="#validation" title="Link to this heading">¶</a></h3>
+<p>After making changes to a template, run the <code class="docutils literal notranslate"><span class="pre">generate_generate-dashboards.sh</span></code> and make sure that it ran without any errors.</p>
+<p>Refresh your browser for changes to take effect.
+Make sure that your panels contain data, if not, maybe there is something wrong with your <code class="docutils literal notranslate"><span class="pre">expr</span></code> attribute.</p>
+</section>
+</section>
+</section>
+
+                </div>
+                
+                    <div class="post-content">
+                        
+    <div class="feedback-container">
+        <p class="feedback-container__title">Was this page helpful?</p>
+        <span data-tooltip tabindex="1" title="Yes" data-position="top">
+            <button class="feedback-container__button" id="feedback-positive">
+                <i class="feedback-container__icon icon-docs-thumbs-up"></i>
+            </button>
+        </span>
+        <span data-tooltip tabindex="1" title="No" data-position="top">
+            <button class="feedback-container__button" id="feedback-negative">
+                <i class="feedback-container__icon icon-docs-thumbs-down"></i>
+            </button>
+        </span>
+        <div class="feedback-container__message" id="feedback-message"></div>
+    </div>
+
+    <script>
+        function resetFeedbackButtonActive() {
+            const feedbackButtons = document.getElementsByClassName('feedback-container__button');
+            for (let i = 0; i < feedbackButtons.length; i++) {
+                feedbackButtons[i].classList.remove('active');
+            }
+        }
+
+        function showMessage(liked) {
+            const feedbackMessage = document.getElementById('feedback-message');
+            const themeGithubRepository = true;
+            let message = 'Great! Thanks for your feedback.';
+            if (themeGithubRepository && !liked) {
+                message = "Thanks for your feedback! Please don't hesitate to <a href='https://github.com/scylladb/scylla-monitoring/issues/new?title=docs:%20Issue on page Adding and Modifying Dashboards&&body=I%20would%20like%20to%20report%20an%20issue%20on%20page%20https://monitoring.docs.scylladb.com/branch-3.10/procedures/updating_dashboard%0A%0A%23%23%23%20Problem%0A%0A%23%23%23%20%20Suggest%20a%20fix&labels=documentation'>create an issue</a> if you have any suggestions on how we can improve.";
+            }
+            feedbackMessage.innerHTML = message;
+        }
+
+        function sendGaEvent(liked) {
+            const event_label = liked ? "positive" : "negative";
+            const event = "feedback_" + event_label;
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                'event': event,
+            });
+        }
+
+        const positiveFeebackButton = document.getElementById('feedback-positive');
+        const negativeFeedbackButton = document.getElementById('feedback-negative');
+
+        positiveFeebackButton.addEventListener('click', function() {
+            resetFeedbackButtonActive();
+            sendGaEvent(true);
+            showMessage(true);
+            positiveFeebackButton.classList.add('active');
+        });
+
+        negativeFeedbackButton.addEventListener('click', function() {
+            resetFeedbackButtonActive();
+            sendGaEvent(false);
+            showMessage(false);
+            negativeFeedbackButton.classList.add('active');
+        });
+    </script>
+
+                        <div class="content-navigation">
+    <div class="navigation navigation--prev">
+        
+            <a class="navigation__link" href="alerts/alerting.html">
+                <button class="navigation__button">
+                    <i class="icon-chevron-left"></i>
+                </button>
+                <div class="navigation__title">
+                    <span class="colored">PREVIOUS</span> <br />Alerting
+                </div>
+            </a>
+        
+    </div>
+    <div class="navigation navigation--next">
+        
+            <a class="navigation__link" href="../upgrade/index.html">
+                <div class="navigation__title">
+                    <span class="colored">NEXT</span> <br />Upgrade Scylla Monitoring Stack
+                </div>
+                <button class="navigation__button">
+                    <i class="icon-chevron-right"></i>
+                </button>
+            </a>
+        
+    </div>
+</div>
+                        <!-- Post content text -->
+                    </div>
+                
+
+                
+                    </div>
+                    <div class="sidebar-right large-order-3">
+                        <div class="secondary-side-nav custom-scroll-bar">
+    
+    <ul class="contribute">
+        <li class="contribute__item">
+            <a class="button button-sm" href="https://github.com/scylladb/scylla-monitoring/issues/new?title=docs:%20Issue on page Adding and Modifying Dashboards&&body=I%20would%20like%20to%20report%20an%20issue%20on%20page%20https://monitoring.docs.scylladb.com/branch-3.10/procedures/updating_dashboard%0A%0A%23%23%23%20Problem%0A%0A%23%23%23%20%20Suggest%20a%20fix&labels=documentation"
+               target="_blank">
+                <i class="icon-github" aria-hidden="true"></i>Create an issue
+            </a>
+        </li>
+        
+            <li class="contribute__item">
+                <a class="button button-sm" href="https://github.com/scylladb/scylla-monitoring/edit/master/docs/source/procedures/updating_dashboard.rst"
+                   target="_blank">
+                    <i class="icon-edit" aria-hidden="true"></i>Edit this page
+                </a>
+            </li>
+        
+    </ul>
+
+    
+        <div class="secondary-side-nav__content">
+            <p class="topic-title">On this page</p>
+            <ul>
+<li><a class="reference internal" href="#">Adding and Modifying Dashboards</a><ul>
+<li><a class="reference internal" href="#general-limitations">General Limitations</a><ul>
+<li><a class="reference internal" href="#consistency-between-restarts">Consistency Between Restarts</a></li>
+<li><a class="reference internal" href="#consistency-between-upgrades">Consistency Between Upgrades</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-templated-dashboards">Using Templated Dashboards</a><ul>
+<li><a class="reference internal" href="#the-template-class-system">The Template Class System</a></li>
+<li><a class="reference internal" href="#panel-example">Panel Example</a></li>
+<li><a class="reference internal" href="#grafana-formats-and-layouts">Grafana Formats and Layouts</a></li>
+<li><a class="reference internal" href="#generating-the-dashboards-from-templates-generate-dashboards-sh">Generating the dashboards from templates (generate-dashboards.sh)</a><ul>
+<li><a class="reference internal" href="#prerequisite">Prerequisite</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#validation">Validation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+    
+</div>
+                    </div>
+                    </div>
+                
+            </div>
+            <div class="sidebar-left  large-order-1">
+                
+                    
+                        <div id="side-nav" class="side-nav custom-scroll-bar" data-closable data-toggler=".show">
+    <button class="collapsible-button">
+        <i class="icon-docs-menu-collapse"></i>
+    </button>
+    <div class="side-nav-content custom-scroll-bar">
+        <div class="side-nav__title">
+            <a href="../index.html">ScyllaDB Monitoring</a>
+        </div>
+        <div class="side-nav__search">
+            <div class="search-box">
+                <ci-search></ci-search>
+            </div>
+        </div>
+        <div class="side-nav__versions"><ul class="dropdown menu scylla-dropdown scylla-dropdown--versions" data-dropdown-menu>
+    <li class="scylla-dropdown__item">
+        <a class="scylla-dropdown__title" href="#">
+            
+                3.10
+            
+            <i class="chevron icon-docs-chevron-right"></i>
+        </a>
+        <ul class="menu scylla-dropdown__content">
+            
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.14/index.html">4.14</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../stable/index.html">4.13</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.12/index.html">4.12</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.11/index.html">4.11</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.10/index.html">4.10</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.9/index.html">4.9</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.8/index.html">4.8</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.7/index.html">4.7</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.6/index.html">4.6</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.5/index.html">4.5</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.4/index.html">4.4</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.3/procedures/updating_dashboard.html">4.3</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.2/procedures/updating_dashboard.html">4.2</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.1/procedures/updating_dashboard.html">4.1</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.0/procedures/updating_dashboard.html">4.0</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="updating_dashboard.html">3.10</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-3.9/procedures/updating_dashboard.html">3.9</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-3.8/procedures/updating_dashboard.html">3.8</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-3.7/procedures/updating_dashboard.html">3.7</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-3.6/index.html">3.6</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-3.5/index.html">3.5</a>
+                    </li>
+                
+            
+            
+        </ul>
+    </li>
+</ul></div>
+        <div class="side-nav__content">
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../install/index.html">Download and Install</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label for="toctree-checkbox-1"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l2"><a class="reference internal" href="../install/monitoring_stack.html">Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install/start_all.html">The start-all.sh script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install/monitor_without_docker.html">Deploy without Docker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install/docker_compose.html">Docker Compose</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install/min-prod-hw.html">System Recommendations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install/thanos.html">Using Thanos</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../use-monitoring/index.html">User Guide</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label for="toctree-checkbox-2"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l2"><a class="reference internal" href="../use-monitoring/cql_optimization.html">CQL Optimization Dashboard</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../use-monitoring/advisor/index.html">Advisor</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label for="toctree-checkbox-3"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlAllowFiltering.html">Some queries use ALLOW FILTERING</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlCLAll.html">Some queries use Consistency Level: ALL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlCLAny.html">Some queries use Consistency Level: ANY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlNoTokenAware.html">Some queries are not token-aware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlNonPaged.html">Some SELECT queries are non-paged</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlNonPrepared.html">Some queries are non-prepared</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlReverseOrder.html">Some queries use reverse order</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/heavyCompaction.html">Compaction takes lots of memory and CPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/nodeCLErrors.html">Some operation failed due to unsatisfied consistency level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/nodeIOErrors.html">I/O Errors can indicate a node with a faulty disk</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/nodeLocalErrors.html">Some operations failed on the replica side</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/nonBalancedcqlTraffic.html">CQL queries are not balanced among shards</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/preparedCacheEviction.html">Prepared statements cache eviction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/systemOverload.html">System Overload</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Procedures</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label for="toctree-checkbox-4"><i class="icon-chevron-right"></i></label><div class="break"></div><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="alerts/index.html">Alert Manager</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label for="toctree-checkbox-5"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l3"><a class="reference internal" href="alerts/alerting.html">Alerting</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Adding and Modifying Dashboards</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://docs.scylladb.com/upgrade/upgrade-monitor/">Upgrade Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../upgrade/index.html">Upgrade</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label for="toctree-checkbox-6"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-3.x-to-monitoring-3.y.html">Monitoring 3.x to 3.y</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-2.x-to-monitoring-3.y.html">Monitoring 2.x to 3.y</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-2.x-to-monitoring-2.y.html">Monitoring 2.x to 2.y</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-1.x-to-monitoring-2.x.html">Monitoring 1.x to 2.x</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../troubleshooting/index.html">Troubleshooting</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label for="toctree-checkbox-7"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting/monitor_troubleshoot.html">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/">Troubleshooting Guide for Scylla Manager and Scylla Monitor Integration</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">Reference</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label for="toctree-checkbox-8"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/matrix.html">Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/monitoring_apis.html">Interfaces</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/scylladb/scylla-monitoring/">GitHub Project</a></li>
+</ul>
+
+        </div>
+    </div>
+</div>
+                    
+                
+            </div>
+
+        </section>
+
+        <footer class="footer">
+    <div class="footer-group">
+        <div class="footer-top">
+            <a class="footer-logo" href="https://www.scylladb.com"></a>
+            <div class="footer-links">
+                <a class="footer-links__link" href="https://docs.scylladb.com/" target="_blank">Docs</a>
+                <a class="footer-links__link" href="https://docs.scylladb.com/stable/get-started/develop-with-scylladb/tutorials-example-projects.html" target="_blank">Tutorials</a>
+                <a class="footer-links__link" href="https://university.scylladb.com/" target="_blank">University</a>
+                <a class="footer-links__link" href="https://www.scylladb.com/company/contact-us/"
+                   target="_blank">Contact Us</a>
+                <a class="footer-links__link" href="https://www.scylladb.com/company/" target="_blank">About Us</a>
+            </div>
+            <div class="footer-actions">
+                <a class="footer-actions__link" href="http://slack.scylladb.com/" target="_blank">
+                    <span data-tooltip tabindex="1" title="User Slack channel" data-position="bottom">
+                        <i class="icon-slack"></i>
+                    </span>
+                </a>
+                <a class="footer-actions__link" href="https://forum.scylladb.com/" target="_blank">
+                    <span data-tooltip tabindex="1" title="Community forum" data-position="bottom">
+                        <i class="icon-docs-community"></i>
+                    </span>
+                </a>
+            </div>
+        </div>
+
+        
+            <div class="footer-copyright">
+                
+                    
+                        &#169; 2026, ScyllaDB. All rights reserved.
+                    
+                    | <a class="footer-copyright__link" href="https://www.scylladb.com/tos/" target="_blank">Terms of Service</a>
+                    | <a class="footer-copyright__link" href="https://www.scylladb.com/privacy/" target="_blank">Privacy Policy</a>
+                    | ScyllaDB, and ScyllaDB Cloud, are registered trademarks of ScyllaDB, Inc.
+                
+            </div>
+        
+
+
+        <div class="footer-bottom">
+            
+                <div class="footer-bottom__last-updated">
+                    
+                        Last updated on 22 February 2026.
+                    
+                </div>
+            
+            <div class="footer-bottom__version">
+                Powered by
+                <a class="footer-bottom__link" href="http://sphinx-doc.org/">Sphinx 7.4.7</a> &amp;
+                <a class="footer-bottom__link" href="https://sphinx-theme.scylladb.com/">ScyllaDB Theme 1.8.10</a>
+            </div>
+        </div>
+    </div>
+    
+        <biel-button class="footer-ask-ai" project="ddfdo8m94k"
+                     header-title="ScyllaDB chatbot (beta)"
+                     button-position="bottom-right"
+                     modal-position="bottom-right"
+                     button-style="dark">
+            Ask AI
+        </biel-button>
+    
+</footer>
+
+        <noscript>
+            <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8P2JP" height="0" width="0"
+                    style="display: none; visibility: hidden"></iframe>
+        </noscript>
+    </body>
+
+</html>
