@@ -1046,8 +1046,18 @@
             },
             "targets":[
                {
+                  "expr":"sum(rate(scylla_alternator_op_latency_sum{cluster=~\"$cluster\", op=~\"$ops|$ops_batch\"}[$__rate_interval])) by (op)/sum(rate(scylla_alternator_op_latency_count{cluster=~\"$cluster|^$\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op)",
+                  "intervalFactor":1,
+                  "dashversion":[">2025.3"],
+                  "legendFormat": "{{op}}",
+                  "refId":"A",
+                  "instant":true,
+                  "step":4
+               },
+               {
                   "expr":"sum(rate(scylla_alternator_op_latency_sum{cluster=~\"$cluster\", op=~\"$ops\"}[$__rate_interval])) by (op)/sum(rate(scylla_alternator_op_latency_count{cluster=~\"$cluster|^$\", op=~\"$ops\"}[$__rate_interval])>0) by (op)",
                   "intervalFactor":1,
+                  "dashversion":["<2025.3"],
                   "legendFormat": "{{op}}",
                   "refId":"A",
                   "instant":true,
@@ -1106,6 +1116,15 @@
                   "intervalFactor":1,
                   "legendFormat": "{{op}}",
                   "refId":"A",
+                  "instant":true,
+                  "step":4
+               },
+               {
+                  "expr":"histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops_batch\"}[$__rate_interval])>0) by (op, le))",
+                  "intervalFactor":1,
+                  "legendFormat": "{{op}}",
+                  "dashversion":[">2025.3"],
+                  "refId":"B",
                   "instant":true,
                   "step":4
                }
