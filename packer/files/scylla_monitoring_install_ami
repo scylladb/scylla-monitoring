@@ -146,6 +146,9 @@ def post_monitoring_installation(args):
         run('systemctl enable setup.monitoring')
         make_conf_sh(args)
 
+def install_dependencies(args):
+    run('apt install -y xfsprogs')
+
 def install_dbaas(version):
     run('sudo -u {_USER} cp {_HOME}/env.centralzied.sh {_HOME}/scylla-grafana-monitoring-scylla-monitoring/env.sh')
     run('sudo -u {_USER} cp  {_HOME}/scylla-centralized.template.json {_HOME}/scylla-grafana-monitoring-scylla-monitoring/grafana/')
@@ -199,6 +202,7 @@ if __name__ == '__main__':
     install_docker()
     install_monitoring(args.version)
     post_monitoring_installation(args)
+    install_dependencies(args)
     if args.mode == "dbaas":
         install_dbaas(args.version)
     else:
