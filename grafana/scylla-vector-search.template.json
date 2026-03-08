@@ -62,6 +62,23 @@
 							        }
                                 ]
                             }
+                        },
+                        "options": {
+                            "reduceOptions": {
+                            "values": false,
+                            "calcs": [
+                                "last"
+                            ],
+                            "fields": ""
+                            },
+                            "orientation": "auto",
+                            "textMode": "auto",
+                            "wideLayout": true,
+                            "colorMode": "background_solid",
+                            "graphMode": "none",
+                            "justifyMode": "auto",
+                            "showPercentChange": false,
+                            "percentChangeColorMode": "standard"
                         }
                     },
                     {
@@ -78,6 +95,43 @@
                         "gridPos": {
                             "w": 3,
                             "h": 5
+                        },
+                        "fieldConfig": {
+                            "defaults": {
+                            "mappings": [],
+                            "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                {
+                                    "color": "green",
+                                    "value": null
+                                }
+                                ]
+                            },
+                            "unit": "",
+                            "color": {
+                                "mode": "fixed",
+                                "fixedColor": "blue"
+                            }
+                            },
+                            "overrides": []
+                        },
+                        "options": {
+                            "reduceOptions": {
+                            "values": false,
+                            "calcs": [
+                                "last"
+                            ],
+                            "fields": ""
+                            },
+                            "orientation": "auto",
+                            "textMode": "auto",
+                            "wideLayout": true,
+                            "colorMode": "background_solid",
+                            "graphMode": "none",
+                            "justifyMode": "auto",
+                            "showPercentChange": false,
+                            "percentChangeColorMode": "standard"
                         },
                         "title": "# Indexes"
                     },
@@ -168,7 +222,11 @@
                                         }
                                     ]
                                 },
-                                "unit": "decbytes"
+                                "unit": "decbytes",
+                                "color": {
+                                    "mode": "fixed",
+                                    "fixedColor": "blue"
+                                }
                             },
                             "overrides": []
                         },
@@ -180,11 +238,28 @@
                             {
                                 "expr": "avg(sum(node_filesystem_size_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by (instance, cluster) -sum(node_filesystem_avail_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by (instance, cluster)) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{instance}}",
                                 "refId": "A",
                                 "step": 40
                             }
                         ],
+                        "options": {
+                            "reduceOptions": {
+                            "values": false,
+                            "calcs": [
+                                "last"
+                            ],
+                            "fields": ""
+                            },
+                            "orientation": "auto",
+                            "textMode": "auto",
+                            "wideLayout": true,
+                            "colorMode": "background_solid",
+                            "graphMode": "none",
+                            "justifyMode": "auto",
+                            "showPercentChange": false,
+                            "percentChangeColorMode": "standard"
+                        },
                         "title": "Disk Usage"
                     },
                     {
@@ -265,7 +340,7 @@
                         "title": "Memory % Usage"
                     },
                     {
-                        "class": "small_stat_area",
+                        "class": "small_stat",
                         "fieldConfig": {
                             "defaults": {
                                 "mappings": [],
@@ -279,6 +354,10 @@
                                     ]
                                 },
                                 "unit": "decbytes",
+                                "color": {
+                                    "mode": "fixed",
+                                    "fixedColor": "blue"
+                                },
                                 "min": 0
                             },
                             "overrides": []
@@ -291,11 +370,28 @@
                             {
                                 "expr": "avg(node_memory_MemTotal_bytes{job=\"vector_search_os\", instance=~\"$node\"} - node_memory_MemAvailable_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by ([[by]])",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{instance}}",
                                 "refId": "A",
                                 "step": 40
                             }
                         ],
+                        "options": {
+                            "reduceOptions": {
+                            "values": false,
+                            "calcs": [
+                                "last"
+                            ],
+                            "fields": ""
+                            },
+                            "orientation": "auto",
+                            "textMode": "auto",
+                            "wideLayout": true,
+                            "colorMode": "background_solid",
+                            "graphMode": "none",
+                            "justifyMode": "auto",
+                            "showPercentChange": false,
+                            "percentChangeColorMode": "standard"
+                        },
                         "title": "Memory Usage"
                     }
                 ],
@@ -307,7 +403,7 @@
 					{
                         "class": "bytes_panel",
                         "gridPos": {
-						    "h": 12,
+						    "h": 8,
 						    "w": 6
 						  },
                         "targets": [
@@ -325,7 +421,7 @@
                     {
                         "class": "bytes_panel",
                         "gridPos": {
-						    "h": 12,
+						    "h": 8,
 						    "w": 6
 						  },
                         "targets": [
@@ -343,7 +439,7 @@
                     {
                         "class": "percentunit_panel",
                         "gridPos": {
-						    "h": 12,
+						    "h": 8,
 						    "w": 6
 						  },
                         "targets": [
@@ -379,56 +475,74 @@
                         "class": "graph_panel",
                         "targets": [
                             {
-                                "expr": "avg(index_size{index_name=\"$index\", instance=~\"$node\"}) by ([[by]])",
+                                "expr": "avg(index_size{index_name=\"$index\", instance=~\"$node\"}) by ([[by]], index_name)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "refId": "A",
-                                "legendFormat": "{{keyspace}} {{index_name}}"
+                                "legendFormat": "{{instance}} {{index_name}}"
                             }
                         ],
                         "span": 2,
-                        "title": "Index Size"
+                        "fieldConfig": {
+                            "defaults": {
+                            "class": "fieldConfig_defaults",
+                            "unit": "si:Vectors"
+                            },
+                            "overrides": []
+                        },
+                        "description": "Number of stored vectors in the index",
+                        "title": "Stored Vectors in index"
                     },
                     {
                         "class": "ops_panel",
                         "targets": [
                             {
-                                "expr": "avg(rate(index_size{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]])",
+                                "expr": "avg(rate(index_size{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "refId": "A",
-                                "legendFormat": "{{keyspace}} {{index_name}}"
+                                "legendFormat": "{{instance}} {{index_name}}"
                             }
                         ],
                         "span": 2,
+                        "fieldConfig": {
+                            "defaults": {
+                            "class": "fieldConfig_defaults",
+                            "unit": "recps"
+                            },
+                            "overrides": []
+                        },
+                        "description": "Rate of new vectors being added to the index",
                         "title": "Index build rate"
                     },
                     {
                         "class": "ops_panel",
                         "targets": [
                             {
-                                "expr": "avg(rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]])",
+                                "expr": "avg(rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "refId": "A",
-                                "legendFormat": "{{instance}} {{keyspace}} {{index_name}}"
+                                "legendFormat": "{{instance}} {{index_name}}"
                             }
                         ],
                         "span": 2,
+                        "description": "Rate of requests to the index",
                         "title": "Index requests rate"
                     },
                     {
                         "class": "seconds_panel",
                         "targets": [
                             {
-                                "expr": "avg(rate(request_latency_seconds_sum{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])/rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]])",
+                                "expr": "avg(rate(request_latency_seconds_sum{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])/rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "refId": "A",
-                                "legendFormat": "{{instance}} {{keyspace}} {{index_name}}"
+                                "legendFormat": "{{instance}} {{index_name}}"
                             }
                         ],
                         "span": 2,
+                        "description": "Average latency of requests to the index",
                         "title": "Average Latency"
                     },
                     {
@@ -439,10 +553,11 @@
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "refId": "A",
-                                "legendFormat": "{{instance}} {{keyspace}} {{index_name}}"
+                                "legendFormat": "{{instance}} {{index_name}}"
                             }
                         ],
                         "span": 2,
+                        "description": "95th percentile latency of requests to the index",
                         "title": "P95 Latency"
                     },
                     {
@@ -453,10 +568,11 @@
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "refId": "A",
-                                "legendFormat": "{{instance}} {{keyspace}} {{index_name}}"
+                                "legendFormat": "{{instance}} {{index_name}}"
                             }
                         ],
                         "span": 2,
+                        "description": "99th percentile latency of requests to the index",
                         "title": "P99 Latency"
                     }
 
