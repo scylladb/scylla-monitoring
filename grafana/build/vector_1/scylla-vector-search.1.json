@@ -72,10 +72,11 @@
             },
             "id": 1,
             "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "auto",
                 "orientation": "auto",
+                "percentChangeColorMode": "standard",
                 "reduceOptions": {
                     "calcs": [
                         "last"
@@ -83,7 +84,9 @@
                     "fields": "",
                     "values": false
                 },
-                "textMode": "auto"
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
             },
             "targets": [
                 {
@@ -103,7 +106,10 @@
             "datasource": "prometheus",
             "fieldConfig": {
                 "defaults": {
-                    "custom": {},
+                    "color": {
+                        "fixedColor": "blue",
+                        "mode": "fixed"
+                    },
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
@@ -113,7 +119,8 @@
                                 "value": null
                             }
                         ]
-                    }
+                    },
+                    "unit": ""
                 },
                 "overrides": []
             },
@@ -125,10 +132,11 @@
             },
             "id": 2,
             "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "auto",
                 "orientation": "auto",
+                "percentChangeColorMode": "standard",
                 "reduceOptions": {
                     "calcs": [
                         "last"
@@ -136,7 +144,9 @@
                     "fields": "",
                     "values": false
                 },
-                "textMode": "auto"
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
             },
             "targets": [
                 {
@@ -236,6 +246,10 @@
             "datasource": "prometheus",
             "fieldConfig": {
                 "defaults": {
+                    "color": {
+                        "fixedColor": "blue",
+                        "mode": "fixed"
+                    },
                     "mappings": [],
                     "thresholds": {
                         "mode": "absolute",
@@ -258,10 +272,11 @@
             },
             "id": 4,
             "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "auto",
                 "orientation": "auto",
+                "percentChangeColorMode": "standard",
                 "reduceOptions": {
                     "calcs": [
                         "last"
@@ -269,13 +284,15 @@
                     "fields": "",
                     "values": false
                 },
-                "textMode": "auto"
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
             },
             "targets": [
                 {
                     "expr": "avg(sum(node_filesystem_size_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by (instance, cluster) -sum(node_filesystem_avail_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by (instance, cluster)) by ([[by]])",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{instance}}",
                     "refId": "A",
                     "step": 40
                 }
@@ -413,10 +430,14 @@
             "type": "stat"
         },
         {
-            "class": "small_stat_area",
+            "class": "small_stat",
             "datasource": "prometheus",
             "fieldConfig": {
                 "defaults": {
+                    "color": {
+                        "fixedColor": "blue",
+                        "mode": "fixed"
+                    },
                     "mappings": [],
                     "min": 0,
                     "thresholds": {
@@ -440,15 +461,14 @@
             },
             "id": 7,
             "options": {
-                "class": "stats_area_options",
-                "colorMode": "value",
-                "graphMode": "area",
+                "colorMode": "background_solid",
+                "graphMode": "none",
                 "justifyMode": "auto",
                 "orientation": "auto",
                 "percentChangeColorMode": "standard",
                 "reduceOptions": {
                     "calcs": [
-                        "lastNotNull"
+                        "last"
                     ],
                     "fields": "",
                     "values": false
@@ -461,7 +481,7 @@
                 {
                     "expr": "avg(node_memory_MemTotal_bytes{job=\"vector_search_os\", instance=~\"$node\"} - node_memory_MemAvailable_bytes{job=\"vector_search_os\", instance=~\"$node\"}) by ([[by]])",
                     "intervalFactor": 1,
-                    "legendFormat": "",
+                    "legendFormat": "{{instance}}",
                     "refId": "A",
                     "step": 40
                 }
@@ -519,7 +539,7 @@
                 "overrides": []
             },
             "gridPos": {
-                "h": 12,
+                "h": 8,
                 "w": 6,
                 "x": 0,
                 "y": 5
@@ -600,7 +620,7 @@
                 "overrides": []
             },
             "gridPos": {
-                "h": 12,
+                "h": 8,
                 "w": 6,
                 "x": 6,
                 "y": 5
@@ -682,7 +702,7 @@
                 "overrides": []
             },
             "gridPos": {
-                "h": 12,
+                "h": 8,
                 "w": 6,
                 "x": 12,
                 "y": 5
@@ -723,7 +743,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 17
+                "y": 13
             },
             "id": 11,
             "panels": [],
@@ -734,6 +754,7 @@
         {
             "class": "graph_panel",
             "datasource": "prometheus",
+            "description": "Number of stored vectors in the index",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -773,7 +794,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "short"
+                    "unit": "si:Vectors"
                 },
                 "overrides": []
             },
@@ -781,7 +802,7 @@
                 "h": 6,
                 "w": 4,
                 "x": 0,
-                "y": 18
+                "y": 14
             },
             "id": 12,
             "isNew": true,
@@ -801,19 +822,20 @@
             "span": 2,
             "targets": [
                 {
-                    "expr": "avg(index_size{index_name=\"$index\", instance=~\"$node\"}) by ([[by]])",
+                    "expr": "avg(index_size{index_name=\"$index\", instance=~\"$node\"}) by ([[by]], index_name)",
                     "format": "time_series",
                     "intervalFactor": 2,
-                    "legendFormat": "{{keyspace}} {{index_name}}",
+                    "legendFormat": "{{instance}} {{index_name}}",
                     "refId": "A"
                 }
             ],
-            "title": "Index Size",
+            "title": "Stored Vectors in index",
             "type": "timeseries"
         },
         {
             "class": "ops_panel",
             "datasource": "prometheus",
+            "description": "Rate of new vectors being added to the index",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -853,7 +875,7 @@
                         }
                     },
                     "mappings": [],
-                    "unit": "ops"
+                    "unit": "recps"
                 },
                 "overrides": []
             },
@@ -861,7 +883,7 @@
                 "h": 6,
                 "w": 4,
                 "x": 4,
-                "y": 18
+                "y": 14
             },
             "id": 13,
             "isNew": true,
@@ -884,10 +906,10 @@
             "span": 2,
             "targets": [
                 {
-                    "expr": "avg(rate(index_size{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]])",
+                    "expr": "avg(rate(index_size{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
                     "format": "time_series",
                     "intervalFactor": 2,
-                    "legendFormat": "{{keyspace}} {{index_name}}",
+                    "legendFormat": "{{instance}} {{index_name}}",
                     "refId": "A"
                 }
             ],
@@ -897,6 +919,7 @@
         {
             "class": "ops_panel",
             "datasource": "prometheus",
+            "description": "Rate of requests to the index",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -944,7 +967,7 @@
                 "h": 6,
                 "w": 4,
                 "x": 8,
-                "y": 18
+                "y": 14
             },
             "id": 14,
             "isNew": true,
@@ -967,10 +990,10 @@
             "span": 2,
             "targets": [
                 {
-                    "expr": "avg(rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]])",
+                    "expr": "avg(rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
                     "format": "time_series",
                     "intervalFactor": 2,
-                    "legendFormat": "{{instance}} {{keyspace}} {{index_name}}",
+                    "legendFormat": "{{instance}} {{index_name}}",
                     "refId": "A"
                 }
             ],
@@ -980,6 +1003,7 @@
         {
             "class": "seconds_panel",
             "datasource": "prometheus",
+            "description": "Average latency of requests to the index",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -1027,7 +1051,7 @@
                 "h": 6,
                 "w": 4,
                 "x": 12,
-                "y": 18
+                "y": 14
             },
             "id": 15,
             "isNew": true,
@@ -1047,10 +1071,10 @@
             "span": 2,
             "targets": [
                 {
-                    "expr": "avg(rate(request_latency_seconds_sum{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])/rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]])",
+                    "expr": "avg(rate(request_latency_seconds_sum{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])/rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
                     "format": "time_series",
                     "intervalFactor": 2,
-                    "legendFormat": "{{instance}} {{keyspace}} {{index_name}}",
+                    "legendFormat": "{{instance}} {{index_name}}",
                     "refId": "A"
                 }
             ],
@@ -1060,6 +1084,7 @@
         {
             "class": "seconds_panel",
             "datasource": "prometheus",
+            "description": "95th percentile latency of requests to the index",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -1107,7 +1132,7 @@
                 "h": 6,
                 "w": 4,
                 "x": 16,
-                "y": 18
+                "y": 14
             },
             "id": 16,
             "isNew": true,
@@ -1130,7 +1155,7 @@
                     "expr": "histogram_quantile(0.95, sum(rate(request_latency_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
                     "format": "time_series",
                     "intervalFactor": 2,
-                    "legendFormat": "{{instance}} {{keyspace}} {{index_name}}",
+                    "legendFormat": "{{instance}} {{index_name}}",
                     "refId": "A"
                 }
             ],
@@ -1140,6 +1165,7 @@
         {
             "class": "seconds_panel",
             "datasource": "prometheus",
+            "description": "99th percentile latency of requests to the index",
             "editable": true,
             "error": false,
             "fieldConfig": {
@@ -1187,7 +1213,7 @@
                 "h": 6,
                 "w": 4,
                 "x": 20,
-                "y": 18
+                "y": 14
             },
             "id": 17,
             "isNew": true,
@@ -1210,7 +1236,7 @@
                     "expr": "histogram_quantile(0.99, sum(rate(request_latency_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
                     "format": "time_series",
                     "intervalFactor": 2,
-                    "legendFormat": "{{instance}} {{keyspace}} {{index_name}}",
+                    "legendFormat": "{{instance}} {{index_name}}",
                     "refId": "A"
                 }
             ],
@@ -1224,7 +1250,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 24
+                "y": 20
             },
             "id": 18,
             "panels": [],
@@ -1247,14 +1273,14 @@
                 "h": 3,
                 "w": 24,
                 "x": 0,
-                "y": 25
+                "y": 21
             },
             "id": 19,
             "isNew": true,
             "links": [],
             "mode": "html",
             "options": {
-                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - 4.14.1</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1&kiosk\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
+                "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - 4.14.2</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1&kiosk\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
                 "mode": "html"
             },
             "span": 12,
@@ -1394,8 +1420,8 @@
                 "allValue": null,
                 "class": "monitor_version_var",
                 "current": {
-                    "text": "4.14.1",
-                    "value": "4.14.1"
+                    "text": "4.14.2",
+                    "value": "4.14.2"
                 },
                 "error": null,
                 "hide": 2,
@@ -1406,11 +1432,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "4.14.1",
-                        "value": "4.14.1"
+                        "text": "4.14.2",
+                        "value": "4.14.2"
                     }
                 ],
-                "query": "4.14.1",
+                "query": "4.14.2",
                 "skipUrlSync": false,
                 "type": "custom"
             }
