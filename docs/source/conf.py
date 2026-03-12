@@ -33,7 +33,7 @@ extensions = [
     'sphinx_sitemap',
     'sphinx_scylladb_theme',
     'sphinx_multiversion',  # optional
-    'recommonmark',  # optional
+    'myst_parser',  # optional
 ]
 
 
@@ -48,7 +48,7 @@ project = u'ScyllaDB Monitoring'
 copyright = str(date.today().year) + ', ScyllaDB. All rights reserved.'
 author = u'Scylla Project Contributors'
 
-exclude_patterns = ['_build', '_utils', '**/common/*']
+exclude_patterns = ['_build', '_utils', '**/common/*', '.venv']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
