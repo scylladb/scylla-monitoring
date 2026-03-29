@@ -1955,7 +1955,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$topbottom([[filter_limit]], sum(casrlatencya{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", by=\"[[by]]\"}) by([[by]]) or on([[by]]) $func(rate(scylla_storage_proxy_coordinator_cas_read_latency_sum{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_cas_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) + 1))",
+                                "expr": "$topbottom([[filter_limit]], sum(casrlatencya{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", by=\"[[by]]\", scheduling_group_name=~\"$sg\"}) by([[by]]) or on([[by]]) $func(rate(scylla_storage_proxy_coordinator_cas_read_latency_sum{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_cas_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) + 1))",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
@@ -1970,9 +1970,9 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$topbottom([[filter_limit]], casrlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})",
+                                "expr": "$topbottom([[filter_limit]], casrlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"})",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{scheduling_group_name}} - {{dc}} {{instance}} {{shard}}",
                                 "refId": "A",
                                 "step": 10
                             }
@@ -2020,7 +2020,7 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$topbottom([[filter_limit]], sum(caswlatencya{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", by=\"[[by]]\"}) by ([[by]]) or on([[by]]) ($func(rate(scylla_storage_proxy_coordinator_cas_write_latency_sum{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_storage_proxy_coordinator_cas_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) + 1)))",
+                                "expr": "$topbottom([[filter_limit]], sum(caswlatencya{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", by=\"[[by]]\", scheduling_group_name=~\"$sg\"}) by ([[by]], scheduling_group_name) or on([[by]], scheduling_group_name) ($func(rate(scylla_storage_proxy_coordinator_cas_write_latency_sum{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], scheduling_group_name)/($func(rate(scylla_storage_proxy_coordinator_cas_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], scheduling_group_name) + 1)))",
                                 "intervalFactor": 1,
                                 "legendFormat": "",
                                 "refId": "A",
@@ -2035,9 +2035,9 @@
                         "span": 3,
                         "targets": [
                             {
-                                "expr": "$topbottom([[filter_limit]], caswlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"})",
+                                "expr": "$topbottom([[filter_limit]], caswlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"})",
                                 "intervalFactor": 1,
-                                "legendFormat": "",
+                                "legendFormat": "{{scheduling_group_name}} - {{dc}} {{instance}} {{shard}}",
                                 "refId": "A",
                                 "step": 10
                             }
