@@ -169,6 +169,9 @@ if [ ! -z "$VECTOR_SEARCH" ]; then
       action: replace
       target_label: instance
       replacement: '\${1}'
+    - source_labels: [keyspace, index_name]
+      separator: ','
+      target_label: ks_index
 - job_name: vector_search_os
   honor_labels: false
   file_sd_configs:
