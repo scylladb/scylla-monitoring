@@ -3,37 +3,33 @@
         "class": "dashboard",
         "overwrite": true,
         "rows": [
-            {
+             {
                 "class": "row",
                 "panels": [
                     {
-                        "class": "collapsible_row_panel",
-                        "title": ""
+                      "collapsed": false,
+                      "datasource": null,
+                      "id": "auto",
+                      "gridPos": {
+                        "h": 1,
+                        "w": 24
+                      },
+                      "panels": [],
+                      "title": "Cluster OS Information $cluster $account_name $cluster_name ",
+                      "type": "row"
                     }
                 ]
             },
             {
-                "class": "logo_row"
-            },
-            {
                 "class": "row",
-                "panels": [
-                    {
-                        "class": "collapsible_row_panel",
-                        "title": ""
-                    }
-                ]
-            },
-            {
-                "class": "row",
-                "height": "200px",
                 "panels": [
                     {
                         "class": "piechart_panel_percent",
                         "height": "250px",
-                        "repeat": "node",
-                        "maxPerRow": 8,
-                        "repeatDirection": "h",
+                        "gridPos": {
+                            "h": 6,
+                            "w": 5
+                        },
                         "targets": [
                             {
                                 "expr": "sum(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"})",
@@ -55,9 +51,14 @@
                             }
                         ],
                         "title": "Total Storage $node"
+                    },
+                    {
+                        "class": "device_table"
+                    },
+                    {
+                        "class": "low_disk_partitions_table"
                     }
-                ],
-                "title": "New row"
+                ]
             },
             {
                 "class": "row",
@@ -800,6 +801,28 @@
                     "tagsQuery": "",
                     "type": "query",
                     "useTags": false
+                },
+                {
+                    "class": "template_variable_single",
+                    "definition": "label_values(scylla_scylladb_current_version,cluster_name)",
+                    "query": {
+                      "qryType": 1,
+                      "query": "label_values(scylla_scylladb_current_version,cluster_name)"
+                    },
+                    "hide": 2,
+                    "label": "cluster_name",
+                    "name": "cluster_name"
+                },
+                {
+                    "class": "template_variable_single",
+                    "definition": "label_values(scylla_scylladb_current_version,account_name)",
+                    "query": {
+                      "qryType": 1,
+                      "query": "label_values(scylla_scylladb_current_version,account_name)"
+                    },
+                    "hide": 2,
+                    "label": "account_name",
+                    "name": "account_name"
                 },
                 {
                     "class": "template_variable_custom",
