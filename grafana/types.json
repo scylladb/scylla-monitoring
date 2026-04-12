@@ -3616,6 +3616,272 @@
             }
           }
         },
+    "alternator_tables": {
+      "type": "table",
+      "title": "Tables",
+      "gridPos": {
+         "h": 12,
+         "w": 8
+      },
+      "fieldConfig": {
+         "defaults": {
+            "custom": {
+            "align": "auto",
+            "footer": {
+               "reducers": []
+            },
+            "cellOptions": {
+               "type": "auto"
+            },
+            "inspect": false,
+            "filterable": true
+            },
+            "mappings": [],
+            "thresholds": {
+            "mode": "absolute",
+            "steps": [
+               {
+                  "value": null,
+                  "color": "green"
+               },
+               {
+                  "value": 80,
+                  "color": "red"
+               }
+            ]
+            },
+            "color": {
+            "mode": "thresholds"
+            },
+            "links": [
+            {
+               "title": "Table data",
+               "url": "/d/${__dashboard.uid}/${__dashboard.slug}?${__url_time_range}&var-table=${__data.fields[0]}"
+            }
+            ]
+         },
+         "overrides": [
+            {
+            "matcher": {
+               "id": "byName",
+               "options": "cf"
+            },
+            "properties": [
+               {
+                  "id": "displayName",
+                  "value": "Table"
+               }
+            ]
+            },
+            {
+            "matcher": {
+               "id": "byName",
+               "options": "Value #A"
+            },
+            "properties": [
+               {
+                  "id": "displayName",
+                  "value": "OP/s"
+               },
+               {
+                  "id": "unit",
+                  "value": "ops"
+               },
+               {
+                  "id": "custom.width",
+                  "value": 120
+               },
+               {
+                  "id": "decimals",
+                  "value": 1
+               }
+            ]
+            },
+            {
+            "matcher": {
+               "id": "byName",
+               "options": "Value #B"
+            },
+            "properties": [
+               {
+                  "id": "displayName",
+                  "value": "Disk Usage"
+               },
+               {
+                  "id": "unit",
+                  "value": "decbytes"
+               },
+               {
+                  "id": "custom.width",
+                  "value": 120
+               }
+            ]
+            },
+            {
+            "matcher": {
+               "id": "byName",
+               "options": "Value #C"
+            },
+            "properties": [
+               {
+                  "id": "displayName",
+                  "value": "P50"
+               },
+               {
+                  "id": "unit",
+                  "value": "µs"
+               },
+               {
+                  "id": "custom.width",
+                  "value": 120
+               }
+            ]
+            },
+            {
+            "matcher": {
+               "id": "byName",
+               "options": "Value #D"
+            },
+            "properties": [
+               {
+                  "id": "displayName",
+                  "value": "P95"
+               },
+               {
+                  "id": "custom.width",
+                  "value": 120
+               },
+               {
+                  "id": "unit",
+                  "value": "µs"
+               }
+            ]
+            },
+            {
+            "matcher": {
+               "id": "byName",
+               "options": "Value #E"
+            },
+            "properties": [
+               {
+                  "id": "displayName",
+                  "value": "P99"
+               },
+               {
+                  "id": "unit",
+                  "value": "µs"
+               },
+               {
+                  "id": "custom.width",
+                  "value": 120
+               }
+            ]
+            }
+         ]
+      },
+      "transformations": [
+         {
+            "id": "joinByField",
+            "options": {
+            "byField": "cf",
+            "mode": "outer"
+            }
+         },
+         {
+            "id": "filterFieldsByName",
+            "options": {
+            "include": {
+               "names": [
+                  "cf",
+                  "Value #A",
+                  "Value #B",
+                  "Value #C",
+                  "Value #D",
+                  "Value #E"
+               ]
+            }
+            }
+         }
+      ],
+      "targets": [
+         {
+            "refId": "A",
+            "editorMode": "code",
+            "expr": "sum(rate(scylla_alternator_table_operation{ks=~\"alternator_.*\"}[10m])) by (cf)",
+            "legendFormat": "__auto",
+            "range": false,
+            "format": "table",
+            "instant": true,
+            "exemplar": false,
+            "hide": false
+         },
+         {
+            "refId": "B",
+            "expr": "sum(scylla_column_family_total_disk_space{ks=~\"alternator_.*\"}) by (cf)",
+            "range": false,
+            "instant": true,
+            "datasource": {
+            "uid": "P1809F7CD0C75ACF3",
+            "type": "prometheus"
+            },
+            "hide": false,
+            "editorMode": "code",
+            "legendFormat": "__auto",
+            "format": "table",
+            "exemplar": false
+         },
+         {
+            "refId": "C",
+            "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.5, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
+            "range": false,
+            "instant": true,
+            "datasource": {
+            "uid": "P1809F7CD0C75ACF3",
+            "type": "prometheus"
+            },
+            "hide": false,
+            "editorMode": "code",
+            "legendFormat": "__auto",
+            "format": "table",
+            "exemplar": false
+         },
+         {
+            "refId": "D",
+            "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.95, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
+            "range": false,
+            "instant": true,
+            "datasource": {
+            "uid": "P1809F7CD0C75ACF3",
+            "type": "prometheus"
+            },
+            "hide": false,
+            "editorMode": "code",
+            "legendFormat": "__auto",
+            "format": "table",
+            "exemplar": false
+         },
+         {
+            "refId": "E",
+            "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
+            "range": false,
+            "instant": true,
+            "datasource": {
+            "uid": "P1809F7CD0C75ACF3",
+            "type": "prometheus"
+            },
+            "hide": false,
+            "editorMode": "code",
+            "legendFormat": "__auto",
+            "format": "table",
+            "exemplar": false
+         }
+      ],
+      "datasource": "prometheus",
+      "options": {
+         "showHeader": true,
+         "cellHeight": "sm"
+      }
+   },
     "dc_nodes_table":{
       "datasource":"prometheus",
       "id":"auto",
