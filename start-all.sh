@@ -5,6 +5,47 @@ if [ -f env.sh ]; then
 	. env.sh
 fi
 
+if [ "$LOG_FILE" = "" ]; then
+	LOG_FILE="./run.log"
+fi
+
+log() {
+    local level="$1"
+    shift
+    local msg="$*"
+    local ts
+
+    ts="$(date '+%F %T')"
+
+    # full format to file
+    printf '%s [%s] %s\n' "$ts" "$level" "$msg" >> "$LOG_FILE"
+
+    # only message to stdout
+    printf '%s\n' "$msg"
+}
+
+run_script() {
+    local script="$1"
+    shift
+    local start end rc
+
+    start=$(date +%s)
+
+    log INFO "Starting $script $*"
+    "$script" "$@" >>"$LOG_FILE" 2>&1
+    rc=$?
+
+    end=$(date +%s)
+
+    if [ "$rc" -eq 0 ]; then
+        log INFO "Finished $script successfully in $((end-start))s"
+    else
+        log ERROR "Failed $script rc=$rc after $((end-start))s"
+    fi
+
+    return "$rc"
+}
+
 CURRENT_VERSION="master"
 if [ -f CURRENT_VERSION.sh ]; then
 	CURRENT_VERSION=$(cat CURRENT_VERSION.sh)
@@ -35,7 +76,7 @@ if [ "$1" = "--version" ]; then
 fi
 
 if [ "$(id -u)" -eq 0 ]; then
-	echo "Running as root is not advised, please check the documentation on how to run as non-root user"
+	log WARNING "Running as root is not advised, please check the documentation on how to run as non-root user"
 	USER_PERMISSIONS="-u 0:0"
 else
 	GROUPID=$(id -g)
@@ -120,7 +161,7 @@ The script starts Scylla Monitoring stack.
 is_local() {
 	for var in "$@"; do
 		if grep -q '\s127.' $1; then
-			echo "Local host found in $1"
+			log WARNING "Local host found in $1"
 			grep '\s127.' $1
 			return 0
 		fi
@@ -129,6 +170,29 @@ is_local() {
 		fi
 	done
 	return 1
+}
+
+# Resolve the address of a Docker container.
+# Usage: container_address <container_name> <port>
+# Prints <ip>:<port>. Falls back to BIND_ADDRESS or host IP if the container has no IP.
+container_address() {
+	local name=$1
+	local port=$2
+	local ip
+	ip=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$name")
+	if [ "$ip" = "invalid IP" ] || [ -z "$ip" ]; then
+		ip=""
+	fi
+	if [ -z "$ip" ]; then
+		if [ ! -z "$BIND_ADDRESS" ]; then
+			ip=$(echo $BIND_ADDRESS | sed 's/:$//')
+		elif [[ $(uname) == "Linux" ]]; then
+			ip=$(hostname -I | awk '{print $1}')
+		elif [[ $(uname) == "Darwin" ]]; then
+			ip=$(ifconfig en0 | awk '/inet / {print $2}')
+		fi
+	fi
+	echo "$ip:$port"
 }
 
 if [ -z "$PROMETHEUS_RULES" ]; then
@@ -149,8 +213,8 @@ if [ -z "$GRAFANA_ADMIN_PASSWORD" ]; then
 	GRAFANA_ADMIN_PASSWORD=""
 fi
 
-if [ -z "$ALERTMANAGER_PORT" ]; then
-	ALERTMANAGER_PORT=""
+if [ -z "$ALERTMANAGER_PORT_CMD" ]; then
+	ALERTMANAGER_PORT_CMD=""
 fi
 
 if [ -z "$DOCKER_PARAM" ]; then
@@ -201,15 +265,15 @@ fi
 if [ -z "$LOKI_DIR" ]; then
 	LOKI_DIR=""
 fi
-if [ -z "$LOKI_PORT" ]; then
-	LOKI_PORT=""
+if [ -z "$LOKI_PORT_CMD" ]; then
+	LOKI_PORT_CMD=""
 fi
 LIMITS=""
 VOLUMES=""
 PARAMS=""
 for arg; do
 	if [ "$arg" = "--compose" ]; then
-		echo "Using compose"
+		log INFO "Using compose"
 		exec ./make-compose.sh "$@"
 	fi
 done
@@ -356,7 +420,7 @@ for arg; do
 		VALUE=$(echo $arg | cut -d',' -f2- | sed 's/#/ /g')
 		NOSPACE=$(echo $arg | sed 's/ /#/g')
 		if [[ $NOSPACE == --* ]]; then
-			echo "Error: No value given to --$PARAM"
+			log ERROR "Error: No value given to --$PARAM"
 			echo
 			usage
 			exit 1
@@ -384,13 +448,14 @@ for arg; do
 			DATDOGPARAM="$DATDOGPARAM -H $NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "loki-port" ]; then
-			LOKI_PORT="$LOKI_PORT -p $NOSPACE"
+			LOKI_PORT = "$NOSPACE"
+			LOKI_PORT_CMD="$LOKI_PORT_CMD -p $NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "promtail-port" ]; then
-			LOKI_PORT="$LOKI_PORT -t $NOSPACE"
+			LOKI_PORT_CMD="$LOKI_PORT_CMD -t $NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "promtail-binary-port" ]; then
-			LOKI_PORT="$LOKI_PORT -T $NOSPACE"
+			LOKI_PORT_CMD="$LOKI_PORT_CMD -T $NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "stack" ]; then
 			STACK_ID="$NOSPACE"
@@ -427,7 +492,7 @@ for arg; do
 done
 
 if [ ! -z $LIMIT ]; then
-	echo "Error: No value given to --$PARAM"
+	log ERROR "Error: No value given to --$PARAM"
 	echo
 	usage
 	exit -1
@@ -471,7 +536,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
 		GRAFANA_PORT="-g $OPTARG"
 		;;
 	m)
-		ALERTMANAGER_PORT="-p $OPTARG"
+		ALERTMANAGER_PORT="$OPTARG"
 		;;
 	T)
 		PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS -T $OPTARG"
@@ -555,23 +620,23 @@ if [ "$ARCHIVE" == "1" ]; then
 	RUN_RENDERER=""
 	CONSUL_ADDRESS="-L 127.0.0.1:0"
 	if [ ! -d $DATA_DIR/ ]; then
-		echo "The giving data directory $DATA_DIR does not exist"
+		log ERROR "The giving data directory $DATA_DIR does not exist"
 		exit 1
 	fi
 	if [ -f $DATA_DIR/scylla.txt ]; then
 		. $DATA_DIR/scylla.txt
-		echo "Taking version from $DATA_DIR/scylla.txt"
-		echo "Version set to $VERSIONS"
+		log INFO "Taking version from $DATA_DIR/scylla.txt"
+		log INFO "Version set to $VERSIONS"
 	else
-		echo "scylla.txt not found in $DATA_DIR/. You can use it to start the monitoring stack with a given version"
-		echo "For example, to start the monitoring stack with version 2014.1 and manager 3.3"
-		echo 'echo VERSIONS="2024.1">'$DATA_DIR/scylla.txt
-		echo 'echo MANAGER_VERSION="3.3">>'$DATA_DIR/scylla.txt
+		log WARNING "scylla.txt not found in $DATA_DIR/. You can use it to start the monitoring stack with a given version"
+		log WARNING "For example, to start the monitoring stack with version 2014.1 and manager 3.3"
+		log WARNING 'echo VERSIONS="2024.1">'$DATA_DIR/scylla.txt
+		log WARNING 'echo MANAGER_VERSION="3.3">>'$DATA_DIR/scylla.txt
 	fi
 fi
 
 if [ -z "$VERSIONS" ]; then
-	echo "Scylla-version was not not found, add the -v command-line with a specific version (i.e. -v 2021.1)"
+	log ERROR "Scylla-version was not not found, add the -v command-line with a specific version (i.e. -v 2021.1)"
 	exit 1
 fi
 if [ "$QUICK_STARTUP" = "1" ]; then
@@ -592,13 +657,21 @@ if [ "$CURRENT_VERSION" = "master" ]; then
 	else
 		./generate-dashboards.sh -v $VERSIONS -F -R 0 -m $MANAGER_VERSION $STACK_CMD $VECTOR_SEARCH_CMD
 	fi
-	echo "Generating the dashboards"
+	log INFO "Generating the dashboards"
 
 fi
 
+if [ -z "$ALERTMANAGER_PORT" ]; then
+	ALERTMANAGER_PORT="9093"
+else
+	if [  $ALERTMANAGER_PORT != "9093" ]; then
+		ALERTMANAGER_PORT_CMD="-p $ALERTMANAGER_PORT"
+	fi
+fi
+
 if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
-	if [ ! -z "$ALERTMANAGER_PORT" ] || [ ! -z "$GRAFANA_PORT" ] || [ ! -z $PROMETHEUS_PORT ]; then
-		echo "Port mapping is not supported with host network, remove the -l flag from the command line"
+	if [ ! -z "$ALERTMANAGER_PORT_CMD" ] || [ ! -z "$GRAFANA_PORT" ] || [ ! -z $PROMETHEUS_PORT ]; then
+		log ERROR "Port mapping is not supported with host network, remove the -l flag from the command line"
 		exit 1
 	fi
 	HOST_NETWORK=host
@@ -623,7 +696,7 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
 	done
 
 	if [ -z $SCYLLA_TARGET_FILE ]; then
-		echo "Scylla target file '${SCYLLA_TARGET_FILES}' does not exist, you can use prometheus/scylla_servers.example.yml as an example."
+		log ERROR "Scylla target file '${SCYLLA_TARGET_FILES}' does not exist, you can use prometheus/scylla_servers.example.yml as an example."
 		exit 1
 	fi
 
@@ -637,7 +710,7 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
 		SCYLLA_MANGER_AGENT_TARGET_FILE=$SCYLLA_TARGET_FILE
 	fi
 	if [ ! -f $NODE_TARGET_FILE ]; then
-		echo "Node target file '${NODE_TARGET_FILE}' does not exist"
+		log ERROR "Node target file '${NODE_TARGET_FILE}' does not exist"
 		exit 1
 	fi
 
@@ -648,7 +721,7 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
 		fi
 	done
 	if [ -z $SCYLLA_MANGER_TARGET_FILE ]; then
-		echo "Scylla-Manager target file '${SCYLLA_MANGER_TARGET_FILES}' does not exist, you can use prometheus/scylla_manager_servers.example.yml as an example."
+		log ERROR "Scylla-Manager target file '${SCYLLA_MANGER_TARGET_FILES}' does not exist, you can use prometheus/scylla_manager_servers.example.yml as an example."
 		exit 1
 	fi
 	if [ -z "$HOST_NETWORK" ]; then
@@ -671,7 +744,7 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
 else
     if [ ! -z "$VECTOR_SEARCH" ]; then
         if [ "$VECTOR_SEARCH" != "vector_search_servers.yml" ]; then
-            echo "When using target directory the vector-search file is called vector_search_servers.yml and should be inside the target directory"
+            log WARNING "When using target directory the vector-search file is called vector_search_servers.yml and should be inside the target directory"
         fi
     fi
     VECTOR_SEARCH=""
@@ -684,26 +757,26 @@ fi
 if [ "$TARGET_DIRECTORY" != "" ]; then
 	SCYLLA_TARGET_FILE="-v "$($readlink_command $TARGET_DIRECTORY)":/etc/scylla.d/prometheus/targets/:z"
 	if [ ! -f $TARGET_DIRECTORY/scylla_servers.yml ]; then
-		echo "Warning, using $TARGET_DIRECTORY for Prometheus traget directory, scylla_servers.yml is missing, make sure to create it, or ScyllaDB targets will be missing"
+		log WARNING "WARNING: Using $TARGET_DIRECTORY for Prometheus target directory, scylla_servers.yml is missing, make sure to create it, or ScyllaDB targets will be missing"
 	fi
 	if [ ! -f $TARGET_DIRECTORY/node_exporter_servers.yml ]; then
-		echo "Warning, using $TARGET_DIRECTORY for Prometheus traget directory, node_exporter_servers.yml is missing, make sure to create it, or node-exporter targets will be missing"
+		log WARNING "WARNING: Using $TARGET_DIRECTORY for Prometheus target directory, node_exporter_servers.yml is missing, make sure to create it, or node-exporter targets will be missing"
 	fi
 	if [ ! -f $TARGET_DIRECTORY/scylla_manager_agents.yml ]; then
-		echo "Warning, using $TARGET_DIRECTORY for Prometheus traget directory, scylla_manager_agents.yml is missing, make sure to create it, or ScyllaDB manager-agent targets will be missing"
+		log WARNING "WARNING: Using $TARGET_DIRECTORY for Prometheus target directory, scylla_manager_agents.yml is missing, make sure to create it, or ScyllaDB manager-agent targets will be missing"
 	fi
 	if [ ! -f $TARGET_DIRECTORY/scylla_manager_servers.yml ]; then
-		echo "Warning, using $TARGET_DIRECTORY for Prometheus traget directory, scylla_manager_servers.yml is missing, make sure to create it, or ScyllaDB manager target will be missing"
+		log WARNING "WARNING: Using $TARGET_DIRECTORY for Prometheus target directory, scylla_manager_servers.yml is missing, make sure to create it, or ScyllaDB manager target will be missing"
 	fi
 fi
 if [ -z $DATA_DIR ]; then
 	USER_PERMISSIONS=""
-	echo "Warning: without an external Prometheus directory, Prometheus data will be deleted on shutdown, use the -d command line flag for data persistence."
+	log WARNING "WARNING: Without an external Prometheus directory, Prometheus data will be deleted on shutdown, use the -d command line flag for data persistence."
 else
 	if [ -d $DATA_DIR ]; then
-		echo "Loading prometheus data from $DATA_DIR"
+		log INFO "Loading prometheus data from $DATA_DIR"
 	else
-		echo "Creating data directory $DATA_DIR"
+		log INFO "Creating data directory $DATA_DIR"
 		mkdir -p $DATA_DIR
 	fi
 	if [[ "$VICTORIA_METRICS" = "1" ]]; then
@@ -715,25 +788,25 @@ fi
 
 if [ "$VERSIONS" = "latest" ]; then
 	if [ -z "$BRANCH_VERSION" ] || [ "$BRANCH_VERSION" = "master" ]; then
-		echo "Default versions (-v latest) is not supported on the master branch, use specific version instead"
+		log ERROR "Default versions (-v latest) is not supported on the master branch, use specific version instead"
 		exit 1
 	fi
 	VERSIONS=${DEFAULT_VERSION[$BRANCH_VERSION]}
-	echo "The use of -v latest is deprecated. Use a specific version instead."
+	log WARNING "The use of -v latest is deprecated. Use a specific version instead."
 else
 	if [ "$VERSIONS" = "all" ]; then
 		VERSIONS=$ALL
 	fi
 fi
 if [ "$STACK_ID" != "" ]; then
-	echo "Running a seconddary stack $STACK_ID"
+	log INFO "Running a seconddary stack $STACK_ID"
 	echo "Note that the following containers will not run: loki, promtail, grafana renderer"
 	echo "to stop it use ./kill-all.sh --stack $STACK_ID"
 	RUN_LOKI=0
 	RUN_RENDERER=""
 	PROMETHEUS_PORT=${STACK_PROMETHEUS["$STACK_ID"]}
 	GRAFANA_PORT="-g"${STACK_GRAFANA["$STACK_ID"]}
-	ALERTMANAGER_PORT="-p "${STACK_ALERTMANAGER["$STACK_ID"]}
+	ALERTMANAGER_PORT_CMD="-p "${STACK_ALERTMANAGER["$STACK_ID"]}
 fi
 
 ALERTMANAGER_COMMAND=""
@@ -744,21 +817,33 @@ done
 if [ "$SKIP_ALERTMANAGER" = "1" ]; then
 	AM_ADDRESS="127.0.0.1:9093"
 else
-	echo "Wait for alert manager container to start"
-	AM_ADDRESS=$(./start-alertmanager.sh $ALERTMANAGER_PORT $QUICK_STARTUP_CMD $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG)
+	run_script ./start-alertmanager.sh $ALERTMANAGER_PORT_CMD $QUICK_STARTUP_CMD $ALERT_MANAGER_DIR -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $ALERTMANAGER_COMMAND $BIND_ADDRESS_CONFIG $ALERT_MANAGER_RULE_CONFIG
 	if [ $? -ne 0 ]; then
-		echo "$AM_ADDRESS"
 		exit 1
 	fi
+	if [ $ALERTMANAGER_PORT = "9093" ]; then
+		ALERTMANAGER_NAME=aalert
+	else
+		ALERTMANAGER_NAME=aalert-$ALERTMANAGER_PORT
+	fi
+	AM_ADDRESS=$(container_address $ALERTMANAGER_NAME $ALERTMANAGER_PORT)
 fi
+
 LOKI_ADDRESS=""
 if [ $RUN_LOKI -eq 1 ]; then
-	echo "Wait for Loki container to start."
-	LOKI_ADDRESS=$(./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR $LOKI_PORT $QUICK_STARTUP_CMD -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS)
+	run_script ./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR $LOKI_PORT_CMD $QUICK_STARTUP_CMD -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS
 	if [ $? -ne 0 ]; then
-		echo "$LOKI_ADDRESS"
 		exit 1
 	fi
+	if [ -z "$LOKI_PORT" ]; then
+		LOKI_PORT=3100
+	fi
+	if [ $LOKI_PORT -eq 3100 ]; then
+		LOKI_NAME=aloki
+	else
+		LOKI_NAME=aloki-$LOKI_PORT
+	fi
+	LOKI_ADDRESS=$(container_address $LOKI_NAME $LOKI_PORT)
 	LOKI_ADDRESS="-L $LOKI_ADDRESS"
 fi
 
@@ -869,20 +954,7 @@ fi
 
 # Can't use localhost here, because the monitoring may be running remotely.
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
-IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME)
-if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
-   IP=""
-fi
-DB_ADDRESS="$IP:9090"
-
-if [ "$DB_ADDRESS" = ":9090" ]; then
-	if [[ $(uname) == "Linux" ]]; then
-		HOST_IP=$(hostname -I | awk '{print $1}')
-	elif [[ $(uname) == "Darwin" ]]; then
-		HOST_IP=$(ifconfig en0 | awk '/inet / {print $2}')
-	fi
-	DB_ADDRESS="$HOST_IP:$PROMETHEUS_PORT"
-fi
+DB_ADDRESS=$(container_address $PROMETHEUS_NAME 9090)
 
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "running vmalert"
@@ -899,9 +971,9 @@ if [[ "$VICTORIA_METRICS" = "1" ]]; then
 fi
 if [ $RUN_THANOS_SC -eq 1 ]; then
 	if [ -z $DATA_DIR ]; then
-		echo "You must use external prometheus directory to use the thanos side cart"
+		log WARNING "You must use external prometheus directory to use the thanos side cart"
 	else
-		./start-thanos-sc.sh -d $DATA_DIR -D "$DOCKER_PARAM" -a $DB_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG
+		run_script ./start-thanos-sc.sh -d $DATA_DIR -D "$DOCKER_PARAM" -a $DB_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG
 	fi
 fi
 
@@ -909,24 +981,23 @@ if [ ! -z "$NO_THANOS_DATASOURCE" ]; then
     NO_THANOS_DATASOURCE="--no-thanos-datasource"
 fi
 if [ $RUN_THANOS -eq 1 ]; then
-	./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG
+	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG
 elif [ "$RUN_LOCAL_THANOS" = "1" ]; then
     IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME)
     if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
-       echo "$IP setting to empty"
        IP=""
     fi
     STORE_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sidecar1):10911"
-    ./start-thanos.sh $NO_THANOS_DATASOURCE -S $STORE_ADDRESS
+    run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -S $STORE_ADDRESS
 fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 if [ ! -z "$DATDOGPARAM" ]; then
-	./start-datadog.sh $DATDOGPARAM -p $DB_ADDRESS
+	run_script ./start-datadog.sh $DATDOGPARAM -p $DB_ADDRESS
 fi
 if [ "$RUN_ALTERNATOR" = 1 ]; then
 	GRAFANA_ENV_ARRAY+=(--alternator)
 fi
-./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD $VECTOR_SEARCH_CMD
+run_script ./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD $VECTOR_SEARCH_CMD

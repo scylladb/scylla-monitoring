@@ -400,7 +400,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
 	-e "GF_SERVER_ENABLE_GZIP=$SERVER_ENABLE_GZIP" \
 	"${GRAFANA_ENV_COMMAND[@]}" \
 	"${proxy_args[@]}" \
-	--name $GRAFANA_NAME docker.io/grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]} >&/dev/null
+	--name $GRAFANA_NAME docker.io/grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]}
 
 if [ $? -ne 0 ]; then
 	echo "Error: Grafana container failed to start"
@@ -410,7 +410,7 @@ fi
 
 # Wait till Grafana API is available
 printf "Wait for Grafana container to start."
-RETRIES=35
+RETRIES=60
 TRIES=0
 if [ ! "$QUICK_STARTUP" = "1" ]; then
     until $(curl --output /dev/null -f --silent http://localhost:$GRAFANA_PORT/api/org) || [ $TRIES -eq $RETRIES ]; do
