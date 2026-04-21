@@ -163,23 +163,3 @@ if [ ! "$(docker ps -q -f name=$ALERTMANAGER_NAME)" ]; then
 	echo "Error: Alertmanager container failed to start"
 	exit 1
 fi
-
-IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $ALERTMANAGER_NAME)
-if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
-   IP=""
-fi
-
-AM_ADDRESS="$IP:$ALERTMANAGER_PORT"
-if [ "$AM_ADDRESS" = ":$ALERTMANAGER_PORT" ]; then
-	if [ ! -z "$BIND_ADDRESS" ]; then
-		# Use the bind address if provided
-		HOST_IP=$(echo $BIND_ADDRESS | sed 's/:$//')
-	elif [[ $(uname) == "Linux" ]]; then
-		HOST_IP=$(hostname -I | awk '{print $1}')
-	elif [[ $(uname) == "Darwin" ]]; then
-		HOST_IP=$(ifconfig en0 | awk '/inet / {print $2}')
-	fi
-	AM_ADDRESS="$HOST_IP:$ALERTMANAGER_PORT"
-fi
-
-echo $AM_ADDRESS

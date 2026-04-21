@@ -172,7 +172,7 @@ docker run ${DOCKER_LIMITS["loki"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
 	-v $LOKI_RULE_DIR:/etc/loki/rules/fake:z \
 	-v $LOKI_CONF_DIR:/mnt/config:z \
 	$LOKI_DIR \
-	--name $LOKI_NAME docker.io/grafana/loki:$LOKI_VERSION $LOKI_COMMANDS --config.file=/mnt/config/loki-config.yaml ${DOCKER_PARAMS["loki"]} >&/dev/null
+	--name $LOKI_NAME docker.io/grafana/loki:$LOKI_VERSION $LOKI_COMMANDS --config.file=/mnt/config/loki-config.yaml ${DOCKER_PARAMS["loki"]}
 
 if [ $? -ne 0 ]; then
 	echo "Error: Loki container failed to start"
@@ -232,7 +232,7 @@ sed "s/LOKI_IP/$LOKI_ADDRESS/" loki/promtail/promtail_config.template.yml >loki/
 
 docker run ${DOCKER_LIMITS["promtail"]} -d $DOCKER_PARAM -i $PROMTAIL_PORT_MAPPING \
 	-v $PROMTAIL_CONFIG:/etc/promtail/config.yml:z \
-	--name $PROMTAIL_NAME docker.io/grafana/promtail:$LOKI_VERSION --config.file=/etc/promtail/config.yml ${DOCKER_PARAMS["promtail"]} >&/dev/null
+	--name $PROMTAIL_NAME docker.io/grafana/promtail:$LOKI_VERSION --config.file=/etc/promtail/config.yml ${DOCKER_PARAMS["promtail"]}
 
 if [ $? -ne 0 ]; then
 	echo "Error: Promtail container failed to start"
@@ -254,5 +254,3 @@ if [ ! "$(docker ps -q -f name=$PROMTAIL_NAME)" ]; then
 	echo "Error: Promtail container failed to start"
 	exit 1
 fi
-
-echo "$LOKI_ADDRESS"
