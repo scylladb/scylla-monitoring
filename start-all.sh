@@ -839,9 +839,9 @@ if [ $RUN_LOKI -eq 1 ]; then
 		LOKI_PORT=3100
 	fi
 	if [ $LOKI_PORT -eq 3100 ]; then
-		LOKI_NAME=aloki
+		LOKI_NAME=loki
 	else
-		LOKI_NAME=aloki-$LOKI_PORT
+		LOKI_NAME=loki-$LOKI_PORT
 	fi
 	LOKI_ADDRESS=$(container_address $LOKI_NAME $LOKI_PORT)
 	LOKI_ADDRESS="-L $LOKI_ADDRESS"
