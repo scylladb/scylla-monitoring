@@ -77,8 +77,8 @@ def get_parsed_message(url, headers={}):
         return None
 
 def getAWSData(args):
-    url = 'http://169.254.169.254/latest/user-data' if args.address == "" else args.address 
-    return get_parsed_message(url) 
+    url = 'http://169.254.169.254/latest/user-data' if args.address == "" else args.address
+    return get_parsed_message(url)
 
 def getGCEData(args):
     url = 'http://metadata.google.internal/computeMetadata/v1/instance/attributes/user-data' if args.address == "" else args.address
@@ -116,7 +116,7 @@ def setupStartAll(data):
         run('sudo -u {_USER} cp {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/rule_config.original.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/rule_config.yml')
     except Exception:
         print("Error while running:")
-    if 'env' in data: 
+    if 'env' in data:
         mk_env(data['env']['obj'])
     if 'scylla_server' in data:
         mk_servers(data['scylla_server']['obj'])
