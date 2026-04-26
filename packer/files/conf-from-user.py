@@ -143,7 +143,7 @@ if __name__ == "__main__":
     data = getData(args)
     USER = args.user
     HOME_DIR='/home/' + USER + '/'
-    if "scylla-monitoring" not in data or "version" not in data["scylla-monitoring"]['obj']:
+    if not data or "scylla-monitoring" not in data or "version" not in data["scylla-monitoring"]['obj']:
         exit(0)
     scylla_monitoring = data["scylla-monitoring"]['obj']
     setupStartAll(data)
