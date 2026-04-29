@@ -1,0 +1,3123 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": "-- Grafana --",
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            },
+            {
+                "class": "annotation_restart",
+                "datasource": "prometheus",
+                "enable": true,
+                "expr": "resets(scylla_gossip_heart_beat{cluster=\"$cluster\"}[5m])>0",
+                "hide": false,
+                "iconColor": "rgba(255, 96, 96, 1)",
+                "limit": 100,
+                "name": "Node Restart",
+                "showIn": 0,
+                "tagKeys": "instance,dc,cluster",
+                "tags": [],
+                "titleFormat": "Node Restart",
+                "type": "tags"
+            },
+            {
+                "class": "annotation_stall",
+                "datasource": "prometheus",
+                "enable": false,
+                "expr": "changes(scylla_stall_detector_reported{cluster=\"$cluster\"}[5m])>0",
+                "hide": false,
+                "iconColor": "rgba(255, 96, 96, 1)",
+                "limit": 100,
+                "name": "stall detector",
+                "showIn": 0,
+                "tagKeys": "dc,instance,shard",
+                "tags": [],
+                "titleFormat": "Stall found",
+                "type": "tags"
+            },
+            {
+                "class": "annotation_schema_changed",
+                "datasource": "prometheus",
+                "enable": false,
+                "expr": "changes(scylla_database_schema_changed{cluster=\"$cluster\"}[$__rate_interval])>0",
+                "hide": false,
+                "iconColor": "rgba(255, 96, 96, 1)",
+                "limit": 100,
+                "name": "Schema Changed",
+                "showIn": 0,
+                "tagKeys": "instance,dc,cluster",
+                "tags": [],
+                "titleFormat": "schema changed",
+                "type": "tags"
+            }
+        ]
+    },
+    "class": "dashboard",
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 1,
+    "hideControls": true,
+    "id": null,
+    "links": [
+        {
+            "asDropdown": true,
+            "icon": "external link",
+            "includeVars": true,
+            "keepTime": true,
+            "tags": [],
+            "type": "dashboards"
+        }
+    ],
+    "overwrite": true,
+    "panels": [
+        {
+            "collapsed": false,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "panels": [],
+            "title": "Cluster OS Information $cluster $account_name $cluster_name ",
+            "type": "row"
+        },
+        {
+            "aliasColors": {},
+            "class": "piechart_panel_percent",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        }
+                    },
+                    "decimals": 0,
+                    "mappings": [],
+                    "unit": "bytes"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 5,
+                "x": 0,
+                "y": 1
+            },
+            "height": "250px",
+            "id": 2,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "displayLabels": [
+                    "name",
+                    "value",
+                    "percent"
+                ],
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "right",
+                    "values": [
+                        "value"
+                    ]
+                },
+                "pieType": "pie",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"})",
+                    "instant": true,
+                    "interval": "",
+                    "intervalFactor": 1,
+                    "legendFormat": "Free",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 7200
+                },
+                {
+                    "expr": "(sum(node_filesystem_size_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"})-sum(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}))",
+                    "instant": true,
+                    "intervalFactor": 1,
+                    "legendFormat": "Used",
+                    "refId": "B",
+                    "step": 7200
+                }
+            ],
+            "title": "Total Storage $node",
+            "type": "piechart"
+        },
+        {
+            "class": "device_table",
+            "datasource": "prometheus",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "filterable": true,
+                        "footer": {
+                            "reducers": []
+                        },
+                        "inspect": false
+                    },
+                    "links": [
+                        {
+                            "title": "Device information",
+                            "url": "/d/${__dashboard.uid}/${__dashboard.slug}?orgId=1&var-by=instance&var-node=${__data.fields[0]}&var-monitor_disk=${__data.fields[1]}&${__url_time_range}"
+                        }
+                    ],
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": 0
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value #A"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "decbytes"
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Free Space"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value #B"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "% Used"
+                            },
+                            {
+                                "id": "unit",
+                                "value": "percentunit"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value #C"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "decbytes"
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Used"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 12,
+                "w": 19,
+                "x": 5,
+                "y": 1
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "exemplar": false,
+                    "expr": "label_join(label_replace(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}, \"device\", \"$1\", \"device\", \"/dev/(.*)\") * on(instance, device) group_left(model) node_disk_info , \"instance_device\", \":\", \"instance\", \"mountpoint\")",
+                    "format": "table",
+                    "hide": false,
+                    "instant": true,
+                    "legendFormat": "__auto",
+                    "range": false,
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "exemplar": false,
+                    "expr": "1- (label_join(label_replace(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}/node_filesystem_size_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}, \"device\", \"$1\", \"device\", \"/dev/(.*)\"), \"instance_device\", \":\", \"instance\", \"mountpoint\"))",
+                    "format": "table",
+                    "hide": false,
+                    "instant": true,
+                    "legendFormat": "__auto",
+                    "range": false,
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "exemplar": false,
+                    "expr": "(label_join(label_replace(node_filesystem_size_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}-node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}, \"device\", \"$1\", \"device\", \"/dev/(.*)\"), \"instance_device\", \":\", \"instance\", \"mountpoint\"))",
+                    "format": "table",
+                    "hide": false,
+                    "instant": true,
+                    "legendFormat": "__auto",
+                    "range": false,
+                    "refId": "C"
+                }
+            ],
+            "title": "Disk And Partition Information",
+            "transformations": [
+                {
+                    "id": "joinByField",
+                    "options": {
+                        "byField": "instance_device",
+                        "mode": "outerTabular"
+                    }
+                },
+                {
+                    "id": "filterFieldsByName",
+                    "options": {
+                        "include": {
+                            "names": [
+                                "device 1",
+                                "instance 1",
+                                "model",
+                                "fstype 1",
+                                "Value #A",
+                                "Value #B",
+                                "Value #C",
+                                "mountpoint 1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {},
+                        "includeByName": {},
+                        "indexByName": {
+                            "Value #A": 5,
+                            "Value #B": 6,
+                            "Value #C": 7,
+                            "device 1": 1,
+                            "fstype 1": 2,
+                            "instance 1": 0,
+                            "model": 4,
+                            "mountpoint 1": 3
+                        },
+                        "renameByName": {
+                            "Value #D": ""
+                        }
+                    }
+                }
+            ],
+            "type": "table"
+        },
+        {
+            "class": "low_disk_partitions_table",
+            "datasource": "prometheus",
+            "description": "Partitions with low free space",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "filterable": true,
+                        "footer": {
+                            "reducers": []
+                        },
+                        "inspect": false,
+                        "minWidth": 100
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "percentunit"
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 100
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "% Free"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "dc"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 140
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "instance"
+                        },
+                        "properties": [
+                            {
+                                "id": "links",
+                                "value": [
+                                    {
+                                        "title": "Instance information",
+                                        "url": "/d/${__dashboard.uid}/${__dashboard.slug}?orgId=1&var-by=instance&var-node=${__data.fields[0]}&${__url_time_range}"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "mountpoint"
+                        },
+                        "properties": [
+                            {
+                                "id": "links",
+                                "value": [
+                                    {
+                                        "title": "Show mount point",
+                                        "url": "./d/${__dashboard.uid}/${__dashboard.slug}?orgId=1&var-by=instance&var-node=${__data.fields[0]}&${__url_time_range}&var-mount_point=${__data.fields[1]}"
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "options": "Value"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "displayName",
+                                                "value": "% Free"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 5,
+                "x": 0,
+                "y": 13
+            },
+            "options": {
+                "cellHeight": "sm",
+                "showHeader": true
+            },
+            "targets": [
+                {
+                    "editorMode": "code",
+                    "exemplar": false,
+                    "expr": "bottomk(20, node_filesystem_avail_bytes{job=~\"node_exporter.*\", mountpoint=~\"$mount_point\", instance=~\"$node\"}/node_filesystem_size_bytes{job=~\"node_exporter.*\", mountpoint=~\"$mount_point\", instance=~\"$node\"}<0.11)",
+                    "format": "table",
+                    "instant": true,
+                    "legendFormat": "__auto",
+                    "range": false,
+                    "refId": "A"
+                }
+            ],
+            "title": "Low-Space Partitions",
+            "transformations": [
+                {
+                    "id": "filterFieldsByName",
+                    "options": {
+                        "include": {
+                            "names": [
+                                "instance",
+                                "mountpoint",
+                                "Value"
+                            ]
+                        }
+                    }
+                }
+            ],
+            "type": "table"
+        },
+        {
+            "collapsed": false,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 19
+            },
+            "id": 3,
+            "panels": [],
+            "repeat": "mount_point",
+            "title": "Partition $mount_point",
+            "type": "row"
+        },
+        {
+            "class": "percentunit_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMax": 1,
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "percentunit"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 20
+            },
+            "id": 4,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "1-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])/sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Used disk by $by",
+            "type": "timeseries"
+        },
+        {
+            "class": "bytes_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "bytes"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 6,
+                "y": 20
+            },
+            "id": 5,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])-sum(node_filesystem_avail_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                },
+                {
+                    "expr": "sum(node_filesystem_size{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])-sum(node_filesystem_avail{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "B",
+                    "step": 1
+                }
+            ],
+            "title": "Used Bytes by $by",
+            "type": "timeseries"
+        },
+        {
+            "class": "bytes_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "bytes"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 12,
+                "y": 20
+            },
+            "id": 6,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "sum(node_filesystem_free_bytes{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Free Bytes by $by",
+            "type": "timeseries"
+        },
+        {
+            "class": "graph_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 18,
+                "y": 20
+            },
+            "id": 7,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "sum(node_filesystem_files{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}- node_filesystem_files_free{mountpoint=\"$mount_point\", instance=~\"$node\", job=~\"node_exporter.*\"}) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Number of files by $by",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 26
+            },
+            "id": 8,
+            "panels": [],
+            "repeat": "monitor_disk",
+            "title": "Disk $monitor_disk",
+            "type": "row"
+        },
+        {
+            "class": "text_panel",
+            "content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Disk $monitor_disk</h1>",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {}
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 27
+            },
+            "id": 9,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {},
+            "span": 12,
+            "style": {},
+            "title": "",
+            "transparent": true,
+            "type": "text"
+        },
+        {
+            "class": "wps_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "wps"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 29
+            },
+            "id": 10,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "sum(rate(node_disk_writes_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                },
+                {
+                    "expr": "sum(rate(node_disk_writes_completed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "B",
+                    "step": 1
+                }
+            ],
+            "title": "Disk Writes per $by",
+            "type": "timeseries"
+        },
+        {
+            "class": "rps_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "rps"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 6,
+                "y": 29
+            },
+            "id": 11,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "sum(rate(node_disk_reads_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 1
+                },
+                {
+                    "expr": "sum(rate(node_disk_reads_completed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "B",
+                    "step": 1
+                }
+            ],
+            "title": "Disk Reads per $by",
+            "type": "timeseries"
+        },
+        {
+            "class": "bps_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "Bps"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 12,
+                "y": 29
+            },
+            "id": 12,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "sum(rate(node_disk_written_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                },
+                {
+                    "expr": "sum(rate(node_disk_bytes_written{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "B",
+                    "step": 1
+                }
+            ],
+            "title": "Disk Writes Bps per $by",
+            "type": "timeseries"
+        },
+        {
+            "class": "bps_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "Bps"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 18,
+                "y": 29
+            },
+            "id": 13,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "sum(rate(node_disk_read_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "A",
+                    "step": 1
+                },
+                {
+                    "expr": "sum(rate(node_disk_bytes_read{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "refId": "B",
+                    "step": 1
+                }
+            ],
+            "title": "Disk Read Bps per $by",
+            "type": "timeseries"
+        },
+        {
+            "class": "seconds_panel",
+            "datasource": "prometheus",
+            "description": "The average read time from disk",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 35
+            },
+            "id": 14,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "rate(node_disk_read_time_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])/rate(node_disk_reads_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])",
+                    "intervalFactor": 1,
+                    "legendFormat": "{{dc}} {{instance}}",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Read AWait per instance",
+            "type": "timeseries"
+        },
+        {
+            "class": "seconds_panel",
+            "datasource": "prometheus",
+            "description": "The average write time to disk",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 6,
+                "y": 35
+            },
+            "id": 15,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "rate(node_disk_write_time_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])/rate(node_disk_writes_completed_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_disk\", job=~\"node_exporter.*\"}[4m])",
+                    "intervalFactor": 1,
+                    "legendFormat": "{{dc}} {{instance}}",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Write AWait per instance",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 41
+            },
+            "id": 16,
+            "panels": [],
+            "repeat": "monitor_network_interface",
+            "title": "Network Interface $monitor_network_interface",
+            "type": "row"
+        },
+        {
+            "class": "text_panel",
+            "content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Network $monitor_network_interface</h1>",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {}
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 42
+            },
+            "id": 17,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {},
+            "span": 12,
+            "style": {},
+            "title": "",
+            "transparent": true,
+            "type": "text"
+        },
+        {
+            "class": "pps_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "pps"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 12,
+                "x": 0,
+                "y": 44
+            },
+            "id": 18,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 6,
+            "targets": [
+                {
+                    "expr": "sum(rate(node_network_receive_packets_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Interface Rx Packets",
+            "type": "timeseries"
+        },
+        {
+            "class": "pps_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "pps"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 12,
+                "x": 12,
+                "y": 44
+            },
+            "id": 19,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 6,
+            "targets": [
+                {
+                    "expr": "sum(rate(node_network_transmit_packets_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Interface Tx Packets",
+            "type": "timeseries"
+        },
+        {
+            "class": "bitsps_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "decbits"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 12,
+                "x": 0,
+                "y": 50
+            },
+            "id": 20,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 6,
+            "targets": [
+                {
+                    "expr": "sum(8*rate(node_network_receive_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Interface Rx bps",
+            "type": "timeseries"
+        },
+        {
+            "class": "bitsps_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "decbits"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 12,
+                "x": 12,
+                "y": 50
+            },
+            "id": 21,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 6,
+            "targets": [
+                {
+                    "expr": "sum(8*rate(node_network_transmit_bytes_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Interface Tx bps",
+            "type": "timeseries"
+        },
+        {
+            "class": "pps_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "pps"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 12,
+                "x": 0,
+                "y": 56
+            },
+            "id": 22,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 6,
+            "targets": [
+                {
+                    "expr": "sum(rate(node_network_receive_drop_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Interface Received Dropped Packets",
+            "type": "timeseries"
+        },
+        {
+            "class": "pps_panel",
+            "datasource": "prometheus",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "pps"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 12,
+                "x": 12,
+                "y": 56
+            },
+            "id": 23,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 6,
+            "targets": [
+                {
+                    "expr": "sum(rate(node_network_transmit_drop_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", device=\"$monitor_network_interface\", job=~\"node_exporter.*\"}[4m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Interface Transmit Dropped Packets",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 62
+            },
+            "id": 24,
+            "panels": [],
+            "title": "CPU and Memory",
+            "type": "row"
+        },
+        {
+            "class": "text_panel",
+            "content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">CPU and Memory</h1>",
+            "datasource": null,
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {}
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 63
+            },
+            "id": 25,
+            "isNew": true,
+            "links": [],
+            "mode": "html",
+            "options": {},
+            "span": 12,
+            "style": {},
+            "title": "",
+            "transparent": true,
+            "type": "text"
+        },
+        {
+            "class": "bytes_panel",
+            "datasource": "prometheus",
+            "description": "The available memory, note that in a production environment we expect this to be low, Scylla would use most of the available memory when possible",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "bytes"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 65
+            },
+            "id": 26,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "sum(node_memory_MemAvailable_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Available memory",
+            "type": "timeseries"
+        },
+        {
+            "class": "percentunit_panel",
+            "datasource": "prometheus",
+            "description": "Percent of available memory, note that in a production environment we expect this to be low, Scylla would use most of the available memory when possible",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMax": 1,
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "percentunit"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 6,
+                "y": 65
+            },
+            "id": 27,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "sum(node_memory_MemAvailable_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) by ([[by]])/sum(node_memory_MemTotal_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Percent of Available memory",
+            "type": "timeseries"
+        },
+        {
+            "class": "percentunit_panel",
+            "datasource": "prometheus",
+            "description": "Percent of CPU used, note that in production Scylla would try to use most of the CPU and this is not a problem",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMax": 1,
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "percentunit"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 12,
+                "y": 65
+            },
+            "id": 28,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "1-sum(rate(node_cpu_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", mode=\"idle\", job=~\"node_exporter.*\"}[3m])) by ([[by]])/count(node_cpu_seconds_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", mode=\"idle\", job=~\"node_exporter.*\"}) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "CPU used",
+            "type": "timeseries"
+        },
+        {
+            "class": "graph_panel",
+            "datasource": "prometheus",
+            "description": "CPU frequency should be set for performance.\n\n The current frequency should match the max frequency. If that is not the case, check your host configuration.",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "links": [],
+                    "unit": "hertz"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 18,
+                "y": 65
+            },
+            "id": 29,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "seriesOverrides": [
+                {
+                    "$$hashKey": "object:211",
+                    "alias": "Max",
+                    "color": "#F2495C"
+                }
+            ],
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "max(node_cpu_scaling_frequency_max_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) or on() max(node_cpu_frequency_max_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"})",
+                    "intervalFactor": 1,
+                    "legendFormat": "Max",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                },
+                {
+                    "expr": "min(node_cpu_scaling_frequency_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) by ([[by]]) or on() min(node_cpu_frequency_hertz{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "B",
+                    "step": 1
+                }
+            ],
+            "title": "CPU Frequency",
+            "type": "timeseries"
+        },
+        {
+            "class": "graph_panel",
+            "datasource": "prometheus",
+            "description": "reports the number of TCP segments that have been retransmitted, indicating potential network issues or packet loss.",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 71
+            },
+            "id": 30,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 3,
+            "targets": [
+                {
+                    "expr": "sum(rate(node_netstat_Tcp_RetransSegs{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[3m])) by ([[by]])",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "TCP Retransmit",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": true,
+            "datasource": null,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 77
+            },
+            "id": 31,
+            "panels": [
+                {
+                    "class": "graph_panel",
+                    "datasource": "prometheus",
+                    "description": "Outbound bandwidth allowance exceed events per second \u2014 the rate at which the NIC attempts to transmit above its allowed egress bandwidth limit (often indicating throttling/shaping).",
+                    "editable": true,
+                    "error": false,
+                    "fieldConfig": {
+                        "defaults": {
+                            "class": "fieldConfig_defaults",
+                            "color": {
+                                "mode": "palette-classic"
+                            },
+                            "custom": {
+                                "axisLabel": "",
+                                "axisPlacement": "auto",
+                                "axisSoftMin": 0,
+                                "barAlignment": 0,
+                                "class": "fieldConfig_defaults_custom",
+                                "drawStyle": "line",
+                                "fillOpacity": 0,
+                                "gradientMode": "none",
+                                "hideFrom": {
+                                    "legend": false,
+                                    "tooltip": false,
+                                    "viz": false
+                                },
+                                "lineInterpolation": "linear",
+                                "lineWidth": 1,
+                                "pointSize": 5,
+                                "scaleDistribution": {
+                                    "type": "linear"
+                                },
+                                "showPoints": "never",
+                                "spanNulls": false,
+                                "stacking": {
+                                    "group": "A",
+                                    "mode": "none"
+                                },
+                                "thresholdsStyle": {
+                                    "mode": "off"
+                                }
+                            },
+                            "mappings": [],
+                            "unit": "short"
+                        },
+                        "overrides": []
+                    },
+                    "gridPos": {
+                        "h": 6,
+                        "w": 6,
+                        "x": 0,
+                        "y": 78
+                    },
+                    "id": 32,
+                    "isNew": true,
+                    "links": [],
+                    "options": {
+                        "legend": {
+                            "calcs": [],
+                            "displayMode": "hidden",
+                            "placement": "bottom"
+                        },
+                        "tooltip": {
+                            "maxHeight": 600,
+                            "mode": "multi",
+                            "sort": "desc"
+                        }
+                    },
+                    "span": 3,
+                    "targets": [
+                        {
+                            "expr": "sum(rate(node_ethtool_bw_out_allowance_exceeded{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[3m])) by ([[by]])",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "metric": "",
+                            "refId": "A",
+                            "step": 1
+                        }
+                    ],
+                    "title": "Bandwidth-Out allowance exceeded",
+                    "type": "timeseries"
+                },
+                {
+                    "class": "graph_panel",
+                    "datasource": "prometheus",
+                    "description": "Inbound bandwidth allowance exceed events per second \u2014 the rate at which the NIC receives above its allowed ingress bandwidth limit (often indicating ingress shaping/throttling).",
+                    "editable": true,
+                    "error": false,
+                    "fieldConfig": {
+                        "defaults": {
+                            "class": "fieldConfig_defaults",
+                            "color": {
+                                "mode": "palette-classic"
+                            },
+                            "custom": {
+                                "axisLabel": "",
+                                "axisPlacement": "auto",
+                                "axisSoftMin": 0,
+                                "barAlignment": 0,
+                                "class": "fieldConfig_defaults_custom",
+                                "drawStyle": "line",
+                                "fillOpacity": 0,
+                                "gradientMode": "none",
+                                "hideFrom": {
+                                    "legend": false,
+                                    "tooltip": false,
+                                    "viz": false
+                                },
+                                "lineInterpolation": "linear",
+                                "lineWidth": 1,
+                                "pointSize": 5,
+                                "scaleDistribution": {
+                                    "type": "linear"
+                                },
+                                "showPoints": "never",
+                                "spanNulls": false,
+                                "stacking": {
+                                    "group": "A",
+                                    "mode": "none"
+                                },
+                                "thresholdsStyle": {
+                                    "mode": "off"
+                                }
+                            },
+                            "mappings": [],
+                            "unit": "short"
+                        },
+                        "overrides": []
+                    },
+                    "gridPos": {
+                        "h": 6,
+                        "w": 6,
+                        "x": 6,
+                        "y": 78
+                    },
+                    "id": 33,
+                    "isNew": true,
+                    "links": [],
+                    "options": {
+                        "legend": {
+                            "calcs": [],
+                            "displayMode": "hidden",
+                            "placement": "bottom"
+                        },
+                        "tooltip": {
+                            "maxHeight": 600,
+                            "mode": "multi",
+                            "sort": "desc"
+                        }
+                    },
+                    "span": 3,
+                    "targets": [
+                        {
+                            "expr": "sum(rate(node_ethtool_bw_in_allowance_exceeded{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[3m])) by ([[by]])",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "metric": "",
+                            "refId": "A",
+                            "step": 1
+                        }
+                    ],
+                    "title": "Bandwidth-In allowance exceeded",
+                    "type": "timeseries"
+                },
+                {
+                    "class": "graph_panel",
+                    "datasource": "prometheus",
+                    "description": "Conntrack allowance exceed events per second \u2014 the rate at which the system/NIC exceeds its allowed connection-tracking (conntrack) limit, often indicating connection pressure and potential drops or throttling.",
+                    "editable": true,
+                    "error": false,
+                    "fieldConfig": {
+                        "defaults": {
+                            "class": "fieldConfig_defaults",
+                            "color": {
+                                "mode": "palette-classic"
+                            },
+                            "custom": {
+                                "axisLabel": "",
+                                "axisPlacement": "auto",
+                                "axisSoftMin": 0,
+                                "barAlignment": 0,
+                                "class": "fieldConfig_defaults_custom",
+                                "drawStyle": "line",
+                                "fillOpacity": 0,
+                                "gradientMode": "none",
+                                "hideFrom": {
+                                    "legend": false,
+                                    "tooltip": false,
+                                    "viz": false
+                                },
+                                "lineInterpolation": "linear",
+                                "lineWidth": 1,
+                                "pointSize": 5,
+                                "scaleDistribution": {
+                                    "type": "linear"
+                                },
+                                "showPoints": "never",
+                                "spanNulls": false,
+                                "stacking": {
+                                    "group": "A",
+                                    "mode": "none"
+                                },
+                                "thresholdsStyle": {
+                                    "mode": "off"
+                                }
+                            },
+                            "mappings": [],
+                            "unit": "short"
+                        },
+                        "overrides": []
+                    },
+                    "gridPos": {
+                        "h": 6,
+                        "w": 6,
+                        "x": 12,
+                        "y": 78
+                    },
+                    "id": 34,
+                    "isNew": true,
+                    "links": [],
+                    "options": {
+                        "legend": {
+                            "calcs": [],
+                            "displayMode": "hidden",
+                            "placement": "bottom"
+                        },
+                        "tooltip": {
+                            "maxHeight": 600,
+                            "mode": "multi",
+                            "sort": "desc"
+                        }
+                    },
+                    "span": 3,
+                    "targets": [
+                        {
+                            "expr": "sum(rate(node_ethtool_conntrack_allowance_exceeded{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[3m])) by ([[by]])",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "metric": "",
+                            "refId": "A",
+                            "step": 1
+                        }
+                    ],
+                    "title": "Conntrack allowance exceed",
+                    "type": "timeseries"
+                },
+                {
+                    "class": "graph_panel",
+                    "datasource": "prometheus",
+                    "description": "Link-local allowance exceed events per second \u2014 the rate at which the NIC exceeds its allowed link-local traffic limit (e.g., ARP/ND or other local control traffic), often indicating local-network chatter and possible throttling",
+                    "editable": true,
+                    "error": false,
+                    "fieldConfig": {
+                        "defaults": {
+                            "class": "fieldConfig_defaults",
+                            "color": {
+                                "mode": "palette-classic"
+                            },
+                            "custom": {
+                                "axisLabel": "",
+                                "axisPlacement": "auto",
+                                "axisSoftMin": 0,
+                                "barAlignment": 0,
+                                "class": "fieldConfig_defaults_custom",
+                                "drawStyle": "line",
+                                "fillOpacity": 0,
+                                "gradientMode": "none",
+                                "hideFrom": {
+                                    "legend": false,
+                                    "tooltip": false,
+                                    "viz": false
+                                },
+                                "lineInterpolation": "linear",
+                                "lineWidth": 1,
+                                "pointSize": 5,
+                                "scaleDistribution": {
+                                    "type": "linear"
+                                },
+                                "showPoints": "never",
+                                "spanNulls": false,
+                                "stacking": {
+                                    "group": "A",
+                                    "mode": "none"
+                                },
+                                "thresholdsStyle": {
+                                    "mode": "off"
+                                }
+                            },
+                            "mappings": [],
+                            "unit": "short"
+                        },
+                        "overrides": []
+                    },
+                    "gridPos": {
+                        "h": 6,
+                        "w": 6,
+                        "x": 18,
+                        "y": 78
+                    },
+                    "id": 35,
+                    "isNew": true,
+                    "links": [],
+                    "options": {
+                        "legend": {
+                            "calcs": [],
+                            "displayMode": "hidden",
+                            "placement": "bottom"
+                        },
+                        "tooltip": {
+                            "maxHeight": 600,
+                            "mode": "multi",
+                            "sort": "desc"
+                        }
+                    },
+                    "span": 3,
+                    "targets": [
+                        {
+                            "expr": "sum(rate(node_ethtool_linklocal_allowance_exceeded{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[3m])) by ([[by]])",
+                            "intervalFactor": 1,
+                            "legendFormat": "",
+                            "metric": "",
+                            "refId": "A",
+                            "step": 1
+                        }
+                    ],
+                    "title": "Link-local allowance exceed",
+                    "type": "timeseries"
+                },
+                {
+                    "class": "plain_text",
+                    "dashproductreject": "no-your-pannels",
+                    "datasource": null,
+                    "editable": true,
+                    "error": false,
+                    "fieldConfig": {
+                        "defaults": {
+                            "custom": {}
+                        },
+                        "overrides": []
+                    },
+                    "gridPos": {
+                        "h": 3,
+                        "w": 24,
+                        "x": 0,
+                        "y": 84
+                    },
+                    "id": 36,
+                    "isNew": true,
+                    "links": [],
+                    "mode": "html",
+                    "options": {
+                        "content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - 4.15.0</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"/render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1&kiosk\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
+                        "mode": "html"
+                    },
+                    "span": 12,
+                    "style": {},
+                    "title": "",
+                    "transparent": true,
+                    "type": "text"
+                }
+            ],
+            "title": "ethtool limitations - only applicable if ethtool is enabled on nodetool_exporter",
+            "type": "row"
+        }
+    ],
+    "refresh": "5m",
+    "schemaVersion": 26,
+    "style": "dark",
+    "tags": [
+        "2025.4"
+    ],
+    "templating": {
+        "list": [
+            {
+                "allValue": null,
+                "class": "template_variable_single",
+                "current": {
+                    "isNone": true,
+                    "selected": false,
+                    "text": "None",
+                    "value": ""
+                },
+                "datasource": "prometheus",
+                "definition": "",
+                "error": null,
+                "hide": 0,
+                "includeAll": false,
+                "label": "cluster",
+                "multi": false,
+                "name": "cluster",
+                "options": [],
+                "query": "label_values(node_filesystem_avail_bytes, cluster)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+            },
+            {
+                "allValue": ".*",
+                "class": "template_variable_all",
+                "current": {
+                    "selected": true,
+                    "text": [
+                        "All"
+                    ],
+                    "value": [
+                        "$__all"
+                    ]
+                },
+                "datasource": "prometheus",
+                "definition": "",
+                "error": null,
+                "hide": 0,
+                "includeAll": true,
+                "label": "dc",
+                "multi": true,
+                "name": "dc",
+                "options": [],
+                "query": "label_values(node_filesystem_avail_bytes{cluster=~\"$cluster\"}, dc)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+            },
+            {
+                "allValue": null,
+                "class": "template_variable_single",
+                "current": {
+                    "selected": true,
+                    "text": [
+                        "All"
+                    ],
+                    "value": [
+                        "$__all"
+                    ]
+                },
+                "datasource": "prometheus",
+                "definition": "",
+                "error": null,
+                "hide": 0,
+                "includeAll": true,
+                "label": "node",
+                "multi": true,
+                "name": "node",
+                "options": [],
+                "query": "label_values(node_filesystem_avail_bytes{cluster=\"$cluster\", dc=~\"$dc\", job=~\"node_exporter.*\"}, instance)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+            },
+            {
+                "allValue": null,
+                "current": {
+                    "tags": [],
+                    "text": "Instance",
+                    "value": "instance"
+                },
+                "hide": 0,
+                "includeAll": false,
+                "label": "by",
+                "multi": false,
+                "name": "by",
+                "options": [
+                    {
+                        "selected": false,
+                        "text": "Cluster",
+                        "value": "cluster"
+                    },
+                    {
+                        "selected": false,
+                        "text": "DC",
+                        "value": "dc"
+                    },
+                    {
+                        "selected": true,
+                        "text": "Instance",
+                        "value": "instance"
+                    }
+                ],
+                "query": "Instance : instance,Cluster : cluster,DC : dc,Shard : instance\\,cpu",
+                "type": "custom"
+            },
+            {
+                "allValue": ".*",
+                "class": "template_variable_all",
+                "current": {
+                    "selected": true,
+                    "text": [
+                        "All"
+                    ],
+                    "value": [
+                        "$__all"
+                    ]
+                },
+                "datasource": "prometheus",
+                "definition": "",
+                "error": null,
+                "hide": 0,
+                "includeAll": true,
+                "label": null,
+                "multi": true,
+                "name": "monitor_disk",
+                "options": [],
+                "query": "node_disk_read_bytes_total{job=~\"node_exporter.*\"}",
+                "refresh": 2,
+                "regex": "/.*device=\"([^\\\"]*)\".*/",
+                "skipUrlSync": false,
+                "sort": 1,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+            },
+            {
+                "allValue": null,
+                "current": {
+                    "isNone": true,
+                    "text": "None",
+                    "value": ""
+                },
+                "datasource": "prometheus",
+                "hide": 0,
+                "includeAll": false,
+                "label": null,
+                "multi": true,
+                "name": "monitor_network_interface",
+                "options": [],
+                "query": "node_network_receive_packets_total",
+                "refresh": 2,
+                "regex": "/.*device=\"([^\\\"]*)\".*/",
+                "sort": 0,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+            },
+            {
+                "allValue": null,
+                "current": {
+                    "text": "/var/lib/scylla",
+                    "value": "/var/lib/scylla"
+                },
+                "datasource": "prometheus",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Mount path",
+                "multi": true,
+                "name": "mount_point",
+                "options": [],
+                "query": "node_filesystem_avail_bytes",
+                "refresh": 2,
+                "regex": "/mountpoint=\"([^\"]*)\".*/",
+                "sort": 0,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+            },
+            {
+                "allValue": null,
+                "class": "template_variable_single",
+                "current": {
+                    "isNone": true,
+                    "selected": false,
+                    "text": "None",
+                    "value": ""
+                },
+                "datasource": "prometheus",
+                "definition": "label_values(scylla_scylladb_current_version,cluster_name)",
+                "error": null,
+                "hide": 2,
+                "includeAll": false,
+                "label": "cluster_name",
+                "multi": false,
+                "name": "cluster_name",
+                "options": [],
+                "query": {
+                    "qryType": 1,
+                    "query": "label_values(scylla_scylladb_current_version,cluster_name)"
+                },
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+            },
+            {
+                "allValue": null,
+                "class": "template_variable_single",
+                "current": {
+                    "isNone": true,
+                    "selected": false,
+                    "text": "None",
+                    "value": ""
+                },
+                "datasource": "prometheus",
+                "definition": "label_values(scylla_scylladb_current_version,account_name)",
+                "error": null,
+                "hide": 2,
+                "includeAll": false,
+                "label": "account_name",
+                "multi": false,
+                "name": "account_name",
+                "options": [],
+                "query": {
+                    "qryType": 1,
+                    "query": "label_values(scylla_scylladb_current_version,account_name)"
+                },
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "tagValuesQuery": "",
+                "tags": [],
+                "tagsQuery": "",
+                "type": "query",
+                "useTags": false
+            },
+            {
+                "allValue": null,
+                "class": "template_variable_custom",
+                "current": {
+                    "text": "2025.4",
+                    "value": "2025.4"
+                },
+                "error": null,
+                "hide": 2,
+                "includeAll": false,
+                "label": null,
+                "multi": false,
+                "name": "scylla_version",
+                "options": [
+                    {
+                        "selected": true,
+                        "text": "2025.4",
+                        "value": "2025.4"
+                    }
+                ],
+                "query": "2025.4",
+                "skipUrlSync": false,
+                "type": "custom"
+            },
+            {
+                "allValue": null,
+                "class": "monitor_version_var",
+                "current": {
+                    "text": "4.15.0",
+                    "value": "4.15.0"
+                },
+                "error": null,
+                "hide": 2,
+                "includeAll": false,
+                "label": null,
+                "multi": false,
+                "name": "monitoring_version",
+                "options": [
+                    {
+                        "selected": true,
+                        "text": "4.15.0",
+                        "value": "4.15.0"
+                    }
+                ],
+                "query": "4.15.0",
+                "skipUrlSync": false,
+                "type": "custom"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-30m",
+        "to": "now"
+    },
+    "timepicker": {
+        "now": true,
+        "refresh_intervals": [
+            "5s",
+            "10s",
+            "30s",
+            "1m",
+            "5m",
+            "15m",
+            "30m",
+            "1h",
+            "2h",
+            "1d"
+        ],
+        "time_options": [
+            "5m",
+            "15m",
+            "1h",
+            "6h",
+            "12h",
+            "24h",
+            "2d",
+            "7d",
+            "30d"
+        ]
+    },
+    "timezone": "utc",
+    "title": "OS Metrics",
+    "uid": "OS-2025-4",
+    "version": 5
+}
