@@ -777,7 +777,7 @@
                         "description": "All requests should be paged\n\nNon Paged request sources:\n- Client modifying the fetch size\n\nNon Paged requests require reading all the results and returning them in a single request.",
                         "targets": [
                             {
-                                "expr": "100 * ((sum(rate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))-sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks=\"system\",instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])))/sum(rate(scylla_cql_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))) OR vector(0)",
+                                "expr": "100 * ((sum(rate(scylla_cql_unpaged_select_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))-sum(rate(scylla_cql_unpaged_select_queries_per_ks{ks=\"system\",instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])))/sum(cql:reads_rate{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"})) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -809,7 +809,7 @@
                         "description": "All of the requests should be Token Aware\n\nNon Token Aware requests sources:\n* Non-Prepared Stamements\n* Client not using a Token Aware load balancing policy\n\nTokenAware requests are sent to a Scylla node that is also a replica. Token Un-Aware requests require extra hop and additional processing.\n\nNote that the metric shows incorrect values when batches are used.",
                         "targets": [
                             {
-                                "expr": "clamp_max(100*((sum(rate(scylla_storage_proxy_coordinator_reads_coordinator_outside_replica_set{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or on() vector(0)) + (sum(rate(scylla_storage_proxy_coordinator_writes_coordinator_outside_replica_set{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or on() vector(0)))/((sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) + 1) or vector(1)),100) OR vector(0)",
+                                "expr": "clamp_max(100*((sum(rate(scylla_storage_proxy_coordinator_reads_coordinator_outside_replica_set{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or on() vector(0)) + (sum(rate(scylla_storage_proxy_coordinator_writes_coordinator_outside_replica_set{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or on() vector(0)))/((sum(cql:query_processor_queries_rate{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"})) + 1) or vector(1)),100) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "intervalFactor": 1,
@@ -854,7 +854,7 @@
                         "description": "Reversed CQL Reads entail additional processing on server side\n\nSources: CQL Read requests with ORDER BY that is different from the \"CLUSTERING ORDER BY\" of the table\nAlternatives:\n\n* Denormalize your data (use a Materialized View)",
                         "targets": [
                             {
-                                "expr": "100 * sum(rate(scylla_cql_reverse_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) / sum(rate(scylla_cql_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) OR vector(0)",
+                                "expr": "100 * sum(rate(scylla_cql_reverse_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) / sum(cql:reads_rate{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -886,7 +886,7 @@
                         "description": "ALLOW FILTERING CQL Reads, the percentage of read requests with 'ALLOW FILTERING'\n\nALLOW FILTERING CQL Reads entail additional processing on server side\n\nSources: CQL Read requests with \"ALLOW FILTERING\"\n\nALLOW FILTERING should be used when large parts of the filtered data is returned - check \n\"ALLOW FILTERING CQL Read Filtered Rows to check what percentage of the data is used\"\n\nAlternatives:\n- Use a Secondary Index\n- Denormalize your data (use a Materialized View)",
                         "targets": [
                             {
-                                "expr": "100 * sum(rate(scylla_cql_filtered_read_requests{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) / sum(rate(scylla_cql_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) OR vector(0)",
+                                "expr": "100 * sum(rate(scylla_cql_filtered_read_requests{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) / sum(cql:reads_rate{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "intervalFactor": 1,
@@ -971,7 +971,7 @@
                         "description": "Range scans should typically by pass the cache.\n\n Add BYPASS CACHE to your select queries.",
                         "targets": [
                             {
-                                "expr": "floor(100 *sum(rate(scylla_cql_select_partition_range_scan_no_bypass_cache{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))/(sum(rate(scylla_cql_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) - sum(rate(scylla_cql_reads_per_ks{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", who=\"internal\"}[$__rate_interval])) )) OR vector(0)",
+                                "expr": "floor(100 *sum(rate(scylla_cql_select_partition_range_scan_no_bypass_cache{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))/(sum(cql:reads_rate{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) - sum(rate(scylla_cql_reads_per_ks{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", who=\"internal\"}[$__rate_interval])) )) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -1003,7 +1003,7 @@
                         "description": "Using consistency level ANY in a query may hurt persistency, if the node receiving the request will fail the data may be lost",
                         "targets": [
                             {
-                                "expr": "floor(100 *sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"ANY\"}[$__rate_interval]))/sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))) OR vector(0)",
+                                "expr": "floor(100 *sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"ANY\"}[$__rate_interval]))/sum(cql:query_processor_queries_rate{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"})) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -1035,7 +1035,7 @@
                         "description": "Using consistency level ALL in a query may hurt availability, if a node is unavailable operations will fail",
                         "targets": [
                             {
-                                "expr": "floor(100 *sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"ALL\"}[$__rate_interval]))/sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))) OR vector(0)",
+                                "expr": "floor(100 *sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"ALL\"}[$__rate_interval]))/sum(cql:query_processor_queries_rate{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"})) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -1069,7 +1069,7 @@
                         "description": "Using a multi partition Logged BATCH is considered bad practice.\n\nIt does not provide atomicity guarantees, and reduces performance, as a request sent to a random node, not the right replica or shard.",
                         "targets": [
                             {
-                                "expr": "(100 *sum(rate(scylla_cql_batches_pure_logged{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))/sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))) OR vector(0)",
+                                "expr": "(100 *sum(rate(scylla_cql_batches_pure_logged{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))/sum(cql:query_processor_queries_rate{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"})) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -1122,7 +1122,7 @@
                         "description": "How many Queries use Consistency level ONE\n\nThis is an issue when using multiple datacenters.\n\nUsing consistency level ONE in a query when there is more than one DC may hurt performance, queries may end in the non-local DC. Use LOCAL_ONE instead",
                         "targets": [
                             {
-                                "expr": "floor(100 *sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"ONE\"}[$__rate_interval]))/sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))) OR vector(0)",
+                                "expr": "floor(100 *sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"ONE\"}[$__rate_interval]))/sum(cql:query_processor_queries_rate{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"})) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
@@ -1154,7 +1154,7 @@
                         "description": "How many Queries use Consistency level QUORUM\n\nThis is an issue when using multiple datacenters.\n\nUsing consistency level QUORUM in a query when there is more than one DC may hurt performance, queries may end in the non-local DC. Use LOCAL_QUORUM instead",
                         "targets": [
                             {
-                                "expr": "floor(100 *sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"QUORUM\"}[$__rate_interval]))/sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval]))) OR vector(0)",
+                                "expr": "floor(100 *sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", consistency_level=\"QUORUM\"}[$__rate_interval]))/sum(cql:query_processor_queries_rate{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"})) OR vector(0)",
                                 "format": "time_series",
                                 "hide": false,
                                 "instant": false,
