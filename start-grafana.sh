@@ -73,6 +73,11 @@ for arg; do
 		--disable-anonymous)
 			GRAFANA_AUTH_ANONYMOUS=false
 			;;
+		--disable-embedding)
+			GRAFANA_ALLOW_EMBEDDING=false
+			GRAFANA_COOKIE_SECURE=false
+			GRAFANA_COOKIE_SAMESITE=lax
+			;;
         --vector-store)
             VECTOR_SEARCH="--vector-search"
             ;;
@@ -122,7 +127,7 @@ for arg; do
 		unset LIMIT
 	fi
 done
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--disable-embedding] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 if [ "$DOCKER_PARAM" != "" ]; then
 	DOCKER_PARAM_FROM_FILE="1"
 fi
@@ -244,6 +249,15 @@ if [ -z $SECURITY_ANGULAR_SUPPORT_ENABLED ]; then
 fi
 if [ -z $SERVER_ENABLE_GZIP ]; then
 	SERVER_ENABLE_GZIP="true"
+fi
+if [ -z $GRAFANA_ALLOW_EMBEDDING ]; then
+	GRAFANA_ALLOW_EMBEDDING="true"
+fi
+if [ -z $GRAFANA_COOKIE_SECURE ]; then
+	GRAFANA_COOKIE_SECURE="true"
+fi
+if [ -z $GRAFANA_COOKIE_SAMESITE ]; then
+	GRAFANA_COOKIE_SAMESITE="none"
 fi
 
 VERSION=$(echo $VERSIONS | cut -d',' -f1)
@@ -398,6 +412,9 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
 	-e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource" \
 	-e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=$HOME_DASHBOARD" \
 	-e "GF_SERVER_ENABLE_GZIP=$SERVER_ENABLE_GZIP" \
+	-e "GF_SECURITY_ALLOW_EMBEDDING=$GRAFANA_ALLOW_EMBEDDING" \
+	-e "GF_SECURITY_COOKIE_SECURE=$GRAFANA_COOKIE_SECURE" \
+	-e "GF_SECURITY_COOKIE_SAMESITE=$GRAFANA_COOKIE_SAMESITE" \
 	"${GRAFANA_ENV_COMMAND[@]}" \
 	"${proxy_args[@]}" \
 	--name $GRAFANA_NAME docker.io/grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]}

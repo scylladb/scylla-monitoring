@@ -63,6 +63,39 @@ How Grafana Configuration_ work. For example to enable the new navigation, you a
 
 **-Q Grafana anonymous role** By default, anonymous users have admin privileges. That means they can create and edit dashboards. The ``-Q`` flag changes this behavior by setting the role privileges to one of Admin, Editor, or Viewer.
 
+**--disable-embedding** By default, Grafana allows embedding dashboards in iframes. Use this flag to disable iframe embedding and restore Grafana's default cookie security settings (``X-Frame-Options: deny``).
+
+Embedding Grafana Dashboards
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, the monitoring stack configures Grafana for iframe embedding with:
+
+.. code-block:: ini
+
+   [security]
+   allow_embedding = true
+   cookie_secure = true
+   cookie_samesite = none
+
+These map to the following environment variables in the Grafana container:
+
+.. code-block:: shell
+
+   GF_SECURITY_ALLOW_EMBEDDING=true
+   GF_SECURITY_COOKIE_SECURE=true
+   GF_SECURITY_COOKIE_SAMESITE=none
+
+When embedding dashboards on a different site, Grafana must be served over HTTPS. ``cookie_secure`` and ``cookie_samesite = none`` are required for cross-origin iframes in modern browsers.
+
+To embed a dashboard:
+
+.. code-block:: html
+
+   <iframe src="https://your-grafana-host/d/d/<uid>/<slug>?orgId=1&kiosk"
+           width="100%" height="600"></iframe>
+
+Use ``--disable-embedding`` if you do not need iframe support and prefer Grafana's stricter defaults.
+
 Grafana LDAP support
 ^^^^^^^^^^^^^^^^^^^^
 Grafana supports LDAP_ for authentication and authorization.

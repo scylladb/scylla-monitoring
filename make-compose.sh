@@ -60,7 +60,7 @@ elif [[ $(uname) == "Darwin" ]]; then
 fi
 
 function usage {
-	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
+	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
 
 Options:
   -h print this help and exit
@@ -253,6 +253,11 @@ for arg; do
 			;;
 		--disable-anonymous)
 			GF_AUTH_ANONYMOUS_ENABLED="false"
+			;;
+		--disable-embedding)
+			GF_SECURITY_ALLOW_EMBEDDING="false"
+			GF_SECURITY_COOKIE_SECURE="false"
+			GF_SECURITY_COOKIE_SAMESITE="lax"
 			;;
 		--limit)
 			LIMIT="1"
@@ -583,6 +588,15 @@ fi
 if [ -z $SERVER_ENABLE_GZIP ]; then
 	SERVER_ENABLE_GZIP="true"
 fi
+if [ -z $GF_SECURITY_ALLOW_EMBEDDING ]; then
+	GF_SECURITY_ALLOW_EMBEDDING="true"
+fi
+if [ -z $GF_SECURITY_COOKIE_SECURE ]; then
+	GF_SECURITY_COOKIE_SECURE="true"
+fi
+if [ -z $GF_SECURITY_COOKIE_SAMESITE ]; then
+	GF_SECURITY_COOKIE_SAMESITE="none"
+fi
 DATA_SOURCES="-p aprom:$PROMETHEUS_PORT -m $ALERTMANAGER_ADDRESS -L loki:$LOKI_PORT"
 ALERTMANAGER_ADDRESS="aalert:$ALERTMANAGER_PORT"
 if [[ "$HOST_NETWORK" = "1" ]]; then
@@ -615,6 +629,9 @@ echo "GF_ANALYTICS_CHECK_FOR_UPDATES=$ANALYTICS_CHECK_FOR_UPDATES" >>.env
 echo "GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=$ANALYTICS_CHECK_FOR_PLUGIN_UPDATES" >>.env
 echo "GF_SECURITY_ANGULAR_SUPPORT_ENABLED=$SECURITY_ANGULAR_SUPPORT_ENABLED" >>.env
 echo "GF_SERVER_ENABLE_GZIP=$SERVER_ENABLE_GZIP" >>.env
+echo "GF_SECURITY_ALLOW_EMBEDDING=$GF_SECURITY_ALLOW_EMBEDDING" >>.env
+echo "GF_SECURITY_COOKIE_SECURE=$GF_SECURITY_COOKIE_SECURE" >>.env
+echo "GF_SECURITY_COOKIE_SAMESITE=$GF_SECURITY_COOKIE_SAMESITE" >>.env
 echo "SCYLLA_VERSION=$VERSIONS" >>.env
 echo "ALERTMANAGER_PORT=$ALERTMANAGER_PORT" >>.env
 echo "GRAFANA_PORT=$GRAFANA_PORT" >>.env

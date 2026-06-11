@@ -96,7 +96,7 @@ elif [[ $(uname) == "Darwin" ]]; then
 fi
 
 function usage {
-	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--no-alertmanager] [--loki-port port] [--promtail-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
+	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--no-alertmanager] [--loki-port port] [--promtail-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
 
 Options:
   -h print this help and exit
@@ -335,6 +335,9 @@ for arg; do
             ;;
 		--disable-anonymous)
 			GRAFANA_ENV_ARRAY+=(--disable-anonymous)
+			;;
+		--disable-embedding)
+			GRAFANA_ENV_ARRAY+=(--disable-embedding)
 			;;
 		--enable-protobuf)
 			NATIVE_HISTOGRAM="1"
