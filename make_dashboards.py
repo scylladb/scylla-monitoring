@@ -499,7 +499,11 @@ def make_grafana_13(results, args):
         """Build a GridLayout/AutoGridLayout for a leaf row (one that has panels)."""
         default_height = 6
         if "height" in row:
-            default_height = int(row["height"].replace("px", "")) / 25
+            try:
+                default_height = int(row["height"].replace("px", "")) / 30
+            except ValueError:
+                print("Warning: row height is not a number, using default 6", row["height"])
+                print(row)
         if "gridPos" in row and "h" in row.get("gridPos", {}):
             default_height = row["gridPos"]["h"]
         panels = row.get("panels", [])
