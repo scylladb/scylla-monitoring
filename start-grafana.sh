@@ -439,7 +439,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
 	-e "GF_SECURITY_COOKIE_SECURE=$GRAFANA_COOKIE_SECURE" \
 	-e "GF_SECURITY_COOKIE_SAMESITE=$GRAFANA_COOKIE_SAMESITE" \
 	"${GRAFANA_ENV_COMMAND[@]}" \
-	-e "GF_FEATURE_TOGGLES_ENABLE=regressionTransformation,dashboardNewLayouts,kubernetesDashboards" \
+	-e "GF_FEATURE_TOGGLES_ENABLE=dashboardSectionVariables" \
 	"${proxy_args[@]}" \
 	--name $GRAFANA_NAME docker.io/grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]}
 
