@@ -951,36 +951,9 @@
          {
             "class": "small_stat_area",
             "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
-            "fieldConfig": {
-               "defaults": {
-                  "custom": {},
-                  "decimals": 0,
-                  "mappings": [],
-                  "thresholds": {
-                     "mode": "absolute",
-                     "steps": [
-                        {
-                           "color": "green",
-                           "value": null
-                        },
-                        {
-                           "color": "red",
-                           "value": 80
-                        }
-                     ]
-                  },
-                  "unit": "percent"
-               },
-               "overrides": []
-            },
-            "targets": [
-               {
-                  "expr": "sum(avg(rate(scylla_scheduler_runtime_ms{group=~\"sl:.*|commitlog\",cluster=\"$cluster\", dc=~\"$dc\"}[1m])) by (group)/10)",
-                  "legendFormat": "",
-                  "refId": "A"
-               }
-            ],
-            "title": "Load"
+            "span": 1,
+            "title": "Load",
+            "data/spec/queries/0/spec/query/spec/expr": "sum(avg(rate(scylla_scheduler_runtime_ms{group=~\"sl:.*|commitlog\",cluster=\"$cluster\", dc=~\"$dc\"}[1m])) by (group)/10)"
          },
          {
             "class": "num_nodes_panel"
@@ -991,126 +964,68 @@
          {
             "class": "small_stat",
             "description": "Data Reduction Ratio, percentage of disk space saved due to compression",
-            "options": {
-               "class": "stats_area_options",
-               "graphMode": "none",
-               "colorMode": "background_solid"
-            },
             "dashversion": [
                ">2026.1"
             ],
             "title": "DRR",
-            "fieldConfig": {
-               "defaults": {
-                  "mappings": [],
-                  "thresholds": {
-                     "mode": "absolute",
-                     "steps": [
-                        {
-                           "color": "dark-blue",
-                           "value": null
-                        }
-                     ]
-                  },
-                  "unit": "percentunit",
-                  "decimals": 0
-               }
-            },
-            "targets": [
+            "data/spec/queries": [
                {
-                  "expr": "1-sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})/sum(scylla_column_family_total_disk_space_before_compression{cluster=\"$cluster\", ks!~\"system.*\"})",
-                  "intervalFactor": 1,
-                  "legendFormat": "",
-                  "refId": "A"
+                  "class": "panel_query",
+                  "spec/query/spec/expr": "1-sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})/sum(scylla_column_family_total_disk_space_before_compression{cluster=\"$cluster\", ks!~\"system.*\"})",
+                  "spec/query/spec/legendFormat": "",
+                  "spec/query/spec/instant": false,
+                  "spec/query/spec/range": true
                }
-            ]
+            ],
+            "vizConfig/spec/options/colorMode": "background_solid",
+            "vizConfig/spec/fieldConfig/defaults/thresholds/steps/0/color": "dark-blue",
+            "vizConfig/spec/fieldConfig/defaults/thresholds/steps/0/value": null,
+            "vizConfig/spec/fieldConfig/defaults/unit": "percentunit",
+            "vizConfig/spec/fieldConfig/defaults/decimals": 0
          },
          {
             "class": "small_stat",
             "description": "Disk Usage",
-            "options": {
-               "class": "stats_area_options",
-               "graphMode": "none",
-               "colorMode": "background_solid"
-            },
             "title": "Disk",
-            "fieldConfig": {
-               "defaults": {
-                  "mappings": [],
-                  "thresholds": {
-                     "mode": "absolute",
-                     "steps": [
-                        {
-                           "color": "dark-blue",
-                           "value": null
-                        }
-                     ]
-                  },
-                  "unit": "decbytes"
-               }
-            },
-            "targets": [
+            "data/spec/queries": [
                {
-                  "expr": "sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})",
-                  "intervalFactor": 1,
-                  "legendFormat": "",
-                  "refId": "A"
+                  "class": "panel_query",
+                  "spec/query/spec/expr": "sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})",
+                  "spec/query/spec/legendFormat": "",
+                  "spec/query/spec/instant": false,
+                  "spec/query/spec/range": true
                }
-            ]
+            ],
+            "vizConfig/spec/options/colorMode": "background_solid",
+            "vizConfig/spec/fieldConfig/defaults/thresholds/steps/0/color": "dark-blue",
+            "vizConfig/spec/fieldConfig/defaults/thresholds/steps/0/value": null,
+            "vizConfig/spec/fieldConfig/defaults/unit": "decbytes"
          },
          {
             "class": "small_stat",
-            "targets": [
-               {
-                  "expr": "(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*\"}[$__rate_interval])) or vector(0))+ on() (sum(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or vector(0))",
-                  "intervalFactor": 1,
-                  "dashversion": [
-                     ">2025.1"
-                  ],
-                  "refId": "A",
-                  "instant": true,
-                  "step": 40
-               },
-               {
-                  "expr": "(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*Item\"}[$__rate_interval])) or vector(0))",
-                  "intervalFactor": 1,
-                  "dashversion": [
-                     "<2025.1"
-                  ],
-                  "refId": "A",
-                  "instant": true,
-                  "step": 40
-               }
-            ],
-            "gridPos": {
-               "w": 2,
-               "h": 6
-            },
-            "fieldConfig": {
-               "defaults": {
-                  "custom": {},
-                  "unit": "si:",
-                  "decimals": 1,
-                  "thresholds": {
-                     "mode": "absolute",
-                     "steps": [
-                        {
-                           "color": "dark-blue",
-                           "value": null
-                        }
-                     ]
-                  },
-                  "mappings": []
-               },
-               "overrides": []
-            },
-            "options": {
-               "class": "stats_area_options",
-               "graphMode": "none",
-               "colorMode": "background_solid"
-            },
             "description": "Total Operations per seconds",
-            "title": "Total Operations/s"
+            "title": "Total Operations/s",
+            "data/spec/queries": [
+               {
+                  "class": "panel_query",
+                  "spec/query/spec/expr": "(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*\"}[$__rate_interval])) or vector(0))+ on() (sum(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or vector(0))",
+                  "spec/query/spec/legendFormat": "",
+                  "spec/query/spec/instant": true,
+                  "dashversion": [">2025.1"]
+               },
+               {
+                  "class": "panel_query",
+                  "spec/query/spec/expr": "(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*Item\"}[$__rate_interval])) or vector(0))",
+                  "spec/query/spec/legendFormat": "",
+                  "spec/query/spec/instant": true,
+                  "dashversion": ["<2025.1"]
+               }
+            ],
+            "vizConfig/spec/options/colorMode": "background_solid",
+            "vizConfig/spec/fieldConfig/defaults/thresholds/steps/0/color": "dark-blue",
+            "vizConfig/spec/fieldConfig/defaults/thresholds/steps/0/value": null,
+            "vizConfig/spec/fieldConfig/defaults/unit": "si:",
+            "vizConfig/spec/fieldConfig/defaults/decimals": 1
          },
          {
             "class": "small_stat",
@@ -1119,60 +1034,32 @@
                "h": 6,
                "w": 5
             },
-            "fieldConfig": {
-               "defaults": {
-                  "custom": {},
-                  "unit": "µs",
-                  "decimals": 0,
-                  "thresholds": {
-                     "mode": "absolute",
-                     "steps": [
-                        {
-                           "color": "dark-blue",
-                           "value": null
-                        },
-                        {
-                           "color": "red",
-                           "value": 50000
-                        }
-                     ]
-                  },
-                  "mappings": []
-               },
-               "overrides": []
-            },
-            "targets": [
+            "title": "Average Latencies",
+            "data/spec/queries": [
                {
-                  "expr": "sum(rate(scylla_alternator_op_latency_sum{cluster=~\"$cluster\", op=~\"$ops|$ops_batch\"}[$__rate_interval])) by (op)/sum(rate(scylla_alternator_op_latency_count{cluster=~\"$cluster|^$\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op)",
-                  "intervalFactor": 1,
-                  "dashversion": [
-                     ">2025.3"
-                  ],
-                  "legendFormat": "{{op}}",
-                  "refId": "A",
-                  "instant": true,
-                  "step": 4
+                  "class": "panel_query",
+                  "spec/query/spec/expr": "sum(rate(scylla_alternator_op_latency_sum{cluster=~\"$cluster\", op=~\"$ops|$ops_batch\"}[$__rate_interval])) by (op)/sum(rate(scylla_alternator_op_latency_count{cluster=~\"$cluster|^$\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op)",
+                  "spec/query/spec/legendFormat": "{{op}}",
+                  "spec/query/spec/instant": true,
+                  "dashversion": [">2025.3"]
                },
                {
-                  "expr": "sum(rate(scylla_alternator_op_latency_sum{cluster=~\"$cluster\", op=~\"$ops\"}[$__rate_interval])) by (op)/sum(rate(scylla_alternator_op_latency_count{cluster=~\"$cluster|^$\", op=~\"$ops\"}[$__rate_interval])>0) by (op)",
-                  "intervalFactor": 1,
-                  "dashversion": [
-                     "<2025.3"
-                  ],
-                  "legendFormat": "{{op}}",
-                  "refId": "A",
-                  "instant": true,
-                  "step": 4
+                  "class": "panel_query",
+                  "spec/query/spec/expr": "sum(rate(scylla_alternator_op_latency_sum{cluster=~\"$cluster\", op=~\"$ops\"}[$__rate_interval])) by (op)/sum(rate(scylla_alternator_op_latency_count{cluster=~\"$cluster|^$\", op=~\"$ops\"}[$__rate_interval])>0) by (op)",
+                  "spec/query/spec/legendFormat": "{{op}}",
+                  "spec/query/spec/instant": true,
+                  "dashversion": ["<2025.3"]
                }
             ],
-            "options": {
-               "class": "stats_area_options",
-               "graphMode": "none",
-               "textMode": "value_and_name",
-               "wideLayout": false,
-               "colorMode": "background_solid"
-            },
-            "title": "Average Latencies"
+            "vizConfig/spec/options/colorMode": "background_solid",
+            "vizConfig/spec/options/textMode": "value_and_name",
+            "vizConfig/spec/options/wideLayout": false,
+            "vizConfig/spec/fieldConfig/defaults/thresholds/steps": [
+               {"color": "dark-blue", "value": null},
+               {"color": "red", "value": 50000}
+            ],
+            "vizConfig/spec/fieldConfig/defaults/unit": "µs",
+            "vizConfig/spec/fieldConfig/defaults/decimals": 0
          },
          {
             "class": "small_stat",
@@ -1181,57 +1068,32 @@
                "h": 6,
                "w": 5
             },
-            "fieldConfig": {
-               "defaults": {
-                  "custom": {},
-                  "unit": "µs",
-                  "decimals": 0,
-                  "thresholds": {
-                     "mode": "absolute",
-                     "steps": [
-                        {
-                           "color": "dark-blue",
-                           "value": null
-                        },
-                        {
-                           "color": "red",
-                           "value": 50000
-                        }
-                     ]
-                  },
-                  "mappings": []
-               },
-               "overrides": []
-            },
-            "options": {
-               "class": "stats_area_options",
-               "graphMode": "none",
-               "textMode": "value_and_name",
-               "wideLayout": false,
-               "colorMode": "background_solid"
-            },
-            "targets": [
+            "title": "P99 Latencies",
+            "data/spec/queries": [
                {
-                  "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
-                  "intervalFactor": 1,
-                  "legendFormat": "{{op}}",
-                  "refId": "A",
-                  "instant": true,
-                  "step": 4
+                  "class": "panel_query",
+                  "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
+                  "spec/query/spec/legendFormat": "{{op}}",
+                  "spec/query/spec/instant": true
                },
                {
-                  "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops_batch\"}[$__rate_interval])>0) by (op, le))",
-                  "intervalFactor": 1,
-                  "legendFormat": "{{op}}",
-                  "dashversion": [
-                     ">2025.3"
-                  ],
-                  "refId": "B",
-                  "instant": true,
-                  "step": 4
+                  "class": "panel_query",
+                  "spec/refId": "B",
+                  "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops_batch\"}[$__rate_interval])>0) by (op, le))",
+                  "spec/query/spec/legendFormat": "{{op}}",
+                  "spec/query/spec/instant": true,
+                  "dashversion": [">2025.3"]
                }
             ],
-            "title": "P99 Latencies"
+            "vizConfig/spec/options/colorMode": "background_solid",
+            "vizConfig/spec/options/textMode": "value_and_name",
+            "vizConfig/spec/options/wideLayout": false,
+            "vizConfig/spec/fieldConfig/defaults/thresholds/steps": [
+               {"color": "dark-blue", "value": null},
+               {"color": "red", "value": 50000}
+            ],
+            "vizConfig/spec/fieldConfig/defaults/unit": "µs",
+            "vizConfig/spec/fieldConfig/defaults/decimals": 0
          }
       ],
       "title": "New row"
@@ -2154,7 +2016,7 @@
    "alert_table": {
       "kind": "Panel",
       "spec": {
-         "id": 10,
+         "id": "auto",
          "title": "Active Alerts",
          "description": "",
          "links": [],
@@ -2599,7 +2461,7 @@
          "vizConfig": {
             "kind": "VizConfig",
             "group": "table",
-            "version": "",
+            "version": "13.0.1",
             "spec": {
                "options": {
                   "cellHeight": "sm",
@@ -3746,13 +3608,17 @@
       ]
    },
    "alternator_tables": {
-      "type": "table",
-      "title": "Tables",
+      "class": "single_value_table",
+      "spec/title": "Tables",
       "gridPos": {
          "h": 12,
          "w": 8
       },
-      "fieldConfig": {
+      "spec/vizConfig/spec/options": {
+         "showHeader": true,
+         "cellHeight": "sm"
+      },
+      "spec/vizConfig/spec/fieldConfig": {
          "defaults": {
             "custom": {
                "align": "auto",
@@ -3908,7 +3774,7 @@
             }
          ]
       },
-      "transformations": [
+      "spec/data/spec/transformations": [
          {
             "id": "joinByField",
             "options": {
@@ -3932,189 +3798,122 @@
             }
          }
       ],
-      "targets": [
+      "spec/data/spec/queries": [
          {
-            "refId": "A",
-            "editorMode": "code",
-            "expr": "sum(rate(scylla_alternator_table_operation{ks=~\"alternator_.*\"}[10m])) by (cf)",
-            "legendFormat": "__auto",
-            "range": false,
-            "format": "table",
-            "instant": true,
-            "exemplar": false,
-            "hide": false
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "sum(rate(scylla_alternator_table_operation{ks=~\"alternator_.*\"}[10m])) by (cf)",
+                     "instant": true,
+                     "range": false,
+                     "legendFormat": "__auto"
+                  }
+               },
+               "refId": "A",
+               "hidden": false
+            }
          },
          {
-            "refId": "B",
-            "expr": "sum(scylla_column_family_total_disk_space{ks=~\"alternator_.*\"}) by (cf)",
-            "range": false,
-            "instant": true,
-            "datasource": {
-               "uid": "P1809F7CD0C75ACF3",
-               "type": "prometheus"
-            },
-            "hide": false,
-            "editorMode": "code",
-            "legendFormat": "__auto",
-            "format": "table",
-            "exemplar": false
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "sum(scylla_column_family_total_disk_space{ks=~\"alternator_.*\"}) by (cf)",
+                     "instant": true,
+                     "range": false,
+                     "legendFormat": "__auto"
+                  }
+               },
+               "refId": "B",
+               "hidden": false
+            }
          },
          {
-            "refId": "C",
-            "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.5, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
-            "range": false,
-            "instant": true,
-            "datasource": {
-               "uid": "P1809F7CD0C75ACF3",
-               "type": "prometheus"
-            },
-            "hide": false,
-            "editorMode": "code",
-            "legendFormat": "__auto",
-            "format": "table",
-            "exemplar": false
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.5, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
+                     "instant": true,
+                     "range": false,
+                     "legendFormat": "__auto"
+                  }
+               },
+               "refId": "C",
+               "hidden": false
+            }
          },
          {
-            "refId": "D",
-            "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.95, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
-            "range": false,
-            "instant": true,
-            "datasource": {
-               "uid": "P1809F7CD0C75ACF3",
-               "type": "prometheus"
-            },
-            "hide": false,
-            "editorMode": "code",
-            "legendFormat": "__auto",
-            "format": "table",
-            "exemplar": false
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.95, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
+                     "instant": true,
+                     "range": false,
+                     "legendFormat": "__auto"
+                  }
+               },
+               "refId": "D",
+               "hidden": false
+            }
          },
          {
-            "refId": "E",
-            "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
-            "range": false,
-            "instant": true,
-            "datasource": {
-               "uid": "P1809F7CD0C75ACF3",
-               "type": "prometheus"
-            },
-            "hide": false,
-            "editorMode": "code",
-            "legendFormat": "__auto",
-            "format": "table",
-            "exemplar": false
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
+                     "instant": true,
+                     "range": false,
+                     "legendFormat": "__auto"
+                  }
+               },
+               "refId": "E",
+               "hidden": false
+            }
          }
-      ],
-      "datasource": "prometheus",
-      "options": {
-         "showHeader": true,
-         "cellHeight": "sm"
-      }
+      ]
    },
    "dc_nodes_table": {
-      "datasource": {
-         "type": "prometheus",
-         "uid": "prometheus"
-      },
+      "class": "single_value_table",
+      "spec/title": "Nodes",
       "gridPos": {
          "h": 14,
          "w": 24
       },
-      "targets": [
-         {
-            "expr": "0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() (scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}!= 3 or on (instance) ((scylla_gossip_live{cluster=\"$cluster\", dc=~\"$dc\"}+1<  bool scalar(count(scylla_node_operation_mode{cluster=\"$cluster\"}==3)))*6 + 3))",
-            "legendFormat": "",
-            "interval": "",
-            "format": "table",
-            "instant": true,
-            "intervalFactor": 1,
-            "refId": "A",
-            "hide": false
-         },
-         {
-            "expr": "avg(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\"} ) by (instance)",
-            "legendFormat": "",
-            "interval": "",
-            "refId": "B",
-            "instant": true,
-            "format": "table"
-         },
-         {
-            "expr": "sum(rate(scylla_reactor_aio_errors{cluster=~\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (instance)",
-            "legendFormat": "",
-            "interval": "",
-            "refId": "C",
-            "instant": true,
-            "format": "table"
-         },
-         {
-            "expr": "sum(scylla_errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0",
-            "legendFormat": "",
-            "interval": "",
-            "refId": "D",
-            "instant": true,
-            "format": "table"
-         },
-         {
-            "expr": "(min(scylla_streaming_finished_percentage{cluster=\"$cluster\", dc=~\"$dc\"}*100) by (instance) < 100) or on (instance)  0*sum(scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"}) by (instance)",
-            "legendFormat": "",
-            "interval": "",
-            "refId": "E",
-            "instant": true,
-            "format": "table"
-         },
-         {
-            "expr": "100-100*node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", instance=~\"$node\"}/node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}",
-            "legendFormat": "",
-            "interval": "",
-            "refId": "F",
-            "instant": true,
-            "format": "table"
-         },
-         {
-            "expr": "histogram_quantile(0.5, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=~\"GetItem|PutItem|UpdateItem|DeleteItem\"}[$__rate_interval])>0) by (le, instance))",
-            "legendFormat": "",
-            "interval": "",
-            "refId": "G",
-            "instant": true,
-            "format": "table"
-         },
-         {
-            "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"GetItem\"}[$__rate_interval])>0) by (le, instance))",
-            "legendFormat": "",
-            "interval": "",
-            "refId": "H",
-            "instant": true,
-            "format": "table"
-         },
-         {
-            "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"PutItem\"}[$__rate_interval])>0) by (le, instance))",
-            "legendFormat": "",
-            "interval": "",
-            "refId": "I",
-            "instant": true,
-            "format": "table"
-         },
-         {
-            "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"UpdateItem\"}[$__rate_interval])>0) by (le, instance))",
-            "legendFormat": "",
-            "interval": "",
-            "refId": "J",
-            "instant": true,
-            "format": "table"
-         },
-         {
-            "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"DeleteItem\"}[$__rate_interval])>0) by (le, instance))",
-            "legendFormat": "",
-            "interval": "",
-            "refId": "K",
-            "instant": true,
-            "format": "table"
-         }
-      ],
-      "type": "table",
-      "title": "Nodes",
-      "fieldConfig": {
+      "spec/vizConfig/spec/fieldConfig": {
          "defaults": {
             "custom": {
                "align": null,
@@ -4738,14 +4537,7 @@
             }
          ]
       },
-      "scopedVars": {
-         "dc": {
-            "text": "datacenter1",
-            "value": "datacenter1",
-            "selected": false
-         }
-      },
-      "transformations": [
+      "spec/data/spec/transformations": [
          {
             "id": "filterFieldsByName",
             "options": {
@@ -4796,6 +4588,229 @@
                   "Value #D": 12
                },
                "renameByName": {}
+            }
+         }
+      ],
+      "spec/data/spec/queries": [
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() (scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}!= 3 or on (instance) ((scylla_gossip_live{cluster=\"$cluster\", dc=~\"$dc\"}+1<  bool scalar(count(scylla_node_operation_mode{cluster=\"$cluster\"}==3)))*6 + 3))",
+                     "instant": true,
+                     "range": false,
+                     "intervalFactor": 1
+                  }
+               },
+               "refId": "A",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "avg(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\"} ) by (instance)",
+                     "instant": true,
+                     "range": false
+                  }
+               },
+               "refId": "B",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "sum(rate(scylla_reactor_aio_errors{cluster=~\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (instance)",
+                     "instant": true,
+                     "range": false
+                  }
+               },
+               "refId": "C",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "sum(scylla_errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0",
+                     "instant": true,
+                     "range": false
+                  }
+               },
+               "refId": "D",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "(min(scylla_streaming_finished_percentage{cluster=\"$cluster\", dc=~\"$dc\"}*100) by (instance) < 100) or on (instance)  0*sum(scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"}) by (instance)",
+                     "instant": true,
+                     "range": false
+                  }
+               },
+               "refId": "E",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "100-100*node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", instance=~\"$node\"}/node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}",
+                     "instant": true,
+                     "range": false
+                  }
+               },
+               "refId": "F",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "histogram_quantile(0.5, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=~\"GetItem|PutItem|UpdateItem|DeleteItem\"}[$__rate_interval])>0) by (le, instance))",
+                     "instant": true,
+                     "range": false
+                  }
+               },
+               "refId": "G",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"GetItem\"}[$__rate_interval])>0) by (le, instance))",
+                     "instant": true,
+                     "range": false
+                  }
+               },
+               "refId": "H",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"PutItem\"}[$__rate_interval])>0) by (le, instance))",
+                     "instant": true,
+                     "range": false
+                  }
+               },
+               "refId": "I",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"UpdateItem\"}[$__rate_interval])>0) by (le, instance))",
+                     "instant": true,
+                     "range": false
+                  }
+               },
+               "refId": "J",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"DeleteItem\"}[$__rate_interval])>0) by (le, instance))",
+                     "instant": true,
+                     "range": false
+                  }
+               },
+               "refId": "K",
+               "hidden": false
             }
          }
       ]
@@ -6095,53 +6110,54 @@
       "class": "custom_variable"
    },
    "aggregation_function": {
-      "allValue": null,
-      "current": {
-         "tags": [],
-         "text": "Sum",
-         "value": "sum"
-      },
-      "hide": 0,
-      "includeAll": false,
-      "label": "Function",
-      "multi": false,
-      "name": "func",
-      "options": [
-         {
-            "selected": true,
+      "kind": "CustomVariable",
+      "spec": {
+         "name": "func",
+         "label": "Function",
+         "description": "Selects how the data is aggregated (sum, average, max, etc.)",
+         "query": "Sum : sum,Average : avg,Maximum : max,Minimum : min,Standard Deviation : stddev,Standard Variance : stdvar",
+         "hide": "dontHide",
+         "multi": false,
+         "includeAll": false,
+         "skipUrlSync": false,
+         "options": [
+            {
+               "selected": true,
+               "text": "Sum",
+               "value": "sum"
+            },
+            {
+               "selected": false,
+               "text": "Average",
+               "value": "avg"
+            },
+            {
+               "selected": false,
+               "text": "Maximum",
+               "value": "max"
+            },
+            {
+               "selected": false,
+               "text": "Minimum",
+               "value": "min"
+            },
+            {
+               "selected": false,
+               "text": "standard deviation",
+               "value": "stddev"
+            },
+            {
+               "selected": false,
+               "text": "standard variance",
+               "value": "stdvar"
+            }
+         ],
+         "current": {
+            "tags": [],
             "text": "Sum",
             "value": "sum"
-         },
-         {
-            "selected": false,
-            "text": "Average",
-            "value": "avg"
-         },
-         {
-            "selected": false,
-            "text": "Maximum",
-            "value": "max"
-         },
-         {
-            "selected": false,
-            "text": "Minimum",
-            "value": "min"
-         },
-         {
-            "selected": false,
-            "text": "standard deviation",
-            "value": "stddev"
-         },
-         {
-            "selected": false,
-            "text": "standard variance",
-            "value": "stdvar"
          }
-      ],
-      "description": "Selects how the data is aggregated (sum, average, max, etc.)",
-      "query": "Sum : sum,Average : avg,Maximum : max,Minimum : min,Standard Deviation : stddev,Standard Variance : stdvar",
-      "skipUrlSync": false,
-      "type": "custom"
+      }
    },
    "template_variable_all": {
       "class": "query_variable_all"
