@@ -64,7 +64,7 @@ for arg; do
 		unset LIMIT
 	fi
 done
-while getopts ':hlg:D:' option; do
+while getopts ':hlg:D:T:' option; do
 	case "$option" in
 	h)
 		echo "$usage"
@@ -75,6 +75,9 @@ while getopts ':hlg:D:' option; do
 		;;
 	D)
 		DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+		;;
+	T)
+		GRAFANA_RENDERER_TOKEN="$OPTARG"
 		;;
 	:)
 		printf "missing argument for -%s\n" "$OPTARG" >&2
@@ -99,5 +102,6 @@ if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
 fi
 
 docker run ${DOCKER_LIMITS["grafanarender"]} --rm -d $DOCKER_PARAM $PORT_MAPPING \
+	-e "AUTH_TOKEN=$GRAFANA_RENDERER_TOKEN" \
 	--name $GRAFANA_NAME docker.io/grafana/grafana-image-renderer:$VERSION server \
 	${DOCKER_PARAMS["grafanarender"]}

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 CURRENT_VERSION="master"
+GRAFANA_RENDERER_TOKEN=""
 if [ -f CURRENT_VERSION.sh ]; then
 	CURRENT_VERSION=$(cat CURRENT_VERSION.sh)
 fi
@@ -370,6 +371,9 @@ if [[ -z "${DOCKER_HOST}" ]]; then
 fi
 
 if [ ! -z $RUN_RENDERER ]; then
+	if [ "$GRAFANA_RENDERER_TOKEN" = "" ]; then
+		GRAFANA_RENDERER_TOKEN="$(openssl rand -hex 16)"
+	fi
 	# Extract network name from DOCKER_PARAM if it's a custom network (not host)
 	NETWORK_NAME=""
 	if [[ $DOCKER_PARAM =~ --net=([^[:space:]]+) ]] || [[ $DOCKER_PARAM =~ --network=([^[:space:]]+) ]]; then
@@ -394,7 +398,7 @@ if [ ! -z $RUN_RENDERER ]; then
 		GRAFANA_CALLBACK_PORT="$GRAFANA_PORT"  # External/mapped port
 	fi
 
-	./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS -D "$DOCKER_PARAM"
+	./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS -D "$DOCKER_PARAM" -T "$GRAFANA_RENDERER_TOKEN"
 
 	# Extract GF_SERVER_ROOT_URL if set to include in callback URL
 	# This ensures the renderer accesses Grafana at the same path the JavaScript expects
@@ -405,7 +409,7 @@ if [ ! -z $RUN_RENDERER ]; then
 		SERVER_ROOT_PATH="${SERVER_ROOT_URL_VALUE%/}"
 	fi
 
-	GRAFANA_ENV_COMMAND+=(-e GF_RENDERING_SERVER_URL=http://$RENDERER_ADDRESS:8081/render -e GF_RENDERING_CALLBACK_URL=http://$GRAFANA_ADDRESS:$GRAFANA_CALLBACK_PORT$SERVER_ROOT_PATH/)
+	GRAFANA_ENV_COMMAND+=(-e GF_RENDERING_SERVER_URL=http://$RENDERER_ADDRESS:8081/render -e GF_RENDERING_CALLBACK_URL=http://$GRAFANA_ADDRESS:$GRAFANA_CALLBACK_PORT$SERVER_ROOT_PATH/ -e "GF_RENDERING_RENDERER_TOKEN=$GRAFANA_RENDERER_TOKEN" )
 fi
 
 if [ -z $STACK ]; then
