@@ -4660,6 +4660,7 @@
                      "spec/query/spec/expr": "label_join(label_replace(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}, \"device\", \"$1\", \"device\", \"/dev/(.*)\") * on(instance, device) group_left(model) node_disk_info , \"instance_device\", \":\", \"instance\", \"mountpoint\")",
                      "spec/query/spec/legendFormat": "__auto",
                      "spec/query/spec/instant": true,
+                     "spec/query/spec/format": "table",
                      "spec/query/spec/range": false
                   },
                   {
@@ -4668,6 +4669,7 @@
                      "spec/query/spec/expr": "1- (label_join(label_replace(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}/node_filesystem_size_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}, \"device\", \"$1\", \"device\", \"/dev/(.*)\"), \"instance_device\", \":\", \"instance\", \"mountpoint\"))",
                      "spec/query/spec/legendFormat": "__auto",
                      "spec/query/spec/instant": true,
+                     "spec/query/spec/format": "table",
                      "spec/query/spec/range": false
                   },
                   {
@@ -4676,13 +4678,53 @@
                      "spec/query/spec/expr": "(label_join(label_replace(node_filesystem_size_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}-node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}, \"device\", \"$1\", \"device\", \"/dev/(.*)\"), \"instance_device\", \":\", \"instance\", \"mountpoint\"))",
                      "spec/query/spec/legendFormat": "__auto",
                      "spec/query/spec/instant": true,
+                     "spec/query/spec/format": "table",
                      "spec/query/spec/range": false
                   }
                ],
                "transformations": [
-                  {"id": "joinByField", "options": {"byField": "instance_device", "mode": "outerTabular"}},
-                  {"id": "filterFieldsByName", "options": {"include": {"names": ["device 1", "instance 1", "model", "fstype 1", "Value #A", "Value #B", "Value #C", "mountpoint 1"]}}},
-                  {"id": "organize", "options": {"excludeByName": {}, "includeByName": {}, "indexByName": {"instance 1": 0, "device 1": 1, "fstype 1": 2, "mountpoint 1": 3, "model": 4, "Value #A": 5, "Value #B": 6, "Value #C": 7}, "renameByName": {"Value #D": ""}}}
+                  {
+                     "kind": "Transformation",
+                     "group": "joinByField",
+                     "spec": {
+                        "options": {
+                           "byField": "mountpoint",
+                           "mode": "outer"
+                        }
+                     }
+                  },
+                  {
+                     "kind": "Transformation",
+                     "group": "filterFieldsByName",
+                     "spec": {
+                        "options": {
+                           "include": {
+                              "names": ["device 1", "instance 1", "model", "fstype 1", "Value #A", "Value #B", "Value #C", "mountpoint 1", "dc 1"]
+                           }
+                        }
+                     }
+                  },
+                  {
+                     "kind": "Transformation",
+                     "group": "organize",
+                     "spec": {
+                     "options": {
+                        "excludeByName": {},
+                        "indexByName": {
+                           "dc 1": 0,
+                           "instance 1": 1,
+                           "Value #B": 2,
+                           "Value #C": 3,
+                           "Value #A": 4,
+                           "device 1": 5,
+                           "fstype 1": 6,
+                           "model": 7
+                        },
+                        "renameByName": {},
+                        "includeByName": {}
+                     }
+                     }
+                  }
                ],
                "queryOptions": {}
             }
@@ -4697,13 +4739,15 @@
                   "defaults": {
                      "color": {"mode": "thresholds"},
                      "links": [{"title": "Device information", "url": "/d/${__dashboard.uid}/${__dashboard.slug}?orgId=1&var-by=instance&var-node=${__data.fields[0]}&var-monitor_disk=${__data.fields[1]}&${__url_time_range}"}],
-                     "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "filterable": true, "footer": {"reducers": []}, "inspect": false},
-                     "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}]}
+                     "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "filterable": true, "footer": {"reducers": []}, "inspect": false, "width": 150},
+                     "thresholds": {"mode": "absolute", "steps": [{"color": "transparent", "value": null}, {"color": "orange", "value": 0.8}, {"color": "red", "value": 0.9}]}
                   },
                   "overrides": [
                      {"matcher": {"id": "byName", "options": "Value #A"}, "properties": [{"id": "unit", "value": "decbytes"}, {"id": "displayName", "value": "Free Space"}]},
-                     {"matcher": {"id": "byName", "options": "Value #B"}, "properties": [{"id": "displayName", "value": "% Used"}, {"id": "unit", "value": "percentunit"}]},
-                     {"matcher": {"id": "byName", "options": "Value #C"}, "properties": [{"id": "unit", "value": "decbytes"}, {"id": "displayName", "value": "Used"}]}
+                     {"matcher": {"id": "byName", "options": "Value #B"}, "properties": [{"id": "displayName", "value": "% Used"}, {"id": "unit", "value": "percentunit"},{"id": "custom.cellOptions", "value": {"type": "color-background", "applyToRow": true}}]},
+                     {"matcher": {"id": "byName", "options": "Value #C"}, "properties": [{"id": "unit", "value": "decbytes"}, {"id": "displayName", "value": "Used"}]},
+                     {"matcher": {"id": "byName", "options": "dc", "scope": "series"}, "properties": [{"id": "custom.width", "value": 220}]},
+                     {"matcher": {"id": "byName", "options": "model", "scope": "series"}, "properties": [{"id": "custom.width", "value": 320}]}
                   ]
                }
             }
