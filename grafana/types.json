@@ -3323,24 +3323,30 @@
       },
       "spec/data/spec/transformations": [
          {
-            "id": "joinByField",
-            "options": {
-               "byField": "cf",
-               "mode": "outer"
+            "kind": "Transformation",
+            "group": "joinByField",
+            "spec": {
+               "options": {
+                  "byField": "cf",
+                  "mode": "outerTabular"
+               }
             }
          },
          {
-            "id": "filterFieldsByName",
-            "options": {
-               "include": {
-                  "names": [
-                     "cf",
-                     "Value #A",
-                     "Value #B",
-                     "Value #C",
-                     "Value #D",
-                     "Value #E"
-                  ]
+            "kind": "Transformation",
+            "group": "filterFieldsByName",
+            "spec": {
+               "options": {
+                  "include": {
+                     "names": [
+                        "cf",
+                        "Value #A",
+                        "Value #B",
+                        "Value #C",
+                        "Value #D",
+                        "Value #E"
+                     ]
+                  }
                }
             }
          }
@@ -3359,6 +3365,7 @@
                   "spec": {
                      "expr": "sum(rate(scylla_alternator_table_operation{ks=~\"alternator_.*\"}[10m])) by (cf)",
                      "instant": true,
+                     "format": "table",
                      "range": false,
                      "legendFormat": "__auto"
                   }
@@ -3381,6 +3388,7 @@
                      "expr": "sum(scylla_column_family_total_disk_space{ks=~\"alternator_.*\"}) by (cf)",
                      "instant": true,
                      "range": false,
+                     "format": "table",
                      "legendFormat": "__auto"
                   }
                },
@@ -3401,6 +3409,7 @@
                   "spec": {
                      "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.5, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
                      "instant": true,
+                     "format": "table",
                      "range": false,
                      "legendFormat": "__auto"
                   }
@@ -3423,6 +3432,7 @@
                      "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.95, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
                      "instant": true,
                      "range": false,
+                     "format": "table",
                      "legendFormat": "__auto"
                   }
                },
@@ -3444,6 +3454,7 @@
                      "expr": " ((sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf) < 1)*0 or on(cf) histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{ks=~\"alternator_.*\"}[2m])) by (cf, le))) ",
                      "instant": true,
                      "range": false,
+                     "format": "table",
                      "legendFormat": "__auto"
                   }
                },
@@ -4081,16 +4092,84 @@
                      "value": "µs"
                   }
                ]
+            },
+            {
+               "matcher": {
+                  "id": "byName",
+                  "options": "Value #L"
+               },
+               "properties": [
+                  {
+                     "id": "displayName",
+                     "value": "BatchGet P99"
+                  },
+                  {
+                     "id": "custom.width",
+                     "value": 100
+                  },
+                  {
+                     "id": "custom.filterable",
+                     "value": false
+                  },
+                  {
+                     "id": "decimals",
+                     "value": 0
+                  },
+                  {
+                     "id": "unit",
+                     "value": "µs"
+                  }
+               ]
+            },
+            {
+               "matcher": {
+                  "id": "byName",
+                  "options": "Value #M"
+               },
+               "properties": [
+                  {
+                     "id": "displayName",
+                     "value": "BatchWrite P99"
+                  },
+                  {
+                     "id": "custom.width",
+                     "value": 100
+                  },
+                  {
+                     "id": "custom.filterable",
+                     "value": false
+                  },
+                  {
+                     "id": "decimals",
+                     "value": 0
+                  },
+                  {
+                     "id": "unit",
+                     "value": "µs"
+                  }
+               ]
             }
          ]
       },
       "spec/data/spec/transformations": [
+      {
+            "kind": "Transformation",
+            "group": "joinByField",
+            "spec": {
+               "options": {
+                  "byField": "instance",
+                  "mode": "outerTabular"
+               }
+            }
+         },
          {
-            "id": "filterFieldsByName",
-            "options": {
-               "include": {
-                  "names": [
-                     "instance",
+            "kind": "Transformation",
+            "group": "filterFieldsByName",
+            "spec": {
+               "options": {
+                  "include": {
+                     "names": [
+                        "instance",
                      "svr",
                      "Value #A",
                      "Value #B",
@@ -4105,36 +4184,35 @@
                      "Value #K",
                      "Value #L",
                      "Value #M"
-                  ]
+                     ]
+                  }
                }
             }
          },
          {
-            "id": "seriesToColumns",
-            "options": {
-               "byField": "instance"
-            }
-         },
-         {
-            "id": "organize",
-            "options": {
-               "excludeByName": {},
-               "indexByName": {
-                  "instance": 0,
-                  "Value #C": 1,
-                  "svr": 2,
-                  "Value #A": 3,
-                  "Value #F": 4,
-                  "Value #B": 5,
-                  "Value #E": 6,
-                  "Value #G": 7,
-                  "Value #H": 8,
-                  "Value #I": 9,
-                  "Value #J": 10,
-                  "Value #K": 11,
-                  "Value #D": 12
-               },
-               "renameByName": {}
+            "kind": "Transformation",
+            "group": "organize",
+            "spec": {
+               "options": {
+                  "excludeByName": {},
+                  "indexByName": {
+                     "instance": 0,
+                     "Value #C": 1,
+                     "svr": 2,
+                     "Value #A": 3,
+                     "Value #F": 4,
+                     "Value #B": 5,
+                     "Value #E": 6,
+                     "Value #G": 7,
+                     "Value #H": 8,
+                     "Value #I": 9,
+                     "Value #J": 10,
+                     "Value #K": 11,
+                     "Value #L": 12,
+                     "Value #M": 13,
+                     "Value #D": 14
+                  }
+               }
             }
          }
       ],
@@ -4152,6 +4230,7 @@
                   "spec": {
                      "expr": "0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() (scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}!= 3 or on (instance) ((scylla_gossip_live{cluster=\"$cluster\", dc=~\"$dc\"}+1<  bool scalar(count(scylla_node_operation_mode{cluster=\"$cluster\"}==3)))*6 + 3))",
                      "instant": true,
+                     "format": "table",
                      "range": false,
                      "intervalFactor": 1
                   }
@@ -4173,6 +4252,7 @@
                   "spec": {
                      "expr": "avg(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\"} ) by (instance)",
                      "instant": true,
+                     "format": "table",
                      "range": false
                   }
                },
@@ -4193,6 +4273,7 @@
                   "spec": {
                      "expr": "sum(rate(scylla_reactor_aio_errors{cluster=~\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (instance)",
                      "instant": true,
+                     "format": "table",
                      "range": false
                   }
                },
@@ -4213,6 +4294,7 @@
                   "spec": {
                      "expr": "sum(scylla_errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0",
                      "instant": true,
+                     "format": "table",
                      "range": false
                   }
                },
@@ -4233,6 +4315,7 @@
                   "spec": {
                      "expr": "(min(scylla_streaming_finished_percentage{cluster=\"$cluster\", dc=~\"$dc\"}*100) by (instance) < 100) or on (instance)  0*sum(scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"}) by (instance)",
                      "instant": true,
+                     "format": "table",
                      "range": false
                   }
                },
@@ -4253,6 +4336,7 @@
                   "spec": {
                      "expr": "100-100*node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", instance=~\"$node\"}/node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}",
                      "instant": true,
+                     "format": "table",
                      "range": false
                   }
                },
@@ -4271,8 +4355,9 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "histogram_quantile(0.5, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=~\"GetItem|PutItem|UpdateItem|DeleteItem\"}[$__rate_interval])>0) by (le, instance))",
+                     "expr": "avg(scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.5\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=~\"GetItem|PutItem|UpdateItem|DeleteItem\"}) by (instance)",
                      "instant": true,
+                     "format": "table",
                      "range": false
                   }
                },
@@ -4291,8 +4376,9 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"GetItem\"}[$__rate_interval])>0) by (le, instance))",
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"GetItem\"}",
                      "instant": true,
+                     "format": "table",
                      "range": false
                   }
                },
@@ -4311,8 +4397,9 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"PutItem\"}[$__rate_interval])>0) by (le, instance))",
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"PutItem\"}",
                      "instant": true,
+                     "format": "table",
                      "range": false
                   }
                },
@@ -4331,8 +4418,9 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"UpdateItem\"}[$__rate_interval])>0) by (le, instance))",
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"UpdateItem\"}",
                      "instant": true,
+                     "format": "table",
                      "range": false
                   }
                },
@@ -4351,12 +4439,55 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", op=\"DeleteItem\"}[$__rate_interval])>0) by (le, instance))",
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"DeleteItem\"}",
                      "instant": true,
+                     "format": "table",
                      "range": false
                   }
                },
                "refId": "K",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"BatchGetItem\"}",
+                     "instant": true,
+                     "format": "table",
+                     "range": false
+                  }
+               },
+               "refId": "L",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"BatchWriteItem\"}",
+                     "instant": true,
+                     "format": "table",
+                     "range": false
+                  }
+               },
+               "refId": "M",
                "hidden": false
             }
          }
