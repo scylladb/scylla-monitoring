@@ -6,52 +6,56 @@
                 "class": "small_stat_rows"
             },
             {
-                "class": "row",
-                "height": "25px",
-                "gridPos": {
-                    "h": 2
-                },
-                "panels": [
+                "rows":[
                     {
-                        "class": "plain_text",
-                        "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">IO Queue Information</h1>"
-                    }
-                ],
-                "hideHeader": true
-            },
-            {
-                "class": "row",
-                "height": "25px",
-                "panels": [
-                    {
-                        "class": "percentunit_panel",
-                        "span": 3,
-                        "spec/title": "I/O Group consumption by instance",
-                        "spec/description": "This graph shows how IO queue consumption is distributed between io-groups and streams.\n\nscylla_io_queue_consumption",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_io_queue_consumption{iogroup=~\"$iogroup\", class=~\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (instance, iogroup, stream)",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "Group {{iogroup}} {{stream}} {{dc}} {{instance}} "
+                        "class": "row",
+                        "height": "25px",
+                        "gridPos": {
+                            "h": 2
+                        },
+                        "panels": [
+                            {
+                                "class": "plain_text",
+                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">IO Queue Information</h1>"
+                            }
+                        ],
+                        "hideHeader": true
                     },
                     {
-                        "class": "graph_panel",
-                        "span": 3,
-                        "spec/title": "I/O Group Queue flow ratio",
-                        "spec/description": "This graph shows the ratio of dispatch rate to completion rate. It is expected to be 1.0, growing larger on reactor stalls or disk problems.\n\nscylla_io_queue_flow_ratio",
-                        "spec/vizConfig/spec/fieldConfig": {
-                            "defaults": {
-                                "class": "fieldConfig_defaults",
-                                "custom": {
-                                    "class": "fieldConfig_defaults_custom",
-                                    "axisSoftMax": 1.15,
-                                    "axisSoftMin": 0.85
-                                }
+                        "class": "row",
+                        "height": "25px",
+                        "panels": [
+                            {
+                                "class": "percentunit_panel",
+                                "span": 3,
+                                "spec/title": "I/O Group consumption by instance",
+                                "spec/description": "This graph shows how IO queue consumption is distributed between io-groups and streams.\n\nscylla_io_queue_consumption",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_io_queue_consumption{iogroup=~\"$iogroup\", class=~\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (instance, iogroup, stream)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "Group {{iogroup}} {{stream}} {{dc}} {{instance}} "
                             },
-                            "overrides": []
-                        },
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_io_queue_flow_ratio{iogroup=~\"$iogroup\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"})",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "Group {{iogroup}} {{dc}} {{instance}} {{shard}}"
+                            {
+                                "class": "graph_panel",
+                                "span": 3,
+                                "spec/title": "I/O Group Queue flow ratio",
+                                "spec/description": "This graph shows the ratio of dispatch rate to completion rate. It is expected to be 1.0, growing larger on reactor stalls or disk problems.\n\nscylla_io_queue_flow_ratio",
+                                "spec/vizConfig/spec/fieldConfig": {
+                                    "defaults": {
+                                        "class": "fieldConfig_defaults",
+                                        "custom": {
+                                            "class": "fieldConfig_defaults_custom",
+                                            "axisSoftMax": 1.15,
+                                            "axisSoftMin": 0.85
+                                        }
+                                    },
+                                    "overrides": []
+                                },
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_io_queue_flow_ratio{iogroup=~\"$iogroup\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"})",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "Group {{iogroup}} {{dc}} {{instance}} {{shard}}"
+                            }
+                        ],
+                        "hideHeader": true
                     }
-                ],
-                "hideHeader": true
+                ]
             },
             {
                 "title": "$classes",
@@ -112,7 +116,13 @@
                             }
                         ],
                         "hideHeader": true
-                    },
+                    }
+
+                ]
+            },
+            {
+
+                "rows": [
                     {
                         "class": "row",
                         "height": "25px",
@@ -126,16 +136,12 @@
                             }
                         ],
                         "hideHeader": true
-                    }
-                ]
-            },
-            {
-                "title": "$sg",
-                "collapse": false,
-                "repeat": "sg",
-                "rows": [
+                    },
                     {
                         "class": "row",
+                        "title": "$sg",
+                        "collapse": false,
+                        "repeat": "sg",
                         "panels": [
                             {
                                 "class": "percentunit_panel",
@@ -167,7 +173,11 @@
                             }
                         ],
                         "hideHeader": true
-                    },
+                    }
+                ]
+            },
+            {
+                "rows": [
                     {
                         "class": "row",
                         "height": "25px",
@@ -282,7 +292,12 @@
                             }
                         ],
                         "hideHeader": true
-                    },
+                    }
+                ]
+            },
+            {
+                "title": "Commit log Information",
+                "rows": [
                     {
                         "class": "row",
                         "height": "25px",
@@ -364,12 +379,18 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_commitlog_allocating_segments{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))"
                             }
                         ]
-                    },
+                    }
+                ]
+            },
+            {
+                "title": "RPC metrics",
+                "dashversion": [">2024.2"],
+                "collapse": false,
+                "rows": [
                     {
                         "class": "row",
-                        "dashversion": [
-                            ">2024.2"
-                        ],
+                        "title": "Domain: $domain",
+                        "repeat": "domain",
                         "panels": [
                             {
                                 "class": "graph_panel",
@@ -428,8 +449,7 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_rpc_client_delay_samples{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", domain=\"$domain\"}[$__rate_interval])>0) by ([[by]],domain))"
                             }
                         ],
-                        "title": "RPC metrics - $domain",
-                        "collapsed": true
+                        "collapse": true
                     }
                 ]
             },
