@@ -435,6 +435,9 @@ def make_grafana_13(results, args):
 
             # Extract layout hints before wrapping/stripping
             panel_body_pre = panel.get("spec", panel)
+            panel_repeat = panel.pop("repeat", None)
+            if panel_repeat is None and isinstance(panel_body_pre, dict):
+                panel_repeat = panel_body_pre.pop("repeat", None)
             gp_raw = panel.get("gridPos") or panel_body_pre.get("gridPos")
             gp = gp_raw if isinstance(gp_raw, dict) else {}
             span = panel_body_pre.get("span") or panel.get("span")
@@ -482,6 +485,12 @@ def make_grafana_13(results, args):
                     y = y + item["spec"]["height"]
                 if conditional_rendering is not None:
                     item["spec"]["conditionalRendering"] = conditional_rendering
+                if panel_repeat is not None:
+                    item["spec"]["repeat"] = panel_repeat if isinstance(panel_repeat, dict) else {
+                        "mode": "variable",
+                        "value": panel_repeat,
+                        "direction": "h"
+                    }
                 layout_items.append(item)
             else:
                 item_spec = {
@@ -489,6 +498,12 @@ def make_grafana_13(results, args):
                 }
                 if conditional_rendering is not None:
                     item_spec["conditionalRendering"] = conditional_rendering
+                if panel_repeat is not None:
+                    item_spec["repeat"] = panel_repeat if isinstance(panel_repeat, dict) else {
+                        "mode": "variable",
+                        "value": panel_repeat,
+                        "direction": "h"
+                    }
                 layout_items.append({
                     "kind": "AutoGridLayoutItem",
                     "spec": item_spec
