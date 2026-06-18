@@ -2722,6 +2722,7 @@
             "spec/query/spec/expr": "sum(scylla_column_family_live_sstable{ks=\"$ks\", cf=~\"$table\"}) by(ks,cf)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2730,6 +2731,7 @@
             "spec/query/spec/expr": "sum(rate(scylla_column_family_write_latency_count{ks=\"$ks\", cf=~\"$table\"}[1m])) by( ks,cf)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2738,6 +2740,7 @@
             "spec/query/spec/expr": "wlatencyp95ks{ks=\"$ks\", cf=~\"$table\", by=\"cluster\", cluster=\"$cluster\"}",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2746,6 +2749,7 @@
             "spec/query/spec/expr": "wlatencyp99ks{ks=\"$ks\", cf=~\"$table\", by=\"cluster\", cluster=\"$cluster\"}",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2754,6 +2758,7 @@
             "spec/query/spec/expr": "sum(rate(scylla_column_family_read_latency_count{ks=\"$ks\", cf=~\"$table\"}[1m])) by( ks,cf)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2762,6 +2767,7 @@
             "spec/query/spec/expr": "rlatencyp95ks{ks=\"$ks\", cf=~\"$table\", by=\"cluster\", cluster=\"$cluster\"}",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2770,6 +2776,7 @@
             "spec/query/spec/expr": "rlatencyp99ks{ks=\"$ks\", cf=~\"$table\", by=\"cluster\", cluster=\"$cluster\"}",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2778,6 +2785,7 @@
             "spec/query/spec/expr": "sum(scylla_column_family_total_disk_space{ks=\"$ks\", cf=~\"$table\", cluster=\"$cluster\"}) by (cf)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2786,6 +2794,7 @@
             "spec/query/spec/expr": "max_over_time(sum(rate(scylla_column_family_write_latency_count{ks=\"$ks\", cf=~\"$table\"}[1m])) by(cf)[24h:])",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2794,6 +2803,7 @@
             "spec/query/spec/expr": "max_over_time(sum(rate(scylla_column_family_read_latency_count{ks=\"$ks\", cf=~\"$table\"}[1m])) by(cf)[24h:])",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2802,27 +2812,42 @@
             "spec/query/spec/expr": "1- sum(scylla_column_family_total_disk_space{ks=\"$ks\", cf=~\"$table\", cluster=\"$cluster\"}) by (cf)/sum(scylla_column_family_total_disk_space_before_compression{ks=\"$ks\", cf=~\"$table\", cluster=\"$cluster\"}) by (cf)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false,
             "dashversion": [">2026.1"]
          }
       ],
       "spec/data/spec/transformations": [
-         {"id": "joinByField", "options": {"byField": "cf", "mode": "outer"}},
          {
-            "id": "filterFieldsByName",
-            "options": {
-               "include": {
-                  "names": ["Value #A", "Value #B", "Value #C", "Value #D", "Value #E", "Value #F", "Value #G", "Value #H", "Value #I", "Value #J", "cf", "Value #K"]
+            "kind": "Transformation",
+            "group": "joinByField",
+            "spec": {
+               "options": {
+                  "byField": "cf",
+                  "mode": "outerTabular"
                }
             }
          },
          {
-            "id": "organize",
-            "options": {
-               "excludeByName": {},
-               "indexByName": {"cf": 0, "Value #H": 1, "Value #K": 2, "Value #A": 3, "Value #B": 4, "Value #I": 5, "Value #C": 6, "Value #D": 7, "Value #E": 8, "Value #J": 9, "Value #F": 10, "Value #G": 11},
-               "renameByName": {"ks 1": "keyspace", "cf": "table", "Value #A": "sstables", "Value #B": "writes/s", "Value #C": "W P95", "Value #D": "W P99", "Value #E": "reads/s", "Value #F": "R P95", "Value #G": "R P99", "Value #H": "Disk space", "Value #I": "24h Max W", "Value #J": "24h Max R", "Value #K": "Compressed"},
-               "includeByName": {}
+            "kind": "Transformation",
+            "group": "filterFieldsByName",
+            "spec": {
+               "options": {
+                  "include": {
+                     "names": ["Value #A", "Value #B", "Value #C", "Value #D", "Value #E", "Value #F", "Value #G", "Value #H", "Value #I", "Value #J", "cf", "Value #K"]
+                  }
+               }
+            }
+         },
+         {
+            "kind": "Transformation",
+            "group": "organize",
+            "spec": {
+               "options": {
+                  "excludeByName": {},
+                  "indexByName": {"cf": 0, "Value #H": 1, "Value #K": 2, "Value #A": 3, "Value #B": 4, "Value #I": 5, "Value #C": 6, "Value #D": 7, "Value #E": 8, "Value #J": 9, "Value #F": 10, "Value #G": 11},
+               "renameByName": {"ks 1": "keyspace", "cf": "table", "Value #A": "sstables", "Value #B": "writes/s", "Value #C": "W P95", "Value #D": "W P99", "Value #E": "reads/s", "Value #F": "R P95", "Value #G": "R P99", "Value #H": "Disk space", "Value #I": "24h Max W", "Value #J": "24h Max R", "Value #K": "Compressed"}
+               }
             }
          }
       ],
@@ -2857,6 +2882,7 @@
             "spec/query/spec/expr": "sum(scylla_column_family_live_sstable{}) by(ks)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2865,6 +2891,7 @@
             "spec/query/spec/expr": "sum(rate(scylla_column_family_write_latency_count{ks=\"$ks\"}[1m])) by( ks)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2873,6 +2900,7 @@
             "spec/query/spec/expr": "avg(wlatencyp95ks{by=\"cluster\", cluster=\"$cluster\"}) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2881,6 +2909,7 @@
             "spec/query/spec/expr": "avg(wlatencyp99ks{by=\"cluster\", cluster=\"$cluster\"}) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2889,6 +2918,7 @@
             "spec/query/spec/expr": "sum(rate(scylla_column_family_read_latency_count{cluster=\"$cluster\"}[1m])) by( ks)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2897,6 +2927,7 @@
             "spec/query/spec/expr": "avg(rlatencyp95ks{by=\"cluster\", cluster=\"$cluster\"}) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2905,6 +2936,7 @@
             "spec/query/spec/expr": "avg(rlatencyp99ks{by=\"cluster\", cluster=\"$cluster\"}) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2913,6 +2945,7 @@
             "spec/query/spec/expr": "sum(scylla_column_family_total_disk_space{cluster=\"$cluster\"}) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2921,6 +2954,7 @@
             "spec/query/spec/expr": "max_over_time(sum(rate(scylla_column_family_write_latency_count{cluster=\"$cluster\"}[1m])) by(ks)[24h:])",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2929,6 +2963,7 @@
             "spec/query/spec/expr": "max_over_time(sum(rate(scylla_column_family_read_latency_count{cluster=\"$cluster\"}[1m])) by(ks)[24h:])",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2937,6 +2972,7 @@
             "spec/query/spec/expr": "count(count(scylla_column_family_cache_hit_rate{cluster=\"$cluster\"}) by(cf, ks)) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          },
          {
@@ -2945,26 +2981,41 @@
             "spec/query/spec/expr": "count((sum by (ks, cf) (rate(scylla_column_family_read_latency_count{cluster=\"$cluster\"}[1h])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\"}*0) + sum by (ks, cf) (rate(scylla_column_family_write_latency_count{cluster=\"$cluster\"}[1h])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\"}*0))>0) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": true,
+            "spec/query/spec/format": "table",
             "spec/query/spec/range": false
          }
       ],
       "spec/data/spec/transformations": [
-         {"id": "joinByField", "options": {"byField": "ks", "mode": "outer"}},
          {
-            "id": "filterFieldsByName",
-            "options": {
-               "include": {
-                  "names": ["Value #A", "Value #B", "Value #C", "Value #D", "Value #E", "Value #F", "Value #G", "Value #H", "Value #I", "Value #J", "Value #K", "Value #L", "ks"]
+            "kind": "Transformation",
+            "group": "joinByField",
+            "spec": {
+               "options": {
+                  "byField": "ks",
+                  "mode": "outerTabular"
                }
             }
          },
          {
-            "id": "organize",
-            "options": {
-               "excludeByName": {},
-               "indexByName": {"ks": 0, "Value #K": 1, "Value #L": 2, "Value #H": 3, "Value #A": 4, "Value #B": 5, "Value #I": 6, "Value #C": 7, "Value #D": 8, "Value #E": 9, "Value #J": 10, "Value #F": 11, "Value #G": 12},
-               "renameByName": {"ks": "keyspace", "Value #A": "sstables", "Value #B": "writes/s", "Value #C": "W P95", "Value #D": "W P99", "Value #E": "reads/s", "Value #F": "R P95", "Value #G": "R P99", "Value #H": "Disk space", "Value #I": "24h Max W", "Value #J": "24h Max R", "Value #K": "# Tables", "Value #L": "# Active Tables"},
-               "includeByName": {}
+            "kind": "Transformation",
+            "group": "filterFieldsByName",
+            "spec": {
+               "options": {
+                  "include": {
+                     "names": ["Value #A", "Value #B", "Value #C", "Value #D", "Value #E", "Value #F", "Value #G", "Value #H", "Value #I", "Value #J", "Value #K", "Value #L", "ks"]
+                  }
+               }
+            }
+         },
+         {
+            "kind": "Transformation",
+            "group": "organize",
+            "spec": {
+               "options": {
+                  "excludeByName": {},
+                  "indexByName": {"ks": 0, "Value #K": 1, "Value #L": 2, "Value #H": 3, "Value #A": 4, "Value #B": 5, "Value #I": 6, "Value #C": 7, "Value #D": 8, "Value #E": 9, "Value #J": 10, "Value #F": 11, "Value #G": 12},
+                  "renameByName": {"ks": "keyspace", "Value #A": "sstables", "Value #B": "writes/s", "Value #C": "W P95", "Value #D": "W P99", "Value #E": "reads/s", "Value #F": "R P95", "Value #G": "R P99", "Value #H": "Disk space", "Value #I": "24h Max W", "Value #J": "24h Max R", "Value #K": "# Tables", "Value #L": "# Active Tables"}
+               }
             }
          }
       ],
