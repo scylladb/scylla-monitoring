@@ -356,7 +356,7 @@
                         ]
                     }
                 ],
-                "title": "Latencies"
+                "title": "Replica side Latencies"
             },
             {
                 "class": "row",
@@ -1380,190 +1380,211 @@
                 "hideHeader": true
             },
             {
+                "hideHeader": true,
                 "class": "row",
-                "panels": [
+                "rows": [
                     {
-                        "span": 3,
-                        "class": "wps_panel",
-                        "spec/title": "Writes $func by [[by]]",
-                        "spec/description": "scylla_storage_proxy_coordinator_write_latency",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on([[by]]) $func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
+                        "class": "row",
+                        "gridPos": {
+                            "h": 2
+                        },
+                        "panels": [
+                            {
+                                "class": "plain_text",
+                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Latencies - Replica</h1>"
+                            }
+                        ],
+                        "hideHeader": true
                     },
                     {
-                        "span": 3,
-                        "class": "us_panel",
-                        "spec/title": "Average write latency by [[by]]",
-                        "spec/data/spec/queries": [
+                        "class": "row",
+                        "repeat": "sg",
+                        "collapse": true,
+                        "panels": [
                             {
-                                "class": "graph_query",
-                                "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "span": 3,
+                                "class": "wps_panel",
+                                "spec/title": "Writes $func by [[by]]",
+                                "spec/description": "scylla_storage_proxy_coordinator_write_latency",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on([[by]]) $func(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
                             },
                             {
-                                "class": "graph_query",
-                                "spec/refId": "B",
-                                "spec/query/spec/expr": "$func(wlatencya{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
-                            }
-                        ]
-                    },
-                    {
-                        "span": 3,
-                        "class": "us_panel",
-                        "spec/title": "95th percentile write latency by [[by]]",
-                        "spec/data/spec/queries": [
-                            {
-                                "class": "graph_query",
-                                "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "Average write latency by [[by]]",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "$func(wlatencya{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                    }
+                                ]
                             },
                             {
-                                "class": "graph_query",
-                                "spec/refId": "B",
-                                "spec/query/spec/expr": "$func(wlatencyp95{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
-                            }
-                        ]
-                    },
-                    {
-                        "span": 3,
-                        "class": "us_panel",
-                        "spec/title": "99th percentile write latency by [[by]]",
-                        "spec/data/spec/queries": [
-                            {
-                                "class": "graph_query",
-                                "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "95th percentile write latency by [[by]]",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "$func(wlatencyp95{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                    }
+                                ]
                             },
                             {
-                                "class": "graph_query",
-                                "spec/refId": "B",
-                                "spec/query/spec/expr": "$func(wlatencyp99{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
-                            }
-                        ]
-                    },
-                    {
-                        "span": 3,
-                        "class": "rps_panel",
-                        "spec/title": "Reads $func by [[by]]",
-                        "spec/description": "scylla_storage_proxy_coordinator_read_latency",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
-                    },
-                    {
-                        "span": 3,
-                        "class": "us_panel",
-                        "spec/title": "Average read latency by [[by]]",
-                        "spec/data/spec/queries": [
-                            {
-                                "class": "graph_query",
-                                "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "99th percentile write latency by [[by]]",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "$func(wlatencyp99{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                    }
+                                ]
                             },
                             {
-                                "class": "graph_query",
-                                "spec/refId": "B",
-                                "spec/query/spec/expr": "$func(rlatencya{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
-                            }
-                        ]
-                    },
-                    {
-                        "span": 3,
-                        "class": "us_panel",
-                        "spec/title": "95th percentile read latency by [[by]]",
-                        "spec/data/spec/queries": [
-                            {
-                                "class": "graph_query",
-                                "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "span": 3,
+                                "class": "rps_panel",
+                                "spec/title": "Reads $func by [[by]]",
+                                "spec/description": "scylla_storage_proxy_coordinator_read_latency",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on ([[by]]) $func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
                             },
                             {
-                                "class": "graph_query",
-                                "spec/refId": "B",
-                                "spec/query/spec/expr": "$func(rlatencyp95{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
-                            }
-                        ]
-                    },
-                    {
-                        "span": 3,
-                        "class": "us_panel",
-                        "spec/title": "99th percentile read latency by [[by]]",
-                        "spec/data/spec/queries": [
-                            {
-                                "class": "graph_query",
-                                "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "Average read latency by [[by]]",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "$func(rlatencya{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                    }
+                                ]
                             },
                             {
-                                "class": "graph_query",
-                                "spec/refId": "B",
-                                "spec/query/spec/expr": "$func(rlatencyp99{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "95th percentile read latency by [[by]]",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "$func(rlatencyp95{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "99th percentile read latency by [[by]]",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "$func(rlatencyp99{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "span": 3,
+                                "class": "bps_panel",
+                                "spec/title": "Received payload $func by [[by]]",
+                                "spec/description": "Bytes received in CQL messages",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_transport_cql_request_bytes{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "bps_panel",
+                                "spec/title": "Average received payload size by [[by]]",
+                                "spec/description": "Average CQL message size (received)",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_transport_cql_request_bytes{kind=~\"$kind\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])/sum(rate(scylla_transport_cql_requests_count{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "bps_panel",
+                                "spec/title": "Response payload $func by [[by]]",
+                                "spec/description": "Bytes sent in CQL messages",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_transport_cql_response_bytes{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "bps_panel",
+                                "spec/title": "Average response payload size by [[by]]",
+                                "spec/description": "Average CQL message size (sent)",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_transport_cql_response_bytes{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])/sum(rate(scylla_transport_cql_requests_count{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "bytes_panel",
+                                "spec/title": "Estimated write message size by [[by]]",
+                                "spec/description": "This is a ballpark estimation of the write-messages size (like insert and update).\n\nIt is based on the assumption that write-messages are responsible for most inwards traffic.",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_transport_cql_request_bytes{kind=~\"QUERY|EXECUTE\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])/(sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "bytes_panel",
+                                "spec/title": "Estimated read message size by [[by]]",
+                                "spec/description": "This is a ballpark estimation of the read-messages size (like select).\n\nIt is based on the assumption that read-messages are responsible for most outbound traffic.",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_transport_cql_response_bytes{kind=~\"QUERY|EXECUTE\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])/(sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "rps_panel",
+                                "spec/title": "Foreground Reads $func by [[by]]",
+                                "spec/description": "",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_storage_proxy_coordinator_foreground_reads{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) by (scheduling_group_name, [[by]]))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "wps_panel",
+                                "spec/title": "Foreground Writes $func by [[by]]",
+                                "spec/description": "",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_storage_proxy_coordinator_foreground_writes{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) by (scheduling_group_name, [[by]]))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{instance}} {{shard}}"
                             }
-                        ]
-                    },
-                    {
-                        "span": 3,
-                        "class": "bps_panel",
-                        "spec/title": "Received payload $func by [[by]]",
-                        "spec/description": "Bytes received in CQL messages",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_transport_cql_request_bytes{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
-                    },
-                    {
-                        "span": 3,
-                        "class": "bps_panel",
-                        "spec/title": "Average received payload size by [[by]]",
-                        "spec/description": "Average CQL message size (received)",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_transport_cql_request_bytes{kind=~\"$kind\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])/sum(rate(scylla_transport_cql_requests_count{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
-                    },
-                    {
-                        "span": 3,
-                        "class": "bps_panel",
-                        "spec/title": "Response payload $func by [[by]]",
-                        "spec/description": "Bytes sent in CQL messages",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_transport_cql_response_bytes{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
-                    },
-                    {
-                        "span": 3,
-                        "class": "bps_panel",
-                        "spec/title": "Average response payload size by [[by]]",
-                        "spec/description": "Average CQL message size (sent)",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_transport_cql_response_bytes{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])/sum(rate(scylla_transport_cql_requests_count{kind=~\"$kind\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]))"
-                    },
-                    {
-                        "span": 3,
-                        "class": "bytes_panel",
-                        "spec/title": "Estimated write message size by [[by]]",
-                        "spec/description": "This is a ballpark estimation of the write-messages size (like insert and update).\n\nIt is based on the assumption that write-messages are responsible for most inwards traffic.",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_transport_cql_request_bytes{kind=~\"QUERY|EXECUTE\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])/(sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_count{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])))"
-                    },
-                    {
-                        "span": 3,
-                        "class": "bytes_panel",
-                        "spec/title": "Estimated read message size by [[by]]",
-                        "spec/description": "This is a ballpark estimation of the read-messages size (like select).\n\nIt is based on the assumption that read-messages are responsible for most outbound traffic.",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_transport_cql_response_bytes{kind=~\"QUERY|EXECUTE\",instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])/(sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])))"
-                    },
-                    {
-                        "span": 3,
-                        "class": "rps_panel",
-                        "spec/title": "Foreground Reads $func by [[by]]",
-                        "spec/description": "",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_storage_proxy_coordinator_foreground_reads{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) by (scheduling_group_name, [[by]]))",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{instance}} {{shard}}"
-                    },
-                    {
-                        "span": 3,
-                        "class": "wps_panel",
-                        "spec/title": "Foreground Writes $func by [[by]]",
-                        "spec/description": "",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_storage_proxy_coordinator_foreground_writes{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) by (scheduling_group_name, [[by]]))",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{instance}} {{shard}}"
+                        ],
+                        "title": "$sg"
                     }
-                ],
-                "title": "Latencies - $sg"
+                ]
             },
             {
                 "class": "monitoring_version_row"
