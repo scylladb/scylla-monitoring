@@ -210,27 +210,22 @@
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]])",
-                                        "spec/query/spec/legendFormat": "Writes {{instance}}"
+                                        "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by ([[by]])",
+                                        "spec/query/spec/legendFormat": "Writes {{instance}} {{shard}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1d)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1d))",
+                                        "spec/query/spec/expr": "avg(sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1d)) by ([[by]])) or on () avg(sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1d)) by ([[by]]))",
                                         "spec/query/spec/legendFormat": "1 Day Ago"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "C",
-                                        "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1w)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1w))",
+                                        "spec/query/spec/expr": "avg(sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1w)) by ([[by]])) or on () avg(sum(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval] offset 1w)) by ([[by]]))",
                                         "spec/query/spec/legendFormat": "1 Week Ago"
                                     }
                                 ],
-                                "spec/vizConfig/spec/options/legend": {
-                                    "displayMode": "list",
-                                    "placement": "bottom",
-                                    "showLegend": true
-                                },
                                 "spec/vizConfig/spec/fieldConfig/overrides": [
                                     {
                                         "matcher": {
@@ -247,6 +242,10 @@
                                                         4
                                                     ]
                                                 }
+                                            },
+                                            {
+                                                "id": "custom.lineWidth",
+                                                "value": 3
                                             }
                                         ]
                                     },
@@ -261,10 +260,14 @@
                                                 "value": {
                                                     "fill": "dash",
                                                     "dash": [
-                                                        2,
-                                                        2
+                                                        6,
+                                                        6
                                                     ]
                                                 }
+                                            },
+                                            {
+                                            "id": "custom.lineWidth",
+                                            "value": 3
                                             }
                                         ]
                                     }
@@ -317,19 +320,19 @@
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])",
-                                        "spec/query/spec/legendFormat": "Reads {{instance}}"
+                                        "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]])",
+                                        "spec/query/spec/legendFormat": "Reads {{instance}} {{shard}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1d)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1d))",
+                                        "spec/query/spec/expr": "avg(sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1d)) by ([[by]])) or on () avg(sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1d)) by ([[by]]))",
                                         "spec/query/spec/legendFormat": "1 Day Ago"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "C",
-                                        "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1w)) or on ([[by]]) sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1w))",
+                                        "spec/query/spec/expr": "avg(sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1w)) by ([[by]])) or on () avg(sum(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\",scheduling_group_name=~\"$sg\"}[$__rate_interval] offset 1w)) by ([[by]]))",
                                         "spec/query/spec/legendFormat": "1 Week Ago"
                                     }
                                 ],
@@ -354,6 +357,10 @@
                                                         4
                                                     ]
                                                 }
+                                            },
+                                            {
+                                                "id": "custom.lineWidth",
+                                                "value": 2
                                             }
                                         ]
                                     },
@@ -368,10 +375,14 @@
                                                 "value": {
                                                     "fill": "dash",
                                                     "dash": [
-                                                        2,
-                                                        2
+                                                        6,
+                                                        6
                                                     ]
                                                 }
+                                            },
+                                            {
+                                                "id": "custom.lineWidth",
+                                                "value": 2
                                             }
                                         ]
                                     }
