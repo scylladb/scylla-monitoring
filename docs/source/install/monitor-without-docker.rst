@@ -583,7 +583,7 @@ See more about it the `Grafana configuration`_.
 Embedding Dashboards
 ....................
 
-By default, the Scylla Monitoring Stack enables Grafana iframe embedding. If you install Grafana manually, add the
+Iframe embedding is disabled by default. To enable it when installing Grafana manually, add the
 following to your ``grafana.ini`` file:
 
 .. code-block:: ini
@@ -595,5 +595,4 @@ following to your ``grafana.ini`` file:
 
 ``cookie_secure`` requires HTTPS when embedding dashboards on a different site.
 
-To disable embedding, set ``allow_embedding = false`` and use Grafana's default cookie settings
-(``cookie_samesite = lax``, ``cookie_secure = false``).
+When using the monitoring stack scripts, set ``GF_SECURITY_ALLOW_EMBEDDING=true`` in ``env.sh`` or pass ``--allow-embedding`` to ``start-all.sh`` instead of editing ``grafana.ini`` directly.

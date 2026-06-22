@@ -54,9 +54,9 @@ Grafana reads its provisioning configuration from files, one for the data-source
 Note that the latter tells Grafana where the dashboards are located, it is not the dashboards themselves, which are
 at a different location.
 
-By default, Grafana is configured to allow iframe embedding. The generated ``docker-compose.yml`` and ``.env`` files
-set ``GF_SECURITY_ALLOW_EMBEDDING``, ``GF_SECURITY_COOKIE_SECURE``, and ``GF_SECURITY_COOKIE_SAMESITE``.
-Use ``--disable-embedding`` when running ``make-compose.sh`` to turn this off.
+By default, Grafana iframe embedding is disabled. The generated ``docker-compose.yml`` and ``.env`` files
+include ``GF_SECURITY_ALLOW_EMBEDDING``, ``GF_SECURITY_COOKIE_SECURE``, and ``GF_SECURITY_COOKIE_SAMESITE``.
+Use ``--allow-embedding`` or set ``GF_SECURITY_ALLOW_EMBEDDING=true`` in ``env.sh`` to enable embedding.
 
 Grafana Data-Source file
 ^^^^^^^^^^^^^^^^^^^^^^^^

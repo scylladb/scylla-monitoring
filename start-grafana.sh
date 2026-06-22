@@ -73,6 +73,11 @@ for arg; do
 		--disable-anonymous)
 			GRAFANA_AUTH_ANONYMOUS=false
 			;;
+		--allow-embedding)
+			GRAFANA_ALLOW_EMBEDDING=true
+			GRAFANA_COOKIE_SECURE=true
+			GRAFANA_COOKIE_SAMESITE=none
+			;;
 		--disable-embedding)
 			GRAFANA_ALLOW_EMBEDDING=false
 			GRAFANA_COOKIE_SECURE=false
@@ -127,7 +132,7 @@ for arg; do
 		unset LIMIT
 	fi
 done
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--disable-embedding] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 if [ "$DOCKER_PARAM" != "" ]; then
 	DOCKER_PARAM_FROM_FILE="1"
 fi
@@ -250,14 +255,32 @@ fi
 if [ -z $SERVER_ENABLE_GZIP ]; then
 	SERVER_ENABLE_GZIP="true"
 fi
-if [ -z $GRAFANA_ALLOW_EMBEDDING ]; then
-	GRAFANA_ALLOW_EMBEDDING="true"
+if [ -z "$GRAFANA_ALLOW_EMBEDDING" ] && [ ! -z "$GF_SECURITY_ALLOW_EMBEDDING" ]; then
+	GRAFANA_ALLOW_EMBEDDING="$GF_SECURITY_ALLOW_EMBEDDING"
 fi
-if [ -z $GRAFANA_COOKIE_SECURE ]; then
-	GRAFANA_COOKIE_SECURE="true"
+if [ -z "$GRAFANA_COOKIE_SECURE" ] && [ ! -z "$GF_SECURITY_COOKIE_SECURE" ]; then
+	GRAFANA_COOKIE_SECURE="$GF_SECURITY_COOKIE_SECURE"
 fi
-if [ -z $GRAFANA_COOKIE_SAMESITE ]; then
-	GRAFANA_COOKIE_SAMESITE="none"
+if [ -z "$GRAFANA_COOKIE_SAMESITE" ] && [ ! -z "$GF_SECURITY_COOKIE_SAMESITE" ]; then
+	GRAFANA_COOKIE_SAMESITE="$GF_SECURITY_COOKIE_SAMESITE"
+fi
+if [ -z "$GRAFANA_ALLOW_EMBEDDING" ]; then
+	GRAFANA_ALLOW_EMBEDDING="false"
+fi
+if [ "$GRAFANA_ALLOW_EMBEDDING" = "true" ]; then
+	if [ -z "$GRAFANA_COOKIE_SECURE" ]; then
+		GRAFANA_COOKIE_SECURE="true"
+	fi
+	if [ -z "$GRAFANA_COOKIE_SAMESITE" ]; then
+		GRAFANA_COOKIE_SAMESITE="none"
+	fi
+else
+	if [ -z "$GRAFANA_COOKIE_SECURE" ]; then
+		GRAFANA_COOKIE_SECURE="false"
+	fi
+	if [ -z "$GRAFANA_COOKIE_SAMESITE" ]; then
+		GRAFANA_COOKIE_SAMESITE="lax"
+	fi
 fi
 
 VERSION=$(echo $VERSIONS | cut -d',' -f1)

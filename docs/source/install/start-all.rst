@@ -63,12 +63,26 @@ How Grafana Configuration_ work. For example to enable the new navigation, you a
 
 **-Q Grafana anonymous role** By default, anonymous users have admin privileges. That means they can create and edit dashboards. The ``-Q`` flag changes this behavior by setting the role privileges to one of Admin, Editor, or Viewer.
 
-**--disable-embedding** By default, Grafana allows embedding dashboards in iframes. Use this flag to disable iframe embedding and restore Grafana's default cookie security settings (``X-Frame-Options: deny``).
+**--allow-embedding** Enable embedding Grafana dashboards in iframes. Sets the required cookie security settings for cross-origin embedding.
+
+**--disable-embedding** Disable iframe embedding and use Grafana's default cookie security settings (``X-Frame-Options: deny``). This is the default.
 
 Embedding Grafana Dashboards
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By default, the monitoring stack configures Grafana for iframe embedding with:
+By default, iframe embedding is disabled. To enable it, use one of:
+
+* The ``--allow-embedding`` command-line flag
+* Environment variables (``GF_SECURITY_ALLOW_EMBEDDING``, ``GF_SECURITY_COOKIE_SECURE``, ``GF_SECURITY_COOKIE_SAMESITE``)
+* An ``env.sh`` file in the monitoring directory (sourced by ``start-all.sh``)
+
+Example ``env.sh``:
+
+.. code-block:: shell
+
+   GF_SECURITY_ALLOW_EMBEDDING=true
+
+When embedding is enabled, the monitoring stack configures Grafana with:
 
 .. code-block:: ini
 
@@ -93,8 +107,6 @@ To embed a dashboard:
 
    <iframe src="https://your-grafana-host/d/d/<uid>/<slug>?orgId=1&kiosk"
            width="100%" height="600"></iframe>
-
-Use ``--disable-embedding`` if you do not need iframe support and prefer Grafana's stricter defaults.
 
 Grafana LDAP support
 ^^^^^^^^^^^^^^^^^^^^

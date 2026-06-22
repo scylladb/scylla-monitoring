@@ -438,6 +438,5 @@ View Grafana Dashboards
 Point your browser to ``your-server-ip:3000``
 By default, Grafana authentication is disabled. To enable it and set a password for user admin use the ``-a`` option.
 
-By default, Grafana dashboards can be embedded in iframes on other sites. Cross-origin embedding requires HTTPS.
-Use ``--disable-embedding`` with ``start-all.sh`` to disable iframe support.
+Iframe embedding is disabled by default. Use ``--allow-embedding``, set ``GF_SECURITY_ALLOW_EMBEDDING=true`` in the environment or in ``env.sh``, to enable it. Cross-origin embedding requires HTTPS.
 See :doc:`start-all` for details.
