@@ -63,6 +63,51 @@ How Grafana Configuration_ work. For example to enable the new navigation, you a
 
 **-Q Grafana anonymous role** By default, anonymous users have admin privileges. That means they can create and edit dashboards. The ``-Q`` flag changes this behavior by setting the role privileges to one of Admin, Editor, or Viewer.
 
+**--allow-embedding** Enable embedding Grafana dashboards in iframes. Sets the required cookie security settings for cross-origin embedding.
+
+**--disable-embedding** Disable iframe embedding and use Grafana's default cookie security settings (``X-Frame-Options: deny``). This is the default.
+
+Embedding Grafana Dashboards
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, iframe embedding is disabled. To enable it, use one of:
+
+* The ``--allow-embedding`` command-line flag
+* Environment variables (``GF_SECURITY_ALLOW_EMBEDDING``, ``GF_SECURITY_COOKIE_SECURE``, ``GF_SECURITY_COOKIE_SAMESITE``)
+* An ``env.sh`` file in the monitoring directory (sourced by ``start-all.sh``)
+
+Example ``env.sh``:
+
+.. code-block:: shell
+
+   GF_SECURITY_ALLOW_EMBEDDING=true
+
+When embedding is enabled, the monitoring stack configures Grafana with:
+
+.. code-block:: ini
+
+   [security]
+   allow_embedding = true
+   cookie_secure = true
+   cookie_samesite = none
+
+These map to the following environment variables in the Grafana container:
+
+.. code-block:: shell
+
+   GF_SECURITY_ALLOW_EMBEDDING=true
+   GF_SECURITY_COOKIE_SECURE=true
+   GF_SECURITY_COOKIE_SAMESITE=none
+
+When embedding dashboards on a different site, Grafana must be served over HTTPS. ``cookie_secure`` and ``cookie_samesite = none`` are required for cross-origin iframes in modern browsers.
+
+To embed a dashboard:
+
+.. code-block:: html
+
+   <iframe src="https://your-grafana-host/d/d/<uid>/<slug>?orgId=1&kiosk"
+           width="100%" height="600"></iframe>
+
 Grafana LDAP support
 ^^^^^^^^^^^^^^^^^^^^
 Grafana supports LDAP_ for authentication and authorization.

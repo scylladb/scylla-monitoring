@@ -580,3 +580,19 @@ See more about it the `Grafana configuration`_.
 
 .. _`grafana configuration`: https://grafana.com/docs/grafana/latest/administration/configuration/#allow_loading_unsigned_plugins
 
+Embedding Dashboards
+....................
+
+Iframe embedding is disabled by default. To enable it when installing Grafana manually, add the
+following to your ``grafana.ini`` file:
+
+.. code-block:: ini
+
+   [security]
+   allow_embedding = true
+   cookie_secure = true
+   cookie_samesite = none
+
+``cookie_secure`` requires HTTPS when embedding dashboards on a different site.
+
+When using the monitoring stack scripts, set ``GF_SECURITY_ALLOW_EMBEDDING=true`` in ``env.sh`` or pass ``--allow-embedding`` to ``start-all.sh`` instead of editing ``grafana.ini`` directly.
