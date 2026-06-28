@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-CURRENT_VERSION="master"
-GRAFANA_RENDERER_TOKEN=""
+: "${CURRENT_VERSION:=master}"
+: "${GRAFANA_RENDERER_TOKEN:=}"
+: "${GRAFANA_RENDERER_TOKEN_FILE:=}"
 if [ -f CURRENT_VERSION.sh ]; then
 	CURRENT_VERSION=$(cat CURRENT_VERSION.sh)
 fi
@@ -31,6 +32,9 @@ DEFAULT_THEME="light"
 . UA.sh
 if [ -f env.sh ]; then
 	. env.sh
+fi
+if [ -z "$GRAFANA_RENDERER_TOKEN_FILE" ] && [ ! -z "$GRAFANA_RENDERER_TOKEN_TO_FILE" ]; then
+	GRAFANA_RENDERER_TOKEN_FILE="$GRAFANA_RENDERER_TOKEN_TO_FILE"
 fi
 DOCKER_PARAM=""
 
@@ -66,6 +70,14 @@ for arg; do
 			;;
 		--scrap)
 			PARAM="scrap"
+			LIMIT="1"
+			;;
+		--grafana-render-token)
+			PARAM="grafana-render-token"
+			LIMIT="1"
+			;;
+		--grafana-render-token-to-file)
+			PARAM="grafana-render-token-to-file"
 			LIMIT="1"
 			;;
 		--auth)
@@ -114,6 +126,12 @@ for arg; do
 		elif [ "$PARAM" = "scrap" ]; then
 			SCRAP_INTERVAL="-S $NOSPACE"
 			unset PARAM
+		elif [ "$PARAM" = "grafana-render-token" ]; then
+			GRAFANA_RENDERER_TOKEN="$VALUE"
+			unset PARAM
+		elif [ "$PARAM" = "grafana-render-token-to-file" ]; then
+			GRAFANA_RENDERER_TOKEN_FILE="$VALUE"
+			unset PARAM
 		else
 			if [ -z "${DOCKER_LIMITS[$DOCR]}" ]; then
 				DOCKER_LIMITS[$DOCR]=""
@@ -133,7 +151,7 @@ for arg; do
 		unset LIMIT
 	fi
 done
-usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-P ldap_config_file] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
+usage="$(basename "$0") [-h] [-v comma separated versions ] [-g grafana port ] [-G path to external dir] [-n grafana container name ] [-p ip:port address of prometheus ] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-x http_proxy_host:port] [-m alert_manager address] [-a admin password] [ -M scylla-manager version ] [-D encapsulate docker param] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-P ldap_config_file] [--grafana-render-token token] [--grafana-render-token-to-file path] -- loads the prometheus datasource and the Scylla dashboards into an existing grafana installation"
 if [ "$DOCKER_PARAM" != "" ]; then
 	DOCKER_PARAM_FROM_FILE="1"
 fi
@@ -370,10 +388,21 @@ if [[ -z "${DOCKER_HOST}" ]]; then
 	fi
 fi
 
-if [ ! -z $RUN_RENDERER ]; then
+if [ ! -z "$RUN_RENDERER" ] || [ ! -z "$GRAFANA_RENDERER_TOKEN_FILE" ]; then
 	if [ "$GRAFANA_RENDERER_TOKEN" = "" ]; then
 		GRAFANA_RENDERER_TOKEN="$(openssl rand -hex 16)"
 	fi
+fi
+
+if [ ! -z "$GRAFANA_RENDERER_TOKEN_FILE" ]; then
+	mkdir -p "$(dirname "$GRAFANA_RENDERER_TOKEN_FILE")"
+	if ! (umask 077 && printf '%s\n' "$GRAFANA_RENDERER_TOKEN" > "$GRAFANA_RENDERER_TOKEN_FILE"); then
+		echo "Failed to write Grafana renderer token to $GRAFANA_RENDERER_TOKEN_FILE"
+		exit 1
+	fi
+fi
+
+if [ ! -z $RUN_RENDERER ]; then
 	# Extract network name from DOCKER_PARAM if it's a custom network (not host)
 	NETWORK_NAME=""
 	if [[ $DOCKER_PARAM =~ --net=([^[:space:]]+) ]] || [[ $DOCKER_PARAM =~ --network=([^[:space:]]+) ]]; then
@@ -436,8 +465,10 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
 	-e "GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=$ANALYTICS_CHECK_FOR_PLUGIN_UPDATES" \
 	-e "GF_SECURITY_ANGULAR_SUPPORT_ENABLED=$SECURITY_ANGULAR_SUPPORT_ENABLED" \
 	-e "GF_DATABASE_WAL=true" \
+	-e GF_AUTH_ANONYMOUS_ORG_NAME="Main Org." \
 	-e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource" \
 	-e "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=$HOME_DASHBOARD" \
+	-e "GF_PROVISIONING_PERMITTED_PROVISIONED_PATHS=/var/lib/grafana/dashboards/" \
 	-e "GF_SERVER_ENABLE_GZIP=$SERVER_ENABLE_GZIP" \
 	-e "GF_SECURITY_ALLOW_EMBEDDING=$GRAFANA_ALLOW_EMBEDDING" \
 	-e "GF_SECURITY_COOKIE_SECURE=$GRAFANA_COOKIE_SECURE" \
