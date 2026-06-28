@@ -22,10 +22,13 @@
 from __future__ import print_function
 
 import argparse
+import copy
 import json
 import re
 import os
 import yaml
+
+strip_class = True
 
 
 def help(args):
@@ -195,6 +198,41 @@ def make_replace_strings(replace):
 def should_product_reject(products, obj):
     return ("dashproduct" in obj) and (obj["dashproduct"] == "" and len(products)>0 or obj["dashproduct"] != "" and obj["dashproduct"] not in products) or ("dashproductreject" in obj and obj["dashproductreject"] in products)
 
+def apply_path_overrides(obj, types=None, version=None, products=None, exact_match_replace=None):
+    """Process keys containing '/' as deep-path overrides.
+    e.g. "a/b/c": val sets obj["a"]["b"]["c"] = val
+         "a/0/b": val sets obj["a"][0]["b"] = val (integer part = list index)
+    Values that are dicts or lists are resolved via update_object before being placed.
+    """
+    path_keys = [k for k in list(obj.keys()) if '/' in k]
+    for key in path_keys:
+        val = obj.pop(key)
+        # Resolve the value being placed (class expansion, etc.)
+        if types is not None:
+            if isinstance(val, dict):
+                val = update_object(val, types, version or [], products or [], exact_match_replace or {})
+            elif isinstance(val, list):
+                val = [update_object(v, types, version or [], products or [], exact_match_replace or {}) if isinstance(v, dict) else v for v in val]
+                val = [v for v in val if v is not None]
+        parts = key.split('/')
+        target = obj
+        for i, part in enumerate(parts[:-1]):
+            next_part = parts[i + 1]
+            if isinstance(target, list):
+                target = target[int(part)]
+            else:
+                # create the next level as list or dict based on whether next part is numeric
+                try:
+                    int(next_part)
+                    target = target.setdefault(part, [])
+                except ValueError:
+                    target = target.setdefault(part, {})
+        last = parts[-1]
+        if isinstance(target, list):
+            target[int(last)] = val
+        else:
+            target[last] = val
+
 def update_object(obj, types, version, products, exact_match_replace):
     global id
     if not isinstance(obj, dict):
@@ -203,11 +241,14 @@ def update_object(obj, types, version, products, exact_match_replace):
         extra = get_type(obj["class"], types)
         for key in extra:
             if key not in obj:
-                obj[key] = extra[key]
-    if (version and should_version_reject(version, obj)) or should_product_reject(products, obj):
-        trace("version-reject", "rejecting obj", obj)
-        return None
-    for v in obj:
+                obj[key] = copy.deepcopy(extra[key])
+        if strip_class:
+            del obj["class"]
+    # First pass: recursively resolve all non-path-override keys so the full
+    # structure is materialized before path overrides try to navigate into it.
+    for v in list(obj.keys()):
+        if '/' in v:
+            continue  # path override keys handled below
         if v == "id" and obj[v] == "auto":
             obj[v] = id
             id = id + 1
@@ -218,6 +259,12 @@ def update_object(obj, types, version, products, exact_match_replace):
         else:
             if obj[v] in exact_match_replace:
                 obj[v] = exact_match_replace[obj[v]]
+    # Apply path overrides on the fully-materialized structure; values being
+    # placed are themselves resolved via update_object.
+    apply_path_overrides(obj, types, version, products, exact_match_replace)
+    if (version and should_version_reject(version, obj)) or should_product_reject(products, obj):
+        trace("version-reject", "rejecting obj", obj)
+        return None
     return obj
 
 def compact_obj(obj, types, args):
@@ -317,10 +364,18 @@ def add_row(y, panels, row, args):
     return y + max_h
 
 def is_collapsed_row(row):
-    return len(row["panels"]) == 1 and row["panels"][0]["type"] == "row" and "collapsed" in row["panels"][0] and row["panels"][0]["collapsed"]
+    if "panels" not in row or len(row["panels"]) == 0:
+        print("row has no panels, treating as row, please update the template to add an empty panel to this row", row)
+        return False
+    return len(row["panels"]) == 1 and ("type" in row["panels"][0] and row["panels"][0]["type"] == "row" or "class" in row["panels"][0] and row["panels"][0]["class"] in ["row", "collapsible_row_panel"]) and "collapsed" in row["panels"][0] and row["panels"][0]["collapsed"]
 
 def is_collapsable_row(row):
-    return len(row["panels"]) == 1 and row["panels"][0]["type"] == "row"
+    if "panels" not in row or len(row["panels"]) == 0:
+        print("row has no panels, treating as row, please update the template to add an empty panel to this row", row)
+        return False
+    if len(row["panels"]) == 1 and "type" not in row["panels"][0]:
+        print("type is missing, treating as row, please update the template to add type:row to this panel", row)
+    return len(row["panels"]) == 1 and ("type" in row["panels"][0] and row["panels"][0]["type"] == "row" or "class" in row["panels"][0] and row["panels"][0]["class"] in ["row", "collapsible_row_panel"])
 
 def make_grafana_5(results, args):
     rows = results["dashboard"]["rows"]
@@ -350,6 +405,211 @@ def make_grafana_5(results, args):
         panels.append(collapsible_row[0])
     results["dashboard"]["panels"] = panels
 
+def make_grafana_13(results, args):
+    # Remove old Grafana 5/8 top-level keys not valid in Grafana 13 schema
+    for old_key in ("templating", "time", "tags", "overwrite", "version"):
+        results["dashboard"].pop(old_key, None)
+
+    rows = results["dashboard"]["rows"]
+    elements = {}
+    _auto_id = [1]  # mutable so nested helpers can increment it
+
+    def _alloc_panel_id():
+        while f"panel-{_auto_id[0]}" in elements:
+            _auto_id[0] += 1
+        pid = _auto_id[0]
+        _auto_id[0] += 1
+        return pid
+
+    def _process_panels(panels, row_layout_kind, default_height):
+        """Register panels in the shared elements dict and return layout items."""
+        layout_items = []
+        x = 0
+        y = 0
+        for panel in panels:
+            panel_id = panel.get("id")
+            if panel_id is None:
+                panel_id = _alloc_panel_id()
+            element_name = f"panel-{panel_id}"
+            conditional_rendering = panel.pop("conditionalRendering", None)
+
+            # Extract layout hints before wrapping/stripping
+            panel_body_pre = panel.get("spec", panel)
+            panel_repeat = panel.pop("repeat", None)
+            if panel_repeat is None and isinstance(panel_body_pre, dict):
+                panel_repeat = panel_body_pre.pop("repeat", None)
+            gp_raw = panel.get("gridPos") or panel_body_pre.get("gridPos")
+            gp = gp_raw if isinstance(gp_raw, dict) else {}
+            span = panel_body_pre.get("span") or panel.get("span")
+
+            if args.panel_as_spec and not ("kind" in panel and "spec" in panel):
+                panel = {"kind": "Panel", "spec": panel}
+            elements[element_name] = panel
+
+            # Strip template-engine keys that must not appear in Grafana output.
+            # gridPos and span are consumed for layout above; directive keys were
+            # used for filtering and must not leak into the rendered dashboard.
+            _STRIP_FROM_PANEL = ("gridPos", "span", "dashproductreject", "dashproduct", "dashproduc", "dashversion")
+            panel_body = panel.get("spec", panel)  # inside spec for wrapped panels
+            for _k in _STRIP_FROM_PANEL:
+                panel.pop(_k, None)
+                panel_body.pop(_k, None)
+            # For G13-format panels (kind+spec), move recognised content keys
+            # from panel top-level into spec (template may set them at top level
+            # when the class already provides kind/spec), then strip everything
+            # else at the panel top level since only kind+spec are valid in G13.
+            if "kind" in panel and "spec" in panel:
+                for _move_key in ("title", "description"):
+                    if _move_key in panel and not panel["spec"].get(_move_key):
+                        panel["spec"][_move_key] = panel.pop(_move_key)
+                for _k in list(panel.keys()):
+                    if _k not in ("kind", "spec"):
+                        panel.pop(_k)
+
+            if row_layout_kind == "GridLayout":
+                item = {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                        "element": {"kind": "ElementReference", "name": element_name}
+                    }
+                }
+                if span is not None:
+                    gp.setdefault("w", int(span) * 2)
+                item["spec"]["x"] = gp.get("x", x)
+                item["spec"]["y"] = gp.get("y", y)
+                item["spec"]["width"] = gp.get("w", 6)
+                item["spec"]["height"] = gp.get("h", default_height)
+                x = x + item["spec"]["width"]
+                if x >= 24:
+                    x = 0
+                    y = y + item["spec"]["height"]
+                if conditional_rendering is not None:
+                    item["spec"]["conditionalRendering"] = conditional_rendering
+                if panel_repeat is not None:
+                    item["spec"]["repeat"] = panel_repeat if isinstance(panel_repeat, dict) else {
+                        "mode": "variable",
+                        "value": panel_repeat,
+                        "direction": "h"
+                    }
+                layout_items.append(item)
+            else:
+                item_spec = {
+                    "element": {"kind": "ElementReference", "name": element_name}
+                }
+                if conditional_rendering is not None:
+                    item_spec["conditionalRendering"] = conditional_rendering
+                if panel_repeat is not None:
+                    item_spec["repeat"] = panel_repeat if isinstance(panel_repeat, dict) else {
+                        "mode": "variable",
+                        "value": panel_repeat,
+                        "direction": "h"
+                    }
+                layout_items.append({
+                    "kind": "AutoGridLayoutItem",
+                    "spec": item_spec
+                })
+        return layout_items
+
+    def _build_leaf_layout(row, row_layout_kind):
+        """Build a GridLayout/AutoGridLayout for a leaf row (one that has panels)."""
+        default_height = 6
+        if "height" in row:
+            try:
+                default_height = int(row["height"].replace("px", "")) / 30
+            except ValueError:
+                print("Warning: row height is not a number, using default 6", row["height"])
+                print(row)
+        if "gridPos" in row and "h" in row.get("gridPos", {}):
+            default_height = row["gridPos"]["h"]
+        panels = row.get("panels", [])
+        layout_items = _process_panels(panels, row_layout_kind, default_height)
+        if row_layout_kind == "GridLayout":
+            return layout_items, {"kind": "GridLayout", "spec": {"items": layout_items}}
+        else:
+            return layout_items, {
+                "kind": "AutoGridLayout",
+                "spec": {
+                    "maxColumnCount": 3,
+                    "columnWidthMode": "standard",
+                    "rowHeightMode": "standard",
+                    "items": layout_items
+                }
+            }
+
+    def _process_row_or_tab(row):
+        """Recursively convert a template row/tab to a G13 RowsLayoutRow or TabsLayoutTab.
+
+        A row/tab in the template may contain:
+          - ``panels``  — leaf panels → GridLayout or AutoGridLayout
+          - ``rows``    — nested child rows/tabs; if the first child has
+                          ``type: "tab"`` a TabsLayout is produced, otherwise
+                          a RowsLayout is produced.
+
+        An item with ``type: "tab"`` becomes a TabsLayoutTab; everything else
+        becomes a RowsLayoutRow.
+        """
+        row_title = row.get("title", "")
+        row_type = row.get("type", "row")
+        row_collapse = row.get("collapse", False)
+        row_layout_kind = row.get("layout", "AutoGridLayout")
+        row_conditional_rendering = row.pop("conditionalRendering", None)
+        row_repeat = row.pop("repeat", None)
+        hide_header = row.get("hideHeader", False)
+
+        sub_rows = row.get("rows", [])
+        if sub_rows:
+            # Detect whether children are tabs or rows based on the first child.
+            if sub_rows and sub_rows[0].get("type") == "tab":
+                children = [_process_row_or_tab(child) for child in sub_rows]
+                inner_layout = {"kind": "TabsLayout", "spec": {"tabs": children}}
+            else:
+                children = [r for r in [_process_row_or_tab(child) for child in sub_rows] if r is not None]
+                inner_layout = {"kind": "RowsLayout", "spec": {"rows": children}}
+            items_check = children
+        else:
+            items_check, inner_layout = _build_leaf_layout(row, row_layout_kind)
+
+        if row_type == "tab":
+            tab_spec = {
+                "title": row_title,
+                "layout": inner_layout
+            }
+            if row_conditional_rendering is not None:
+                tab_spec["conditionalRendering"] = row_conditional_rendering
+            return {"kind": "TabsLayoutTab", "spec": tab_spec}
+        else:
+            # Skip empty rows — Grafana 13 can crash on rows with zero items
+            if not items_check:
+                return None
+            row_spec = {
+                "title": row_title,
+                "collapse": row_collapse,
+                "layout": inner_layout
+            }
+            if row_conditional_rendering is not None:
+                row_spec["conditionalRendering"] = row_conditional_rendering
+            if row_repeat is not None:
+                row_spec["repeat"] = row_repeat if isinstance(row_repeat, dict) else {"mode": "variable", "value": row_repeat}
+            if hide_header:
+                row_spec["hideHeader"] = True
+            return {"kind": "RowsLayoutRow", "spec": row_spec}
+
+    layout_rows = [r for r in [_process_row_or_tab(row) for row in rows] if r is not None]
+
+    del results["dashboard"]["rows"]
+    results["dashboard"]["spec"]["elements"] = elements
+    results["dashboard"]["spec"]["layout"]["spec"]["rows"] = layout_rows
+
+    # Strip template-engine directive keys from variables; only kind+spec are
+    # valid at the variable top level in Grafana 13 schema.
+    for var in results["dashboard"]["spec"].get("variables", []):
+        for _k in list(var.keys()):
+            if _k not in ("kind", "spec"):
+                var.pop(_k)
+
+    # Grafana v2beta1 Dashboard schema requires a `status` field.
+    results["dashboard"].setdefault("status", {})
+
 def write_as_file(name_path, result, dir, replace_strings):
     name = os.path.basename(name_path)
     write_json(os.path.join(dir, name), result["dashboard"], replace_strings)
@@ -360,8 +620,9 @@ def parse_version(v):
     return int(v)
 
 def get_dashboard(name, types, args, replace_strings, exact_match_replace):
-    global id
+    global id, strip_class
     id = 1
+    strip_class = args.strip_class
     version_name = ""
     version = []
     if args.dash_version != "":
@@ -376,7 +637,12 @@ def get_dashboard(name, types, args, replace_strings, exact_match_replace):
 
     update_object(result, types, version, args.product, exact_match_replace)
     if not args.grafana4:
-        make_grafana_5(result, args)
+        if args.grafana13:
+            make_grafana_13(result, args)
+        elif args.grafana5:
+            make_grafana_5(result, args)
+        else:
+            make_grafana_13(result, args)
     if args.as_file:
         write_as_file(new_name, result, args.as_file, replace_strings)
     else:
@@ -397,6 +663,12 @@ if __name__ == "__main__":
     parser.add_argument('-ar', '--add-row', action='append', help='merge a templated row, format number:file', default=[])
     parser.add_argument('-r', '--reverse', action='store_true', default=False, help='Reverse mode, take a dashboard and try to minimize it')
     parser.add_argument('-G', '--grafana4', action='store_true', default=False, help='Do not Migrate the dashboard to the grafa 5 format, if not set the script will remove and emulate the rows with a single panels')
+    parser.add_argument('-G5', '--grafana5', action='store_true', default=False, help='Generate dashboard in Grafana 5 format (panels with gridPos)')
+    parser.add_argument('-G13', '--grafana13', action='store_true', default=False, help='Generate dashboard in Grafana 13 format (RowsLayout with elements)')
+    parser.add_argument('--panel-as-spec', action='store_true', default=True, help='Wrap panels in {kind: Panel, spec: {...}} when generating Grafana 13 format (default: true)')
+    parser.add_argument('--no-panel-as-spec', dest='panel_as_spec', action='store_false', help='Disable panel-as-spec wrapping')
+    parser.add_argument('--strip-class', dest='strip_class', action='store_true', default=True, help='Remove class keys from generated output (default: true)')
+    parser.add_argument('--no-strip-class', dest='strip_class', action='store_false', help='Keep class keys in generated output')
     parser.add_argument('-h', '--help', action='store_true', default=False, help='Print help information')
     parser.add_argument('-kt', '--key-tips', action='store_true', default=False, help='Add key tips when there are conflict values between the template and the value')
     parser.add_argument('-af', '--as-file', type=str, default="", help='Make the dashboard ready to be loaded as files and not with http, when not empty, state the directory the file will be written to')

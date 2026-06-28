@@ -96,7 +96,7 @@ elif [[ $(uname) == "Darwin" ]]; then
 fi
 
 function usage {
-	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--no-alertmanager] [--loki-port port] [--promtail-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
+	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--no-alertmanager] [--loki-port port] [--promtail-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir] [--grafana-render-token token] [--grafana-render-token-to-file path]
 
 Options:
   -h print this help and exit
@@ -153,6 +153,9 @@ Options:
                                    prometheus, grafana, alertmanager, loki, sidecar, grafanarender
   --archive  data-directory      - Treat data directory as an archive. This disables Prometheus time-to-live (infinite retention), and would run a minimal mode
   --quick-startup                - If set, the script will not validate that each of the processes start correctly.
+  --grafana-render-token token   - Use the provided renderer token instead of generating one.
+  --grafana-render-token-to-file path - Write the renderer token to the provided file path.
+                                   Can also be configured via GRAFANA_RENDERER_TOKEN_FILE in env.sh/environment.
 The script starts Scylla Monitoring stack.
 "
 	echo "$__usage"
@@ -240,6 +243,15 @@ if [ -z "$BIND_ADDRESS_CONFIG" ]; then
 fi
 if [ -z "$GRAFNA_ANONYMOUS_ROLE" ]; then
 	GRAFNA_ANONYMOUS_ROLE=""
+fi
+if [ -z "$GRAFANA_RENDERER_TOKEN" ]; then
+	GRAFANA_RENDERER_TOKEN=""
+fi
+if [ -z "$GRAFANA_RENDERER_TOKEN_FILE" ] && [ ! -z "$GRAFANA_RENDERER_TOKEN_TO_FILE" ]; then
+	GRAFANA_RENDERER_TOKEN_FILE="$GRAFANA_RENDERER_TOKEN_TO_FILE"
+fi
+if [ -z "$GRAFANA_RENDERER_TOKEN_FILE" ]; then
+	GRAFANA_RENDERER_TOKEN_FILE=""
 fi
 if [ -z "$SPECIFIC_SOLUTION" ]; then
 	SPECIFIC_SOLUTION=""
@@ -396,6 +408,14 @@ for arg; do
             PARAM="vector-search"
             VECTOR_SEARCH_CMD="--vector-search"
             ;;
+		--grafana-render-token)
+			LIMIT="1"
+			PARAM="grafana-render-token"
+			;;
+		--grafana-render-token-to-file)
+			LIMIT="1"
+			PARAM="grafana-render-token-to-file"
+			;;
 		--no-cas-cdc)
 			PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-cas-cdc"
 			;;
@@ -473,6 +493,12 @@ for arg; do
 			unset PARAM
 		elif [ "$PARAM" = "vector-search" ]; then
 			VECTOR_SEARCH="$NOSPACE"
+			unset PARAM
+		elif [ "$PARAM" = "grafana-render-token" ]; then
+			GRAFANA_RENDERER_TOKEN="$VALUE"
+			unset PARAM
+		elif [ "$PARAM" = "grafana-render-token-to-file" ]; then
+			GRAFANA_RENDERER_TOKEN_FILE="$VALUE"
 			unset PARAM
 		elif [ "$PARAM" = "archive" ]; then
 			DATA_DIR="$NOSPACE"
@@ -554,7 +580,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
 		PROMETHEUS_PORT=$OPTARG
 		;;
 	s)
-		SCYLLA_TARGET_FILES=("$OPTARG")
+		SCYLLA_TARGET_FILES=("$OPTARG")GRAFANA_RENDERER_TOKEN
 		;;
 	n)
 		NODE_TARGET_FILE=$OPTARG
@@ -1006,4 +1032,11 @@ fi
 if [ "$RUN_ALTERNATOR" = 1 ]; then
 	GRAFANA_ENV_ARRAY+=(--alternator)
 fi
-run_script ./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD $VECTOR_SEARCH_CMD
+grafana_renderer_args=()
+if [ ! -z "$GRAFANA_RENDERER_TOKEN" ]; then
+	grafana_renderer_args+=(--grafana-render-token "$GRAFANA_RENDERER_TOKEN")
+fi
+if [ ! -z "$GRAFANA_RENDERER_TOKEN_FILE" ]; then
+	grafana_renderer_args+=(--grafana-render-token-to-file "$GRAFANA_RENDERER_TOKEN_FILE")
+fi
+run_script ./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD $VECTOR_SEARCH_CMD "${grafana_renderer_args[@]}"
