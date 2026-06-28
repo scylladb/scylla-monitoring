@@ -642,7 +642,7 @@ def get_dashboard(name, types, args, replace_strings, exact_match_replace):
         elif args.grafana5:
             make_grafana_5(result, args)
         else:
-            make_grafana_5(result, args)
+            make_grafana_13(result, args)
     if args.as_file:
         write_as_file(new_name, result, args.as_file, replace_strings)
     else:
