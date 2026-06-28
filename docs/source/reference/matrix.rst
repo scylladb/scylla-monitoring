@@ -19,6 +19,11 @@ The following table shows which version of Scylla Monitoring Stack supports dash
      - 2024.x, 2025.x, 2026.1, 2026.2
      - 1.7.0
      - 3.x
+   * - 4.15
+     -
+     - 2024.x, 2025.x, 2026.1, 2026.2
+     - 1.7.0
+     - 3.x
    * - 4.14
      -
      - 2024.x, 2025.x, 2026.1
