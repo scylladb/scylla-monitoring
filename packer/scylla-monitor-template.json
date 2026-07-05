@@ -6,13 +6,13 @@
       "ami_name": "{{ user `monitor_image_name` }}",
       "source_ami_filter": {
         "filters": {
-          "name": "ubuntu-minimal/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64*"
+          "name": "{{user (printf \"aws_source_ami_filter_name_%s\" (user \"arch\")) }}"
         },
         "owners": ["099720109477"],
         "most_recent": true
       },
-      "instance_type": "{{user `aws_instance_type`}}",
-      "ami_regions": "us-west-2,us-east-2,eu-west-2,eu-west-1,eu-central-1,eu-north-1,eu-west-3,ca-central-1",
+      "instance_type": "{{user (printf \"aws_instance_type_%s\" (user \"arch\")) }}",
+      "ami_regions": "{{user `aws_ami_regions`}}",
       "user_data_file": "files/user_data.txt",
       "subnet_filter": {
         "filters": {
@@ -48,16 +48,22 @@
       "tags": {
         "Name": "{{ user `monitor_image_name` }}",
         "scylladb-monitor-version": "{{ user `monitor_version`| clean_resource_name }}",
-        "branch": "branch-{{ user `monitor_branch`| clean_resource_name }}"
+        "branch": "branch-{{ user `monitor_branch`| clean_resource_name }}",
+        "arch": "{{ user `arch` }}"
+      },
+      "run_tags": {
+        "Name": "packer-build-{{ user `monitor_image_name` }}-builder",
+        "Owner": "monitor-build",
+        "arch": "{{ user `arch` }}"
       }
     },
     {
       "type": "googlecompute",
       "project_id": "{{user `gcp_project_id`}}",
       "zone": "{{user `gcp_zone`}}",
-      "source_image_family": "{{user `gcp_source_image_family`}}",
+      "source_image_family": "{{ user (printf \"gcp_source_image_family_%s\" (user \"arch\")) }}",
       "image_storage_locations": ["{{user `gcp_image_storage_location`}}"],
-      "machine_type": "{{user `gcp_instance_type`}}",
+      "machine_type": "{{ user (printf \"gcp_instance_type_%s\" (user \"arch\")) }}",
       "ssh_username": "{{user `gcp_ssh_username`}}",
       "ssh_timeout": "6m",
       "metadata": { "block-project-ssh-keys": "TRUE" },
@@ -72,7 +78,8 @@
       "disk_type": "pd-balanced",
       "image_labels": {
         "scylladb-monitor-version": "{{ user `monitor_version`| clean_resource_name }}",
-        "branch": "branch-{{ user `monitor_branch`| clean_resource_name }}"
+        "branch": "branch-{{ user `monitor_branch`| clean_resource_name }}",
+        "arch": "{{ user `arch` }}"
       },
       "labels": {
         "keep": 1,
@@ -139,19 +146,26 @@
   "variables": {
     "monitor_version": "",
     "monitor_branch": "",
-    "monitor_image_name": "scylladb-monitor-{{ user `monitor_version` | replace_all \".\" \"-\" }}-{{ isotime \"2006-01-02t03-04-05z\" }}",
+    "monitor_image_name": "scylladb-monitor-{{ user `monitor_version` | replace_all \".\" \"-\" }}-{{ user `arch` }}-branch-{{ user `monitor_branch` | replace_all \".\" \"-\" }}-{{ isotime \"2006-01-02t03-04-05z\" }}",
 
+    "arch": "amd64",
     "aws_region": "us-east-1",
-    "aws_instance_type": "c4.xlarge",
+    "aws_ami_regions": "us-west-2,us-east-2,eu-west-2,eu-west-1,eu-central-1,eu-north-1,eu-west-3,ca-central-1",
+    "aws_source_ami_filter_name_amd64": "ubuntu-minimal/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64*",
+    "aws_source_ami_filter_name_arm64": "ubuntu-minimal/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64*",
+    "aws_instance_type_amd64": "c4.xlarge",
+    "aws_instance_type_arm64": "c7g.xlarge",
     "aws_ssh_username": "ubuntu",
-    "aws_install_args": "--cloud aws --os ubuntu --verbose --version {{ user `monitor_version` }}",
+    "aws_install_args": "--cloud aws --os ubuntu --verbose --version {{ user `monitor_version` }} --arch {{ user `arch` }}",
 
     "gcp_project_id": "scylla-images",
     "gcp_zone": "europe-west1-b",
-    "gcp_source_image_family": "ubuntu-minimal-2404-lts-amd64",
+    "gcp_source_image_family_amd64": "ubuntu-minimal-2404-lts-amd64",
+    "gcp_source_image_family_arm64": "ubuntu-minimal-2404-lts-arm64",
     "gcp_image_storage_location": "europe-west1",
-    "gcp_instance_type": "n1-standard-1",
+    "gcp_instance_type_amd64": "n1-standard-1",
+    "gcp_instance_type_arm64": "t2a-standard-2",
     "gcp_ssh_username": "ubuntu",
-    "gcp_install_args": "--cloud gce --os ubuntu --verbose --version {{ user `monitor_version` }}"
+    "gcp_install_args": "--cloud gce --os ubuntu --verbose --version {{ user `monitor_version` }} --arch {{ user `arch` }}"
   }
 }
