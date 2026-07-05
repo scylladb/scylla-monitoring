@@ -22,18 +22,24 @@
 
 import os
 import sys
-import tarfile
+import shlex
+import subprocess
 from scylla_util import *
 import argparse
+import tarfile
 
-VERSION='1.11.1-1'
-INSTALL_DIR=scylladir()+'/Prometheus/node_exporter'
+VERSION='1.11.1-2'
+
+def run(cmd):
+    subprocess.check_call(shlex.split(cmd))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Download and install prometheus node_exporter')
     parser.add_argument('-F', '--force', action='store_true', default=False, help='Force re-installation when node_exporter is already installed')
+    parser.add_argument('--arch', default='amd64', help='Architecture to use (amd64/arm64)')
     args = parser.parse_args()
     force = args.force
+    arch = args.arch
     if not is_nonroot() and os.getuid() > 0:
         print('Requires root permission.')
         sys.exit(1)
@@ -55,18 +61,12 @@ if __name__ == '__main__':
         print('app-metrics/node_exporter does not install systemd service files, please fill a bug if you need them.')
         sys.exit(1)
     else:
-        data = curl('https://github.com/scylladb/scylladb-node-exporter/releases/download/v{version}/node_exporter-{version}.linux-amd64.tar.gz'.format(version=VERSION), byte=True)
-        with open('/var/tmp/node_exporter-{version}.linux-amd64.tar.gz'.format(version=VERSION), 'wb') as f:
+        deb_file = '/var/tmp/scylla-node-exporter_{version}_{arch}.deb'.format(version=VERSION, arch=arch)
+        data = curl('https://s3.amazonaws.com/downloads.scylladb.com/downloads/scylla/node-exporter/deb/scylla-node-exporter_{version}_{arch}.deb'.format(
+            version=VERSION, arch=arch), byte=True)
+        with open(deb_file, 'wb') as f:
             f.write(data)
-        with tarfile.open('/var/tmp/node_exporter-{version}.linux-amd64.tar.gz'.format(version=VERSION)) as tf:
-            tf.extractall(INSTALL_DIR)
-        os.remove('/var/tmp/node_exporter-{version}.linux-amd64.tar.gz'.format(version=VERSION))
-        if node_exporter_p.exists():
-            node_exporter_p.unlink()
-        os.rename('{install_dir}/node_exporter-{version}.linux-amd64/node_exporter'.format(install_dir=INSTALL_DIR, version=VERSION), '/usr/bin/node_exporter')
-        subprocess.check_call(['restorecon', '-rv', '/usr/bin/node_exporter'])
-        node_exporter = systemd_unit('node-exporter.service')
-        node_exporter.enable()
-        node_exporter.start()
+        run('dpkg -i {deb}'.format(deb=deb_file))
+        os.remove(deb_file)
 
     print('node_exporter successfully installed')
