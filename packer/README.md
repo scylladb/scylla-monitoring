@@ -27,8 +27,7 @@ packer build -only=googlecompute -var monitor_version="4.6.1" scylla-monitor-tem
 ```
 ## Variables
 
-  
-The Scylla Monitor Image uses default variables that are declared in the packer template file, for example `aws_source_ami`, `gcp_project_id` etc.  
+The Scylla Monitor Image uses default variables that are declared in the packer template file, for example `aws_source_ami`, `gcp_project_id` etc.
 You can override these default variables by creating a `variables.json` with the desired variable values, for example:
 
 ```json
@@ -43,6 +42,27 @@ And when running the packer build command, include the `-var-file` option to spe
 
 ```shell
 packer build -var-file=variables.json scylla-monitor-template.json
+```
+
+### Architecture
+
+By default the image is built for `amd64`. To build an ARM image, pass `--arch arm64`:
+
+```shell
+packer build -var monitor_version="4.6.1" -var arch=arm64 scylla-monitor-template.json
+```
+
+### AWS AMI regions
+
+By default the AMI is copied to all production regions: `us-west-2,us-east-2,eu-west-2,eu-west-1,eu-central-1,eu-north-1,eu-west-3,ca-central-1`.
+To limit the copy to a specific region or set of regions (useful for testing), override `aws_ami_regions`:
+
+```shell
+# Single region
+packer build -var monitor_version="4.6.1" -var aws_ami_regions=us-east-1 scylla-monitor-template.json
+
+# Multiple specific regions
+packer build -var monitor_version="4.6.1" -var aws_ami_regions=us-east-1,eu-west-1 scylla-monitor-template.json
 ```
 
 
