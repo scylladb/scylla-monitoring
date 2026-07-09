@@ -58,7 +58,8 @@ jobs:
         run: |
           packer plugins install github.com/hashicorp/googlecompute
           packer plugins install github.com/hashicorp/amazon
-          packer build -var monitor_version="$MONITOR_VERSION" -var monitor_branch="$MONITOR_BRANCH" scylla-monitor-template.json
+          packer build -var monitor_version="$MONITOR_VERSION" -var monitor_branch="$MONITOR_BRANCH" -var arch="amd64" scylla-monitor-template.json
+          packer build -only=amazon-ebs -var monitor_version="$MONITOR_VERSION" -var monitor_branch="$MONITOR_BRANCH" -var arch=arm64 scylla-monitor-template.json
         working-directory: packer
 
       - name: Archive Packer manifest

@@ -84,7 +84,7 @@ def chdir(template_dir):
         print('cd ', dir)
     os.chdir(dir)
 
-def install_docker():
+def install_docker(arch='amd64'):
     if is_centos():
         run('yum install -y yum-utils device-mapper-persistent-data lvm2')
         run('yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo')
@@ -94,7 +94,7 @@ def install_docker():
         run('apt-get install -y apt-transport-https ca-certificates curl software-properties-common')
         run('curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o gpg')
         run('apt-key add ./gpg')
-        run('add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"')
+        run('add-apt-repository "deb [arch={ARCH}] https://download.docker.com/linux/ubuntu focal stable"'.format(ARCH=arch))
         run('apt-cache policy docker-ce')
         run('apt-get install -y docker-ce')
     run('usermod -aG docker {_USER}'.format(_USER=USER))
@@ -157,7 +157,7 @@ def install_dbaas(version):
     run('sudo -u {_USER} ./generate-dashboards.sh -F -v master'.format(_USER=USER))
     run_monitoring()
 
-def install_node_exporter():
+def install_node_exporter(arch='amd64'):
     if not is_centos():
         run('apt-get install -y policycoreutils')
     run('cp {_HOME}/node-exporter.service /etc/systemd/system/')
@@ -168,7 +168,7 @@ def install_node_exporter():
         print(e.output)
     run('systemctl daemon-reload')
     try:
-        run('{_HOME}/node_exporter_install')
+        run('{_HOME}/node_exporter_install --arch {arch}'.format(arch=arch, _HOME=HOME_DIR))
     except Exception as e:
         print("node_exporter_install failed" + str(e))
         print(e.output)
@@ -186,6 +186,7 @@ if __name__ == '__main__':
     parser.add_argument('--do-not-move', action='store_true', default=False, help='For testing, do not move files, copy them instead')
     parser.add_argument('--swap-size', default=20, type=int, help='set the swap size in GB, set it to 0 for no swap')
     parser.add_argument('--no-autorun', default=False, action='store_true', help='Autorun will try to use user data to configure and run the system')
+    parser.add_argument('--arch', default='amd64', help='Architecture to use (amd64/arm64)')
     parser.add_argument('-d', '--dry-run', action='store_true', default=False, help='Dry run mode')
 
     args = parser.parse_args()
@@ -199,7 +200,7 @@ if __name__ == '__main__':
     install_pip_dep()
     get_swap_scripts()
     update_swap(args.swap_size)
-    install_docker()
+    install_docker(args.arch)
     install_monitoring(args.version)
     post_monitoring_installation(args)
     install_dependencies(args)
@@ -207,4 +208,4 @@ if __name__ == '__main__':
         install_dbaas(args.version)
     else:
         setup_monitoring()
-        install_node_exporter()
+        install_node_exporter(args.arch)
