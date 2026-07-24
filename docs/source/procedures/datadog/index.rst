@@ -10,7 +10,7 @@ The integration consists of:
 3. Loading Scylla dashboard to Datadog.
 4. Optionally load Monitor (Alerts).
 
-.. note::  Scylla Cloud users, Check the cloud users `specific guide <cloud-integration>`_.
+.. note::  Scylla Cloud users, Check the cloud users :doc:`specific guide </procedures/datadog/cloud-integration>`.
 
 Scylla Monitoring Datadog Integration Overview
 ==============================================

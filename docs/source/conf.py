@@ -64,7 +64,7 @@ current_branch = 'branch-' + '.'.join(current_version.split('.')[:2])
 rst_prolog = """
 .. |version| replace:: {current_version}
 .. |branch_version| replace:: {current_branch}
-.. |mon_root| replace::  `Scylla Monitoring Stack </>`__
+.. |mon_root| replace::  :doc:`Scylla Monitoring Stack </index>`
 """.format(current_version=current_version, current_branch=current_branch)
 
 # -- Options for not found extension

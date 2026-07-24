@@ -10,6 +10,8 @@ For evaluation, you can run Scylla Monitoring Stack on any server (or laptop) th
 
 .. include:: min-prod-hw.rst
 
+.. _monitoring-stack-prerequisites:
+
 Prerequisites
 -------------
 
@@ -103,6 +105,8 @@ Prerequisites
    * - 3.4
      - 2.18.1
      - 6.7.3
+
+.. _docker-post-installation:
 
 Docker Post Installation
 ------------------------
