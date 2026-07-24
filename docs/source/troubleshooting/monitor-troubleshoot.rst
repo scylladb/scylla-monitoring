@@ -2,9 +2,7 @@ Troubleshoot Scylla Monitoring Stack
 ====================================
 
 
-This document describes steps that need to be done to troubleshoot monitoring problems when using `Grafana/Prometheus`_ monitoring tool.
-
-..  _`Grafana/Prometheus`: ../monitoring-apis
+This document describes steps that need to be done to troubleshoot monitoring problems when using :doc:`Grafana/Prometheus </reference/monitoring-apis>` monitoring tool.
 
 Problem
 ~~~~~~~
@@ -54,9 +52,7 @@ Files And Directory Permissions
    Avoid running Docker containers as root.
 
 The preferred way of running the container is using a non root user.
-See the `monitoring`_ Docker post-installation section.
-
-.. _`monitoring`: ../monitoring-stack#docker-post-installation
+See the :ref:`monitoring <docker-post-installation>` Docker post-installation section.
 
 
 If a container failed to start because of a permission problem, make sure
@@ -110,9 +106,7 @@ For example:
 
    ./start-all.sh -v 2024.1
 
-More on start-all.sh `options`_.
-
-..  _`options`: ../monitoring-stack/
+More on start-all.sh :doc:`options </install/monitoring-stack>`.
 
 
 Grafana Chart Shows Error (!) Sign
@@ -183,9 +177,7 @@ If only the latency graphs are missing, it is because of missing recording rules
 
 This issue can be avoided in a clean installation, so if you are upgrading, it is recommended to perform a clean installation.
 
-If you are using a standalone Prometheus server, make sure to copy the Prometheus configuration and recording rules as describe in `install without docker`_.
-
-.. _`install without docker`: /install/monitor-without-docker#install-prometheus
+If you are using a standalone Prometheus server, make sure to copy the Prometheus configuration and recording rules as describe in :ref:`install without docker <install-prometheus>`.
 
 Reducing the total number of metrics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
