@@ -3,7 +3,7 @@ Deploying Scylla Monitoring Stack Without Docker
 ================================================
 Introduction
 ------------
-The following instructions will help to deploy `Scylla Monitoring Stack <monitoring_stack>`_ in cases where you can not use the recommended Docker version.
+The following instructions will help to deploy :doc:`Scylla Monitoring Stack </install/monitoring-stack>` in cases where you can not use the recommended Docker version.
 
 Please note, Scylla recommends you use the Docker version as it will provide you with most updated, current Scylla Monitoring system.
 
@@ -26,7 +26,7 @@ We suggest that you follow the installation instruction of each of those product
 The main item to set an alert on is the available disk space in the monitoring system. Data is indefinitely accrued on the Prometheus data directory.
 The current monitoring solution does not churn data.
 
-.. note:: Confirm before installing, that your Grafana and Prometheus versions are supported by the Scylla Monitoring Stack version you want to install. Scylla-Monitoring follows the latest Prometheus and Grafana releases tightly. See the `Scylla Monitoring Stack Compatibility Matrix <stable/install/monitoring-stack.html#prerequisites>`_.
+.. note:: Confirm before installing, that your Grafana and Prometheus versions are supported by the Scylla Monitoring Stack version you want to install. Scylla-Monitoring follows the latest Prometheus and Grafana releases tightly. See the :ref:`Scylla Monitoring Stack Compatibility Matrix <monitoring-stack-prerequisites>`.
 
 Install Scylla Monitoring Stack
 -------------------------------
@@ -127,6 +127,8 @@ Promtail has a configuration file. You need to copy and modify the configuration
    cp loki/promtail/promtail_config.template.yml /etc/promtail/config.yml
 
 Edit ``/etc/promtail/config.yml`` and replace ``LOKI_IP`` with Loki's ip:port (i.e. localhost:3100)
+
+.. _install-prometheus:
 
 Install Prometheus
 ------------------

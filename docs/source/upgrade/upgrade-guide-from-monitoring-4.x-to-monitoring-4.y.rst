@@ -155,5 +155,5 @@ Run:
 Related Links
 =============
 
-* `ScyllaDB Monitoring </operating-scylla/monitoring/>`_
+* `ScyllaDB Monitoring <https://docs.scylladb.com/operating-scylla/monitoring/>`_
 * :doc:`Upgrade</upgrade/index>`
