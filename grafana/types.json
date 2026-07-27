@@ -1787,6 +1787,103 @@
       },
       "type": "text"
    },
+   "single_histogram_panel": {
+      "kind": "Panel",
+      "spec": {
+         "id": "auto",
+         "title": "",
+         "description": "",
+         "links": [],
+         "data": {
+            "kind": "QueryGroup",
+            "spec": {
+            "queries": [
+               {
+                  "kind": "PanelQuery",
+                  "spec": {
+                  "query": {
+                     "kind": "DataQuery",
+                     "version": "v0",
+                     "group": "prometheus",
+                     "datasource": {
+                        "name": "prometheus"
+                     },
+                     "spec": {
+                        "editorMode": "code",
+                        "expr": "",
+                        "legendFormat": "",
+                        "range": false,
+                        "instant": true,
+                        "exemplar": false,
+                        "format": "heatmap"
+                     }
+                  },
+                  "refId": "A",
+                  "hidden": false
+                  }
+               }
+            ],
+            "transformations": [],
+            "queryOptions": {}
+            }
+         },
+         "vizConfig": {
+            "kind": "VizConfig",
+            "group": "histogram",
+            "version": "13.0.3",
+            "spec": {
+            "options": {
+               "tooltip": {
+                  "mode": "multi",
+                  "sort": "none",
+                  "hideZeros": false
+               },
+               "legend": {
+                  "showLegend": false,
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "calcs": []
+               }
+            },
+            "fieldConfig": {
+               "defaults": {
+                  "custom": {
+                  "stacking": {
+                     "mode": "none",
+                     "group": "A"
+                  },
+                  "lineWidth": 1,
+                  "fillOpacity": 80,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                     "tooltip": false,
+                     "viz": false,
+                     "legend": false
+                  }
+                  },
+                  "color": {
+                  "mode": "palette-classic"
+                  },
+                  "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                     {
+                        "value": null,
+                        "color": "green"
+                     },
+                     {
+                        "value": 80,
+                        "color": "red"
+                     }
+                  ]
+                  }
+               },
+               "overrides": []
+            }
+            }
+         }
+      }
+   },
    "text_header_panel": {
       "class": "text_panel",
       "style": {},
@@ -3210,7 +3307,7 @@
       "spec/title": "Tables",
       "gridPos": {
          "h": 12,
-         "w": 8
+         "w": 10
       },
       "spec/vizConfig/spec/options": {
          "showHeader": true,
@@ -3369,6 +3466,46 @@
                      "value": 120
                   }
                ]
+            },
+            {
+               "matcher": {
+                  "id": "byName",
+                  "options": "Value #F"
+               },
+               "properties": [
+                  {
+                     "id": "displayName",
+                     "value": "WCU"
+                  },
+                  {
+                     "id": "unit",
+                     "value": "sishort"
+                  },
+                  {
+                     "id": "custom.width",
+                     "value": 100
+                  }
+               ]
+            },
+            {
+               "matcher": {
+                  "id": "byName",
+                  "options": "Value #G"
+               },
+               "properties": [
+                  {
+                     "id": "displayName",
+                     "value": "RCU"
+                  },
+                  {
+                     "id": "unit",
+                     "value": "sishort"
+                  },
+                  {
+                     "id": "custom.width",
+                     "value": 100
+                  }
+               ]
             }
          ]
       },
@@ -3395,7 +3532,9 @@
                         "Value #B",
                         "Value #C",
                         "Value #D",
-                        "Value #E"
+                        "Value #E",
+                        "Value #F",
+                        "Value #G"
                      ]
                   }
                }
@@ -3510,6 +3649,50 @@
                   }
                },
                "refId": "E",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "sum(increase(scylla_alternator_table_wcu_total{ks=~\"alternator_.*\"}[$__range])) by (cf)",
+                     "instant": true,
+                     "range": false,
+                     "format": "table",
+                     "legendFormat": "__auto"
+                  }
+               },
+               "refId": "F",
+               "hidden": false
+            }
+         },
+         {
+            "kind": "PanelQuery",
+            "spec": {
+               "query": {
+                  "kind": "DataQuery",
+                  "group": "prometheus",
+                  "version": "v0",
+                  "datasource": {
+                     "name": "prometheus"
+                  },
+                  "spec": {
+                     "expr": "sum(increase(scylla_alternator_table_rcu_total{ks=~\"alternator_.*\"}[$__range])) by (cf)",
+                     "instant": true,
+                     "range": false,
+                     "format": "table",
+                     "legendFormat": "__auto"
+                  }
+               },
+               "refId": "G",
                "hidden": false
             }
          }

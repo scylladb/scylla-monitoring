@@ -20,7 +20,7 @@
                                 "class": "alert_table",
                                 "gridPos": {
                                     "h": 12,
-                                    "w": 8
+                                    "w": 6
                                 },
                                 "title": "Active Alerts"
                             },
@@ -300,13 +300,20 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"Scan\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
-                                "span": 4,
+                                "span": 3,
+                                "class": "single_histogram_panel",
+                                "spec/title": "BatchWriteItem histogram",
+                                "spec/description": "The number of items processed as a result of BatchWriteItem over the entire cluster and selected time range",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(increase(scylla_alternator_batch_item_count_histogram_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__range])) by (le)"
+                            },
+                            {
+                                "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "BatchWriteItem $func by [[by]]",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
-                                "span": 4,
+                                "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "Operations from BatchWriteItem $func by [[by]]",
                                 "spec/description": "The number of items processed as a result of BatchWriteItem",
@@ -323,7 +330,7 @@
                                 ]
                             },
                             {
-                                "span": 4,
+                                "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "Average Batch size of BatchWriteItem $func by [[by]]",
                                 "spec/description": "The avarage batch size of BatchWriteItem",
@@ -336,17 +343,29 @@
                                         "class": "graph_query",
                                         "spec/refId": "B",
                                         "spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItemSize\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "C",
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count_histogram_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_batch_item_count_histogram_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
                                     }
                                 ]
                             },
                             {
-                                "span": 4,
+                                "span": 3,
+                                "class": "single_histogram_panel",
+                                "spec/title": "BatchGetItem histogram",
+                                "spec/description": "The number of items processed as a result of BatchGetItem over the entire cluster and selected time range",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(increase(scylla_alternator_batch_item_count_histogram_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__range])) by (le)"
+                            },
+                            {
+                                "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "BatchGetItem $func by [[by]]",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
-                                "span": 4,
+                                "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "Operations from BatchGetItem $func by [[by]]",
                                 "spec/description": "The number of items processed as a result of BatchGetItem",
@@ -363,7 +382,7 @@
                                 ]
                             },
                             {
-                                "span": 4,
+                                "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "Average Batch size of BatchGetItem $func by [[by]]",
                                 "spec/description": "The avarage batch size of BatchGetItem",
@@ -376,6 +395,11 @@
                                         "class": "graph_query",
                                         "spec/refId": "B",
                                         "spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItemSize\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "C",
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count_histogram_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_batch_item_count_histogram_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
                                     }
                                 ]
                             },
@@ -482,7 +506,13 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetRecords\"}[$__rate_interval])) by ([[by]])"
                             }
                         ]
-                    },
+                    }
+
+                ]
+            },
+
+            {
+                "rows": [
                     {
                         "class": "header_row",
                         "hideHeader": true,
@@ -493,16 +523,12 @@
                                 "spec/vizConfig/spec/options/mode": "html"
                             }
                         ]
-                    }
-                ]
-            },
-            {
-                "title": "$alternator_streams_latency_ops",
-                "collapse": false,
-                "repeat": "alternator_streams_latency_ops",
-                "rows": [
+                    },
                     {
                         "class": "row",
+                        "title": "$alternator_streams_latency_ops",
+                        "collapse": false,
+                        "repeat": "alternator_streams_latency_ops",
                         "panels": [
                             {
                                 "span": 3,
@@ -594,7 +620,7 @@
                             {
                                 "class": "plain_text",
                                 "span": 6,
-                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#FFF; background-color:#1250b0; line-height: 150%; padding-left: 5px\">Timeouts</h1>",
+                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#FFF; background-color:#1250b0; line-height: 150%; padding-left: 5px\">Timeouts and Errors</h1>",
                                 "spec/vizConfig/spec/options/mode": "html"
                             }
                         ],
@@ -646,6 +672,45 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "round($func(rate(scylla_httpd_connections_total{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service))"
                             },
                             {
+                                "span": 3,
+                                "class": "requestsps_panel",
+                                "spec/title": "Blocked requests $func by [[by]]",
+                                "spec/description": "Requests that were blocked due to memory pressure.",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_requests_blocked_memory{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                            },
+                            {
+                                "span": 3,
+                                "class": "requestsps_panel",
+                                "spec/title": "Shed requests rate $func by [[by]]",
+                                "spec/description": "Rate Requests that were shed due to overload.",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_requests_shed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                            },
+                            {
+                                "span": 3,
+                                "class": "requestsps_panel",
+                                "spec/title": "HTTP Requests rate $func by [[by]]",
+                                "spec/description": "Rate of HTTP requests served by Alternator",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_httpd_requests_served{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service)"
+                            },
+                            {
+                                "span": 3,
+                                "class": "plain_text"
+                            },
+                            {
+                                "span": 3,
+                                "class": "rps_panel",
+                                "spec/title": "HTTP Read errors $func by [[by]]",
+                                "spec/description": "Rate of errors while reading Alternator HTTP requests",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_httpd_read_errors{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service)"
+                            },
+                            {
+                                "span": 3,
+                                "class": "requestsps_panel",
+                                "spec/title": "HTTP Reply errors $func by [[by]]",
+                                "spec/description": "Rate of errors while replying to Alternator HTTP requests",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_httpd_reply_errors{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service)"
+                            },
+                            {
                                 "dashversion": [
                                     ">2025.4"
                                 ],
@@ -653,7 +718,7 @@
                                 "class": "percentunit_panel",
                                 "spec/title": "Expression Cache hit ratio $func by [[by]]",
                                 "spec/description": "Alterantor expression cache",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression)/($func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression) + $func(rate(scylla_alternator_expression_cache_misses{cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression)/($func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression) + $func(rate(scylla_alternator_expression_cache_misses{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression))"
                             },
                             {
                                 "dashversion": [
@@ -663,7 +728,27 @@
                                 "class": "graph_panel",
                                 "spec/title": "Expression Cache eviction rate $func by [[by]]",
                                 "spec/description": "Alterantor expression cache eviction rate",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_expression_cache_evictions{cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_expression_cache_evictions{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                            },
+                            {
+                                "dashversion": [
+                                    ">2025.4"
+                                ],
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Authentication failures $func by [[by]]",
+                                "spec/description": "Alternator authentication failures",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_authentication_failures{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                            },
+                            {
+                                "dashversion": [
+                                    ">2025.4"
+                                ],
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Authorization failures $func by [[by]]",
+                                "spec/description": "Alternator authorization failures",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_authorization_failures{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
                             }
                         ],
                         "hideHeader": true
