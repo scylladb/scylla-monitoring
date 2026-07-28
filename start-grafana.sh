@@ -434,8 +434,11 @@ if [ ! -z $RUN_RENDERER ]; then
 	SERVER_ROOT_PATH=""
 	if [[ " ${GRAFANA_ENV_COMMAND[@]} " =~ " -e GF_SERVER_ROOT_URL="([^[:space:]]+) ]]; then
 		SERVER_ROOT_URL_VALUE="${BASH_REMATCH[1]}"
-		# Extract path from URL (remove trailing slash if present)
-		SERVER_ROOT_PATH="${SERVER_ROOT_URL_VALUE%/}"
+		# Only use as path if it doesn't start with http:// or https://
+		if [[ ! $SERVER_ROOT_URL_VALUE =~ ^https?:// ]]; then
+			# Extract path from URL (remove trailing slash if present)
+			SERVER_ROOT_PATH="${SERVER_ROOT_URL_VALUE%/}"
+		fi
 	fi
 
 	GRAFANA_ENV_COMMAND+=(-e GF_RENDERING_SERVER_URL=http://$RENDERER_ADDRESS:8081/render -e GF_RENDERING_CALLBACK_URL=http://$GRAFANA_ADDRESS:$GRAFANA_CALLBACK_PORT$SERVER_ROOT_PATH/ -e "GF_RENDERING_RENDERER_TOKEN=$GRAFANA_RENDERER_TOKEN" )
