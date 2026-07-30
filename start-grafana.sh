@@ -161,7 +161,7 @@ while getopts ':hlEg:n:p:v:a:x:c:j:m:G:M:D:A:S:P:L:Q:s:' option; do
 		DATA_SOURCES="$DATA_SOURCES -L $OPTARG"
 		;;
 	l)
-		if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+		if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 			DOCKER_PARAM="$DOCKER_PARAM --net=host"
 		fi
 		;;
@@ -304,7 +304,7 @@ done
 ./generate-dashboards.sh $VECTOR_SEARCH -t $SPECIFIC_SOLUTION -v $VERSIONS -M $MANAGER_VERSION $STACK_CMD $GRAFANA_DASHBOARD_COMMAND
 ./grafana-datasource.sh $DATA_SOURCES $STACK_CMD $SCRAP_INTERVAL
 
-if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
+if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 	PORT_MAPPING="-p $BIND_ADDRESS$GRAFANA_PORT:3000"
 fi
 

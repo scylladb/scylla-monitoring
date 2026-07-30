@@ -100,7 +100,7 @@ fi
 while getopts ':hlp:S:N:D:' option; do
 	case "$option" in
 	l)
-		if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+		if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 			DOCKER_PARAM="$DOCKER_PARAM --net=host"
 		fi
 		;;
@@ -142,7 +142,7 @@ if [ -z "$THANOS_NAME" ]; then
 fi
 
 PORT_FLAGS=()
-if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 	PORT_FLAGS=(-p 127.0.0.1:10903:10903 -p 127.0.0.1:10904:10904)
 fi
 

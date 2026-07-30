@@ -98,7 +98,7 @@ fi
 while getopts ':hl:p:a:D:d:A:n:' option; do
 	case "$option" in
 	l)
-		if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+		if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 			DOCKER_PARAM="$DOCKER_PARAM --net=host"
 		fi
 		;;
@@ -146,7 +146,7 @@ if [ -z $DATA_DIR ]; then
 else
 	DATA_DIR="-v "$(readlink -m $DATA_DIR)":/data/prom$NAME:z"
 fi
-if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
+if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 	HOST_NETWORK=1
 fi
 if [ -z "$BIND_ADDRESS" ]; then

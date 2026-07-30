@@ -94,7 +94,7 @@ if [ "$(id -u)" -ne 0 ]; then
 	USER_PERMISSIONS="-u $UID:$GROUPID"
 fi
 
-if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
+if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 	PORT_MAPPING="-p $GRAFANA_RENDPORT:8081"
 fi
 
