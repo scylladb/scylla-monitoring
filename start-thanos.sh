@@ -6,11 +6,12 @@ if [ -f env.sh ]; then
 fi
 
 function usage {
-	__usage="Usage: $(basename $0) [-h] [-S ip:port]
+	__usage="Usage: $(basename $0) [-h] [-S ip:port] [-A bind-address]
 
 Options:
   -h print this help and exit
   -S sidecart address         - A side cart address:port multiple side cart can be comma delimited
+  -A bind-to-ip-address       - Bind to a specific interface.
 
 The script starts Thanos query, it connect to external Thanos side carts and act as a grafana data source
 "
@@ -90,6 +91,7 @@ for arg; do
 	fi
 done
 SIDECAR=()
+BIND_ADDRESS=""
 
 if [ "$DOCKER_PARAM" != "" ]; then
 	DOCKER_PARAM_FROM_FILE="1"
@@ -97,10 +99,10 @@ else
 	DOCKER_PARAM=""
 fi
 
-while getopts ':hlp:S:N:D:' option; do
+while getopts ':hlp:S:N:D:A:' option; do
 	case "$option" in
 	l)
-		if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+		if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 			DOCKER_PARAM="$DOCKER_PARAM --net=host"
 		fi
 		;;
@@ -113,6 +115,7 @@ while getopts ':hlp:S:N:D:' option; do
 		for s in $OPTARG; do
 			SIDECAR+=(--endpoint=$s)
 		done
+		IFS=$' \t\n'
 		;;
 	D)
 		if [ "$DOCKER_PARAM_FROM_FILE" = "1" ]; then
@@ -123,6 +126,9 @@ while getopts ':hlp:S:N:D:' option; do
 		;;
 	N) THANOS_NAME=$OPTARG
 	    ;;
+	A)
+		BIND_ADDRESS="$OPTARG:"
+		;;
 	:)
 		printf "missing argument for -%s\n" "$OPTARG" >&2
 		echo "$usage" >&2
@@ -140,7 +146,12 @@ if [ -z "$THANOS_NAME" ]; then
     THANOS_NAME=thanos
 fi
 
-docker run ${DOCKER_LIMITS["thanos"]} -d $DOCKER_PARAM -i --name $THANOS_NAME -- docker.io/thanosio/thanos:$THANOS_VERSION \
+PORT_FLAGS=()
+if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
+	PORT_FLAGS=(-p ${BIND_ADDRESS}10903:10903 -p ${BIND_ADDRESS}10904:10904)
+fi
+
+docker run ${DOCKER_LIMITS["thanos"]} -d $DOCKER_PARAM "${PORT_FLAGS[@]}" -i --name $THANOS_NAME -- docker.io/thanosio/thanos:$THANOS_VERSION \
 	query \
 	"--debug.name=query0" \
 	"--grpc-address=0.0.0.0:10903" \

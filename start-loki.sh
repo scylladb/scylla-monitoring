@@ -97,7 +97,7 @@ while getopts ':hlp:D:m:A:k:t:T:' option; do
 		LOKI_RULE_DIR=$(readlink -m $OPTARG)
 		;;
 	l)
-		if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+		if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 			DOCKER_PARAM="$DOCKER_PARAM --net=host"
 		fi
 		;;
@@ -153,7 +153,7 @@ if [ $? -eq 0 ]; then
 	exit 1
 fi
 
-if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
+if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 	PORT_MAPPING="-p $BIND_ADDRESS$LOKI_PORT:3100"
 fi
 
@@ -224,7 +224,7 @@ if [ $? -eq 0 ]; then
 	exit 1
 fi
 
-if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
+if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 	PROMTAIL_PORT_MAPPING="-p $BIND_ADDRESS$PROMTAIL_PORT:9080 -p ${BIND_ADDRESS}$PROMTAIL_BIN_PORT:1514"
 fi
 

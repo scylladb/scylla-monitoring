@@ -32,8 +32,13 @@ run_script() {
     start=$(date +%s)
 
     log INFO "Starting $script $*"
-    "$script" "$@" >>"$LOG_FILE" 2>&1
-    rc=$?
+    if [ "$VERBOSE" = "1" ]; then
+        "$script" "$@" 2>&1 | tee -a "$LOG_FILE"
+        rc=${PIPESTATUS[0]}
+    else
+        "$script" "$@" >>"$LOG_FILE" 2>&1
+        rc=$?
+    fi
 
     end=$(date +%s)
 
@@ -138,6 +143,7 @@ Options:
   --no-cdc                       - If set, Prometheus will drop all cdc related metrics while scrapping
   --auto-restart                 - If set, auto restarts the containers on failure.
   --no-renderer                  - If set, do not run the Grafana renderer container.
+  --verbose                      - If set, print sub-script output to the console in addition to the log file.
   --thanos-sc                    - If set, run thanos sidecar with the Prometheus server.
   --thanos                       - If set, run thanos query as a Grafana datasource.
   --local-thanos                 - If set, run thanos query as a front end to the local thanos sidecar.
@@ -288,12 +294,18 @@ for arg; do
 		log INFO "Using compose"
 		exec ./make-compose.sh "$@"
 	fi
+	if [ "$arg" = "--verbose" ]; then
+		VERBOSE="1"
+	fi
 done
 
 for arg; do
 	shift
 	if [ -z "$LIMIT" ]; then
 		case $arg in
+		--verbose)
+			VERBOSE="1"
+			;;
 		--no-loki)
 			RUN_LOKI=0
 			;;
@@ -586,7 +598,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
 		NODE_TARGET_FILE=$OPTARG
 		;;
 	l)
-		if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+		if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 			DOCKER_PARAM="$DOCKER_PARAM --net=host"
 		fi
 		;;
@@ -701,7 +713,7 @@ else
 	fi
 fi
 
-if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
+if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 	if [ ! -z "$ALERTMANAGER_PORT_CMD" ] || [ ! -z "$GRAFANA_PORT" ] || [ ! -z $PROMETHEUS_PORT ]; then
 		log ERROR "Port mapping is not supported with host network, remove the -l flag from the command line"
 		exit 1
@@ -1013,14 +1025,22 @@ if [ ! -z "$NO_THANOS_DATASOURCE" ]; then
     NO_THANOS_DATASOURCE="--no-thanos-datasource"
 fi
 if [ $RUN_THANOS -eq 1 ]; then
-	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG
+	SC_ADDRESS_FLAG=""
+	if [ $RUN_THANOS_SC -eq 1 ]; then
+		if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
+			SC_ADDRESS_FLAG="-S localhost:10911"
+		else
+			SC_ADDRESS_FLAG="-S sidecar1:10911"
+		fi
+	fi
+	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG $SC_ADDRESS_FLAG
 elif [ "$RUN_LOCAL_THANOS" = "1" ]; then
-    IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME)
-    if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
-       IP=""
+    if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
+        SC_ADDRESS="localhost:10911"
+    else
+        SC_ADDRESS="sidecar1:10911"
     fi
-    STORE_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sidecar1):10911"
-    run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -S $STORE_ADDRESS
+    run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG -S $SC_ADDRESS
 fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
