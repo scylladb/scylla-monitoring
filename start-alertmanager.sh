@@ -92,7 +92,7 @@ while getopts ':hlp:r:D:C:f:A:' option; do
 		ALERT_MANAGER_DIR="$USER_PERMISSIONS -v $(readlink -m $OPTARG):/alertmanager/data:z"
 		;;
 	l)
-		if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+		if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 			DOCKER_PARAM="$DOCKER_PARAM --net=host"
 		fi
 		;;
@@ -134,7 +134,7 @@ if [ $? -eq 0 ]; then
 	exit 1
 fi
 
-if [[ ! $DOCKER_PARAM = *"--net=host"* ]]; then
+if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 	PORT_MAPPING="-p $BIND_ADDRESS$ALERTMANAGER_PORT:9093"
 fi
 
