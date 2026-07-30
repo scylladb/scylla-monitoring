@@ -598,7 +598,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
 		NODE_TARGET_FILE=$OPTARG
 		;;
 	l)
-		if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+		if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 			DOCKER_PARAM="$DOCKER_PARAM --net=host"
 		fi
 		;;
@@ -713,7 +713,7 @@ else
 	fi
 fi
 
-if [[ $DOCKER_PARAM = *"--net=host"* ]]; then
+if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 	if [ ! -z "$ALERTMANAGER_PORT_CMD" ] || [ ! -z "$GRAFANA_PORT" ] || [ ! -z $PROMETHEUS_PORT ]; then
 		log ERROR "Port mapping is not supported with host network, remove the -l flag from the command line"
 		exit 1
@@ -1025,14 +1025,14 @@ if [ ! -z "$NO_THANOS_DATASOURCE" ]; then
     NO_THANOS_DATASOURCE="--no-thanos-datasource"
 fi
 if [ $RUN_THANOS -eq 1 ]; then
-	if [[ "$DOCKER_PARAM" == *"--net=host"* ]]; then
+	if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 		SC_ADDRESS="localhost:10911"
 	else
 		SC_ADDRESS="sidecar1:10911"
 	fi
 	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG -S $SC_ADDRESS
 elif [ "$RUN_LOCAL_THANOS" = "1" ]; then
-    if [[ "$DOCKER_PARAM" == *"--net=host"* ]]; then
+    if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
         SC_ADDRESS="localhost:10911"
     else
         SC_ADDRESS="sidecar1:10911"
