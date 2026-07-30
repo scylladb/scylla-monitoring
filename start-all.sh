@@ -993,14 +993,19 @@ if [ ! -z "$NO_THANOS_DATASOURCE" ]; then
     NO_THANOS_DATASOURCE="--no-thanos-datasource"
 fi
 if [ $RUN_THANOS -eq 1 ]; then
-	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG
+	if [[ "$DOCKER_PARAM" == *"--net=host"* ]]; then
+		SC_ADDRESS="localhost:10911"
+	else
+		SC_ADDRESS="sidecar1:10911"
+	fi
+	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG -S $SC_ADDRESS
 elif [ "$RUN_LOCAL_THANOS" = "1" ]; then
-    IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $PROMETHEUS_NAME)
-    if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
-       IP=""
+    if [[ "$DOCKER_PARAM" == *"--net=host"* ]]; then
+        SC_ADDRESS="localhost:10911"
+    else
+        SC_ADDRESS="sidecar1:10911"
     fi
-    STORE_ADDRESS="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sidecar1):10911"
-    run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -S $STORE_ADDRESS
+    run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG -S $SC_ADDRESS
 fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do

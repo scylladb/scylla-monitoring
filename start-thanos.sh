@@ -113,6 +113,7 @@ while getopts ':hlp:S:N:D:' option; do
 		for s in $OPTARG; do
 			SIDECAR+=(--endpoint=$s)
 		done
+		IFS=$' \t\n'
 		;;
 	D)
 		if [ "$DOCKER_PARAM_FROM_FILE" = "1" ]; then
@@ -140,7 +141,12 @@ if [ -z "$THANOS_NAME" ]; then
     THANOS_NAME=thanos
 fi
 
-docker run ${DOCKER_LIMITS["thanos"]} -d $DOCKER_PARAM -i --name $THANOS_NAME -- docker.io/thanosio/thanos:$THANOS_VERSION \
+PORT_FLAGS=()
+if [[ "$DOCKER_PARAM" != *"--net=host"* ]]; then
+	PORT_FLAGS=(-p 127.0.0.1:10903:10903 -p 127.0.0.1:10904:10904)
+fi
+
+docker run ${DOCKER_LIMITS["thanos"]} -d $DOCKER_PARAM "${PORT_FLAGS[@]}" -i --name $THANOS_NAME -- docker.io/thanosio/thanos:$THANOS_VERSION \
 	query \
 	"--debug.name=query0" \
 	"--grpc-address=0.0.0.0:10903" \
