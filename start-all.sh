@@ -32,8 +32,13 @@ run_script() {
     start=$(date +%s)
 
     log INFO "Starting $script $*"
-    "$script" "$@" >>"$LOG_FILE" 2>&1
-    rc=$?
+    if [ "$VERBOSE" = "1" ]; then
+        "$script" "$@" 2>&1 | tee -a "$LOG_FILE"
+        rc=${PIPESTATUS[0]}
+    else
+        "$script" "$@" >>"$LOG_FILE" 2>&1
+        rc=$?
+    fi
 
     end=$(date +%s)
 
@@ -138,6 +143,7 @@ Options:
   --no-cdc                       - If set, Prometheus will drop all cdc related metrics while scrapping
   --auto-restart                 - If set, auto restarts the containers on failure.
   --no-renderer                  - If set, do not run the Grafana renderer container.
+  --verbose                      - If set, print sub-script output to the console in addition to the log file.
   --thanos-sc                    - If set, run thanos sidecar with the Prometheus server.
   --thanos                       - If set, run thanos query as a Grafana datasource.
   --local-thanos                 - If set, run thanos query as a front end to the local thanos sidecar.
@@ -276,12 +282,18 @@ for arg; do
 		log INFO "Using compose"
 		exec ./make-compose.sh "$@"
 	fi
+	if [ "$arg" = "--verbose" ]; then
+		VERBOSE="1"
+	fi
 done
 
 for arg; do
 	shift
 	if [ -z "$LIMIT" ]; then
 		case $arg in
+		--verbose)
+			VERBOSE="1"
+			;;
 		--no-loki)
 			RUN_LOKI=0
 			;;
