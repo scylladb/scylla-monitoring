@@ -993,12 +993,15 @@ if [ ! -z "$NO_THANOS_DATASOURCE" ]; then
     NO_THANOS_DATASOURCE="--no-thanos-datasource"
 fi
 if [ $RUN_THANOS -eq 1 ]; then
-	if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
-		SC_ADDRESS="localhost:10911"
-	else
-		SC_ADDRESS="sidecar1:10911"
+	SC_ADDRESS_FLAG=""
+	if [ $RUN_THANOS_SC -eq 1 ]; then
+		if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
+			SC_ADDRESS_FLAG="-S localhost:10911"
+		else
+			SC_ADDRESS_FLAG="-S sidecar1:10911"
+		fi
 	fi
-	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG -S $SC_ADDRESS
+	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG $SC_ADDRESS_FLAG
 elif [ "$RUN_LOCAL_THANOS" = "1" ]; then
     if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
         SC_ADDRESS="localhost:10911"
