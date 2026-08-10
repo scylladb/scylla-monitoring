@@ -90,13 +90,13 @@
                 "type": "tags"
             },
             {
-                "class": "annotation_hints_sent_old",
+                "class": "annotation_hints_sent",
                 "dashversion": [
-                    "<2025.1"
+                    ">2025.1"
                 ],
                 "datasource": "prometheus",
                 "enable": false,
-                "expr": "changes(scylla_hints_manager_sent{cluster=\"$cluster\"}[$__rate_interval])>0",
+                "expr": "changes(scylla_hints_manager_sent_total{cluster=\"$cluster\"}[$__rate_interval])>0",
                 "hide": false,
                 "iconColor": "rgb(50, 176, 0, 128)",
                 "limit": 100,
@@ -1327,9 +1327,9 @@
             "targets": [
                 {
                     "dashversion": [
-                        "<2025.1"
+                        ">2025.1"
                     ],
-                    "expr": "$topbottom([[filter_limit]], $func(rate(scylla_hints_manager_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
+                    "expr": "$topbottom([[filter_limit]], $func(rate(scylla_hints_manager_sent_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))",
                     "intervalFactor": 1,
                     "legendFormat": "",
                     "refId": "A",
@@ -7866,9 +7866,9 @@
                     "targets": [
                         {
                             "dashversion": [
-                                "<2025.1"
+                                ">2025.1"
                             ],
-                            "expr": "$topbottom([[filter_limit]], $func(rate(scylla_hints_for_views_manager_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]]))",
+                            "expr": "$topbottom([[filter_limit]], $func(rate(scylla_hints_for_views_manager_sent_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]]))",
                             "intervalFactor": 1,
                             "legendFormat": "",
                             "refId": "A",
@@ -11303,6 +11303,176 @@
             "type": "timeseries"
         },
         {
+            "class": "graph_panel_int",
+            "dashversion": [
+                ">2026.1"
+            ],
+            "datasource": "prometheus",
+            "description": "Holds the sum of compaction backlog for all tables in the system.",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 5,
+                "x": 13,
+                "y": 245
+            },
+            "id": 154,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 5,
+            "targets": [
+                {
+                    "expr": "$topbottom([[filter_limit]], $func(scylla_compaction_manager_backlog{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Compactions backlog $func by [[by]]",
+            "type": "timeseries"
+        },
+        {
+            "class": "graph_panel",
+            "dashversion": [
+                ">2026.1"
+            ],
+            "datasource": "prometheus",
+            "description": "the sum of normalized compaction backlog for all tables in the system.\n\nBacklog is normalized by dividing backlog by shard's available memory.",
+            "editable": true,
+            "error": false,
+            "fieldConfig": {
+                "defaults": {
+                    "class": "fieldConfig_defaults",
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "axisSoftMin": 0,
+                        "barAlignment": 0,
+                        "class": "fieldConfig_defaults_custom",
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 5,
+                "x": 18,
+                "y": 245
+            },
+            "id": 155,
+            "isNew": true,
+            "links": [],
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "maxHeight": 600,
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "span": 5,
+            "targets": [
+                {
+                    "expr": "$topbottom([[filter_limit]], $func(scylla_compaction_manager_normalized_backlog{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                    "intervalFactor": 1,
+                    "legendFormat": "",
+                    "metric": "",
+                    "refId": "A",
+                    "step": 1
+                }
+            ],
+            "title": "Normalized Compactions backlog $func by [[by]]",
+            "type": "timeseries"
+        },
+        {
             "class": "collapsible_row_panel",
             "collapsed": false,
             "datasource": null,
@@ -11312,7 +11482,7 @@
                 "x": 0,
                 "y": 251
             },
-            "id": 154,
+            "id": 156,
             "panels": [],
             "repeat": "sg",
             "title": "Latencies - $sg",
@@ -11371,7 +11541,7 @@
                 "x": 0,
                 "y": 252
             },
-            "id": 155,
+            "id": 157,
             "isNew": true,
             "links": [],
             "options": {
@@ -11451,7 +11621,7 @@
                 "x": 6,
                 "y": 252
             },
-            "id": 156,
+            "id": 158,
             "isNew": true,
             "links": [],
             "options": {
@@ -11541,7 +11711,7 @@
                 "x": 12,
                 "y": 252
             },
-            "id": 157,
+            "id": 159,
             "isNew": true,
             "links": [],
             "options": {
@@ -11632,7 +11802,7 @@
                 "x": 18,
                 "y": 252
             },
-            "id": 158,
+            "id": 160,
             "isNew": true,
             "links": [],
             "options": {
@@ -11724,7 +11894,7 @@
                 "x": 0,
                 "y": 258
             },
-            "id": 159,
+            "id": 161,
             "isNew": true,
             "links": [],
             "options": {
@@ -11804,7 +11974,7 @@
                 "x": 6,
                 "y": 258
             },
-            "id": 160,
+            "id": 162,
             "isNew": true,
             "links": [],
             "options": {
@@ -11894,7 +12064,7 @@
                 "x": 12,
                 "y": 258
             },
-            "id": 161,
+            "id": 163,
             "isNew": true,
             "links": [],
             "options": {
@@ -11985,7 +12155,7 @@
                 "x": 18,
                 "y": 258
             },
-            "id": 162,
+            "id": 164,
             "isNew": true,
             "links": [],
             "options": {
@@ -12077,7 +12247,7 @@
                 "x": 0,
                 "y": 264
             },
-            "id": 163,
+            "id": 165,
             "isNew": true,
             "links": [],
             "options": {
@@ -12159,7 +12329,7 @@
                 "x": 6,
                 "y": 264
             },
-            "id": 164,
+            "id": 166,
             "isNew": true,
             "links": [],
             "options": {
@@ -12241,7 +12411,7 @@
                 "x": 12,
                 "y": 264
             },
-            "id": 165,
+            "id": 167,
             "isNew": true,
             "links": [],
             "options": {
@@ -12323,7 +12493,7 @@
                 "x": 18,
                 "y": 264
             },
-            "id": 166,
+            "id": 168,
             "isNew": true,
             "links": [],
             "options": {
@@ -12405,7 +12575,7 @@
                 "x": 0,
                 "y": 270
             },
-            "id": 167,
+            "id": 169,
             "isNew": true,
             "links": [],
             "options": {
@@ -12487,7 +12657,7 @@
                 "x": 6,
                 "y": 270
             },
-            "id": 168,
+            "id": 170,
             "isNew": true,
             "links": [],
             "options": {
@@ -12569,7 +12739,7 @@
                 "x": 12,
                 "y": 270
             },
-            "id": 169,
+            "id": 171,
             "isNew": true,
             "links": [],
             "options": {
@@ -12651,7 +12821,7 @@
                 "x": 18,
                 "y": 270
             },
-            "id": 170,
+            "id": 172,
             "isNew": true,
             "links": [],
             "options": {
@@ -12691,7 +12861,7 @@
                 "x": 0,
                 "y": 276
             },
-            "id": 171,
+            "id": 173,
             "panels": [],
             "repeat": "",
             "title": "Your panels",
@@ -12714,7 +12884,7 @@
                 "x": 0,
                 "y": 277
             },
-            "id": 172,
+            "id": 174,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -12781,7 +12951,7 @@
                 "x": 0,
                 "y": 279
             },
-            "id": 173,
+            "id": 175,
             "isNew": true,
             "links": [],
             "options": {
@@ -12856,7 +13026,7 @@
                 "x": 12,
                 "y": 279
             },
-            "id": 174,
+            "id": 176,
             "isNew": true,
             "links": [],
             "options": {
@@ -12896,7 +13066,7 @@
                 "x": 0,
                 "y": 285
             },
-            "id": 175,
+            "id": 177,
             "isNew": true,
             "links": [],
             "mode": "html",
@@ -12915,7 +13085,7 @@
     "schemaVersion": 26,
     "style": "dark",
     "tags": [
-        "2024.2"
+        "2026.3"
     ],
     "templating": {
         "list": [
@@ -13302,8 +13472,8 @@
                 "allValue": null,
                 "class": "template_variable_custom",
                 "current": {
-                    "text": "2024.2",
-                    "value": "2024.2"
+                    "text": "2026.3",
+                    "value": "2026.3"
                 },
                 "error": null,
                 "hide": 2,
@@ -13314,11 +13484,11 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "2024.2",
-                        "value": "2024.2"
+                        "text": "2026.3",
+                        "value": "2026.3"
                     }
                 ],
-                "query": "2024.2",
+                "query": "2026.3",
                 "skipUrlSync": false,
                 "type": "custom"
             },
@@ -13380,6 +13550,6 @@
     },
     "timezone": "utc",
     "title": "Detailed",
-    "uid": "detailed-2024-2",
+    "uid": "detailed-2026-3",
     "version": 5
 }
