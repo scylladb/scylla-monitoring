@@ -592,7 +592,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
 		PROMETHEUS_PORT=$OPTARG
 		;;
 	s)
-		SCYLLA_TARGET_FILES=("$OPTARG")GRAFANA_RENDERER_TOKEN
+		SCYLLA_TARGET_FILES=("$OPTARG")
 		;;
 	n)
 		NODE_TARGET_FILE=$OPTARG
