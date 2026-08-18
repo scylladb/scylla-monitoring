@@ -1580,6 +1580,24 @@
                                 "spec/description": "",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_storage_proxy_coordinator_foreground_writes{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) by (scheduling_group_name, [[by]]))",
                                 "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "us_panel",
+                                "dashversion": [">2026.3"],
+                                "spec/title": "CQL request latency by [[by]]",
+                                "spec/description": "CQL request latencies, measuring from the start of the request processing until the response is written to the socket.",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_transport_cql_request_latency_summary{quantile=~\"0.9.*\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=\"$sg\", by=\"[[by]]\"})",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "P{{quantile}} - {{scheduling_group_name}} {{dc}} {{instance}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "us_panel",
+                                "dashversion": [">2026.3"],
+                                "spec/title": "CQL client timestamp drift by [[by]]",
+                                "spec/description": "CQL client timestamp drifts, the drift time between the client-provided CQL timestamp and the server time at request arrival. Useful for detecting transport delays before requests reach the CQL server.",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_transport_cql_client_timestamp_drift_summary{quantile=~\"0.9.*\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=\"$sg\", by=\"[[by]]\"})",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "P{{quantile}} - {{scheduling_group_name}} {{dc}} {{instance}}"
                             }
                         ],
                         "title": "$sg"
