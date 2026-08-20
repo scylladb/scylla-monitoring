@@ -232,7 +232,7 @@ sed "s/LOKI_IP/$LOKI_ADDRESS/" loki/promtail/promtail_config.template.yml >loki/
 
 docker run ${DOCKER_LIMITS["promtail"]} -d $DOCKER_PARAM -i $PROMTAIL_PORT_MAPPING \
 	-v $PROMTAIL_CONFIG:/etc/promtail/config.yml:z \
-	--name $PROMTAIL_NAME docker.io/grafana/promtail:$LOKI_VERSION --config.file=/etc/promtail/config.yml ${DOCKER_PARAMS["promtail"]}
+	--name $PROMTAIL_NAME docker.io/grafana/promtail:$PROMTAIL_VERSION --config.file=/etc/promtail/config.yml ${DOCKER_PARAMS["promtail"]}
 
 if [ $? -ne 0 ]; then
 	echo "Error: Promtail container failed to start"
