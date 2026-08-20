@@ -184,7 +184,7 @@ fi
 TRIES=0
 RETRIES=25
 if [ ! "$QUICK_STARTUP" = "1" ]; then
-    until $(curl --output /dev/null -f --silent http://localhost:$LOKI_PORT) || [ $TRIES -eq $RETRIES ]; do
+    until $(curl --output /dev/null -f --silent http://localhost:$LOKI_PORT/ready) || [ $TRIES -eq $RETRIES ]; do
     	((TRIES = TRIES + 1))
     	sleep 1
     done
@@ -244,7 +244,7 @@ fi
 RETRIES=25
 TRIES=0
 if [ ! "$QUICK_STARTUP" = "1" ]; then
-    until $(curl --output /dev/null -f --silent http://localhost:$PROMTAIL_PORT) || [ $TRIES -eq $RETRIES ]; do
+    until $(curl --output /dev/null -f --silent http://localhost:$PROMTAIL_PORT/ready) || [ $TRIES -eq $RETRIES ]; do
     	((TRIES = TRIES + 1))
     	sleep 1
     done
