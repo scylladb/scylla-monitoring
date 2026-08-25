@@ -146,7 +146,7 @@ MANAGER_DEFAULT_VERSION["master"]="3"
 VECTOR_DEFAULT_VERSION["master"]="1"
 PROMETHEUS_VERSION=v3.12.0
 ALERT_MANAGER_VERSION=v0.33.0
-GRAFANA_VERSION=13.0.3
+GRAFANA_VERSION=13.2.0
 LOKI_VERSION=3.7.3
 # Promtail is deprecated upstream and frozen on the 3.6.x line; it has no
 # 3.7.x releases, so it needs its own version and cannot follow LOKI_VERSION.
