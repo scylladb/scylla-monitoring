@@ -22,15 +22,38 @@
 
 import os
 import sys
+import grp
+import pwd
 import shlex
 import subprocess
+from pathlib import Path
 from scylla_util import *
 import argparse
 
 VERSION='1.11.1-2'
+# The scylla-node-exporter deb installs the binary under /opt/scylladb and
+# ships its own systemd unit, which runs as the 'scylla' user.
+NODE_EXPORTER_BIN = Path('/opt/scylladb/node_exporter/node_exporter')
+NODE_EXPORTER_SERVICE = 'scylla-node-exporter.service'
+NODE_EXPORTER_USER = 'scylla'
 
 def run(cmd):
     subprocess.check_call(shlex.split(cmd))
+
+def ensure_user(user):
+    """Create the system user/group the node-exporter unit runs as.
+
+    The monitoring image has no scylla installation, so the user the deb's
+    unit expects (User=scylla) does not exist and the service would fail to
+    start."""
+    try:
+        grp.getgrnam(user)
+    except KeyError:
+        run('groupadd --system {user}'.format(user=user))
+    try:
+        pwd.getpwnam(user)
+    except KeyError:
+        run('useradd --system --gid {user} --no-create-home --shell /usr/sbin/nologin {user}'.format(user=user))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Download and install prometheus node_exporter')
@@ -42,15 +65,14 @@ if __name__ == '__main__':
     if not is_nonroot() and os.getuid() > 0:
         print('Requires root permission.')
         sys.exit(1)
-    node_exporter_p = bindir_p() / 'node_exporter'
-    if node_exporter_p.exists() or (bindir_p() / 'prometheus-node_exporter').exists():
+    if NODE_EXPORTER_BIN.exists() or (bindir_p() / 'node_exporter').exists() or (bindir_p() / 'prometheus-node_exporter').exists():
         if force:
             print('node_exporter already installed, reinstalling')
             try:
-                node_exporter = systemd_unit('node-exporter.service')
+                node_exporter = systemd_unit(NODE_EXPORTER_SERVICE)
                 node_exporter.stop()
             except Exception as e:
-                print("could not create node-exporter.service file", e)
+                print("could not stop {}".format(NODE_EXPORTER_SERVICE), e)
         else:
             print('node_exporter already installed, you can use `--force` to force reinstallation')
             sys.exit(1)
@@ -65,7 +87,15 @@ if __name__ == '__main__':
             version=VERSION, arch=arch), byte=True)
         with open(deb_file, 'wb') as f:
             f.write(data)
+        ensure_user(NODE_EXPORTER_USER)
         run('dpkg -i {deb}'.format(deb=deb_file))
         os.remove(deb_file)
+        run('systemctl daemon-reload')
+        node_exporter = systemd_unit(NODE_EXPORTER_SERVICE)
+        node_exporter.enable()
+        node_exporter.restart()
+        if node_exporter.is_active().strip() != 'active':
+            print('{} failed to start'.format(NODE_EXPORTER_SERVICE))
+            sys.exit(1)
 
     print('node_exporter successfully installed')
