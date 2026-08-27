@@ -101,6 +101,7 @@
 	    "sudo systemctl stop unattended-upgrades || true",
 	    "sudo systemctl stop apt-daily.service apt-daily-upgrade.service || true",
 	    "sudo systemctl stop apt-daily.timer apt-daily-upgrade.timer || true",
+	    "sudo systemctl mask apt-daily.timer apt-daily-upgrade.timer unattended-upgrades.service || true",
 
 	    "echo 'Waiting for apt/dpkg locks...'",
 	    "while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 || sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || sudo fuser /var/cache/apt/archives/lock >/dev/null 2>&1; do sleep 3; done",
@@ -122,8 +123,9 @@
       "type": "shell",
       "inline": [
         "sudo /home/{{user `aws_ssh_username`}}/scylla_monitoring_install_ami {{ user `aws_install_args` }}",
-        "sudo chmod 666 /var/run/docker.sock",
-        "sudo /home/{{user `aws_ssh_username`}}/add_centos_user.sh --os ubuntu --copy"
+        "sudo /home/{{user `aws_ssh_username`}}/add_centos_user.sh --os ubuntu --copy",
+        "sudo /home/{{user `aws_ssh_username`}}/harden_ami.sh",
+        "rm -f /home/{{user `aws_ssh_username`}}/.ssh/authorized_keys"
       ],
       "only": ["amazon-ebs"]
     },
