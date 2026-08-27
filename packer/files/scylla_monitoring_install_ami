@@ -194,18 +194,10 @@ def install_dbaas(version):
 def install_node_exporter(arch='amd64'):
     if not is_centos():
         run('apt-get install -y policycoreutils')
-    run('cp {_HOME}/node-exporter.service /etc/systemd/system/')
-    try:
-        run('cp {_HOME}/node-exporter.service /usr/lib/systemd/system/')
-    except Exception as e:
-        print("could not place node-exporter file in user/lib/systemd" + str(e))
-        print(e.output)
-    run('systemctl daemon-reload')
-    try:
-        run('{_HOME}/node_exporter_install --arch {arch}'.format(arch=arch, _HOME=HOME_DIR))
-    except Exception as e:
-        print("node_exporter_install failed" + str(e))
-        print(e.output)
+    # The scylla-node-exporter deb ships its own systemd unit; a failure here
+    # must fail the image build instead of silently producing an image
+    # without node_exporter.
+    run('{_HOME}/node_exporter_install --arch {arch}'.format(arch=arch, _HOME=HOME_DIR))
 
 if __name__ == '__main__':
     if os.getuid() > 0:
