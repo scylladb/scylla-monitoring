@@ -120,38 +120,41 @@ def install_monitoring(version):
         name = 'scylla-monitoring-{VERSION}'.format(VERSION=version)
     run('sudo -u {_USER} tar -xvf {_HOME}/scylla-monitoring.tar.gz -C {_HOME}/')
     run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/{NAME} {_HOME}/scylla-grafana-monitoring-scylla-monitoring'.format(NAME=name, _HOME=HOME_DIR, _USER=USER, _COPY_OR_MOVE=COPY_OR_MOVE))
-    set_scylla_datasource_connection_scope()
+    set_scylla_datasource_json_data()
 
-def set_scylla_datasource_connection_scope(scope='any'):
+def set_scylla_datasource_json_data(settings=None):
     # Grafana provisions the scylla-datasource from these files; on an image the
     # Scylla nodes are not known ahead of time, so allow the plugin to connect to
-    # any host (connectionScope) instead of a fixed one.
+    # any host (connectionScope) and talk TLS to it (self-signed certs allowed).
+    if settings is None:
+        settings = [("connectionScope", "'any'"), ("enableTls", "true"), ("tlsSkipVerify", "true")]
     for name in ['datasource.scylla.yml', 'datasource.psswd.scylla.yml']:
         path = '{_HOME}/scylla-grafana-monitoring-scylla-monitoring/grafana/{NAME}'.format(_HOME=HOME_DIR, NAME=name)
         if dry_run:
-            print("set connectionScope: '{SCOPE}' in {PATH}".format(SCOPE=scope, PATH=path))
+            print("set jsonData {SETTINGS} in {PATH}".format(SETTINGS=settings, PATH=path))
             continue
         if not os.path.exists(path):
-            print("{PATH} not found, skipping connectionScope update".format(PATH=path))
+            print("{PATH} not found, skipping jsonData update".format(PATH=path))
             continue
         with open(path) as f:
             lines = f.readlines()
-        if any(l.strip().startswith('connectionScope:') for l in lines):
+        missing = [(k, v) for k, v in settings if not any(l.strip().startswith(k + ':') for l in lines)]
+        if not missing:
             continue
         out = []
         in_json_data = False
         for l in lines:
             if in_json_data and (not l.startswith(' ' * indent) or l.strip() == ''):
-                out.append(' ' * indent + "connectionScope: '{SCOPE}'\n".format(SCOPE=scope))
+                out.extend(' ' * indent + "{KEY}: {VAL}\n".format(KEY=k, VAL=v) for k, v in missing)
                 in_json_data = False
             out.append(l)
             if l.strip() == 'jsonData:':
                 indent = len(l) - len(l.lstrip()) + 2
                 in_json_data = True
         if in_json_data:
-            out.append(' ' * indent + "connectionScope: '{SCOPE}'\n".format(SCOPE=scope))
+            out.extend(' ' * indent + "{KEY}: {VAL}\n".format(KEY=k, VAL=v) for k, v in missing)
         if verbose:
-            print("set connectionScope: '{SCOPE}' in {PATH}".format(SCOPE=scope, PATH=path))
+            print("set jsonData {SETTINGS} in {PATH}".format(SETTINGS=missing, PATH=path))
         with open(path, 'w') as f:
             f.writelines(out)
 
