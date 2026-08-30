@@ -1,0 +1,71 @@
+name: Delete Cloud Images
+
+# Manual only. Removes Scylla Monitor images (AWS AMIs + snapshots in all
+# release regions, GCP images) by name, using the same cloud credentials as
+# the Build Cloud Images workflow. Runs as a dry run unless "delete" is
+# explicitly selected.
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_name:
+        description: 'Image name to delete, e.g. scylladb-monitor-4-16-0-rc0-2026-06-28t11-42-58z (a trailing * matches several builds)'
+        required: true
+        type: string
+      cloud:
+        description: 'Which cloud to clean'
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - aws
+          - gcp
+      action:
+        description: 'dry-run only lists the matching images; delete removes them'
+        required: true
+        type: choice
+        default: dry-run
+        options:
+          - dry-run
+          - delete
+
+jobs:
+  delete-cloud-images:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup AWS credentials
+        if: inputs.cloud != 'gcp'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.MONITOR_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.MONITOR_AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'us-east-1'
+
+      - name: Setup GCP credentials
+        if: inputs.cloud != 'aws'
+        uses: google-github-actions/auth@v2.1.2
+        with:
+          workload_identity_provider: ${{ secrets.MONITOR_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.MONITOR_GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        if: inputs.cloud != 'aws'
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: ${{ inputs.action == 'delete' && 'Delete images' || 'List images (dry run)' }}
+        env:
+          IMAGE_NAME: ${{ inputs.image_name }}
+          CLOUD: ${{ inputs.cloud }}
+          ACTION: ${{ inputs.action }}
+        run: |
+          ./delete_cloud_images.sh --name "$IMAGE_NAME" --cloud "$CLOUD" "--$ACTION"
+        working-directory: packer
