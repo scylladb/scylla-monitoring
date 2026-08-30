@@ -454,6 +454,94 @@
                 ]
             },
             {
+                "title": "Host CPU",
+                "collapse": true,
+                "rows": [
+                    {
+                        "class": "row",
+                        "panels": [
+                            {
+                                "class": "percentunit_panel",
+                                "span": 3,
+                                "spec/title": "$func host CPU user by [[by]]",
+                                "spec/description": "Host CPU time in user space. On a pinned reactor this is dominated by scylla itself.\n\nnode_cpu_seconds_total joined to scylla_reactor_location on (instance, cpu). Only CPUs that run a scylla reactor are included.",
+                                "spec/data/spec/queries/0/spec/query/spec/interval": "30s",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(node_cpu_seconds_total{mode=\"user\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval]) * on (instance, cpu) group_left(shard) scylla_reactor_location{instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{cluster}} {{dc}} {{instance}} shard {{shard}} cpu {{cpu}}"
+                            },
+                            {
+                                "class": "percentunit_panel",
+                                "span": 3,
+                                "spec/title": "$func host CPU system by [[by]]",
+                                "spec/description": "Host CPU time in the kernel: syscalls the reactor made, plus kernel work charged to that CPU.\n\nnode_cpu_seconds_total joined to scylla_reactor_location on (instance, cpu). Only CPUs that run a scylla reactor are included.",
+                                "spec/data/spec/queries/0/spec/query/spec/interval": "30s",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(node_cpu_seconds_total{mode=\"system\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval]) * on (instance, cpu) group_left(shard) scylla_reactor_location{instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{cluster}} {{dc}} {{instance}} shard {{shard}} cpu {{cpu}}"
+                            },
+                            {
+                                "class": "percentunit_panel",
+                                "span": 3,
+                                "spec/title": "$func host CPU iowait by [[by]]",
+                                "spec/description": "Host CPU time idle with outstanding I/O.\n\nnode_cpu_seconds_total joined to scylla_reactor_location on (instance, cpu). Only CPUs that run a scylla reactor are included.",
+                                "spec/data/spec/queries/0/spec/query/spec/interval": "30s",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(node_cpu_seconds_total{mode=\"iowait\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval]) * on (instance, cpu) group_left(shard) scylla_reactor_location{instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{cluster}} {{dc}} {{instance}} shard {{shard}} cpu {{cpu}}"
+                            },
+                            {
+                                "class": "percentunit_panel",
+                                "span": 3,
+                                "spec/title": "$func host CPU irq by [[by]]",
+                                "spec/description": "Hard IRQ time. Interrupts landing on a reactor CPU take it away from the reactor.\n\nnode_cpu_seconds_total joined to scylla_reactor_location on (instance, cpu). Only CPUs that run a scylla reactor are included.",
+                                "spec/data/spec/queries/0/spec/query/spec/interval": "30s",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(node_cpu_seconds_total{mode=\"irq\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval]) * on (instance, cpu) group_left(shard) scylla_reactor_location{instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{cluster}} {{dc}} {{instance}} shard {{shard}} cpu {{cpu}}"
+                            }
+                        ]
+                    },
+                    {
+                        "class": "row",
+                        "panels": [
+                            {
+                                "class": "percentunit_panel",
+                                "span": 3,
+                                "spec/title": "$func host CPU softirq by [[by]]",
+                                "spec/description": "Soft IRQ time, mostly network RX/TX. A common source of reactor stalls.\n\nnode_cpu_seconds_total joined to scylla_reactor_location on (instance, cpu). Only CPUs that run a scylla reactor are included.",
+                                "spec/data/spec/queries/0/spec/query/spec/interval": "30s",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(node_cpu_seconds_total{mode=\"softirq\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval]) * on (instance, cpu) group_left(shard) scylla_reactor_location{instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{cluster}} {{dc}} {{instance}} shard {{shard}} cpu {{cpu}}"
+                            },
+                            {
+                                "class": "percentunit_panel",
+                                "span": 3,
+                                "spec/title": "$func host CPU steal by [[by]]",
+                                "spec/description": "Time the hypervisor ran something else on the CPU. Non-zero steal on a reactor CPU means the reactor was descheduled.\n\nnode_cpu_seconds_total joined to scylla_reactor_location on (instance, cpu). Only CPUs that run a scylla reactor are included.",
+                                "spec/data/spec/queries/0/spec/query/spec/interval": "30s",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(node_cpu_seconds_total{mode=\"steal\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval]) * on (instance, cpu) group_left(shard) scylla_reactor_location{instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{cluster}} {{dc}} {{instance}} shard {{shard}} cpu {{cpu}}"
+                            },
+                            {
+                                "class": "percentunit_panel",
+                                "span": 3,
+                                "spec/title": "$func host CPU nice by [[by]]",
+                                "spec/description": "Host CPU time spent on niced user processes.\n\nnode_cpu_seconds_total joined to scylla_reactor_location on (instance, cpu). Only CPUs that run a scylla reactor are included.",
+                                "spec/data/spec/queries/0/spec/query/spec/interval": "30s",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(node_cpu_seconds_total{mode=\"nice\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval]) * on (instance, cpu) group_left(shard) scylla_reactor_location{instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{cluster}} {{dc}} {{instance}} shard {{shard}} cpu {{cpu}}"
+                            },
+                            {
+                                "class": "percentunit_panel",
+                                "span": 3,
+                                "spec/title": "$func host CPU idle by [[by]]",
+                                "spec/description": "Host CPU idle time. Low idle together with low reactor utilization means something other than scylla is on that CPU.\n\nnode_cpu_seconds_total joined to scylla_reactor_location on (instance, cpu). Only CPUs that run a scylla reactor are included.",
+                                "spec/data/spec/queries/0/spec/query/spec/interval": "30s",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(node_cpu_seconds_total{mode=\"idle\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval]) * on (instance, cpu) group_left(shard) scylla_reactor_location{instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]]))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{cluster}} {{dc}} {{instance}} shard {{shard}} cpu {{cpu}}"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
                 "class": "monitoring_version_row"
             }
         ],
@@ -474,7 +562,7 @@
                 "kind": "CustomVariable",
                 "spec": {
                     "name": "by",
-                    "query": "Cluster : cluster,DC : dc, Instance : instance, Shard : instance\\,shard",
+                    "query": "Cluster : cluster,DC : dc, Instance : instance, Shard : instance\\,shard\\,cpu",
                     "current": {
                         "tags": [],
                         "text": "DC",
