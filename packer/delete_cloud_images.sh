@@ -39,10 +39,13 @@ done
 
 [ -n "$NAME" ] || { echo "--name is required" >&2; usage 1; }
 case "$CLOUD" in aws|gcp|all) ;; *) echo "--cloud must be aws, gcp or all" >&2; exit 1 ;; esac
-case "$NAME" in
-  scylladb-monitor-*) ;;
-  *) echo "refusing: name must start with 'scylladb-monitor-' (got '$NAME')" >&2; exit 1 ;;
-esac
+# Validate the whole pattern: the scylladb-monitor- prefix, then ordinary
+# image-name characters, with at most one wildcard and only at the end. This
+# keeps shell/regex metacharacters out of the cloud filters below.
+if ! printf '%s\n' "$NAME" | grep -Eq '^scylladb-monitor-[A-Za-z0-9._-]+\*?$'; then
+  echo "refusing: name must match ^scylladb-monitor-[A-Za-z0-9._-]+\*?$ (got '$NAME')" >&2
+  exit 1
+fi
 
 echo "mode:  $MODE"
 echo "name:  $NAME"

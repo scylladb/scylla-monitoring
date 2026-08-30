@@ -62,6 +62,10 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: ${{ inputs.action == 'delete' && 'Delete images' || 'List images (dry run)' }}
+        env:
+          IMAGE_NAME: ${{ inputs.image_name }}
+          CLOUD: ${{ inputs.cloud }}
+          ACTION: ${{ inputs.action }}
         run: |
-          ./delete_cloud_images.sh --name "${{ inputs.image_name }}" --cloud "${{ inputs.cloud }}" --${{ inputs.action }}
+          ./delete_cloud_images.sh --name "$IMAGE_NAME" --cloud "$CLOUD" "--$ACTION"
         working-directory: packer
