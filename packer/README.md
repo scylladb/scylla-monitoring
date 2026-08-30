@@ -76,3 +76,25 @@ Set your GCP service account key as an environment variable:
 ```shell
 export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/service-account-file.json"
 ```
+
+## Deleting images
+
+`delete_cloud_images.sh` removes images by their packer name (`monitor_image_name`) from
+AWS (the AMI and its snapshot, in `aws_region` and every region in `aws_ami_regions`)
+and from GCP (`gcp_project_id`). It is a dry run unless `--delete` is given:
+
+```shell
+# show what would be removed
+./delete_cloud_images.sh --name scylladb-monitor-4-16-0-rc0-2026-06-28t11-42-58z
+
+# a trailing * matches several builds; restrict to one cloud with --cloud aws|gcp
+./delete_cloud_images.sh --name 'scylladb-monitor-4-16-0-rc*' --cloud aws
+
+# actually delete
+./delete_cloud_images.sh --name scylladb-monitor-4-16-0-rc0-2026-06-28t11-42-58z --delete
+```
+
+Only AMIs owned by the current AWS account are considered, so run it with the
+credentials of the account that built the images. The same script is exposed as the
+manual **Delete Cloud Images** GitHub Actions workflow, which uses the CI account
+credentials; pick `action: dry-run` first to review the list, then re-run with `delete`.
