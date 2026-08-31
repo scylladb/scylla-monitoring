@@ -31,21 +31,25 @@ from scylla_util import *
 import argparse
 
 VERSION='1.11.1-2'
-# The scylla-node-exporter deb installs the binary under /opt/scylladb and
-# ships its own systemd unit, which runs as the 'scylla' user.
-NODE_EXPORTER_BIN = Path('/opt/scylladb/node_exporter/node_exporter')
-NODE_EXPORTER_SERVICE = 'scylla-node-exporter.service'
-NODE_EXPORTER_USER = 'scylla'
+# The node_exporter binary is taken from the scylla-node-exporter deb, but the
+# deb is extracted rather than installed with dpkg: registering the package
+# (version 1:1.11.1-2, with an epoch) in dpkg would block installing Scylla on
+# the same machine, because scylla depends on scylla-node-exporter with an
+# exact epoch-0 version pin and apt refuses to downgrade across the epoch.
+# SCT installs Scylla + Scylla Manager on top of the monitoring image, so the
+# scylla-node-exporter package name must stay unclaimed, and our binary and
+# unit must live in paths a real scylla-node-exporter install does not own.
+NODE_EXPORTER_DIR = Path('/opt/node_exporter')
+NODE_EXPORTER_BIN = NODE_EXPORTER_DIR / 'node_exporter'
+NODE_EXPORTER_BIN_IN_DEB = 'opt/scylladb/node_exporter/node_exporter'
+NODE_EXPORTER_SERVICE = 'node-exporter.service'
+NODE_EXPORTER_USER = 'nodeexporter'
 
 def run(cmd):
     subprocess.check_call(shlex.split(cmd))
 
 def ensure_user(user):
-    """Create the system user/group the node-exporter unit runs as.
-
-    The monitoring image has no scylla installation, so the user the deb's
-    unit expects (User=scylla) does not exist and the service would fail to
-    start."""
+    """Create the dedicated system user/group node-exporter.service runs as."""
     try:
         grp.getgrnam(user)
     except KeyError:
@@ -87,9 +91,18 @@ if __name__ == '__main__':
             version=VERSION, arch=arch), byte=True)
         with open(deb_file, 'wb') as f:
             f.write(data)
-        ensure_user(NODE_EXPORTER_USER)
-        run('dpkg -i {deb}'.format(deb=deb_file))
+        extract_dir = '/var/tmp/scylla-node-exporter-extract'
+        run('rm -rf {dir}'.format(dir=extract_dir))
+        run('dpkg-deb -x {deb} {dir}'.format(deb=deb_file, dir=extract_dir))
+        run('install -d {dir}'.format(dir=NODE_EXPORTER_DIR))
+        run('install -m 755 {src} {dst}'.format(
+            src=os.path.join(extract_dir, NODE_EXPORTER_BIN_IN_DEB), dst=NODE_EXPORTER_BIN))
+        run('rm -rf {dir}'.format(dir=extract_dir))
         os.remove(deb_file)
+        ensure_user(NODE_EXPORTER_USER)
+        unit_src = Path(__file__).resolve().parent / NODE_EXPORTER_SERVICE
+        run('install -m 644 {src} /etc/systemd/system/{service}'.format(
+            src=unit_src, service=NODE_EXPORTER_SERVICE))
         run('systemctl daemon-reload')
         node_exporter = systemd_unit(NODE_EXPORTER_SERVICE)
         node_exporter.enable()
