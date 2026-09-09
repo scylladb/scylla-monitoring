@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
 . versions.sh
+. network-lib.sh
 if [ -f env.sh ]; then
 	. env.sh
 fi
 
-IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' aprom)
-if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
-   IP=""
-fi
-
-PROM_ADRESS="$IP:9090"
 DATADIR="/prometheus-data/"
-DOCKER_PARAM=""
 NAME="1"
 if [ "$(id -u)" -eq 0 ]; then
 	echo "Running as root is not advised, please check the documentation on how to run as non-root user"
@@ -148,6 +142,30 @@ else
 fi
 if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 	HOST_NETWORK=1
+fi
+# Resolved here rather than at the top of the script, because it depends on the
+# network, which is only known once -D has been parsed. The sidecar reads this
+# from its own container, so prefer the container name where it resolves.
+if [ -z "$PROM_ADRESS" ]; then
+	# Named the way start-all.sh names it, so a Prometheus on a non-default port is
+	# still found. Use -a to point somewhere else entirely.
+	if [ -z "$PROMETHEUS_PORT" ]; then
+		PROMETHEUS_NAME=aprom
+	else
+		PROMETHEUS_NAME=aprom-$PROMETHEUS_PORT
+	fi
+	if stack_network >/dev/null; then
+		PROM_ADRESS="$PROMETHEUS_NAME:9090"
+	else
+		PROM_ADRESS=$(first_container_address $PROMETHEUS_NAME)
+		if [ -z "$PROM_ADRESS" ]; then
+			# Under host networking the container has no address of its own and
+			# Prometheus is listening on the host, which is where start-thanos.sh
+			# looks in the same situation. Without this the URL came out as :9090.
+			PROM_ADRESS=$(hostname -I | awk '{print $1}')
+		fi
+		PROM_ADRESS="$PROM_ADRESS:9090"
+	fi
 fi
 if [ -z "$BIND_ADDRESS" ]; then
 	BIND_ADDRESS=""

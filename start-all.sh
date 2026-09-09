@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 . versions.sh
+. network-lib.sh
 if [ -f env.sh ]; then
 	. env.sh
 fi
@@ -185,16 +186,17 @@ is_local() {
 }
 
 # Resolve the address of a Docker container.
-# Usage: container_address <container_name> <port>
-# Prints <ip>:<port>. Falls back to BIND_ADDRESS or host IP if the container has no IP.
+# Usage: container_address <container_name> <container_port> [host_port]
+# Prints <ip>:<container_port>, the address the container is reachable at from
+# inside the Docker network. Falls back to BIND_ADDRESS or the host IP when the
+# container has no address of its own, and then uses host_port, because that is
+# the port the container is published on. host_port defaults to container_port.
 container_address() {
 	local name=$1
 	local port=$2
+	local host_port=${3:-$2}
 	local ip
-	ip=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$name")
-	if [ "$ip" = "invalid IP" ] || [ -z "$ip" ]; then
-		ip=""
-	fi
+	ip=$(first_container_address "$name")
 	if [ -z "$ip" ]; then
 		if [ ! -z "$BIND_ADDRESS" ]; then
 			ip=$(echo $BIND_ADDRESS | sed 's/:$//')
@@ -203,8 +205,30 @@ container_address() {
 		elif [[ $(uname) == "Darwin" ]]; then
 			ip=$(ifconfig en0 | awk '/inet / {print $2}')
 		fi
+		port=$host_port
 	fi
 	echo "$ip:$port"
+}
+
+# Resolve the address of a monitoring container, as seen by the other containers
+# of the stack.
+# Usage: service_address <container_name> <container_port> [host_port]
+# On a user-defined network Docker's embedded DNS resolves container names. A name
+# stays correct when Docker gives the container a different address, which it does
+# whenever the containers are recreated or the host reboots, so prefer it there.
+# This covers the network the script creates and one the caller passed in -D
+# alike. Falls back to container_address when the network resolves no names, as
+# with host networking, which has no container address either.
+service_address() {
+	local name=$1
+	local port=$2
+	local host_port=${3:-$2}
+
+	if stack_network >/dev/null; then
+		echo "$name:$port"
+		return
+	fi
+	container_address "$name" "$port" "$host_port"
 }
 
 if [ -z "$PROMETHEUS_RULES" ]; then
@@ -346,7 +370,7 @@ for arg; do
             NO_THANOS_DATASOURCE="1"
             ;;
 		--auto-restart)
-			DOCKER_PARAM="--restart=unless-stopped"
+			AUTO_RESTART="--restart=unless-stopped"
 			;;
 		--victoria-metrics)
 			VICTORIA_METRICS="1"
@@ -496,7 +520,7 @@ for arg; do
 			DATDOGPARAM="$DATDOGPARAM -H $NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "loki-port" ]; then
-			LOKI_PORT = "$NOSPACE"
+			LOKI_PORT="$NOSPACE"
 			LOKI_PORT_CMD="$LOKI_PORT_CMD -p $NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "promtail-port" ]; then
@@ -587,6 +611,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
 		fi
 		;;
 	g)
+		GRAFANA_BARE_PORT="$OPTARG"
 		GRAFANA_PORT="-g $OPTARG"
 		;;
 	m)
@@ -713,6 +738,13 @@ if [ "$CURRENT_VERSION" = "master" ]; then
 	fi
 	log INFO "Generating the dashboards"
 
+fi
+
+# Added after the options are parsed, and not in the --auto-restart case itself:
+# there it would land in DOCKER_PARAM before the option loop, look like a value
+# inherited from env.sh, and be thrown away by the first -D.
+if [ ! -z "$AUTO_RESTART" ]; then
+	DOCKER_PARAM="$DOCKER_PARAM $AUTO_RESTART"
 fi
 
 if [ -z "$ALERTMANAGER_PORT" ]; then
@@ -875,8 +907,12 @@ if [ "$STACK_ID" != "" ]; then
 	RUN_LOKI=0
 	RUN_RENDERER=""
 	PROMETHEUS_PORT=${STACK_PROMETHEUS["$STACK_ID"]}
-	GRAFANA_PORT="-g"${STACK_GRAFANA["$STACK_ID"]}
-	ALERTMANAGER_PORT_CMD="-p "${STACK_ALERTMANAGER["$STACK_ID"]}
+	GRAFANA_BARE_PORT=${STACK_GRAFANA["$STACK_ID"]}
+	GRAFANA_PORT="-g$GRAFANA_BARE_PORT"
+	# Set the port itself, not just the flag: the alertmanager's container name is
+	# derived from it, both here and in start-alertmanager.sh.
+	ALERTMANAGER_PORT=${STACK_ALERTMANAGER["$STACK_ID"]}
+	ALERTMANAGER_PORT_CMD="-p $ALERTMANAGER_PORT"
 fi
 
 ALERTMANAGER_COMMAND=""
@@ -891,12 +927,17 @@ else
 	if [ $? -ne 0 ]; then
 		exit 1
 	fi
-	if [ $ALERTMANAGER_PORT = "9093" ]; then
+	# start-alertmanager.sh names the container after the -p it is handed, so read
+	# the name off the flag that is actually passed: env.sh can set
+	# ALERTMANAGER_PORT_CMD while leaving the port itself unset.
+	ALERTMANAGER_PORT_ARG=$(echo "$ALERTMANAGER_PORT_CMD" | sed -n 's/.*-p[[:space:]]*\([^[:space:]]*\).*/\1/p')
+	if [ -z "$ALERTMANAGER_PORT_ARG" ]; then
 		ALERTMANAGER_NAME=aalert
 	else
-		ALERTMANAGER_NAME=aalert-$ALERTMANAGER_PORT
+		ALERTMANAGER_NAME=aalert-$ALERTMANAGER_PORT_ARG
+		ALERTMANAGER_PORT=$ALERTMANAGER_PORT_ARG
 	fi
-	AM_ADDRESS=$(container_address $ALERTMANAGER_NAME $ALERTMANAGER_PORT)
+	AM_ADDRESS=$(service_address $ALERTMANAGER_NAME 9093 $ALERTMANAGER_PORT)
 fi
 
 LOKI_ADDRESS=""
@@ -905,15 +946,24 @@ if [ $RUN_LOKI -eq 1 ]; then
 	if [ $? -ne 0 ]; then
 		exit 1
 	fi
+	# Named the way start-loki.sh names it: after the -p it is handed, or after the
+	# LOKI_PORT it reads from env.sh itself when it is handed none, and in both
+	# cases after a port having been given at all rather than after its value, so
+	# --loki-port 3100 names the container loki-3100.
+	LOKI_PORT_ARG=$(echo "$LOKI_PORT_CMD" | sed -n 's/.*-p[[:space:]]*\([^[:space:]]*\).*/\1/p')
+	if [ -z "$LOKI_PORT_ARG" ]; then
+		LOKI_PORT_ARG=$LOKI_PORT
+	fi
+	if [ -z "$LOKI_PORT_ARG" ]; then
+		LOKI_NAME=loki
+	else
+		LOKI_NAME=loki-$LOKI_PORT_ARG
+		LOKI_PORT=$LOKI_PORT_ARG
+	fi
 	if [ -z "$LOKI_PORT" ]; then
 		LOKI_PORT=3100
 	fi
-	if [ $LOKI_PORT -eq 3100 ]; then
-		LOKI_NAME=loki
-	else
-		LOKI_NAME=loki-$LOKI_PORT
-	fi
-	LOKI_ADDRESS=$(container_address $LOKI_NAME $LOKI_PORT)
+	LOKI_ADDRESS=$(service_address $LOKI_NAME 3100 $LOKI_PORT)
 	LOKI_ADDRESS="-L $LOKI_ADDRESS"
 fi
 
@@ -949,6 +999,39 @@ if [ "$NATIVE_HISTOGRAM" = "1" ]; then
 else
 	NATIVE_HISTOGRAM=""
 fi
+# Prometheus scrapes Grafana, from its own container. Left alone under host
+# networking, where it was already set to localhost, and on a network that
+# resolves no names: Grafana is started at the end of this script, so there is
+# no container address to inspect yet, and container_address would fall back to
+# BIND_ADDRESS, which is the loopback address of the Prometheus container
+# itself when the stack was started with -A 127.0.0.1. prometheus-config.sh
+# keeps its own default there.
+if [ -z "$GRAFANA_ADDRESS" ] && stack_network >/dev/null; then
+	# -g sets the bare port too, but env.sh can set GRAFANA_PORT to the flag
+	# itself, and start-grafana.sh is handed that flag either way.
+	if [ -z "$GRAFANA_BARE_PORT" ]; then
+		case "$GRAFANA_PORT" in
+		-g*)
+			GRAFANA_BARE_PORT=$(echo "${GRAFANA_PORT#-g}" | tr -d '[:space:]')
+			;;
+		esac
+	fi
+	# Named the way start-grafana.sh names it: a GRAFANA_NAME from env.sh wins over
+	# the port, and otherwise the name follows a port having been given at all
+	# rather than its value, so -g 3000 names the container agraf-3000. Kept in a
+	# variable of its own, because assigning to GRAFANA_NAME here would overwrite
+	# the name env.sh chose, while start-grafana.sh reads env.sh for itself and
+	# would still use it.
+	if [ ! -z "$GRAFANA_NAME" ]; then
+		GRAFANA_SCRAPE_NAME=$GRAFANA_NAME
+	elif [ -z "$GRAFANA_BARE_PORT" ]; then
+		GRAFANA_SCRAPE_NAME=agraf
+	else
+		GRAFANA_SCRAPE_NAME=agraf-$GRAFANA_BARE_PORT
+	fi
+	GRAFANA_ADDRESS="-G $GRAFANA_SCRAPE_NAME:3000"
+fi
+
 ./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $NATIVE_HISTOGRAM $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
 	DATE=$(date +"%Y-%m-%d_%H_%M_%S")
@@ -971,7 +1054,7 @@ fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "Using victoria metrics"
 
-	docker run -d --rm $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
+	docker run -d $DOCKER_PARAM $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
 		-v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml:z \
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
@@ -1024,17 +1107,16 @@ fi
 
 # Can't use localhost here, because the monitoring may be running remotely.
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
-DB_ADDRESS=$(container_address $PROMETHEUS_NAME 9090)
+DB_ADDRESS=$(service_address $PROMETHEUS_NAME 9090)
 
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "running vmalert"
 
-	docker run -d \
+	docker run -d $DOCKER_PARAM \
 		--name vmalert \
 		-v $PROMETHEUS_RULES:z \
 		victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
 		-datasource.url=http://$DB_ADDRESS \
-		-notifier.url=http://$AM_ADDRESS \
 		-notifier.url=http://$AM_ADDRESS \
 		-remoteWrite.url=http://$DB_ADDRESS \
 		-remoteRead.url=http://$DB_ADDRESS
@@ -1073,7 +1155,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 if [ ! -z "$DATDOGPARAM" ]; then
-	run_script ./start-datadog.sh $DATDOGPARAM -p $DB_ADDRESS
+	run_script ./start-datadog.sh $DATDOGPARAM -D "$DOCKER_PARAM" -p $DB_ADDRESS
 fi
 if [ "$RUN_ALTERNATOR" = 1 ]; then
 	GRAFANA_ENV_ARRAY+=(--alternator)
@@ -1086,3 +1168,9 @@ if [ ! -z "$GRAFANA_RENDERER_TOKEN_FILE" ]; then
 	grafana_renderer_args+=(--grafana-render-token-to-file "$GRAFANA_RENDERER_TOKEN_FILE")
 fi
 run_script ./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD $VECTOR_SEARCH_CMD "${grafana_renderer_args[@]}"
+# run_script sends the output of its script to the log file, so a renderer that
+# failed to start would otherwise leave the stack looking healthy while every
+# render fails at use time. Grafana itself is up, so this is a warning.
+if [ ! -z "$RUN_RENDERER" ] && [ -z "$(docker ps -q -f name=agrafrender)" ]; then
+	log WARNING "The Grafana renderer is not running, Grafana was started without rendering support. See $LOG_FILE"
+fi
