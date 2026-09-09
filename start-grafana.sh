@@ -423,20 +423,28 @@ if [ ! -z $RUN_RENDERER ]; then
 	fi
 
 	./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS -D "$DOCKER_PARAM" -T "$GRAFANA_RENDERER_TOKEN"
+	RENDERER_STATUS=$?
 
-	# Extract GF_SERVER_ROOT_URL if set to include in callback URL
-	# This ensures the renderer accesses Grafana at the same path the JavaScript expects
-	SERVER_ROOT_PATH=""
-	if [[ " ${GRAFANA_ENV_COMMAND[@]} " =~ " -e GF_SERVER_ROOT_URL="([^[:space:]]+) ]]; then
-		SERVER_ROOT_URL_VALUE="${BASH_REMATCH[1]}"
-		# Only use as path if it doesn't start with http:// or https://
-		if [[ ! $SERVER_ROOT_URL_VALUE =~ ^https?:// ]]; then
-			# Extract path from URL (remove trailing slash if present)
-			SERVER_ROOT_PATH="${SERVER_ROOT_URL_VALUE%/}"
+	if [ $RENDERER_STATUS -ne 0 ]; then
+		# Pointing Grafana at a renderer that is not running turns every render
+		# into a failure at use time, with nothing said at startup. Come up
+		# without rendering instead, and say so.
+		echo "Error: the Grafana renderer failed to start, starting Grafana without rendering support"
+	else
+		# Extract GF_SERVER_ROOT_URL if set to include in callback URL
+		# This ensures the renderer accesses Grafana at the same path the JavaScript expects
+		SERVER_ROOT_PATH=""
+		if [[ " ${GRAFANA_ENV_COMMAND[@]} " =~ " -e GF_SERVER_ROOT_URL="([^[:space:]]+) ]]; then
+			SERVER_ROOT_URL_VALUE="${BASH_REMATCH[1]}"
+			# Only use as path if it doesn't start with http:// or https://
+			if [[ ! $SERVER_ROOT_URL_VALUE =~ ^https?:// ]]; then
+				# Extract path from URL (remove trailing slash if present)
+				SERVER_ROOT_PATH="${SERVER_ROOT_URL_VALUE%/}"
+			fi
 		fi
-	fi
 
-	GRAFANA_ENV_COMMAND+=(-e GF_RENDERING_SERVER_URL=http://$RENDERER_ADDRESS:8081/render -e GF_RENDERING_CALLBACK_URL=http://$GRAFANA_ADDRESS:$GRAFANA_CALLBACK_PORT$SERVER_ROOT_PATH/ -e "GF_RENDERING_RENDERER_TOKEN=$GRAFANA_RENDERER_TOKEN" )
+		GRAFANA_ENV_COMMAND+=(-e GF_RENDERING_SERVER_URL=http://$RENDERER_ADDRESS:8081/render -e GF_RENDERING_CALLBACK_URL=http://$GRAFANA_ADDRESS:$GRAFANA_CALLBACK_PORT$SERVER_ROOT_PATH/ -e "GF_RENDERING_RENDERER_TOKEN=$GRAFANA_RENDERER_TOKEN" )
+	fi
 fi
 
 if [ -z $STACK ]; then

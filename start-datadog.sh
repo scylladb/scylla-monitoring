@@ -4,6 +4,10 @@ if [ -f env.sh ]; then
 fi
 usage="$(basename "$0") [-h] [-A DD_API_KEY ][-p ip:port address of prometheus ] [-d configuration directory] [-e environment variable, multiple params are supported] [-D encapsulate docker param] -- Start a datadog agent inside a container"
 
+if [ "$DOCKER_PARAM" != "" ]; then
+	DOCKER_PARAM_FROM_FILE="1"
+fi
+
 while getopts ':hA:p:e:H:D:' option; do
 	case "$option" in
 	h)
@@ -14,6 +18,10 @@ while getopts ':hA:p:e:H:D:' option; do
 		DD_API_KEY=$OPTARG
 		;;
 	D)
+		if [ "$DOCKER_PARAM_FROM_FILE" = "1" ]; then
+			DOCKER_PARAM=""
+			DOCKER_PARAM_FROM_FILE=""
+		fi
 		DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
 		;;
 	H)
