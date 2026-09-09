@@ -510,7 +510,7 @@ for arg; do
 			DATDOGPARAM="$DATDOGPARAM -H $NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "loki-port" ]; then
-			LOKI_PORT = "$NOSPACE"
+			LOKI_PORT="$NOSPACE"
 			LOKI_PORT_CMD="$LOKI_PORT_CMD -p $NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "promtail-port" ]; then
@@ -601,6 +601,7 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
 		fi
 		;;
 	g)
+		GRAFANA_BARE_PORT="$OPTARG"
 		GRAFANA_PORT="-g $OPTARG"
 		;;
 	m)
@@ -873,8 +874,12 @@ if [ "$STACK_ID" != "" ]; then
 	RUN_LOKI=0
 	RUN_RENDERER=""
 	PROMETHEUS_PORT=${STACK_PROMETHEUS["$STACK_ID"]}
-	GRAFANA_PORT="-g"${STACK_GRAFANA["$STACK_ID"]}
-	ALERTMANAGER_PORT_CMD="-p "${STACK_ALERTMANAGER["$STACK_ID"]}
+	GRAFANA_BARE_PORT=${STACK_GRAFANA["$STACK_ID"]}
+	GRAFANA_PORT="-g$GRAFANA_BARE_PORT"
+	# Set the port itself, not just the flag: the alertmanager's container name is
+	# derived from it, both here and in start-alertmanager.sh.
+	ALERTMANAGER_PORT=${STACK_ALERTMANAGER["$STACK_ID"]}
+	ALERTMANAGER_PORT_CMD="-p $ALERTMANAGER_PORT"
 fi
 
 ALERTMANAGER_COMMAND=""
@@ -889,10 +894,15 @@ else
 	if [ $? -ne 0 ]; then
 		exit 1
 	fi
-	if [ $ALERTMANAGER_PORT = "9093" ]; then
+	# start-alertmanager.sh names the container after the -p it is handed, so read
+	# the name off the flag that is actually passed: env.sh can set
+	# ALERTMANAGER_PORT_CMD while leaving the port itself unset.
+	ALERTMANAGER_PORT_ARG=$(echo "$ALERTMANAGER_PORT_CMD" | sed -n 's/.*-p[[:space:]]*\([^[:space:]]*\).*/\1/p')
+	if [ -z "$ALERTMANAGER_PORT_ARG" ]; then
 		ALERTMANAGER_NAME=aalert
 	else
-		ALERTMANAGER_NAME=aalert-$ALERTMANAGER_PORT
+		ALERTMANAGER_NAME=aalert-$ALERTMANAGER_PORT_ARG
+		ALERTMANAGER_PORT=$ALERTMANAGER_PORT_ARG
 	fi
 	AM_ADDRESS=$(service_address $ALERTMANAGER_NAME 9093 $ALERTMANAGER_PORT)
 fi
@@ -903,13 +913,22 @@ if [ $RUN_LOKI -eq 1 ]; then
 	if [ $? -ne 0 ]; then
 		exit 1
 	fi
-	if [ -z "$LOKI_PORT" ]; then
-		LOKI_PORT=3100
+	# Named the way start-loki.sh names it: after the -p it is handed, or after the
+	# LOKI_PORT it reads from env.sh itself when it is handed none, and in both
+	# cases after a port having been given at all rather than after its value, so
+	# --loki-port 3100 names the container loki-3100.
+	LOKI_PORT_ARG=$(echo "$LOKI_PORT_CMD" | sed -n 's/.*-p[[:space:]]*\([^[:space:]]*\).*/\1/p')
+	if [ -z "$LOKI_PORT_ARG" ]; then
+		LOKI_PORT_ARG=$LOKI_PORT
 	fi
-	if [ $LOKI_PORT -eq 3100 ]; then
+	if [ -z "$LOKI_PORT_ARG" ]; then
 		LOKI_NAME=loki
 	else
-		LOKI_NAME=loki-$LOKI_PORT
+		LOKI_NAME=loki-$LOKI_PORT_ARG
+		LOKI_PORT=$LOKI_PORT_ARG
+	fi
+	if [ -z "$LOKI_PORT" ]; then
+		LOKI_PORT=3100
 	fi
 	LOKI_ADDRESS=$(service_address $LOKI_NAME 3100 $LOKI_PORT)
 	LOKI_ADDRESS="-L $LOKI_ADDRESS"
@@ -947,6 +966,39 @@ if [ "$NATIVE_HISTOGRAM" = "1" ]; then
 else
 	NATIVE_HISTOGRAM=""
 fi
+# Prometheus scrapes Grafana, from its own container. Left alone under host
+# networking, where it was already set to localhost, and on a network that
+# resolves no names: Grafana is started at the end of this script, so there is
+# no container address to inspect yet, and container_address would fall back to
+# BIND_ADDRESS, which is the loopback address of the Prometheus container
+# itself when the stack was started with -A 127.0.0.1. prometheus-config.sh
+# keeps its own default there.
+if [ -z "$GRAFANA_ADDRESS" ] && stack_network >/dev/null; then
+	# -g sets the bare port too, but env.sh can set GRAFANA_PORT to the flag
+	# itself, and start-grafana.sh is handed that flag either way.
+	if [ -z "$GRAFANA_BARE_PORT" ]; then
+		case "$GRAFANA_PORT" in
+		-g*)
+			GRAFANA_BARE_PORT=$(echo "${GRAFANA_PORT#-g}" | tr -d '[:space:]')
+			;;
+		esac
+	fi
+	# Named the way start-grafana.sh names it: a GRAFANA_NAME from env.sh wins over
+	# the port, and otherwise the name follows a port having been given at all
+	# rather than its value, so -g 3000 names the container agraf-3000. Kept in a
+	# variable of its own, because assigning to GRAFANA_NAME here would overwrite
+	# the name env.sh chose, while start-grafana.sh reads env.sh for itself and
+	# would still use it.
+	if [ ! -z "$GRAFANA_NAME" ]; then
+		GRAFANA_SCRAPE_NAME=$GRAFANA_NAME
+	elif [ -z "$GRAFANA_BARE_PORT" ]; then
+		GRAFANA_SCRAPE_NAME=agraf
+	else
+		GRAFANA_SCRAPE_NAME=agraf-$GRAFANA_BARE_PORT
+	fi
+	GRAFANA_ADDRESS="-G $GRAFANA_SCRAPE_NAME:3000"
+fi
+
 ./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $NATIVE_HISTOGRAM $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
 	DATE=$(date +"%Y-%m-%d_%H_%M_%S")
