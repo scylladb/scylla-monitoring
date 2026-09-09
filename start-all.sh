@@ -370,7 +370,7 @@ for arg; do
             NO_THANOS_DATASOURCE="1"
             ;;
 		--auto-restart)
-			DOCKER_PARAM="--restart=unless-stopped"
+			AUTO_RESTART="--restart=unless-stopped"
 			;;
 		--victoria-metrics)
 			VICTORIA_METRICS="1"
@@ -740,6 +740,13 @@ if [ "$CURRENT_VERSION" = "master" ]; then
 
 fi
 
+# Added after the options are parsed, and not in the --auto-restart case itself:
+# there it would land in DOCKER_PARAM before the option loop, look like a value
+# inherited from env.sh, and be thrown away by the first -D.
+if [ ! -z "$AUTO_RESTART" ]; then
+	DOCKER_PARAM="$DOCKER_PARAM $AUTO_RESTART"
+fi
+
 if [ -z "$ALERTMANAGER_PORT" ]; then
 	ALERTMANAGER_PORT="9093"
 else
@@ -1047,7 +1054,7 @@ fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "Using victoria metrics"
 
-	docker run -d --rm $DOCKER_PARAM $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
+	docker run -d $DOCKER_PARAM $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
 		-v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml:z \
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
@@ -1161,3 +1168,9 @@ if [ ! -z "$GRAFANA_RENDERER_TOKEN_FILE" ]; then
 	grafana_renderer_args+=(--grafana-render-token-to-file "$GRAFANA_RENDERER_TOKEN_FILE")
 fi
 run_script ./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD $VECTOR_SEARCH_CMD "${grafana_renderer_args[@]}"
+# run_script sends the output of its script to the log file, so a renderer that
+# failed to start would otherwise leave the stack looking healthy while every
+# render fails at use time. Grafana itself is up, so this is a warning.
+if [ ! -z "$RUN_RENDERER" ] && [ -z "$(docker ps -q -f name=agrafrender)" ]; then
+	log WARNING "The Grafana renderer is not running, Grafana was started without rendering support. See $LOG_FILE"
+fi

@@ -101,7 +101,19 @@ if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:
 	PORT_MAPPING="-p $GRAFANA_RENDPORT:8081"
 fi
 
-docker run ${DOCKER_LIMITS["grafanarender"]} --rm -d $DOCKER_PARAM $PORT_MAPPING \
+# The renderer is handed the token Grafana is about to be given, so it has to be
+# the one this run started: a renderer left from an earlier run holds that run's
+# token and would reject every render. Replace it. --rm used to clear the exited
+# ones, before it had to go so that --auto-restart could work.
+if docker container inspect $GRAFANA_NAME >/dev/null 2>&1; then
+	echo "Replacing the existing Grafana renderer ($GRAFANA_NAME)"
+	if ! docker rm -f -v $GRAFANA_NAME >/dev/null 2>&1; then
+		printf "\nFailed to remove the existing $GRAFANA_NAME container, remove it and try again, or use kill-all.sh\n"
+		exit 1
+	fi
+fi
+
+docker run ${DOCKER_LIMITS["grafanarender"]} -d $DOCKER_PARAM $PORT_MAPPING \
 	-e "AUTH_TOKEN=$GRAFANA_RENDERER_TOKEN" \
 	--name $GRAFANA_NAME docker.io/grafana/grafana-image-renderer:$VERSION server \
 	${DOCKER_PARAMS["grafanarender"]}
