@@ -2,6 +2,7 @@
 
 is_podman="$(docker --help | grep -o podman)"
 . versions.sh
+. network-lib.sh
 if [ -f env.sh ]; then
 	. env.sh
 fi
@@ -158,11 +159,13 @@ if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:
 fi
 
 if [ -z $ALERT_MANAGER_ADDRESS ]; then
-	IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' aalert)
-        if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
-           IP=""
-        fi
-	ALERT_MANAGER_ADDRESS="$IP:9093"
+	if stack_network >/dev/null; then
+		# A name keeps resolving after Docker reassigns container addresses.
+		ALERT_MANAGER_ADDRESS="aalert:9093"
+	else
+		IP=$(first_container_address aalert)
+		ALERT_MANAGER_ADDRESS="$IP:9093"
+	fi
 fi
 
 sed "s/ALERTMANAGER/$ALERT_MANAGER_ADDRESS/" loki/conf/loki-config.template.yaml >loki/conf/loki-config.yaml
@@ -194,18 +197,21 @@ if [ ! "$(docker ps -q -f name=$LOKI_NAME)" ]; then
 	exit 1
 fi
 
-IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $LOKI_NAME)
-if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
-   IP=""
-fi
-LOKI_ADDRESS="$IP:3100"
-if [ "$LOKI_ADDRESS" = ":3100" ]; then
-	if [[ $(uname) == "Linux" ]]; then
-		HOST_IP=$(hostname -I | awk '{print $1}')
-	elif [[ $(uname) == "Darwin" ]]; then
-		HOST_IP=$(ifconfig en0 | awk '/inet / {print $2}')
+# Promtail reaches Loki over the same network, so address it by name when that
+# network resolves names. The name outlives the address Loki happens to have now.
+if stack_network >/dev/null; then
+	LOKI_ADDRESS="$LOKI_NAME:3100"
+else
+	IP=$(first_container_address $LOKI_NAME)
+	LOKI_ADDRESS="$IP:3100"
+	if [ "$LOKI_ADDRESS" = ":3100" ]; then
+		if [[ $(uname) == "Linux" ]]; then
+			HOST_IP=$(hostname -I | awk '{print $1}')
+		elif [[ $(uname) == "Darwin" ]]; then
+			HOST_IP=$(ifconfig en0 | awk '/inet / {print $2}')
+		fi
+		LOKI_ADDRESS="$HOST_IP:3100"
 	fi
-	LOKI_ADDRESS="$HOST_IP:3100"
 fi
 
 if [ -z $PROMTAIL_PORT ]; then

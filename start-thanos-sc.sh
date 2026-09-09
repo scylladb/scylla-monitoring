@@ -1,15 +1,10 @@
 #!/usr/bin/env bash
 . versions.sh
+. network-lib.sh
 if [ -f env.sh ]; then
 	. env.sh
 fi
 
-IP=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' aprom)
-if [ "$IP" = "invalid IP" ] || [ -z "$IP" ]; then
-   IP=""
-fi
-
-PROM_ADRESS="$IP:9090"
 DATADIR="/prometheus-data/"
 DOCKER_PARAM=""
 NAME="1"
@@ -148,6 +143,16 @@ else
 fi
 if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
 	HOST_NETWORK=1
+fi
+# Resolved here rather than at the top of the script, because it depends on the
+# network, which is only known once -D has been parsed. The sidecar reads this
+# from its own container, so prefer the container name where it resolves.
+if [ -z "$PROM_ADRESS" ]; then
+	if stack_network >/dev/null; then
+		PROM_ADRESS="aprom:9090"
+	else
+		PROM_ADRESS="$(first_container_address aprom):9090"
+	fi
 fi
 if [ -z "$BIND_ADDRESS" ]; then
 	BIND_ADDRESS=""
