@@ -159,11 +159,21 @@ if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:
 fi
 
 if [ -z $ALERT_MANAGER_ADDRESS ]; then
+	# Named the way start-alertmanager.sh names it, off the same ALERTMANAGER_PORT
+	# out of env.sh, and after a port having been given at all rather than after its
+	# value: start-alertmanager.sh -p 9093 names the container aalert-9093, not
+	# aalert. It cannot see a port that was given on that script's command line
+	# rather than in env.sh, so use -m for anything else.
+	if [ -z "$ALERTMANAGER_PORT" ]; then
+		ALERTMANAGER_NAME=aalert
+	else
+		ALERTMANAGER_NAME=aalert-$ALERTMANAGER_PORT
+	fi
 	if stack_network >/dev/null; then
 		# A name keeps resolving after Docker reassigns container addresses.
-		ALERT_MANAGER_ADDRESS="aalert:9093"
+		ALERT_MANAGER_ADDRESS="$ALERTMANAGER_NAME:9093"
 	else
-		IP=$(first_container_address aalert)
+		IP=$(first_container_address $ALERTMANAGER_NAME)
 		ALERT_MANAGER_ADDRESS="$IP:9093"
 	fi
 fi
