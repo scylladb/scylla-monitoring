@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 . versions.sh
+. network-lib.sh
 if [ -f env.sh ]; then
 	. env.sh
 fi
@@ -182,16 +183,17 @@ is_local() {
 }
 
 # Resolve the address of a Docker container.
-# Usage: container_address <container_name> <port>
-# Prints <ip>:<port>. Falls back to BIND_ADDRESS or host IP if the container has no IP.
+# Usage: container_address <container_name> <container_port> [host_port]
+# Prints <ip>:<container_port>, the address the container is reachable at from
+# inside the Docker network. Falls back to BIND_ADDRESS or the host IP when the
+# container has no address of its own, and then uses host_port, because that is
+# the port the container is published on. host_port defaults to container_port.
 container_address() {
 	local name=$1
 	local port=$2
+	local host_port=${3:-$2}
 	local ip
-	ip=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$name")
-	if [ "$ip" = "invalid IP" ] || [ -z "$ip" ]; then
-		ip=""
-	fi
+	ip=$(first_container_address "$name")
 	if [ -z "$ip" ]; then
 		if [ ! -z "$BIND_ADDRESS" ]; then
 			ip=$(echo $BIND_ADDRESS | sed 's/:$//')
@@ -200,8 +202,30 @@ container_address() {
 		elif [[ $(uname) == "Darwin" ]]; then
 			ip=$(ifconfig en0 | awk '/inet / {print $2}')
 		fi
+		port=$host_port
 	fi
 	echo "$ip:$port"
+}
+
+# Resolve the address of a monitoring container, as seen by the other containers
+# of the stack.
+# Usage: service_address <container_name> <container_port> [host_port]
+# On a user-defined network Docker's embedded DNS resolves container names. A name
+# stays correct when Docker gives the container a different address, which it does
+# whenever the containers are recreated or the host reboots, so prefer it there.
+# This covers the network the script creates and one the caller passed in -D
+# alike. Falls back to container_address when the network resolves no names, as
+# with host networking, which has no container address either.
+service_address() {
+	local name=$1
+	local port=$2
+	local host_port=${3:-$2}
+
+	if stack_network >/dev/null; then
+		echo "$name:$port"
+		return
+	fi
+	container_address "$name" "$port" "$host_port"
 }
 
 if [ -z "$PROMETHEUS_RULES" ]; then
@@ -870,7 +894,7 @@ else
 	else
 		ALERTMANAGER_NAME=aalert-$ALERTMANAGER_PORT
 	fi
-	AM_ADDRESS=$(container_address $ALERTMANAGER_NAME $ALERTMANAGER_PORT)
+	AM_ADDRESS=$(service_address $ALERTMANAGER_NAME 9093 $ALERTMANAGER_PORT)
 fi
 
 LOKI_ADDRESS=""
@@ -887,7 +911,7 @@ if [ $RUN_LOKI -eq 1 ]; then
 	else
 		LOKI_NAME=loki-$LOKI_PORT
 	fi
-	LOKI_ADDRESS=$(container_address $LOKI_NAME $LOKI_PORT)
+	LOKI_ADDRESS=$(service_address $LOKI_NAME 3100 $LOKI_PORT)
 	LOKI_ADDRESS="-L $LOKI_ADDRESS"
 fi
 
@@ -945,7 +969,7 @@ fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "Using victoria metrics"
 
-	docker run -d --rm $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
+	docker run -d --rm $DOCKER_PARAM $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
 		-v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml:z \
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
@@ -998,17 +1022,16 @@ fi
 
 # Can't use localhost here, because the monitoring may be running remotely.
 # Also note that the port to which we need to connect is 9090, regardless of which port we bind to at localhost.
-DB_ADDRESS=$(container_address $PROMETHEUS_NAME 9090)
+DB_ADDRESS=$(service_address $PROMETHEUS_NAME 9090)
 
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "running vmalert"
 
-	docker run -d \
+	docker run -d $DOCKER_PARAM \
 		--name vmalert \
 		-v $PROMETHEUS_RULES:z \
 		victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
 		-datasource.url=http://$DB_ADDRESS \
-		-notifier.url=http://$AM_ADDRESS \
 		-notifier.url=http://$AM_ADDRESS \
 		-remoteWrite.url=http://$DB_ADDRESS \
 		-remoteRead.url=http://$DB_ADDRESS
@@ -1047,7 +1070,7 @@ for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 if [ ! -z "$DATDOGPARAM" ]; then
-	run_script ./start-datadog.sh $DATDOGPARAM -p $DB_ADDRESS
+	run_script ./start-datadog.sh $DATDOGPARAM -D "$DOCKER_PARAM" -p $DB_ADDRESS
 fi
 if [ "$RUN_ALTERNATOR" = 1 ]; then
 	GRAFANA_ENV_ARRAY+=(--alternator)

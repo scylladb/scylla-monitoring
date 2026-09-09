@@ -29,6 +29,7 @@ VOLUMES=""
 PARAMS=""
 DEFAULT_THEME="light"
 . versions.sh
+. network-lib.sh
 . UA.sh
 if [ -f env.sh ]; then
 	. env.sh
@@ -403,14 +404,8 @@ if [ ! -z "$GRAFANA_RENDERER_TOKEN_FILE" ]; then
 fi
 
 if [ ! -z $RUN_RENDERER ]; then
-	# Extract network name from DOCKER_PARAM if it's a custom network (not host)
-	NETWORK_NAME=""
-	if [[ $DOCKER_PARAM =~ --net=([^[:space:]]+) ]] || [[ $DOCKER_PARAM =~ --network=([^[:space:]]+) ]]; then
-		NETWORK_NAME="${BASH_REMATCH[1]}"
-	fi
-
 	# Determine the address to use for communication
-	if [[ ! -z "$NETWORK_NAME" && "$NETWORK_NAME" != "host" ]]; then
+	if stack_network >/dev/null; then
 		# Using custom network - use container names and internal port for communication
 		RENDERER_ADDRESS="agrafrender"
 		GRAFANA_ADDRESS="$GRAFANA_NAME"
