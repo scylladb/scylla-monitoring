@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+. versions.sh
 set -euo pipefail
 
 # Check if docker command is available
@@ -7,7 +8,7 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-TAG="${TAG:-v3.5.6}"
+TAG="${TAG:-$TRAEFIK_VERSION}"
 IMG="traefik:${TAG}"
 
 CANDIDATES=(
