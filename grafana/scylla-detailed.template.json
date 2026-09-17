@@ -112,10 +112,20 @@
                     {
                         "span": 3,
                         "class": "graph_panel",
+                        "dashversion": ["<2025.1"],
                         "spec/title": "Tablets load per instance",
                         "spec/description": "Represents the ‘load’ value the balancer equalizes across instances.\n\nIt is based on the number of tablets assigned to each instance, adjusted so larger disks are expected to hold proportionally more tablets.\n\nscylla_load_balancer_load",
                         "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_load_balancer_load{cluster=\"$cluster\"})",
                         "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{target_node}}"
+                    },
+                    {
+                        "span": 3,
+                        "dashversion": [">2025.1"],
+                        "class": "graph_panel",
+                        "spec/title": "Tablets load per instance",
+                        "spec/description": "Represents the ‘load’ value the balancer equalizes across instances.\n\nIt is based on the number of tablets assigned to each instance, adjusted so larger disks are expected to hold proportionally more tablets.\n\nscylla_load_balancer_load",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_load_balancer_load{cluster=\"$cluster\"} + on(target_node) group_left(dc, instance) 0* label_replace(max(scylla_raft_apply_index{cluster=\"$cluster\", dc=~\"$dc\", instance=~\"$node\"}) by (dc, instance, id), \"target_node\", \"$1\", \"id\", \"(.*)\"))",
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{dc}} {{instance}}"
                     }
                 ],
                 "title": "Tablets information",
