@@ -85,8 +85,9 @@ exposed=$(
 export TAG="${TAG:-$TRAEFIK_VERSION}"
 IMG="traefik:${TAG}"
 CONF_DIR="$PWD/traefik/build"
-# Whatever can fail runs before the old proxy is removed, and the config it
-# bind-mounts and watches is rewritten only after that.
+# Whatever can fail runs before the old proxy is removed. The config is
+# rendered to .new files and renamed into place only after that, so a failed
+# write leaves the running proxy and the config it watches untouched.
 if ! docker image inspect "$IMG" >/dev/null 2>&1; then
 	./fetch_traefik_image.sh || die "failed: could not pull $IMG from any registry"
 fi
@@ -100,9 +101,7 @@ if [[ "$driver" == json-file ]]; then
 	LOG_OPTS+=(--log-opt max-size=50m --log-opt max-file=3)
 fi
 
-docker rm --force traefik || true
-
-cat > "$CONF_DIR/traefik.yml" <<EOF
+cat > "$CONF_DIR/traefik.yml.new" <<EOF
 global:
   checkNewVersion: false
   sendAnonymousUsage: false
@@ -134,7 +133,7 @@ ping:
   entryPoint: "ping"
 EOF
 
-cat > "$CONF_DIR/traefik-conf.yml" <<EOF
+cat > "$CONF_DIR/traefik-conf.yml.new" <<EOF
 http:
   routers:
     to-agraf:
@@ -202,6 +201,10 @@ tls:
         certFile: /etc/traefik/server.crt
         keyFile: /etc/traefik/server.key
 EOF
+
+docker rm --force traefik || true
+mv "$CONF_DIR/traefik.yml.new" "$CONF_DIR/traefik.yml"
+mv "$CONF_DIR/traefik-conf.yml.new" "$CONF_DIR/traefik-conf.yml"
 
 # DAC_READ_SEARCH is the one capability kept, so traefik can read a key owned
 # by another user without being able to write it; with host networking the
