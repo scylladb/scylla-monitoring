@@ -16,8 +16,8 @@ CANDIDATES=(
     "docker.io/library/traefik:${TAG}"
 )
 
-MAX_RETRIES=3
-RETRY_DELAY=5
+MAX_RETRIES=5
+RETRY_DELAY=2
 
 for ref in "${CANDIDATES[@]}"; do
 	echo "Trying to pull ${ref}"
@@ -31,7 +31,7 @@ for ref in "${CANDIDATES[@]}"; do
 
         if [ "$attempt" -lt $MAX_RETRIES ]; then
         	printf '.'
-            sleep $RETRY_DELAY
+            sleep $((RETRY_DELAY * 2 ** (attempt - 1)))
         fi
     done
 
