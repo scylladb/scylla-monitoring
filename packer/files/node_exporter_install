@@ -39,6 +39,8 @@ VERSION='1.11.1-2'
 # SCT installs Scylla + Scylla Manager on top of the monitoring image, so the
 # scylla-node-exporter package name must stay unclaimed, and our binary and
 # unit must live in paths a real scylla-node-exporter install does not own.
+# No scylla-node-exporter install owns /usr/bin/node_exporter either, so that
+# pre-4.16 path is kept as a symlink for consumers that hardcode it.
 NODE_EXPORTER_DIR = Path('/opt/node_exporter')
 NODE_EXPORTER_BIN = NODE_EXPORTER_DIR / 'node_exporter'
 NODE_EXPORTER_BIN_IN_DEB = 'opt/scylladb/node_exporter/node_exporter'
@@ -97,8 +99,10 @@ if __name__ == '__main__':
         run('install -d {dir}'.format(dir=NODE_EXPORTER_DIR))
         run('install -m 755 {src} {dst}'.format(
             src=os.path.join(extract_dir, NODE_EXPORTER_BIN_IN_DEB), dst=NODE_EXPORTER_BIN))
+        run('ln -sfn {bin} {link}'.format(bin=NODE_EXPORTER_BIN, link=bindir_p() / 'node_exporter'))
         run('rm -rf {dir}'.format(dir=extract_dir))
         os.remove(deb_file)
+        run('{link} --version'.format(link=bindir_p() / 'node_exporter'))
         ensure_user(NODE_EXPORTER_USER)
         unit_src = Path(__file__).resolve().parent / NODE_EXPORTER_SERVICE
         run('install -m 644 {src} /etc/systemd/system/{service}'.format(
