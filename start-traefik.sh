@@ -10,7 +10,8 @@
 # optional (env): TAG overrides TRAEFIK_VERSION
 #
 # Clients must present a certificate signed by rootCA.crt. The readiness probe
-# presents server.crt, so that certificate must also allow client auth.
+# presents server.crt, so that certificate must also allow client auth, and it
+# connects to PRIVATE_IP, so the certificate needs PRIVATE_IP as an IP SAN.
 #
 # Traefik listens on PRIVATE_IP ports 3000 (Grafana), 9090 (Prometheus), 9093
 # (Alertmanager), 9100 (node_exporter) and 10911 (sidecar), and forwards each to
@@ -27,7 +28,8 @@ set -euo pipefail
 die() { echo "$@" >&2; exit 1; }
 
 : "${PRIVATE_IP:?is required}" "${CERT_DIR:?is required}"
-[[ "$PRIVATE_IP" =~ ^[0-9a-fA-F.:]+$ ]] || die "error: PRIVATE_IP must be an IP address"
+ip -o addr show scope global | awk -v ip="$PRIVATE_IP" '{sub(/\/.*/, "", $4)} $4 == ip {found = 1} END {exit !found}' ||
+	die "error: PRIVATE_IP must be a global address on this host, as \`ip addr\` prints it"
 [[ "$CERT_DIR" == /* && "$CERT_DIR" != *:* ]] || die "error: CERT_DIR must be an absolute path without ':'"
 
 ADDR="$PRIVATE_IP"
@@ -42,13 +44,63 @@ as_root() { if ((NEED_SUDO)); then sudo "$@"; else "$@"; fi; }
 as_root test -f "$CERT_DIR/server.crt" -a -f "$CERT_DIR/server.key" -a -f "$CERT_DIR/rootCA.crt" ||
 	die "error: CERT_DIR must hold server.crt server.key rootCA.crt"
 
-busy=$(ss -Hltn | awk '$4 ~ /^(0\.0\.0\.0|\*|\[::\]):(3000|9090|9093|9100|10911)$/ {print $4}')
-[[ -z "$busy" ]] || die "error: bound on all addresses, move to 127.0.0.1 first: ${busy//$'\n'/ }"
+# Any listener on a proxied port outside loopback bypasses mTLS, or takes the
+# address traefik needs. Published docker ports are checked too, because with
+# userland-proxy disabled they have no socket for ss to see. Both are captured
+# first so a failing ss or docker ps stops the script instead of passing it.
+PORTS='3000|9090|9093|9100|10911'
+OWN=""
+# A crash-looping traefik also reports Running while in restart backoff.
+if [[ "$(docker inspect --format '{{and .State.Running (not .State.Restarting)}}' traefik 2>/dev/null)" == true ]]; then
+	OWN="$ADDR"
+fi
+listeners=$(ss -ltn)
+published=$(docker ps --format '{{.Ports}}')
+# A container in restart backoff lists no ports, yet gets them back on restart.
+restarting=$(docker ps --quiet --filter status=restarting)
+if [[ -n "$restarting" ]]; then
+	# shellcheck disable=SC2086
+	published+=$'\n'$(docker inspect --format '{{range $p, $b := .HostConfig.PortBindings}}{{range $b}}{{.HostIp}}:{{.HostPort}}->{{$p}},{{end}}{{end}}' $restarting)
+fi
+exposed=$(
+	{
+		awk 'NR > 1 {print "ss", $4}' <<<"$listeners"
+		tr ',' '\n' <<<"$published" | sed -nE 's/^ *(.+)->.*/docker \1/p'
+	} | awk -v own="$OWN" -v ports="$PORTS" '
+		BEGIN { n = split(ports, p, "|") }
+		{
+			i = match($2, /:[0-9]+(-[0-9]+)?$/)
+			if (!i) next
+			host = substr($2, 1, i - 1)
+			if (host ~ /^(127\.|\[::1\]$|::1$|\[?::ffff:127\.)/) next
+			# only a socket can be traefik itself; a published port on it is DNAT
+			if ($1 == "ss" && (host == own || "[" host "]" == own)) next
+			lo = hi = substr($2, i + 1)
+			if (lo ~ /-/) { split(lo, r, "-"); lo = r[1]; hi = r[2] }
+			for (k = 1; k <= n; k++) if (p[k] + 0 >= lo + 0 && p[k] + 0 <= hi + 0) { print $2; next }
+		}' | sort -u
+)
+[[ -z "$exposed" ]] || die "error: listening outside loopback, move to 127.0.0.1 first: ${exposed//$'\n'/ }"
 
 export TAG="${TAG:-$TRAEFIK_VERSION}"
 IMG="traefik:${TAG}"
 CONF_DIR="$PWD/traefik/build"
+# Whatever can fail runs before the old proxy is removed, and the config it
+# bind-mounts and watches is rewritten only after that.
+if ! docker image inspect "$IMG" >/dev/null 2>&1; then
+	./fetch_traefik_image.sh || die "failed: could not pull $IMG from any registry"
+fi
 mkdir -p "$CONF_DIR"
+
+# json-file, docker's default driver, never rotates; the access log would
+# grow until the disk is full.
+driver=$(docker info --format '{{.LoggingDriver}}')
+LOG_OPTS=(--log-opt mode=non-blocking)
+if [[ "$driver" == json-file ]]; then
+	LOG_OPTS+=(--log-opt max-size=50m --log-opt max-file=3)
+fi
+
+docker rm --force traefik || true
 
 cat > "$CONF_DIR/traefik.yml" <<EOF
 global:
@@ -78,11 +130,6 @@ providers:
   file:
     directory: "/etc/traefik/confs"
 
-# Uncomment to access the traefik dashboard at :8080
-#api:
-#  insecure: true
-
-# enable healthcheck endpoint
 ping:
   entryPoint: "ping"
 EOF
@@ -156,29 +203,17 @@ tls:
         keyFile: /etc/traefik/server.key
 EOF
 
-if ! docker image inspect "$IMG" >/dev/null 2>&1; then
-	./fetch_traefik_image.sh || die "failed: could not pull $IMG from any registry"
-fi
-
-# json-file, docker's default driver, never rotates; the access log would
-# grow until the disk is full.
-LOG_OPTS=(--log-opt mode=non-blocking)
-if [[ "$(docker info --format '{{.LoggingDriver}}')" == json-file ]]; then
-	LOG_OPTS+=(--log-opt max-size=50m --log-opt max-file=3)
-fi
-
-docker rm --force traefik || true
-
-# DAC_OVERRIDE is the one capability kept, so traefik can read a key owned by
-# another user; with host networking the default set would also allow NET_RAW.
+# DAC_READ_SEARCH is the one capability kept, so traefik can read a key owned
+# by another user without being able to write it; with host networking the
+# default set would also allow NET_RAW.
 docker run -d --name traefik \
 	--network="host" \
 	--restart unless-stopped \
-	--cap-drop ALL --cap-add DAC_OVERRIDE \
+	--cap-drop ALL --cap-add DAC_READ_SEARCH \
 	--security-opt no-new-privileges \
 	"${LOG_OPTS[@]}" \
-	-v "$CONF_DIR/traefik.yml:/etc/traefik/traefik.yml:ro" \
-	-v "$CONF_DIR/traefik-conf.yml:/etc/traefik/confs/traefik-conf.yml:ro" \
+	-v "$CONF_DIR/traefik.yml:/etc/traefik/traefik.yml:ro,z" \
+	-v "$CONF_DIR/traefik-conf.yml:/etc/traefik/confs/traefik-conf.yml:ro,z" \
 	-v "${CERT_DIR}/server.crt:/etc/traefik/server.crt:ro" \
 	-v "${CERT_DIR}/server.key:/etc/traefik/server.key:ro" \
 	-v "${CERT_DIR}/rootCA.crt:/etc/traefik/rootCA.crt:ro" \
@@ -187,15 +222,16 @@ docker run -d --name traefik \
 # A bare `docker run -d` returns as soon as the container is created, before
 # traefik has opened its listeners and loaded the file-provider routers. During
 # that window requests are refused (000) or answered with 404 (no router yet).
-# Wait until traefik actually routes a request. We classify by HTTP status code:
-# any routed response (200/502/503/...) means traefik is ready, even if the
-# target service is still down.
+# Wait until traefik actually routes a request. The probe asks for / because
+# Prometheus answers it with a redirect under any route prefix, so a 404 can only
+# come from traefik. Any other status (302/502/503/...) means traefik is ready,
+# even if the target service is still down.
 probe() {
 	as_root curl --noproxy '*' --globoff \
 		--cacert "${CERT_DIR}/rootCA.crt" \
 		--cert "${CERT_DIR}/server.crt" --key "${CERT_DIR}/server.key" \
 		--output /dev/null --connect-timeout 5 --max-time 10 \
-		"$@" "https://${ADDR}:9090/-/healthy"
+		"$@" "https://${ADDR}:9090/"
 }
 
 wait_for_traefik_ready() {
@@ -205,9 +241,8 @@ wait_for_traefik_ready() {
 		code=$(probe --silent --write-out '%{http_code}' 2>/dev/null || true)
 		case "$code" in
 		404) ;; # routers not loaded yet; keep waiting
-		[1-5][0-9][0-9]) return 0 ;; # any routed response means traefik is ready
+		[1-5][0-9][0-9]) return 0 ;;
 		esac
-		# anything else (000, or empty when sudo/curl did not run): keep waiting
 		sleep 2
 	done
 	docker logs --tail 20 traefik >&2 || true
