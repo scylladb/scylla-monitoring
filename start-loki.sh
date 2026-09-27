@@ -15,7 +15,7 @@ DOCKER_PARAM=""
 BIND_ADDRESS=""
 LOKI_COMMANDS="--ingester.wal-enabled=false"
 LOKI_DIR=""
-usage="$(basename "$0") [-h] [-l] [-D encapsulate docker param] [-m alert_manager address]"
+usage="$(basename "$0") [-h] [-l] [--no-promtail start only loki, env: NO_PROMTAIL=1] [-D encapsulate docker param] [-m alert_manager address]"
 if [ "$(id -u)" -ne 0 ]; then
 	GROUPID=$(id -g)
 	USER_PERMISSIONS="-u $UID:$GROUPID"
@@ -33,6 +33,9 @@ for arg; do
         --quick-startup)
             QUICK_STARTUP=1
             ;;
+		--no-promtail)
+			NO_PROMTAIL=1
+			;;
 		--volume)
 			LIMIT="1"
 			VOLUME="1"
@@ -205,6 +208,10 @@ fi
 if [ ! "$(docker ps -q -f name=$LOKI_NAME)" ]; then
 	echo "Error: Loki container failed to start"
 	exit 1
+fi
+
+if [ "$NO_PROMTAIL" = "1" ]; then
+	exit 0
 fi
 
 # Promtail reaches Loki over the same network, so address it by name when that

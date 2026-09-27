@@ -230,7 +230,7 @@ for arg; do
 		--compose)
 			RUN_COMPOSE=1
 			;;
-		--no-loki)
+		--no-loki | --no-log-collector)
 			RUN_LOKI=0
 			;;
 		--no-renderer)

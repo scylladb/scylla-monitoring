@@ -151,6 +151,7 @@ LOKI_VERSION=3.7.8
 # Promtail is deprecated upstream and frozen on the 3.6.x line; it has no
 # 3.7.x releases, so it needs its own version and cannot follow LOKI_VERSION.
 PROMTAIL_VERSION=3.6.11
+ALLOY_VERSION=v1.20.0
 GRAFANA_RENDERER_VERSION=v5.12.4
 THANOS_VERSION=v0.42.4
 VICTORIA_METRICS_VERSION="v1.96.0"

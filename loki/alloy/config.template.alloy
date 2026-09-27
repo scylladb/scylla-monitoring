@@ -1,0 +1,53 @@
+// Alloy replacement for loki/promtail/promtail_config.template.yml.
+// start-alloy.sh and make-compose.sh fill in Loki's address below.
+
+loki.source.syslog "syslog" {
+  listener {
+    address = "0.0.0.0:1514"
+    labels  = { job = "syslog" }
+  }
+  relabel_rules = loki.relabel.syslog.rules
+  forward_to    = [loki.process.scylla.receiver]
+}
+
+loki.relabel "syslog" {
+  forward_to = []
+
+  rule {
+    source_labels = ["__syslog_connection_ip_address"]
+    target_label  = "instance"
+  }
+  rule {
+    source_labels = ["__syslog_message_app_name"]
+    target_label  = "app"
+  }
+  rule {
+    source_labels = ["__syslog_message_severity"]
+    target_label  = "severity"
+  }
+}
+
+loki.process "scylla" {
+  forward_to = [loki.write.default.receiver]
+
+  stage.match {
+    selector = `{app="scylla"}`
+
+    stage.regex {
+      expression = `\[shard (?P<shard>\d+)\:?\s*\S*\] (?P<module>\S+)\s+\-\s+(?P<msg>\S.*)`
+    }
+    stage.labels {
+      values = {
+        shard  = "",
+        module = "",
+        msg    = "",
+      }
+    }
+  }
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://LOKI_IP/loki/api/v1/push"
+  }
+}
