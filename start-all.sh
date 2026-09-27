@@ -102,7 +102,7 @@ elif [[ $(uname) == "Darwin" ]]; then
 fi
 
 function usage {
-	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [--servers comma separated server list] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--no-alertmanager] [--loki-port port] [--promtail-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir] [--grafana-render-token token] [--grafana-render-token-to-file path]
+	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [--servers comma separated server list] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--log-collector alloy|promtail] [--no-log-collector] [--no-alertmanager] [--loki-port port] [--promtail-port port] [--alloy-port port] [--alloy-syslog-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir] [--grafana-render-token token] [--grafana-render-token-to-file path]
 
 Options:
   -h print this help and exit
@@ -138,11 +138,20 @@ Options:
   -S dashbards-list              - Override the default set of dashboards with the spcefied one.
   -T path/to/prometheus-targets  - Adds additional Prometheus target files.
   -k path/to/loki/storage        - When set, will use the given directory for Loki's data
-  --no-loki                      - If set, do not run Loki and promtail.
+  --log-collector alloy|promtail - Choose the log collector that feeds Loki, the default is alloy.
+                                   Promtail is deprecated upstream and will be removed.
+                                   Can also be set with LOG_COLLECTOR in env.sh/environment.
+  --no-log-collector             - If set, do not run Loki or any log collector (Alloy or Promtail).
+                                   Can also be set with LOG_COLLECTOR=none in env.sh/environment.
+  --no-loki                      - [Deprecated] see --no-log-collector
   --no-alertmanager              - If set, do not run the Alertmanager.
   --loki-port port               - If set, loki would use the given port number
   --promtail-port port           - If set, promtail would use the given port number
   --promtail-binary-port port    - If set, promtail would use the given port number for the binary protocol
+  --alloy-port port              - If set, alloy would use the given port number for its http server
+                                   Can also be set with ALLOY_PORT in env.sh/environment.
+  --alloy-syslog-port port       - If set, alloy would listen for syslog on the given port number
+                                   Can also be set with ALLOY_SYSLOG_PORT in env.sh/environment.
   --no-cas                       - If set, Prometheus will drop all cas related metrics while scrapping
   --no-cdc                       - If set, Prometheus will drop all cdc related metrics while scrapping
   --auto-restart                 - If set, auto restarts the containers on failure.
@@ -160,7 +169,7 @@ Options:
                                    the file names should be scylla_servers.yml, node_exporter_servers.yml, scylla_manager_agents.yml, and scylla_manager_servers.yml
   --stack id                     - Use this option when running a secondary stack, id could be 1-4
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
-                                   prometheus, grafana, alertmanager, loki, sidecar, grafanarender
+                                   prometheus, grafana, alertmanager, loki, promtail, alloy, sidecar, grafanarender
   --archive  data-directory      - Treat data directory as an archive. This disables Prometheus time-to-live (infinite retention), and would run a minimal mode
   --quick-startup                - If set, the script will not validate that each of the processes start correctly.
   --grafana-render-token token   - Use the provided renderer token instead of generating one.
@@ -313,6 +322,9 @@ fi
 if [ -z "$LOKI_PORT_CMD" ]; then
 	LOKI_PORT_CMD=""
 fi
+if [ -z "$LOG_COLLECTOR" ]; then
+	LOG_COLLECTOR="alloy"
+fi
 LIMITS=""
 VOLUMES=""
 PARAMS=""
@@ -334,7 +346,23 @@ for arg; do
 			VERBOSE="1"
 			;;
 		--no-loki)
+			log WARNING "--no-loki is deprecated, use --no-log-collector instead."
 			RUN_LOKI=0
+			;;
+		--no-log-collector)
+			LOG_COLLECTOR="none"
+			;;
+		--log-collector)
+			LIMIT="1"
+			PARAM="log-collector"
+			;;
+		--alloy-port)
+			LIMIT="1"
+			PARAM="alloy-port"
+			;;
+		--alloy-syslog-port)
+			LIMIT="1"
+			PARAM="alloy-syslog-port"
 			;;
 		--no-alertmanager)
 			SKIP_ALERTMANAGER=1
@@ -529,6 +557,15 @@ for arg; do
 		elif [ "$PARAM" = "promtail-binary-port" ]; then
 			LOKI_PORT_CMD="$LOKI_PORT_CMD -T $NOSPACE"
 			unset PARAM
+		elif [ "$PARAM" = "log-collector" ]; then
+			LOG_COLLECTOR="$NOSPACE"
+			unset PARAM
+		elif [ "$PARAM" = "alloy-port" ]; then
+			ALLOY_PORT="$NOSPACE"
+			unset PARAM
+		elif [ "$PARAM" = "alloy-syslog-port" ]; then
+			ALLOY_SYSLOG_PORT="$NOSPACE"
+			unset PARAM
 		elif [ "$PARAM" = "stack" ]; then
 			STACK_ID="$NOSPACE"
 			STACK_CMD="-s $NOSPACE"
@@ -692,6 +729,16 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
 		;;
 	esac
 done
+case "$LOG_COLLECTOR" in
+alloy | promtail) ;;
+none)
+	RUN_LOKI=0
+	;;
+*)
+	echo "Unknown --log-collector '$LOG_COLLECTOR', use alloy, promtail or none" >&2
+	exit 1
+	;;
+esac
 if [ "$ARCHIVE" == "1" ]; then
 	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
 	RUN_LOKI=0
@@ -902,7 +949,7 @@ else
 fi
 if [ "$STACK_ID" != "" ]; then
 	log INFO "Running a seconddary stack $STACK_ID"
-	echo "Note that the following containers will not run: loki, promtail, grafana renderer"
+	echo "Note that the following containers will not run: loki, promtail, alloy, grafana renderer"
 	echo "to stop it use ./kill-all.sh --stack $STACK_ID"
 	RUN_LOKI=0
 	RUN_RENDERER=""
@@ -942,7 +989,11 @@ fi
 
 LOKI_ADDRESS=""
 if [ $RUN_LOKI -eq 1 ]; then
-	run_script ./start-loki.sh $BIND_ADDRESS_CONFIG $LOKI_DIR $LOKI_PORT_CMD $QUICK_STARTUP_CMD -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS
+	NO_PROMTAIL_CMD=""
+	if [ "$LOG_COLLECTOR" = "alloy" ]; then
+		NO_PROMTAIL_CMD="--no-promtail"
+	fi
+	run_script ./start-loki.sh $NO_PROMTAIL_CMD $BIND_ADDRESS_CONFIG $LOKI_DIR $LOKI_PORT_CMD $QUICK_STARTUP_CMD -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -m $AM_ADDRESS
 	if [ $? -ne 0 ]; then
 		exit 1
 	fi
@@ -964,6 +1015,12 @@ if [ $RUN_LOKI -eq 1 ]; then
 		LOKI_PORT=3100
 	fi
 	LOKI_ADDRESS=$(service_address $LOKI_NAME 3100 $LOKI_PORT)
+	if [ "$LOG_COLLECTOR" = "alloy" ]; then
+		run_script ./start-alloy.sh --loki-address $LOKI_ADDRESS ${ALLOY_PORT:+--alloy-port $ALLOY_PORT} ${ALLOY_SYSLOG_PORT:+--alloy-syslog-port $ALLOY_SYSLOG_PORT} $BIND_ADDRESS_CONFIG $QUICK_STARTUP_CMD -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS
+		if [ $? -ne 0 ]; then
+			exit 1
+		fi
+	fi
 	LOKI_ADDRESS="-L $LOKI_ADDRESS"
 fi
 

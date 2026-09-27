@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 . versions.sh
-usage="$(basename "$0") [-h] [-g grafana port ] [ -p prometheus port ] [-m alertmanager port] [-w max wait time for prometheus] -- kills existing Grafana and Prometheus Docker instances at given ports"
+usage="$(basename "$0") [-h] [-g grafana port ] [ -p prometheus port ] [-m alertmanager port] [-w max wait time for prometheus] [--alloy-port port, env: ALLOY_PORT] -- kills existing Grafana and Prometheus Docker instances at given ports"
 GRAFANA_PORT=""
 PROMETHEUS_PORT=""
 ALERTMANAGER_PORT=""
@@ -8,6 +8,7 @@ PROMETHEUS_NAME="aprom"
 PROMETHEUS_KILL_WAITTIME="120"
 LOKI_PORT=""
 PROMTAIL_PORT=""
+ALLOY_PORT=${ALLOY_PORT:+-p $ALLOY_PORT}
 for arg; do
 	shift
 	if [ -z "$LIMIT" ]; then
@@ -19,6 +20,10 @@ for arg; do
 		--promtail-port)
 			LIMIT="1"
 			PARAM="promtail-port"
+			;;
+		--alloy-port)
+			LIMIT="1"
+			PARAM="alloy-port"
 			;;
 		--stack)
 			LIMIT="1"
@@ -37,6 +42,9 @@ for arg; do
 			unset PARAM
 		elif [ "$PARAM" = "promtail-port" ]; then
 			PROMTAIL_PORT="-p $NOSPACE"
+			unset PARAM
+		elif [ "$PARAM" = "alloy-port" ]; then
+			ALLOY_PORT="-p $NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "stack" ]; then
 			STACK_ID="$NOSPACE"
@@ -109,6 +117,7 @@ if [ -z $STACK_ID ]; then
 	./kill-container.sh -b vmalert
 	./kill-container.sh $LOKI_PORT -b loki
 	./kill-container.sh $PROMTAIL_PORT -b promtail
+	./kill-container.sh $ALLOY_PORT -b alloy
 	./kill-container.sh -b sidecar1
 	./kill-container.sh -b thanos
 	./kill-container.sh -b datadog-agent

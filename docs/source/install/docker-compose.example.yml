@@ -62,14 +62,17 @@ services:
     
     # Uncomment the following line for prometheus persistency 
     # - path/to/data/dir:/prometheus/data
-  promtail:
+  alloy:
     command:
-    - --config.file=/etc/promtail/config.yml
-    container_name: promtail
-    image: grafana/promtail:2.7.3
+    - run
+    - --server.http.listen-addr=0.0.0.0:12345
+    - --storage.path=/var/lib/alloy/data
+    - /etc/alloy/config.alloy
+    container_name: alloy
+    image: grafana/alloy:v1.20.0
     ports:
     - 1514:1514
-    - 9080:9080
+    - 12345:12345
     volumes:
-    - ./loki/promtail/promtail_config.compose.yml:/etc/promtail/config.yml
+    - ./loki/alloy/config.alloy:/etc/alloy/config.alloy
 version: '3'

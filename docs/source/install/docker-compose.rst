@@ -79,6 +79,15 @@ For example, Scylla-enterprise version 2020.1:
 
 This command generates the files under: `grafana/provisioning/dashboards/`
 
+Setting Alloy
+-------------
+
+Alloy collects the Scylla logs over syslog and pushes them to Loki. Generate its configuration file from the template:
+
+.. code-block:: shell
+
+   sed "s/LOKI_IP/loki:3100/" loki/alloy/config.template.alloy > loki/alloy/config.alloy
+
 Docker Compose file
 -------------------
 You can use the following example as a base for your docker compose.
