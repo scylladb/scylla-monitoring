@@ -60,7 +60,7 @@ elif [[ $(uname) == "Darwin" ]]; then
 fi
 
 function usage {
-	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--no-loki] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
+	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manger running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--log-collector alloy|none] [--no-log-collector] [--alloy-port port] [--alloy-syslog-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir]
 
 Options:
   -h print this help and exit
@@ -93,7 +93,16 @@ Options:
   -S dashbards-list              - Override the default set of dashboards with the spcefied one.
   -T path/to/prometheus-targets  - Adds additional Prometheus target files.
   -k path/to/loki/storage        - When set, will use the given directory for Loki's data
-  --no-loki                      - If set, do not run Loki and promtail.
+  --log-collector alloy|none     - Choose the log collector that feeds Loki, the default is alloy.
+                                   Docker Compose does not support promtail.
+                                   Can also be set with LOG_COLLECTOR in env.sh/environment.
+  --no-log-collector             - If set, do not run Loki and Alloy.
+                                   Can also be set with LOG_COLLECTOR=none in env.sh/environment.
+  --no-loki                      - [Deprecated] see --no-log-collector
+  --alloy-port port              - If set, alloy would use the given port number for its http server
+                                   Can also be set with ALLOY_PORT in env.sh/environment.
+  --alloy-syslog-port port       - If set, alloy would listen for syslog on the given port number
+                                   Can also be set with ALLOY_SYSLOG_PORT in env.sh/environment.
   --no-cas                       - If set, Prometheus will drop all cas related metrics while scrapping
   --no-cdc                       - If set, Prometheus will drop all cdc related metrics while scrapping
   --auto-restart                 - If set, auto restarts the containers on failure.
@@ -291,6 +300,18 @@ for arg; do
 			LIMIT="1"
 			PARAM="datadog-hostname"
 			;;
+		--log-collector)
+			LIMIT="1"
+			PARAM="log-collector"
+			;;
+		--alloy-port)
+			LIMIT="1"
+			PARAM="alloy-port"
+			;;
+		--alloy-syslog-port)
+			LIMIT="1"
+			PARAM="alloy-syslog-port"
+			;;
 		--version)
 			echo "Scylla-Monitoring Stack version: $CURRENT_VERSION"
 			echo "Supported versions:" ${SUPPORTED_VERSIONS[$BRANCH_VERSION]}
@@ -335,6 +356,15 @@ for arg; do
 			unset PARAM
 		elif [ "$PARAM" = "manager-agents" ]; then
 			SCYLLA_MANGER_AGENT_TARGET_FILE="$NOSPACE"
+			unset PARAM
+		elif [ "$PARAM" = "log-collector" ]; then
+			LOG_COLLECTOR="$NOSPACE"
+			unset PARAM
+		elif [ "$PARAM" = "alloy-port" ]; then
+			ALLOY_PORT="$NOSPACE"
+			unset PARAM
+		elif [ "$PARAM" = "alloy-syslog-port" ]; then
+			ALLOY_SYSLOG_PORT="$NOSPACE"
 			unset PARAM
 		elif [ "$PARAM" = "target-directory" ]; then
 			TARGET_DIRECTORY="$NOSPACE"
@@ -481,6 +511,17 @@ if [ -z "$VERSIONS" ]; then
 	exit 1
 fi
 
+case "$LOG_COLLECTOR" in
+"" | alloy) ;;
+none)
+	RUN_LOKI=0
+	;;
+*)
+	echo "Unsupported log collector '$LOG_COLLECTOR', Docker Compose supports alloy or none" >&2
+	exit 1
+	;;
+esac
+
 if [[ $DOCKER_PARAM = *"network_mode: host"* ]]; then
 	if [ ! -z "$ALERTMANAGER_PORT" ] || [ ! -z "$GRAFANA_PORT" ] || [ ! -z $PROMETHEUS_PORT ]; then
 		echo "Port mapping is not supported with host network, remove the -l flag from the command line"
@@ -611,11 +652,22 @@ else
 		GF_SECURITY_COOKIE_SAMESITE="lax"
 	fi
 fi
-DATA_SOURCES="-p aprom:$PROMETHEUS_PORT -m $ALERTMANAGER_ADDRESS -L loki:$LOKI_PORT"
 ALERTMANAGER_ADDRESS="aalert:$ALERTMANAGER_PORT"
+DATA_SOURCES="-p aprom:$PROMETHEUS_PORT -m $ALERTMANAGER_ADDRESS -L loki:$LOKI_PORT"
+ALLOY_LOKI_ADDRESS="loki:3100"
+ALLOY_PORT=${ALLOY_PORT:-12345}
+ALLOY_SYSLOG_PORT=${ALLOY_SYSLOG_PORT:-1514}
 if [[ "$HOST_NETWORK" = "1" ]]; then
 	ALERTMANAGER_ADDRESS="127.0.0.1:$ALERTMANAGER_PORT"
 	DATA_SOURCES="-p 127.0.0.1:$PROMETHEUS_PORT -m $ALERTMANAGER_ADDRESS -L 127.0.0.1:$LOKI_PORT"
+	ALLOY_LOKI_ADDRESS="127.0.0.1:$LOKI_PORT"
+fi
+if [ $RUN_LOKI -eq 1 ]; then
+	# Alloy listens on the same ports inside the container as outside, so the ports
+	# hold with host networking too, where Compose ignores the port mapping.
+	sed -e "s/LOKI_IP/$ALLOY_LOKI_ADDRESS/" -e "s/0.0.0.0:1514/0.0.0.0:$ALLOY_SYSLOG_PORT/" loki/alloy/config.template.alloy >loki/alloy/config.alloy
+else
+	DATA_SOURCES=$(echo "$DATA_SOURCES" | sed 's/ -L .*//')
 fi
 
 if [[ ! -d $LOKI_WALL_DIR ]]; then
@@ -625,12 +677,20 @@ fi
 if [ -z $ALERT_MANAGER_RULE_CONFIG ]; then
 	ALERT_MANAGER_RULE_CONFIG=./prometheus/rule_config.yml
 fi
-cat docker-compose.template.yml >docker-compose.yml
+if [ $RUN_LOKI -eq 1 ]; then
+	cat docker-compose.template.yml >docker-compose.yml
+else
+	# Drop the loki and alloy services, each runs until the next unindented or service line.
+	awk '/^[^ ]/ || /^  [^ ]/ {skip = ($0 ~ /^  (loki|alloy):/)} !skip' docker-compose.template.yml >docker-compose.yml
+fi
 echo "" >.env
 echo "PROMETHEUS_VERSION=$PROMETHEUS_VERSION" >>.env
 echo "ALERT_MANAGER_VERSION=$ALERT_MANAGER_VERSION" >>.env
 echo "GRAFANA_VERSION=$GRAFANA_VERSION" >>.env
 echo "LOKI_VERSION=$LOKI_VERSION" >>.env
+echo "ALLOY_VERSION=$ALLOY_VERSION" >>.env
+echo "ALLOY_PORT=$ALLOY_PORT" >>.env
+echo "ALLOY_SYSLOG_PORT=$ALLOY_SYSLOG_PORT" >>.env
 echo "GRAFANA_RENDERER_VERSION=$GRAFANA_RENDERER_VERSION" >>.env
 echo "THANOS_VERSION=$THANOS_VERSION" >>.env
 echo "VICTORIA_METRICS_VERSION=$VICTORIA_METRICS_VERSION" >>.env

@@ -99,9 +99,12 @@ Loki-Grafana `documentation`_ if you want to use it for centralized log collecti
 
 We recomand using Loki with containers, but you can install it locally as described in `Loki installation <https://grafana.com/docs/loki/latest/installation/local/>`_
 
-You will need to run both Loki and Promtail. Loki responsible for log parsing and acts as a Grafana and Proemtheus data-source and Generate alerts that are sent to the Alertmanager.
+You will need to run both Loki and Grafana Alloy. Alloy receives the logs and parses the Scylla log lines into labels. Loki stores and queries them, acts as a Grafana data-source and generates alerts that are sent to the Alertmanager.
 
-Promtail load logs into Loki, there are multiple ways of doing that, we suggest to use of rsyslog, this way you can add Promtail (and Loki) as a second log collection server.
+Alloy loads logs into Loki, there are multiple ways of doing that, we suggest to use of rsyslog, this way you can add Alloy (and Loki) as a second log collection server.
+Install Alloy as described in `Alloy installation <https://grafana.com/docs/alloy/latest/set-up/install/>`_.
+
+.. note:: Alloy replaces Promtail, which is deprecated upstream and no longer updated.
 
 **Loki Related files**
 
@@ -117,16 +120,22 @@ Loki has a configuration file and a rule file. You need to copy and modify the c
 
 Edit ``/etc/loki/config/loki-config.yaml`` and replace ``ALERTMANAGER`` with the alertmanager ip:port (i.e. localhost:9093)
 
-**Promtail Related files**
+**Alloy Related files**
 
-Promtail has a configuration file. You need to copy and modify the configuration.
+Alloy has a configuration file. You need to copy and modify the configuration.
 
 .. code-block:: shell
 
-   mkdir -p /etc/promtail/
-   cp loki/promtail/promtail_config.template.yml /etc/promtail/config.yml
+   mkdir -p /etc/alloy/
+   cp loki/alloy/config.template.alloy /etc/alloy/config.alloy
 
-Edit ``/etc/promtail/config.yml`` and replace ``LOKI_IP`` with Loki's ip:port (i.e. localhost:3100)
+Edit ``/etc/alloy/config.alloy`` and replace ``LOKI_IP`` with Loki's ip:port (i.e. localhost:3100)
+
+Alloy listens for syslog on port 1514, run it with:
+
+.. code-block:: shell
+
+   alloy run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
 
 .. _install-prometheus:
 

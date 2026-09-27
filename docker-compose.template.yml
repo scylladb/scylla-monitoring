@@ -71,15 +71,18 @@ services:
     - ${SCYLLA_MANGER_AGENT_TARGET_FILE}
     #PROMETHEUS_VOLUMES
     # - path/to/data/dir:/prometheus/data
-  promtail:
+  alloy:
     command:
-    - --config.file=/etc/promtail/config.yml
-    container_name: promtail
+    - run
+    - --server.http.listen-addr=0.0.0.0:${ALLOY_PORT}
+    - --storage.path=/var/lib/alloy/data
+    - /etc/alloy/config.alloy
+    container_name: alloy
     #GENERAL_DOCER_CONFIG
-    image: grafana/promtail:${LOKI_VERSION}
+    image: grafana/alloy:${ALLOY_VERSION}
     ports:
-    - ${BIND_ADDRESS}1514:1514
-    - ${BIND_ADDRESS}9080:9080
+    - ${BIND_ADDRESS}${ALLOY_SYSLOG_PORT}:${ALLOY_SYSLOG_PORT}
+    - ${BIND_ADDRESS}${ALLOY_PORT}:${ALLOY_PORT}
     volumes:
-    - ./loki/promtail/promtail_config.compose.yml:/etc/promtail/config.yml
+    - ./loki/alloy/config.alloy:/etc/alloy/config.alloy:z
 version: '3'
