@@ -565,7 +565,7 @@ def make_grafana_13(results, args):
         AutoGridLayout (picked by the item's ``layout`` key).
         """
         keys = [k for k in ("panels", "rows", "tabs") if k in item]
-        if len(keys) > 1 or not set(keys) <= set(allowed):
+        if len(keys) != 1 or keys[0] not in allowed:
             raise ValueError(f"'{item.get('title', '')}' has {keys}, expected one of {list(allowed)}")
         if "tabs" in keys:
             tabs = [t for t in (_process_section(c, "TabsLayoutTab") for c in item["tabs"]) if t is not None]
@@ -606,8 +606,6 @@ def make_grafana_13(results, args):
         return {"kind": kind, "spec": spec}
 
     dashboard = results["dashboard"]
-    if "rows" not in dashboard and "tabs" not in dashboard:
-        raise ValueError("dashboard must have 'rows' or 'tabs'")
     _, dashboard["spec"]["layout"] = _container_layout(dashboard, ("rows", "tabs"))
     dashboard.pop("rows", None)
     dashboard.pop("tabs", None)

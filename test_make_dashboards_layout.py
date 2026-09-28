@@ -77,6 +77,16 @@ bad = copy.deepcopy(EXAMPLE)
 bad["dashboard"]["panels"] = [{"class": "rps_panel"}]
 raises(bad, "expected one of ['rows', 'tabs']")
 
+# a section needs one of panels/rows/tabs; a typo must not silently drop it
+bad = copy.deepcopy(EXAMPLE)
+bad["dashboard"]["tabs"][0]["panel"] = bad["dashboard"]["tabs"][0].pop("panels")
+raises(bad, "has [], expected one of")
+
+bad = copy.deepcopy(EXAMPLE)
+bad["dashboard"]["rows"] = bad["dashboard"].pop("tabs")
+bad["dashboard"]["row"] = bad["dashboard"].pop("rows")
+raises(bad, "has [], expected one of ['rows', 'tabs']")
+
 # an empty list still counts as the key being set
 bad = copy.deepcopy(EXAMPLE)
 bad["dashboard"]["panels"] = []
