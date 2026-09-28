@@ -77,6 +77,31 @@ bad = copy.deepcopy(EXAMPLE)
 bad["dashboard"]["panels"] = [{"class": "rps_panel"}]
 raises(bad, "expected one of ['rows', 'tabs']")
 
+# an empty list still counts as the key being set
+bad = copy.deepcopy(EXAMPLE)
+bad["dashboard"]["panels"] = []
+raises(bad, "expected one of ['rows', 'tabs']")
+
+bad = copy.deepcopy(EXAMPLE)
+bad["dashboard"]["tabs"][0]["rows"] = []
+raises(bad, "expected one of")
+
+# a list emptied by version filtering drops its section instead of failing
+filtered = copy.deepcopy(EXAMPLE)
+filtered["dashboard"]["tabs"].append({"class": "row", "title": "New", "rows": [
+    {"class": "row", "dashversion": ["<2020.1"], "panels": [{"class": "rps_panel"}]}]})
+assert [t["spec"]["title"] for t in sections(build(filtered)["layout"])] == ["Overview", "Latency", "DC $dc"]
+
+# -G5 rejects tabs and nesting at any depth with a clear error
+for template in (EXAMPLE, as_rows):
+    g5 = copy.deepcopy(template)
+    md.update_object(g5, TYPES, [md.MASTER_VERSION], [], {})
+    try:
+        md.make_grafana_5(g5, ARGS)
+        raise AssertionError("expected ValueError from make_grafana_5")
+    except ValueError as e:
+        assert "only supported in the Grafana 13 format" in str(e), e
+
 bad = copy.deepcopy(EXAMPLE)
 bad["dashboard"]["tabs"][1]["variables"].append(copy.deepcopy(bad["dashboard"]["tabs"][1]["variables"][0]))
 raises(bad, "duplicate variable names ['quantile']")
