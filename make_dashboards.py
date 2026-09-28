@@ -383,8 +383,9 @@ def is_collapsable_row(row):
     return len(row["panels"]) == 1 and ("type" in row["panels"][0] and row["panels"][0]["type"] == "row" or "class" in row["panels"][0] and row["panels"][0]["class"] in ["row", "collapsible_row_panel"])
 
 def make_grafana_5(results, args):
-    if "tabs" in results["dashboard"]:
-        raise ValueError("tabs are only supported in the Grafana 13 format")
+    # Any nesting starts at a top-level row, so checking one level catches tabs at any depth.
+    if "tabs" in results["dashboard"] or any("rows" in r or "tabs" in r for r in results["dashboard"]["rows"]):
+        raise ValueError("tabs and nested rows are only supported in the Grafana 13 format")
     rows = results["dashboard"]["rows"]
     panels = []
     y = 0
@@ -563,7 +564,7 @@ def make_grafana_13(results, args):
         ``rows`` -> RowsLayout, ``tabs`` -> TabsLayout, ``panels`` -> GridLayout or
         AutoGridLayout (picked by the item's ``layout`` key).
         """
-        keys = [k for k in ("panels", "rows", "tabs") if item.get(k)]
+        keys = [k for k in ("panels", "rows", "tabs") if k in item]
         if len(keys) > 1 or not set(keys) <= set(allowed):
             raise ValueError(f"'{item.get('title', '')}' has {keys}, expected one of {list(allowed)}")
         if "tabs" in keys:
@@ -605,7 +606,7 @@ def make_grafana_13(results, args):
         return {"kind": kind, "spec": spec}
 
     dashboard = results["dashboard"]
-    if not (dashboard.get("rows") or dashboard.get("tabs")):
+    if "rows" not in dashboard and "tabs" not in dashboard:
         raise ValueError("dashboard must have 'rows' or 'tabs'")
     _, dashboard["spec"]["layout"] = _container_layout(dashboard, ("rows", "tabs"))
     dashboard.pop("rows", None)
