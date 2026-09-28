@@ -1,0 +1,1632 @@
+{
+    "apiVersion": "dashboard.grafana.app/v2",
+    "kind": "Dashboard",
+    "metadata": {
+        "name": "tabs-example"
+    },
+    "spec": {
+        "annotations": [
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "builtIn": true,
+                    "enable": false,
+                    "hide": true,
+                    "iconColor": "rgba(0, 211, 255, 1)",
+                    "name": "Annotations & Alerts",
+                    "query": {
+                        "datasource": {
+                            "name": "-- Grafana --"
+                        },
+                        "group": "grafana",
+                        "kind": "DataQuery",
+                        "spec": {},
+                        "version": "v0"
+                    }
+                }
+            },
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "enable": true,
+                    "hide": false,
+                    "iconColor": "rgba(255, 96, 96, 1)",
+                    "legacyOptions": {
+                        "tagKeys": "instance,dc,cluster",
+                        "titleFormat": "Node Restart"
+                    },
+                    "name": "reset",
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "expr": "resets(scylla_gossip_heart_beat{cluster=\"$cluster\"}[5m])>0",
+                            "interval": "",
+                            "refId": "Anno"
+                        },
+                        "version": "v0"
+                    }
+                }
+            },
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "enable": false,
+                    "hide": false,
+                    "iconColor": "rgba(255, 96, 96, 1)",
+                    "legacyOptions": {
+                        "tagKeys": "instance,dc,cluster",
+                        "titleFormat": "Node Restart"
+                    },
+                    "name": "Stall Detector",
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "expr": "changes(scylla_stall_detector_reported{cluster=\"$cluster\"}[5m])>0",
+                            "interval": "",
+                            "refId": "Anno"
+                        },
+                        "version": "v0"
+                    }
+                }
+            },
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "enable": false,
+                    "hide": false,
+                    "iconColor": "rgba(255, 96, 96, 1)",
+                    "legacyOptions": {
+                        "tagKeys": "instance,dc,cluster",
+                        "titleFormat": "Node Restart"
+                    },
+                    "name": "Schema Changed",
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "expr": "changes(scylla_database_schema_changed{cluster=\"$cluster\"}[$__rate_interval])>0",
+                            "interval": "",
+                            "refId": "Anno"
+                        },
+                        "version": "v0"
+                    }
+                }
+            },
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "enable": true,
+                    "hide": false,
+                    "iconColor": "#73BF69",
+                    "legacyOptions": {
+                        "tagKeys": "instance,dc,cluster",
+                        "titleFormat": "Node Restart"
+                    },
+                    "name": "Task",
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "expr": "changes(scylla_manager_task_active_count{type=~\"repair|backup\",cluster=\"$cluster\"}[$__rate_interval])>0",
+                            "interval": "",
+                            "refId": "Anno"
+                        },
+                        "version": "v0"
+                    }
+                }
+            },
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "enable": false,
+                    "hide": false,
+                    "iconColor": "rgb(255, 176, 0, 128)",
+                    "legacyOptions": {
+                        "tagKeys": "instance,dc,cluster",
+                        "titleFormat": "Node Restart"
+                    },
+                    "name": "Hints Write",
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "expr": "changes(scylla_hints_manager_written{cluster=\"$cluster\"}[$__rate_interval])>0",
+                            "interval": "",
+                            "refId": "Anno"
+                        },
+                        "version": "v0"
+                    }
+                }
+            },
+            {
+                "dashversion": [
+                    ">2025.1"
+                ],
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "enable": false,
+                    "hide": false,
+                    "iconColor": "rgb(50, 176, 0, 128)",
+                    "legacyOptions": {
+                        "tagKeys": "instance,dc,cluster",
+                        "titleFormat": "Node Restart"
+                    },
+                    "name": "Hints Sent",
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "expr": "changes(scylla_hints_manager_sent{cluster=\"$cluster\"}[$__rate_interval])>0",
+                            "interval": "",
+                            "refId": "Anno"
+                        },
+                        "version": "v0"
+                    }
+                }
+            },
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "enable": false,
+                    "hide": false,
+                    "iconColor": "rgb(50, 176, 0, 128)",
+                    "legacyOptions": {
+                        "tagKeys": "instance,dc,cluster",
+                        "titleFormat": "Node Restart"
+                    },
+                    "name": "MV",
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "expr": "sum(scylla_view_builder_builds_in_progress{cluster=\"$cluster\"})>0",
+                            "interval": "",
+                            "refId": "Anno"
+                        },
+                        "version": "v0"
+                    }
+                }
+            },
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "enable": true,
+                    "hide": false,
+                    "iconColor": "rgb(50, 176, 0, 128)",
+                    "legacyOptions": {
+                        "tagKeys": "instance,dc,cluster",
+                        "titleFormat": "Node Restart"
+                    },
+                    "name": "Node Operation",
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "expr": "10*min(scylla_node_ops_finished_percentage{cluster=\"$cluster\"}) by (ops, dc,instance) < 10",
+                            "interval": "",
+                            "refId": "Anno"
+                        },
+                        "version": "v0"
+                    }
+                }
+            },
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "enable": true,
+                    "hide": false,
+                    "iconColor": "rgb(50, 176, 0, 128)",
+                    "legacyOptions": {
+                        "tagKeys": "instance,dc,cluster",
+                        "titleFormat": "Node Restart"
+                    },
+                    "name": "Streaming",
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "expr": "10*min(scylla_streaming_finished_percentage{cluster=\"$cluster\"}) by (ops, dc,instance) < 10",
+                            "interval": "",
+                            "refId": "Anno"
+                        },
+                        "version": "v0"
+                    }
+                }
+            }
+        ],
+        "cursorSync": "Crosshair",
+        "description": "",
+        "editable": true,
+        "elements": {
+            "panel-1": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "expr": "avg(scylla_reactor_utilization{cluster=\"$cluster\", dc=~\"$dc\"}) by (dc)/100",
+                                                "instant": false,
+                                                "intervalFactor": 1,
+                                                "legendFormat": "",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 1,
+                    "links": [],
+                    "title": "Load by DC",
+                    "vizConfig": {
+                        "group": "timeseries",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "axisSoftMin": 0,
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "thresholds": {},
+                                    "unit": "percentunit"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": false
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "maxHeight": 600,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            }
+                        },
+                        "version": "13.0.1"
+                    }
+                }
+            },
+            "panel-2": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "expr": "sum(rate(scylla_transport_requests_served{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (dc)",
+                                                "instant": false,
+                                                "intervalFactor": 1,
+                                                "legendFormat": "",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 2,
+                    "links": [],
+                    "title": "Requests served by DC",
+                    "vizConfig": {
+                        "group": "timeseries",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "axisSoftMin": 0,
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "thresholds": {},
+                                    "unit": "rps"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": false
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "maxHeight": 600,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            }
+                        },
+                        "version": "13.0.1"
+                    }
+                }
+            },
+            "panel-3": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "expr": "rlatencyp${quantile}{by=\"dc\", cluster=\"$cluster\", dc=~\"$dc\"}",
+                                                "instant": false,
+                                                "intervalFactor": 1,
+                                                "legendFormat": "",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 3,
+                    "links": [],
+                    "title": "Read p$quantile by DC",
+                    "vizConfig": {
+                        "group": "timeseries",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "axisSoftMin": 0,
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "thresholds": {},
+                                    "unit": "\u00b5s"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": false
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "maxHeight": 600,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            }
+                        },
+                        "version": "13.0.1"
+                    }
+                }
+            },
+            "panel-4": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "expr": "wlatencyp${quantile}{by=\"dc\", cluster=\"$cluster\", dc=~\"$dc\"}",
+                                                "instant": false,
+                                                "intervalFactor": 1,
+                                                "legendFormat": "",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 4,
+                    "links": [],
+                    "title": "Write p$quantile by DC",
+                    "vizConfig": {
+                        "group": "timeseries",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "axisSoftMin": 0,
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "thresholds": {},
+                                    "unit": "\u00b5s"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": false
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "maxHeight": 600,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            }
+                        },
+                        "version": "13.0.1"
+                    }
+                }
+            },
+            "panel-5": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "expr": "sum(rate(scylla_storage_proxy_coordinator_cas_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (dc)",
+                                                "instant": false,
+                                                "intervalFactor": 1,
+                                                "legendFormat": "",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 5,
+                    "links": [],
+                    "title": "CAS reads by DC",
+                    "vizConfig": {
+                        "group": "timeseries",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "axisSoftMin": 0,
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "thresholds": {},
+                                    "unit": "rps"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": false
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "maxHeight": 600,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            }
+                        },
+                        "version": "13.0.1"
+                    }
+                }
+            },
+            "panel-6": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "expr": "sum(rate(scylla_storage_proxy_coordinator_cas_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (dc)",
+                                                "instant": false,
+                                                "intervalFactor": 1,
+                                                "legendFormat": "",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 6,
+                    "links": [],
+                    "title": "CAS writes by DC",
+                    "vizConfig": {
+                        "group": "timeseries",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "axisSoftMin": 0,
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "thresholds": {},
+                                    "unit": "rps"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": false
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "maxHeight": 600,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            }
+                        },
+                        "version": "13.0.1"
+                    }
+                }
+            },
+            "panel-7": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "expr": "sum(rate(scylla_storage_proxy_coordinator_cas_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (dc)",
+                                                "instant": false,
+                                                "intervalFactor": 1,
+                                                "legendFormat": "",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 7,
+                    "links": [],
+                    "title": "CAS read timeouts by DC",
+                    "vizConfig": {
+                        "group": "timeseries",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "axisSoftMin": 0,
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "thresholds": {},
+                                    "unit": "rps"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": false
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "maxHeight": 600,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            }
+                        },
+                        "version": "13.0.1"
+                    }
+                }
+            },
+            "panel-8": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "expr": "sum(rate(scylla_storage_proxy_coordinator_cas_write_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (dc)",
+                                                "instant": false,
+                                                "intervalFactor": 1,
+                                                "legendFormat": "",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 8,
+                    "links": [],
+                    "title": "CAS write timeouts by DC",
+                    "vizConfig": {
+                        "group": "timeseries",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "axisSoftMin": 0,
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "thresholds": {},
+                                    "unit": "rps"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": false
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "maxHeight": 600,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            }
+                        },
+                        "version": "13.0.1"
+                    }
+                }
+            },
+            "panel-9": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "expr": "avg(scylla_reactor_utilization{cluster=\"$cluster\", dc=\"$dc\"}) by (instance)/100",
+                                                "instant": false,
+                                                "intervalFactor": 1,
+                                                "legendFormat": "",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 9,
+                    "links": [],
+                    "title": "Load by instance in $dc",
+                    "vizConfig": {
+                        "group": "timeseries",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "axisSoftMin": 0,
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "never",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "thresholds": {},
+                                    "unit": "percentunit"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "annotations": {
+                                    "clustering": -1,
+                                    "multiLane": false
+                                },
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": false
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "maxHeight": 600,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
+                            }
+                        },
+                        "version": "13.0.1"
+                    }
+                }
+            }
+        },
+        "layout": {
+            "kind": "TabsLayout",
+            "spec": {
+                "tabs": [
+                    {
+                        "kind": "TabsLayoutTab",
+                        "spec": {
+                            "layout": {
+                                "kind": "GridLayout",
+                                "spec": {
+                                    "items": [
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-1"
+                                                },
+                                                "height": 6,
+                                                "width": 12,
+                                                "x": 0,
+                                                "y": 0
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-2"
+                                                },
+                                                "height": 6,
+                                                "width": 12,
+                                                "x": 12,
+                                                "y": 0
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "title": "Overview"
+                        }
+                    },
+                    {
+                        "kind": "TabsLayoutTab",
+                        "spec": {
+                            "layout": {
+                                "kind": "RowsLayout",
+                                "spec": {
+                                    "rows": [
+                                        {
+                                            "kind": "RowsLayoutRow",
+                                            "spec": {
+                                                "collapse": false,
+                                                "layout": {
+                                                    "kind": "GridLayout",
+                                                    "spec": {
+                                                        "items": [
+                                                            {
+                                                                "kind": "GridLayoutItem",
+                                                                "spec": {
+                                                                    "element": {
+                                                                        "kind": "ElementReference",
+                                                                        "name": "panel-3"
+                                                                    },
+                                                                    "height": 6,
+                                                                    "width": 12,
+                                                                    "x": 0,
+                                                                    "y": 0
+                                                                }
+                                                            },
+                                                            {
+                                                                "kind": "GridLayoutItem",
+                                                                "spec": {
+                                                                    "element": {
+                                                                        "kind": "ElementReference",
+                                                                        "name": "panel-4"
+                                                                    },
+                                                                    "height": 6,
+                                                                    "width": 12,
+                                                                    "x": 12,
+                                                                    "y": 0
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "title": "Reads and writes (p$quantile)"
+                                            }
+                                        },
+                                        {
+                                            "kind": "RowsLayoutRow",
+                                            "spec": {
+                                                "collapse": true,
+                                                "layout": {
+                                                    "kind": "TabsLayout",
+                                                    "spec": {
+                                                        "tabs": [
+                                                            {
+                                                                "kind": "TabsLayoutTab",
+                                                                "spec": {
+                                                                    "layout": {
+                                                                        "kind": "GridLayout",
+                                                                        "spec": {
+                                                                            "items": [
+                                                                                {
+                                                                                    "kind": "GridLayoutItem",
+                                                                                    "spec": {
+                                                                                        "element": {
+                                                                                            "kind": "ElementReference",
+                                                                                            "name": "panel-5"
+                                                                                        },
+                                                                                        "height": 6,
+                                                                                        "width": 12,
+                                                                                        "x": 0,
+                                                                                        "y": 0
+                                                                                    }
+                                                                                },
+                                                                                {
+                                                                                    "kind": "GridLayoutItem",
+                                                                                    "spec": {
+                                                                                        "element": {
+                                                                                            "kind": "ElementReference",
+                                                                                            "name": "panel-6"
+                                                                                        },
+                                                                                        "height": 6,
+                                                                                        "width": 12,
+                                                                                        "x": 12,
+                                                                                        "y": 0
+                                                                                    }
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    },
+                                                                    "title": "Paxos"
+                                                                }
+                                                            },
+                                                            {
+                                                                "kind": "TabsLayoutTab",
+                                                                "spec": {
+                                                                    "layout": {
+                                                                        "kind": "GridLayout",
+                                                                        "spec": {
+                                                                            "items": [
+                                                                                {
+                                                                                    "kind": "GridLayoutItem",
+                                                                                    "spec": {
+                                                                                        "element": {
+                                                                                            "kind": "ElementReference",
+                                                                                            "name": "panel-7"
+                                                                                        },
+                                                                                        "height": 6,
+                                                                                        "width": 12,
+                                                                                        "x": 0,
+                                                                                        "y": 0
+                                                                                    }
+                                                                                },
+                                                                                {
+                                                                                    "kind": "GridLayoutItem",
+                                                                                    "spec": {
+                                                                                        "element": {
+                                                                                            "kind": "ElementReference",
+                                                                                            "name": "panel-8"
+                                                                                        },
+                                                                                        "height": 6,
+                                                                                        "width": 12,
+                                                                                        "x": 12,
+                                                                                        "y": 0
+                                                                                    }
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    },
+                                                                    "title": "Errors"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "title": "LWT"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "title": "Latency",
+                            "variables": [
+                                {
+                                    "kind": "CustomVariable",
+                                    "spec": {
+                                        "allowCustomValue": true,
+                                        "current": {
+                                            "text": "95",
+                                            "value": "95"
+                                        },
+                                        "hide": "dontHide",
+                                        "includeAll": false,
+                                        "label": "quantile",
+                                        "multi": false,
+                                        "name": "quantile",
+                                        "options": [],
+                                        "query": "95,99",
+                                        "skipUrlSync": false,
+                                        "valuesFormat": "csv"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "kind": "TabsLayoutTab",
+                        "spec": {
+                            "conditionalRendering": {
+                                "kind": "ConditionalRenderingGroup",
+                                "spec": {
+                                    "condition": "and",
+                                    "items": [
+                                        {
+                                            "kind": "ConditionalRenderingVariable",
+                                            "spec": {
+                                                "operator": "matches",
+                                                "value": "^$",
+                                                "variable": "dc"
+                                            }
+                                        }
+                                    ],
+                                    "visibility": "hide"
+                                }
+                            },
+                            "layout": {
+                                "kind": "GridLayout",
+                                "spec": {
+                                    "items": [
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-9"
+                                                },
+                                                "height": 6,
+                                                "width": 24,
+                                                "x": 0,
+                                                "y": 0
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "repeat": {
+                                "mode": "variable",
+                                "value": "dc"
+                            },
+                            "title": "DC $dc"
+                        }
+                    }
+                ]
+            }
+        },
+        "links": [
+            {
+                "asDropdown": true,
+                "icon": "external link",
+                "includeVars": true,
+                "keepTime": true,
+                "placement": "inControlsMenu",
+                "tags": [],
+                "targetBlank": false,
+                "title": "Quick Navigation",
+                "tooltip": "",
+                "type": "dashboards",
+                "url": ""
+            }
+        ],
+        "liveNow": false,
+        "preload": false,
+        "tags": [
+            "master"
+        ],
+        "timeSettings": {
+            "autoRefresh": "5m",
+            "autoRefreshIntervals": [
+                "5s",
+                "10s",
+                "30s",
+                "1m",
+                "5m",
+                "15m",
+                "30m",
+                "1h",
+                "2h",
+                "1d"
+            ],
+            "fiscalYearStartMonth": 0,
+            "from": "now-6h",
+            "hideTimepicker": false,
+            "timezone": "browser",
+            "to": "now"
+        },
+        "title": "Tabs example",
+        "variables": [
+            {
+                "kind": "QueryVariable",
+                "spec": {
+                    "allowCustomValue": true,
+                    "current": {
+                        "text": "",
+                        "value": ""
+                    },
+                    "definition": "",
+                    "hide": "dontHide",
+                    "includeAll": false,
+                    "label": "cluster",
+                    "multi": false,
+                    "name": "cluster",
+                    "options": [],
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "__legacyStringValue": "label_values(scylla_reactor_utilization, cluster)"
+                        },
+                        "version": "v0"
+                    },
+                    "refresh": "onTimeRangeChanged",
+                    "regex": "",
+                    "regexApplyTo": "value",
+                    "skipUrlSync": false,
+                    "sort": "alphabeticalAsc"
+                }
+            },
+            {
+                "kind": "QueryVariable",
+                "spec": {
+                    "allValue": ".*",
+                    "allowCustomValue": true,
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "definition": "",
+                    "hide": "dontHide",
+                    "includeAll": true,
+                    "label": "dc",
+                    "multi": true,
+                    "name": "dc",
+                    "options": [],
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "__legacyStringValue": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+                        },
+                        "version": "v0"
+                    },
+                    "refresh": "onTimeRangeChanged",
+                    "regex": "",
+                    "regexApplyTo": "value",
+                    "skipUrlSync": false,
+                    "sort": "alphabeticalAsc"
+                }
+            }
+        ]
+    },
+    "status": {}
+}
