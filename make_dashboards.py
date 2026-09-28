@@ -82,6 +82,11 @@ Template example:
     }
 }
 
+Grafana 13 layout: the dashboard holds "rows" or "tabs"; each row/tab holds exactly one of
+"panels", "rows" or "tabs", to any depth. "rows" become a RowsLayout, "tabs" a TabsLayout.
+A row/tab may also have "repeat", "conditionalRendering" and "variables" (section variables).
+See grafana/examples/tabs-example.template.json.
+
 When creating templates, the -kt is useful to find conflicts.
     """
     )
@@ -132,7 +137,7 @@ def should_version_reject(version, obj):
 
 def get_type(name, types):
     if name not in types:
-        return {}
+        raise ValueError(f"class '{name}' not found in the types files")
     if "class" not in types[name]:
         return types[name]
     result = types[name].copy()
@@ -378,6 +383,9 @@ def is_collapsable_row(row):
     return len(row["panels"]) == 1 and ("type" in row["panels"][0] and row["panels"][0]["type"] == "row" or "class" in row["panels"][0] and row["panels"][0]["class"] in ["row", "collapsible_row_panel"])
 
 def make_grafana_5(results, args):
+    # Any nesting starts at a top-level row, so checking one level catches tabs at any depth.
+    if "tabs" in results["dashboard"] or any("rows" in r or "tabs" in r for r in results["dashboard"]["rows"]):
+        raise ValueError("tabs and nested rows are only supported in the Grafana 13 format")
     rows = results["dashboard"]["rows"]
     panels = []
     y = 0
@@ -410,7 +418,6 @@ def make_grafana_13(results, args):
     for old_key in ("templating", "time", "tags", "overwrite", "version"):
         results["dashboard"].pop(old_key, None)
 
-    rows = results["dashboard"]["rows"]
     elements = {}
     _auto_id = [1]  # mutable so nested helpers can increment it
 
@@ -536,76 +543,74 @@ def make_grafana_13(results, args):
                 }
             }
 
-    def _process_row_or_tab(row):
-        """Recursively convert a template row/tab to a G13 RowsLayoutRow or TabsLayoutTab.
+    def _clean_variables(variables, where):
+        """Keep only kind+spec on each variable; names must be unique within one list."""
+        names = [v.get("spec", {}).get("name") for v in variables]
+        dups = sorted({n for n in names if n is not None and names.count(n) > 1})
+        if dups:
+            raise ValueError(f"duplicate variable names {dups} in '{where}'")
+        for var in variables:
+            for _k in list(var.keys()):
+                if _k not in ("kind", "spec"):
+                    var.pop(_k)
+        return variables
 
-        A row/tab in the template may contain:
-          - ``panels``  — leaf panels → GridLayout or AutoGridLayout
-          - ``rows``    — nested child rows/tabs; if the first child has
-                          ``type: "tab"`` a TabsLayout is produced, otherwise
-                          a RowsLayout is produced.
+    def _section_repeat(repeat):
+        return repeat if isinstance(repeat, dict) else {"mode": "variable", "value": repeat}
 
-        An item with ``type: "tab"`` becomes a TabsLayoutTab; everything else
-        becomes a RowsLayoutRow.
+    def _container_layout(item, allowed=("panels", "rows", "tabs")):
+        """Build the layout for a dashboard/row/tab from whichever of panels/rows/tabs it holds.
+
+        ``rows`` -> RowsLayout, ``tabs`` -> TabsLayout, ``panels`` -> GridLayout or
+        AutoGridLayout (picked by the item's ``layout`` key).
         """
-        row_title = row.get("title", "")
-        row_type = row.get("type", "row")
-        row_collapse = row.get("collapse", False)
-        row_layout_kind = row.get("layout", "AutoGridLayout")
-        row_conditional_rendering = row.pop("conditionalRendering", None)
-        row_repeat = row.pop("repeat", None)
-        hide_header = row.get("hideHeader", False)
+        keys = [k for k in ("panels", "rows", "tabs") if k in item]
+        if len(keys) != 1 or keys[0] not in allowed:
+            raise ValueError(f"'{item.get('title', '')}' has {keys}, expected one of {list(allowed)}")
+        if "tabs" in keys:
+            tabs = [t for t in (_process_section(c, "TabsLayoutTab") for c in item["tabs"]) if t is not None]
+            return tabs, {"kind": "TabsLayout", "spec": {"tabs": tabs}}
+        if "rows" in keys:
+            rows = [r for r in (_process_section(c, "RowsLayoutRow") for c in item["rows"]) if r is not None]
+            return rows, {"kind": "RowsLayout", "spec": {"rows": rows}}
+        return _build_leaf_layout(item, item.get("layout", "AutoGridLayout"))
 
-        sub_rows = row.get("rows", [])
-        if sub_rows:
-            # Detect whether children are tabs or rows based on the first child.
-            if sub_rows and sub_rows[0].get("type") == "tab":
-                children = [_process_row_or_tab(child) for child in sub_rows]
-                inner_layout = {"kind": "TabsLayout", "spec": {"tabs": children}}
-            else:
-                children = [r for r in [_process_row_or_tab(child) for child in sub_rows] if r is not None]
-                inner_layout = {"kind": "RowsLayout", "spec": {"rows": children}}
-            items_check = children
-        else:
-            items_check, inner_layout = _build_leaf_layout(row, row_layout_kind)
+    def _process_section(item, kind):
+        """Convert a template row/tab to a RowsLayoutRow or TabsLayoutTab.
 
-        if row_type == "tab":
-            tab_spec = {
-                "title": row_title,
-                "layout": inner_layout
-            }
-            if row_conditional_rendering is not None:
-                tab_spec["conditionalRendering"] = row_conditional_rendering
-            return {"kind": "TabsLayoutTab", "spec": tab_spec}
-        else:
-            # Skip empty rows — Grafana 13 can crash on rows with zero items
-            if not items_check:
-                return None
-            row_spec = {
-                "title": row_title,
-                "collapse": row_collapse,
-                "layout": inner_layout
-            }
-            if row_conditional_rendering is not None:
-                row_spec["conditionalRendering"] = row_conditional_rendering
-            if row_repeat is not None:
-                row_spec["repeat"] = row_repeat if isinstance(row_repeat, dict) else {"mode": "variable", "value": row_repeat}
-            if hide_header:
-                row_spec["hideHeader"] = True
-            return {"kind": "RowsLayoutRow", "spec": row_spec}
+        ``kind`` comes from the list the item sits in (``rows`` or ``tabs``).
+        Returns None for a section with nothing in it.
+        """
+        conditional_rendering = item.pop("conditionalRendering", None)
+        repeat = item.pop("repeat", None)
+        variables = item.get("variables")
+        children, layout = _container_layout(item)
+        # Skip empty sections — Grafana 13 can crash on rows with zero items
+        if not children:
+            return None
+        spec = {"title": item.get("title", "")}
+        if kind == "RowsLayoutRow":
+            spec["collapse"] = item.get("collapse", False)
+        spec["layout"] = layout
+        if conditional_rendering is not None:
+            spec["conditionalRendering"] = conditional_rendering
+        if repeat is not None:
+            spec["repeat"] = _section_repeat(repeat)
+        if kind == "RowsLayoutRow":
+            if item.get("hideHeader"):
+                spec["hideHeader"] = True
+            if item.get("fillScreen"):
+                spec["fillScreen"] = True
+        if variables:
+            spec["variables"] = _clean_variables(variables, spec["title"])
+        return {"kind": kind, "spec": spec}
 
-    layout_rows = [r for r in [_process_row_or_tab(row) for row in rows] if r is not None]
-
-    del results["dashboard"]["rows"]
-    results["dashboard"]["spec"]["elements"] = elements
-    results["dashboard"]["spec"]["layout"]["spec"]["rows"] = layout_rows
-
-    # Strip template-engine directive keys from variables; only kind+spec are
-    # valid at the variable top level in Grafana 13 schema.
-    for var in results["dashboard"]["spec"].get("variables", []):
-        for _k in list(var.keys()):
-            if _k not in ("kind", "spec"):
-                var.pop(_k)
+    dashboard = results["dashboard"]
+    _, dashboard["spec"]["layout"] = _container_layout(dashboard, ("rows", "tabs"))
+    dashboard.pop("rows", None)
+    dashboard.pop("tabs", None)
+    dashboard["spec"]["elements"] = elements
+    _clean_variables(dashboard["spec"].get("variables", []), "dashboard")
 
     # Grafana v2beta1 Dashboard schema requires a `status` field.
     results["dashboard"].setdefault("status", {})
@@ -633,7 +638,7 @@ def get_dashboard(name, types, args, replace_strings, exact_match_replace):
     for r in args.add_row:
         [row_number, row_name] = r.split(",")
         row = get_file(row_name)
-        result["dashboard"]["rows"].insert(int(row_number), row)
+        result["dashboard"]["tabs" if "tabs" in result["dashboard"] else "rows"].insert(int(row_number), row)
 
     update_object(result, types, version, args.product, exact_match_replace)
     if not args.grafana4:

@@ -1,0 +1,136 @@
+{
+    "dashboard": {
+        "class": "dashboard",
+        "spec/title": "Tabs example",
+        "metadata/name": "tabs-example",
+        "spec/variables": [
+            {
+                "class": "query_variable",
+                "spec/name": "cluster",
+                "spec/label": "cluster",
+                "spec/query/spec/__legacyStringValue": "label_values(scylla_reactor_utilization, cluster)"
+            },
+            {
+                "class": "query_variable_all",
+                "spec/name": "dc",
+                "spec/label": "dc",
+                "spec/query/spec/__legacyStringValue": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\"}, dc)"
+            }
+        ],
+        "tabs": [
+            {
+                "class": "row",
+                "title": "Overview",
+                "panels": [
+                    {
+                        "class": "percentunit_panel",
+                        "span": 6,
+                        "spec/title": "Load by DC",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "avg(scylla_reactor_utilization{cluster=\"$cluster\", dc=~\"$dc\"}) by (dc)/100"
+                    },
+                    {
+                        "class": "rps_panel",
+                        "span": 6,
+                        "spec/title": "Requests served by DC",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(scylla_transport_requests_served{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (dc)"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "title": "Latency",
+                "variables": [
+                    {
+                        "class": "custom_variable",
+                        "spec/name": "quantile",
+                        "spec/label": "quantile",
+                        "spec/query": "95,99",
+                        "spec/current": {"text": "95", "value": "95"},
+                        "spec/hide": "dontHide"
+                    }
+                ],
+                "rows": [
+                    {
+                        "class": "row",
+                        "title": "Reads and writes (p$quantile)",
+                        "panels": [
+                            {
+                                "class": "us_panel",
+                                "span": 6,
+                                "spec/title": "Read p$quantile by DC",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "rlatencyp${quantile}{by=\"dc\", cluster=\"$cluster\", dc=~\"$dc\"}"
+                            },
+                            {
+                                "class": "us_panel",
+                                "span": 6,
+                                "spec/title": "Write p$quantile by DC",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "wlatencyp${quantile}{by=\"dc\", cluster=\"$cluster\", dc=~\"$dc\"}"
+                            }
+                        ]
+                    },
+                    {
+                        "class": "row",
+                        "title": "LWT",
+                        "collapse": true,
+                        "dashversion": [">2025.1"],
+                        "tabs": [
+                            {
+                                "class": "row",
+                                "title": "Paxos",
+                                "panels": [
+                                    {
+                                        "class": "rps_panel",
+                                        "span": 6,
+                                        "spec/title": "CAS reads by DC",
+                                        "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_cas_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (dc)"
+                                    },
+                                    {
+                                        "class": "rps_panel",
+                                        "span": 6,
+                                        "spec/title": "CAS writes by DC",
+                                        "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_cas_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (dc)"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "row",
+                                "title": "Errors",
+                                "panels": [
+                                    {
+                                        "class": "rps_panel",
+                                        "span": 6,
+                                        "spec/title": "CAS read timeouts by DC",
+                                        "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_cas_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (dc)"
+                                    },
+                                    {
+                                        "class": "rps_panel",
+                                        "span": 6,
+                                        "spec/title": "CAS write timeouts by DC",
+                                        "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_cas_write_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (dc)"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "title": "DC $dc",
+                "repeat": "dc",
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "dc"
+                },
+                "panels": [
+                    {
+                        "class": "percentunit_panel",
+                        "span": 12,
+                        "spec/title": "Load by instance in $dc",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "avg(scylla_reactor_utilization{cluster=\"$cluster\", dc=\"$dc\"}) by (instance)/100"
+                    }
+                ]
+            }
+        ]
+    }
+}
