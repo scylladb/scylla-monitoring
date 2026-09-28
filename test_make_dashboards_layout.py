@@ -87,6 +87,11 @@ bad["dashboard"]["rows"] = bad["dashboard"].pop("tabs")
 bad["dashboard"]["row"] = bad["dashboard"].pop("rows")
 raises(bad, "has [], expected one of ['rows', 'tabs']")
 
+# an unknown class fails instead of silently adding nothing
+bad = copy.deepcopy(EXAMPLE)
+bad["dashboard"]["tabs"][0]["panels"][0]["class"] = "rps_panle"
+raises(bad, "class 'rps_panle' not found")
+
 # an empty list still counts as the key being set
 bad = copy.deepcopy(EXAMPLE)
 bad["dashboard"]["panels"] = []

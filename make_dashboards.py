@@ -137,7 +137,7 @@ def should_version_reject(version, obj):
 
 def get_type(name, types):
     if name not in types:
-        return {}
+        raise ValueError(f"class '{name}' not found in the types files")
     if "class" not in types[name]:
         return types[name]
     result = types[name].copy()
