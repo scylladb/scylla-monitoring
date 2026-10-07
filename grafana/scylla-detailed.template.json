@@ -151,6 +151,24 @@
             },
             {
                 "class": "row",
+                "title": "Rack load",
+                "dashversion": [
+                    ">2025.1"
+                ],
+                "panels": [
+                    {
+                        "span": 3,
+                        "class": "graph_panel",
+                        "repeat": "rack",
+                        "spec/title": "Tablets load per instance in rack $rack",
+                        "spec/description": "Represents the ‘load’ value the balancer equalizes across instances.\n\nIt is based on the number of tablets assigned to each instance, adjusted so larger disks are expected to hold proportionally more tablets.\n\nscylla_load_balancer_load",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_load_balancer_load{cluster=\"$cluster\"} + on(target_node) group_left(dc, instance, rack) 0* label_replace(max(scylla_raft_apply_index{cluster=\"$cluster\", dc=~\"$dc\", instance=~\"$node\"} * on(instance) group_left(rack) max(scylla_scylladb_current_version{cluster=\"$cluster\", rack=~\"$rack\"}) by (instance, rack)) by (dc, instance, id, rack), \"target_node\", \"$1\", \"id\", \"(.*)\"))",
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{dc}} {{instance}}"
+                    }
+                ]
+            },
+            {
+                "class": "row",
                 "hideHeader": true,
                 "gridPos/h": 2,
                 "panels": [
@@ -1714,6 +1732,40 @@
                     "allowCustomValue": true,
                     "name": "dc",
                     "label": "dc"
+                }
+            },
+            {
+                "kind": "QueryVariable",
+                "spec": {
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "hide": "hideVariable",
+                    "refresh": "onTimeRangeChanged",
+                    "skipUrlSync": false,
+                    "query": {
+                        "kind": "DataQuery",
+                        "group": "prometheus",
+                        "version": "v0",
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "spec": {
+                            "__legacyStringValue": "label_values(scylla_scylladb_current_version{cluster=~\"$cluster\", dc=~\"$dc\"}, rack)"
+                        }
+                    },
+                    "regex": "",
+                    "regexApplyTo": "value",
+                    "sort": "alphabeticalAsc",
+                    "definition": "",
+                    "options": [],
+                    "multi": true,
+                    "includeAll": true,
+                    "allValue": ".*",
+                    "allowCustomValue": true,
+                    "name": "rack",
+                    "label": "rack"
                 }
             },
             {
