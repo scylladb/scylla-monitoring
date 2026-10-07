@@ -56,13 +56,13 @@
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op)",
+                                        "spec/query/spec/expr": "sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op)",
                                         "spec/query/spec/legendFormat": "{{op}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", op=~\"$ops\"}[$__rate_interval])>0) by (op)",
+                                        "spec/query/spec/expr": "sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", op=~\"$ops\"}[$__rate_interval])>0) by (op)",
                                         "spec/query/spec/legendFormat": "{{op}}"
                                     }
                                 ]
@@ -80,13 +80,13 @@
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op, le))",
+                                        "spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op, le))",
                                         "spec/query/spec/legendFormat": "{{op}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
+                                        "spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
                                         "spec/query/spec/legendFormat": "{{op}}"
                                     }
                                 ]
@@ -104,13 +104,13 @@
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
+                                        "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
                                         "spec/query/spec/legendFormat": "{{op}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op, le))",
+                                        "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op, le))",
                                         "spec/query/spec/legendFormat": "{{op}}"
                                     }
                                 ]
@@ -145,25 +145,25 @@
                                 "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "Completed $latency_ops $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_table_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$latency_ops\"}[$__rate_interval])) by ([[by]], cf)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_table_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$latency_ops\"}[$__rate_interval])) by ([[by]], cf)"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "Average $latency_ops latency $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_table_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$latency_ops\"}[$__rate_interval])) by ([[by]], cf)/($func(rate(scylla_alternator_table_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$latency_ops\"}[$__rate_interval])) by ([[by]], cf) + 1)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_table_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$latency_ops\"}[$__rate_interval])) by ([[by]], cf)/($func(rate(scylla_alternator_table_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$latency_ops\"}[$__rate_interval])) by ([[by]], cf) + 1)"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "95th percentile $latency_ops latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$latency_ops\"}[$__rate_interval])) by ([[by]], cf, le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$latency_ops\"}[$__rate_interval])) by ([[by]], cf, le))"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "99th percentile $latency_ops latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$latency_ops\"}[$__rate_interval])) by ([[by]], cf, le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$latency_ops\"}[$__rate_interval])) by ([[by]], cf, le))"
                             }
                         ],
                         "hideHeader": true
@@ -177,25 +177,25 @@
                                 "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "Completed $ops_batch $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "Average $ops_batch latency $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]]) + 1)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]]) + 1)"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "95th percentile $ops_batch latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]], le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]], le))"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "99th percentile $ops_batch latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]], le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]], le))"
                             }
                         ]
                     },
@@ -207,7 +207,7 @@
                                 "repeat": "ops",
                                 "class": "ops_panel",
                                 "spec/title": "Completed $ops $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_table_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$ops\"}[$__rate_interval])) by ([[by]], cf)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_table_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$ops\"}[$__rate_interval])) by ([[by]], cf)"
                             }
                         ],
                         "hideHeader": true
@@ -264,50 +264,50 @@
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "GetItem $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetItem\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"GetItem\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "PutItem $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"PutItem\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"PutItem\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "UpdateItem $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"UpdateItem\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"UpdateItem\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "DeleteItem $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DeleteItem\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"DeleteItem\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "Query $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"Query\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"Query\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "Scan $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"Scan\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"Scan\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
                                 "class": "single_histogram_panel",
                                 "spec/title": "BatchWriteItem histogram",
                                 "spec/description": "The number of items processed as a result of BatchWriteItem over the entire cluster and selected time range",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(increase(scylla_alternator_batch_item_count_histogram_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__range])) by (le)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(increase(scylla_alternator_batch_item_count_histogram_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__range])) by (le)"
                             },
                             {
                                 "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "BatchWriteItem $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
@@ -317,12 +317,12 @@
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItemSize\"}[$__rate_interval])) by ([[by]])"
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItemSize\"}[$__rate_interval])) by ([[by]])"
                                     }
                                 ]
                             },
@@ -334,17 +334,17 @@
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItemSize\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItemSize\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "C",
-                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count_histogram_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_batch_item_count_histogram_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count_histogram_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_batch_item_count_histogram_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchWriteItem\"}[$__rate_interval])) by ([[by]])"
                                     }
                                 ]
                             },
@@ -353,13 +353,13 @@
                                 "class": "single_histogram_panel",
                                 "spec/title": "BatchGetItem histogram",
                                 "spec/description": "The number of items processed as a result of BatchGetItem over the entire cluster and selected time range",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(increase(scylla_alternator_batch_item_count_histogram_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__range])) by (le)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(increase(scylla_alternator_batch_item_count_histogram_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__range])) by (le)"
                             },
                             {
                                 "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "BatchGetItem $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
@@ -369,12 +369,12 @@
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItemSize\"}[$__rate_interval])) by ([[by]])"
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchGetItemSize\"}[$__rate_interval])) by ([[by]])"
                                     }
                                 ]
                             },
@@ -386,17 +386,17 @@
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItemSize\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchGetItemSize\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "C",
-                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count_histogram_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_batch_item_count_histogram_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_batch_item_count_histogram_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])/$func(rate(scylla_alternator_batch_item_count_histogram_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"BatchGetItem\"}[$__rate_interval])) by ([[by]])"
                                     }
                                 ]
                             },
@@ -405,7 +405,7 @@
                                 "class": "ops_panel",
                                 "spec/title": "Expired Item Deleted $func by [[by]]",
                                 "spec/description": "The number of items deleted $func by their TTL",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_expiration_items_deleted{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_expiration_items_deleted{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])"
                             }
                         ]
                     }
@@ -438,25 +438,25 @@
                                 "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "Completed $alternator_latency_ops $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_op_latency_summary_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]]) or on () $func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_op_latency_summary_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]]) or on () $func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "Average $alternator_latency_ops latency $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.5\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"} or on () $func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]]) + 1)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.5\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"} or on () $func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]]) + 1)"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "95th percentile $alternator_latency_ops latency $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.95\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"} or on() histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]], le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.95\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"} or on() histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]], le))"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "99th percentile $alternator_latency_ops latency $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.99\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"} or on() histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]], le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.99\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"} or on() histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_latency_ops\"}[$__rate_interval])) by ([[by]], le))"
                             }
                         ],
                         "hideHeader": true
@@ -484,25 +484,25 @@
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "ListStreams $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"ListStreams\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"ListStreams\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "DescribeStream $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DescribeStream\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"DescribeStream\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "GetShardIterator $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetShardIterator\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"GetShardIterator\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "GetRecords $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"GetRecords\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"GetRecords\"}[$__rate_interval])) by ([[by]])"
                             }
                         ]
                     }
@@ -530,25 +530,25 @@
                                 "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "Completed $alternator_streams_latency_ops $func by [[by]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_op_latency_summary_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]]) or on() $func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_op_latency_summary_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]]) or on() $func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "Average $alternator_streams_latency_ops latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.5\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"} or on() $func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]]) + 1)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.5\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"} or on() $func(rate(scylla_alternator_op_latency_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]])/($func(rate(scylla_alternator_op_latency_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]]) + 1)"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "95th percentile $alternator_streams_latency_ops latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.95\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"} or on () histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]], le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.95\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"} or on () histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]], le))"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "99th percentile $alternator_streams_latency_ops latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.99\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"} or on () histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]], le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.99\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"} or on () histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$alternator_streams_latency_ops\"}[$__rate_interval])) by ([[by]], le))"
                             }
                         ],
                         "hideHeader": true
@@ -572,31 +572,31 @@
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "CreateTable $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"CreateTable\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"CreateTable\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "DeleteTable $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DeleteTable\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"DeleteTable\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "DescribeTable $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DescribeTable\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"DescribeTable\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "ListTables $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"ListTables\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"ListTables\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 4,
                                 "class": "ops_panel",
                                 "spec/title": "DescribeEndpoints $func by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=\"DescribeEndpoints\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"DescribeEndpoints\"}[$__rate_interval])) by ([[by]])"
                             }
                         ]
                     },
@@ -628,63 +628,63 @@
                                 "class": "ops_panel",
                                 "spec/title": "Cache Hits $func by [[by]]",
                                 "spec/description": "Number of rows that were read from the cache, without needing to be fetched from storage.",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_cache_row_hits{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_cache_row_hits{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "Cache Misses $func by [[by]]",
                                 "spec/description": "Number of rows that were not present in the cache, and had to be fetched from storage.",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_cache_row_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_cache_row_misses{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
                                 "class": "wps_panel",
                                 "spec/title": "Write Timeouts/s $func by [[by]]",
                                 "spec/description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(delta(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(delta(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
                                 "class": "rps_panel",
                                 "spec/title": "Read Timeouts/s $func by [[by]]",
                                 "spec/description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(delta(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(delta(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
                                 "class": "graph_panel",
                                 "spec/title": "HTTP Current Opened connections $func by [[by]]",
                                 "spec/description": "The current number of opened connections",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(scylla_httpd_connections_current{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by ([[by]], service)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(scylla_httpd_connections_current{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}) by ([[by]], service)"
                             },
                             {
                                 "span": 3,
                                 "class": "connectionsps_panel",
                                 "spec/title": "HTTP New connections $func by [[by]]",
                                 "spec/description": "Rate of new HTTP connections creation. High number may indicate a problem",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "round($func(rate(scylla_httpd_connections_total{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "round($func(rate(scylla_httpd_connections_total{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service))"
                             },
                             {
                                 "span": 3,
                                 "class": "requestsps_panel",
                                 "spec/title": "Blocked requests $func by [[by]]",
                                 "spec/description": "Requests that were blocked due to memory pressure.",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_requests_blocked_memory{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_requests_blocked_memory{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
                                 "class": "requestsps_panel",
                                 "spec/title": "Shed requests rate $func by [[by]]",
                                 "spec/description": "Rate Requests that were shed due to overload.",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_requests_shed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_requests_shed{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "span": 3,
                                 "class": "requestsps_panel",
                                 "spec/title": "HTTP Requests rate $func by [[by]]",
                                 "spec/description": "Rate of HTTP requests served by Alternator",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_httpd_requests_served{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_httpd_requests_served{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service)"
                             },
                             {
                                 "span": 3,
@@ -695,14 +695,14 @@
                                 "class": "rps_panel",
                                 "spec/title": "HTTP Read errors $func by [[by]]",
                                 "spec/description": "Rate of errors while reading Alternator HTTP requests",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_httpd_read_errors{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_httpd_read_errors{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service)"
                             },
                             {
                                 "span": 3,
                                 "class": "requestsps_panel",
                                 "spec/title": "HTTP Reply errors $func by [[by]]",
                                 "spec/description": "Rate of errors while replying to Alternator HTTP requests",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_httpd_reply_errors{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service)"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_httpd_reply_errors{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service)"
                             },
                             {
                                 "dashversion": [
@@ -712,7 +712,7 @@
                                 "class": "percentunit_panel",
                                 "spec/title": "Expression Cache hit ratio $func by [[by]]",
                                 "spec/description": "Alterantor expression cache",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression)/($func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression) + $func(rate(scylla_alternator_expression_cache_misses{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression)/($func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression) + $func(rate(scylla_alternator_expression_cache_misses{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression))"
                             },
                             {
                                 "dashversion": [
@@ -722,7 +722,7 @@
                                 "class": "graph_panel",
                                 "spec/title": "Expression Cache eviction rate $func by [[by]]",
                                 "spec/description": "Alterantor expression cache eviction rate",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_expression_cache_evictions{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_expression_cache_evictions{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "dashversion": [
@@ -732,7 +732,7 @@
                                 "class": "ops_panel",
                                 "spec/title": "Authentication failures $func by [[by]]",
                                 "spec/description": "Alternator authentication failures",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_authentication_failures{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_authentication_failures{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
                                 "dashversion": [
@@ -742,7 +742,7 @@
                                 "class": "ops_panel",
                                 "spec/title": "Authorization failures $func by [[by]]",
                                 "spec/description": "Alternator authorization failures",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_authorization_failures{cluster=~\"$cluster|$^\", dc=~\"$dc\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_authorization_failures{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
                             }
                         ],
                         "hideHeader": true
@@ -868,7 +868,41 @@
                             "name": "prometheus"
                         },
                         "spec": {
-                            "__legacyStringValue": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\"}, instance)"
+                            "__legacyStringValue": "label_values(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\"}, rack)"
+                        }
+                    },
+                    "regex": "",
+                    "regexApplyTo": "value",
+                    "sort": "alphabeticalAsc",
+                    "definition": "",
+                    "options": [],
+                    "multi": true,
+                    "includeAll": true,
+                    "allValue": ".*",
+                    "allowCustomValue": true,
+                    "name": "rack",
+                    "label": "rack"
+                }
+            },
+            {
+                "kind": "QueryVariable",
+                "spec": {
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "hide": "dontHide",
+                    "refresh": "onTimeRangeChanged",
+                    "skipUrlSync": false,
+                    "query": {
+                        "kind": "DataQuery",
+                        "group": "prometheus",
+                        "version": "v0",
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "spec": {
+                            "__legacyStringValue": "label_values(scylla_reactor_utilization{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\"}, instance)"
                         }
                     },
                     "regex": "",
