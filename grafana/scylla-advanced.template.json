@@ -29,7 +29,7 @@
                                 "spec/title": "I/O Group consumption by instance",
                                 "spec/description": "This graph shows how IO queue consumption is distributed between io-groups and streams.\n\nscylla_io_queue_consumption",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_io_queue_consumption{iogroup=~\"$iogroup\", class=~\"$classes\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (instance, iogroup, stream)",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "Group {{iogroup}} {{stream}} {{dc}} {{instance}} "
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "Group {{iogroup}} {{stream}} {{dc}} {{rack}} {{instance}} "
                             },
                             {
                                 "class": "graph_panel",
@@ -45,7 +45,7 @@
                                     "overrides": []
                                 },
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_io_queue_flow_ratio{iogroup=~\"$iogroup\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"})",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "Group {{iogroup}} {{dc}} {{instance}} {{shard}}"
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "Group {{iogroup}} {{dc}} {{rack}} {{instance}} {{shard}}"
                             }
                         ],
                         "hideHeader": true
@@ -461,7 +461,7 @@
                 "kind": "CustomVariable",
                 "spec": {
                     "name": "by",
-                    "query": "Cluster : cluster,DC : dc, Instance : instance, Shard : instance\\,shard",
+                    "query": "Cluster : cluster,DC : dc, Rack : dc\\,rack, Instance : instance, Shard : instance\\,shard",
                     "current": {
                         "tags": [],
                         "text": "DC",

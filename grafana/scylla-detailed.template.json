@@ -89,7 +89,7 @@
                         "class": "graph_panel",
                         "spec/title": "Tablets over time per [[by]]",
                         "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_tablets_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by([[by]]))",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{dc}} {{instance}} {{shard}}"
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{dc}} {{rack}} {{instance}} {{shard}}"
                     }
                 ]
             },
@@ -253,13 +253,13 @@
                             {
                                 "class": "graph_query",
                                 "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "class": "graph_query",
                                 "spec/refId": "B",
                                 "spec/query/spec/expr": "$func(wlatencya{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                             }
                         ]
                     },
@@ -272,13 +272,13 @@
                             {
                                 "class": "graph_query",
                                 "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "class": "graph_query",
                                 "spec/refId": "B",
                                 "spec/query/spec/expr": "$func(wlatencyp95{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                             }
                         ]
                     },
@@ -291,13 +291,13 @@
                             {
                                 "class": "graph_query",
                                 "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "class": "graph_query",
                                 "spec/refId": "B",
                                 "spec/query/spec/expr": "$func(wlatencyp99{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                             }
                         ]
                     },
@@ -307,7 +307,7 @@
                         "spec/title": "Reads $func by [[by]]",
                         "spec/description": "Reads rate",
                         "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name) or on ([[by]],scheduling_group_name) $func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                     },
                     {
                         "span": 3,
@@ -318,13 +318,13 @@
                             {
                                 "class": "graph_query",
                                 "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "class": "graph_query",
                                 "spec/refId": "B",
                                 "spec/query/spec/expr": "$func(rlatencya{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                             }
                         ]
                     },
@@ -337,13 +337,13 @@
                             {
                                 "class": "graph_query",
                                 "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "class": "graph_query",
                                 "spec/refId": "B",
                                 "spec/query/spec/expr": "$func(rlatencyp95{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                             }
                         ]
                     },
@@ -356,13 +356,13 @@
                             {
                                 "class": "graph_query",
                                 "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "class": "graph_query",
                                 "spec/refId": "B",
                                 "spec/query/spec/expr": "$func(rlatencyp99{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                             }
                         ]
                     }
@@ -408,19 +408,19 @@
                             {
                                 "class": "graph_query",
                                 "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))",
-                                "spec/query/spec/legendFormat": "Read {{dc}} {{instance}} {{shard}}"
+                                "spec/query/spec/legendFormat": "Read {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "class": "graph_query",
                                 "spec/refId": "B",
                                 "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))",
-                                "spec/query/spec/legendFormat": "CAS {{dc}} {{instance}} {{shard}}"
+                                "spec/query/spec/legendFormat": "CAS {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "class": "graph_query",
                                 "spec/refId": "C",
                                 "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_range_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))",
-                                "spec/query/spec/legendFormat": "Range {{dc}} {{instance}} {{shard}}"
+                                "spec/query/spec/legendFormat": "Range {{dc}} {{rack}} {{instance}} {{shard}}"
                             }
                         ]
                     },
@@ -453,7 +453,7 @@
                         "spec/title": "Active reads $func by [[by]]",
                         "spec/description": "The number of currently active read operations",
                         "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_database_active_reads{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]\", class=~\"$sg\"}>0) by ([[by]], class))",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{class}} {{dc}} {{instance}} {{shard}}"
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{class}} {{dc}} {{rack}} {{instance}} {{shard}}"
                     },
                     {
                         "span": 3,
@@ -1081,7 +1081,7 @@
                                 "spec/title": "95% latency",
                                 "spec/description": "LWT 95% Read latency.",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], casrlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"})",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{instance}} {{shard}}"
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "span": 3,
@@ -1110,7 +1110,7 @@
                                 "spec/title": "95% latency",
                                 "spec/description": "LWT 95% write latency.",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], caswlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"})",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{instance}} {{shard}}"
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "span": 3,
@@ -1407,13 +1407,13 @@
                                     {
                                         "class": "graph_query",
                                         "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
                                         "spec/query/spec/expr": "$func(wlatencya{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                                     }
                                 ]
                             },
@@ -1425,13 +1425,13 @@
                                     {
                                         "class": "graph_query",
                                         "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
                                         "spec/query/spec/expr": "$func(wlatencyp95{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                                     }
                                 ]
                             },
@@ -1443,13 +1443,13 @@
                                     {
                                         "class": "graph_query",
                                         "spec/query/spec/expr": "($topbottom([[filter_limit]], wlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
                                         "spec/query/spec/expr": "$func(wlatencyp99{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                                     }
                                 ]
                             },
@@ -1468,13 +1468,13 @@
                                     {
                                         "class": "graph_query",
                                         "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencya{by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
                                         "spec/query/spec/expr": "$func(rlatencya{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                                     }
                                 ]
                             },
@@ -1486,13 +1486,13 @@
                                     {
                                         "class": "graph_query",
                                         "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencyp95{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
                                         "spec/query/spec/expr": "$func(rlatencyp95{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                                     }
                                 ]
                             },
@@ -1504,13 +1504,13 @@
                                     {
                                         "class": "graph_query",
                                         "spec/query/spec/expr": "($topbottom([[filter_limit]], rlatencyp99{by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{instance}} {{shard}}"
+                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
                                         "spec/query/spec/expr": "$func(rlatencyp99{by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/(scalar(count(count(scylla_reactor_utilization) by ([[by]])) != bool count(scylla_reactor_utilization))* scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization)))",
-                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{instance}}"
+                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}}"
                                     }
                                 ]
                             },
@@ -1562,7 +1562,7 @@
                                 "spec/title": "Foreground Reads $func by [[by]]",
                                 "spec/description": "",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_storage_proxy_coordinator_foreground_reads{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) by (scheduling_group_name, [[by]]))",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{instance}} {{shard}}"
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "span": 3,
@@ -1570,7 +1570,7 @@
                                 "spec/title": "Foreground Writes $func by [[by]]",
                                 "spec/description": "",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_storage_proxy_coordinator_foreground_writes{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}) by (scheduling_group_name, [[by]]))",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{instance}} {{shard}}"
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
                                 "span": 3,
@@ -1581,7 +1581,7 @@
                                 "spec/title": "CQL request latency by [[by]]",
                                 "spec/description": "CQL request latencies, measuring from the start of the request processing until the response is written to the socket.",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_transport_cql_request_latency_summary{quantile=~\"0.9.*\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=\"$sg\", by=\"[[by]]\"})",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "P{{quantile}} - {{scheduling_group_name}} {{dc}} {{instance}}"
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "P{{quantile}} - {{scheduling_group_name}} {{dc}} {{rack}} {{instance}}"
                             },
                             {
                                 "span": 3,
@@ -1592,7 +1592,7 @@
                                 "spec/title": "CQL client timestamp drift by [[by]]",
                                 "spec/description": "CQL client timestamp drifts, the drift time between the client-provided CQL timestamp and the server time at request arrival. Useful for detecting transport delays before requests reach the CQL server.",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_transport_cql_client_timestamp_drift_summary{quantile=~\"0.9.*\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=\"$sg\", by=\"[[by]]\"})",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "P{{quantile}} - {{scheduling_group_name}} {{dc}} {{instance}}"
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "P{{quantile}} - {{scheduling_group_name}} {{dc}} {{rack}} {{instance}}"
                             }
                         ],
                         "title": "$sg"
@@ -1619,7 +1619,7 @@
                 "kind": "CustomVariable",
                 "spec": {
                     "name": "by",
-                    "query": "Cluster : cluster,DC : dc, Instance : instance, Shard : instance\\,shard",
+                    "query": "Cluster : cluster,DC : dc, Rack : dc\\,rack, Instance : instance, Shard : instance\\,shard",
                     "current": {
                         "text": "DC",
                         "value": "dc"
