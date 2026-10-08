@@ -333,6 +333,41 @@
                         "class": "row",
                         "title": "$index",
                         "repeat": "index",
+                        "variables": [
+                            {
+                                "kind": "QueryVariable",
+                                "spec": {
+                                    "current": {
+                                        "text": "",
+                                        "value": ""
+                                    },
+                                    "hide": "hideVariable",
+                                    "refresh": "onTimeRangeChanged",
+                                    "skipUrlSync": true,
+                                    "query": {
+                                        "kind": "DataQuery",
+                                        "group": "prometheus",
+                                        "version": "v0",
+                                        "datasource": {
+                                            "name": "prometheus"
+                                        },
+                                        "spec": {
+                                            "__legacyStringValue": "label_values(fts_index_size_bytes{index_name=\"$index\"},index_name)"
+                                        }
+                                    },
+                                    "regex": "",
+                                    "regexApplyTo": "value",
+                                    "sort": "disabled",
+                                    "definition": "",
+                                    "options": [],
+                                    "multi": false,
+                                    "includeAll": false,
+                                    "allowCustomValue": false,
+                                    "name": "fts_index",
+                                    "label": "fts_index"
+                                }
+                            }
+                        ],
                         "rows": [
                             {
                                 "class": "row",
@@ -398,7 +433,10 @@
                                         "spec/title": "Indexing lag P50",
                                         "spec/description": "50th percentile time from a write in ScyllaDB until it is searchable. Recorded for CDC writes only, not for the initial full scan",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.50, sum(rate(indexing_lag_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     },
                                     {
                                         "span": 2,
@@ -406,7 +444,10 @@
                                         "spec/title": "Indexing lag P99",
                                         "spec/description": "99th percentile time from a write in ScyllaDB until it is searchable. Recorded for CDC writes only, not for the initial full scan",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(indexing_lag_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     },
                                     {
                                         "span": 2,
@@ -414,7 +455,10 @@
                                         "spec/title": "CDC readers up",
                                         "spec/description": "1 if the CDC reader is running, 0 if it is stopped",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "min(cdc_reader_up{index_name=\"$index\", instance=~\"$node\"}) by ([[by]], index_name, reader)",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}} {{reader}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}} {{reader}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     },
                                     {
                                         "span": 2,
@@ -422,7 +466,10 @@
                                         "spec/title": "CDC checkpoint age",
                                         "spec/description": "Time since the point in the CDC log up to which the reader has consumed all changes",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "max(time() - cdc_last_processed_timestamp_seconds{index_name=\"$index\", instance=~\"$node\"}) by ([[by]], index_name, reader)",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}} {{reader}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}} {{reader}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     },
                                     {
                                         "span": 2,
@@ -430,7 +477,10 @@
                                         "spec/title": "CDC handler errors",
                                         "spec/description": "Rate of errors while handling CDC changes",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(cdc_handler_errors_total{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name, reader)",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}} {{reader}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}} {{reader}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     },
                                     {
                                         "span": 2,
@@ -438,27 +488,20 @@
                                         "spec/title": "CDC reader restarts",
                                         "spec/description": "Rate of CDC reader restarts after an error",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(cdc_reader_restarts_total{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name, reader)",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}} {{reader}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}} {{reader}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     }
-                                ]
+                                ],
+                                "layout": "AutoGridLayout"
                             },
                             {
                                 "class": "row",
                                 "title": "Full-text search",
                                 "conditionalRendering": {
-                                    "kind": "ConditionalRenderingGroup",
-                                    "spec": {
-                                        "visibility": "show",
-                                        "condition": "and",
-                                        "items": [
-                                            {
-                                                "kind": "ConditionalRenderingData",
-                                                "spec": {
-                                                    "value": true
-                                                }
-                                            }
-                                        ]
-                                    }
+                                    "class": "conditionalRendering_var",
+                                    "spec/items/0/spec/variable": "fts_index"
                                 },
                                 "panels": [
                                     {
@@ -467,7 +510,10 @@
                                         "spec/title": "Full-text index size",
                                         "spec/description": "Size of the full-text index",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "avg(fts_index_size_bytes{index_name=\"$index\", instance=~\"$node\"}) by ([[by]], index_name)",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     },
                                     {
                                         "span": 2,
@@ -475,7 +521,10 @@
                                         "spec/title": "Full-text index segments",
                                         "spec/description": "Number of segments in the full-text index",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "avg(fts_segment_count{index_name=\"$index\", instance=~\"$node\"}) by ([[by]], index_name)",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     },
                                     {
                                         "span": 2,
@@ -483,7 +532,10 @@
                                         "spec/title": "Highlight request rate",
                                         "spec/description": "Rate of highlight requests to the index",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "avg(rate(fts_highlight_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     },
                                     {
                                         "span": 2,
@@ -491,7 +543,10 @@
                                         "spec/title": "Highlight request average latency",
                                         "spec/description": "Average latency of highlight requests to the index",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "avg(rate(fts_highlight_latency_seconds_sum{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])/rate(fts_highlight_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     },
                                     {
                                         "span": 2,
@@ -499,7 +554,10 @@
                                         "spec/title": "Highlight request P95 latency",
                                         "spec/description": "95th percentile latency of highlight requests to the index",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(fts_highlight_latency_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     },
                                     {
                                         "span": 2,
@@ -507,9 +565,13 @@
                                         "spec/title": "Highlight request P99 latency",
                                         "spec/description": "99th percentile latency of highlight requests to the index",
                                         "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(fts_highlight_latency_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}",
+                                        "conditionalRendering": {
+                                            "class": "conditionalRendering_data"
+                                        }
                                     }
-                                ]
+                                ],
+                                "layout": "AutoGridLayout"
                             }
                         ]
                     }
