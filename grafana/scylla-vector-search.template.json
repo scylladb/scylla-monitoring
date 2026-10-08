@@ -291,71 +291,114 @@
             },
             {
                 "class": "row",
-                "panels": [
+                "title": "Index Row",
+                "variables": [
                     {
-                        "span": 2,
-                        "class": "graph_panel",
-                        "spec/title": "Stored Vectors in index",
-                        "spec/description": "Number of stored vectors in the index",
-                        "spec/vizConfig/spec/fieldConfig": {
-                            "defaults": {
-                                "class": "fieldConfig_defaults",
-                                "unit": "si:Vectors"
+                        "kind": "QueryVariable",
+                        "spec": {
+                            "current": {
+                                "text": "All",
+                                "value": "$__all"
                             },
-                            "overrides": []
-                        },
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "avg(index_size{index_name=\"$index\", instance=~\"$node\"}) by ([[by]], index_name)",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
-                    },
-                    {
-                        "span": 2,
-                        "class": "ops_panel",
-                        "spec/title": "Index build rate",
-                        "spec/description": "Rate of new vectors being added to the index or removed from the index",
-                        "spec/vizConfig/spec/fieldConfig": {
-                            "defaults": {
-                                "class": "fieldConfig_defaults",
-                                "unit": "recps"
+                            "hide": "dontHide",
+                            "refresh": "onTimeRangeChanged",
+                            "skipUrlSync": false,
+                            "query": {
+                                "kind": "DataQuery",
+                                "group": "prometheus",
+                                "version": "v0",
+                                "datasource": {
+                                    "name": "prometheus"
+                                },
+                                "spec": {
+                                    "__legacyStringValue": "label_values(index_size{},index_name)"
+                                }
                             },
-                            "overrides": []
-                        },
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "avg(deriv(index_size{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
-                    },
-                    {
-                        "span": 2,
-                        "class": "ops_panel",
-                        "spec/title": "Index requests rate",
-                        "spec/description": "Rate of requests to the index",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "avg(rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
-                    },
-                    {
-                        "span": 2,
-                        "class": "seconds_panel",
-                        "spec/title": "Average Latency",
-                        "spec/description": "Average latency of requests to the index",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "avg(rate(request_latency_seconds_sum{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])/rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
-                    },
-                    {
-                        "span": 2,
-                        "class": "seconds_panel",
-                        "spec/title": "P95 Latency",
-                        "spec/description": "95th percentile latency of requests to the index",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(request_latency_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
-                    },
-                    {
-                        "span": 2,
-                        "class": "seconds_panel",
-                        "spec/title": "P99 Latency",
-                        "spec/description": "99th percentile latency of requests to the index",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(request_latency_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                            "regex": "",
+                            "regexApplyTo": "value",
+                            "sort": "numericalAsc",
+                            "definition": "",
+                            "options": [],
+                            "multi": true,
+                            "includeAll": true,
+                            "allValue": ".*",
+                            "allowCustomValue": true,
+                            "name": "index",
+                            "label": "index"
+                        }
                     }
                 ],
-                "title": "Index Row"
+                "tabs": [
+                    {
+                        "class": "row",
+                        "title": "$index",
+                        "repeat": "index",
+                        "panels": [
+                            {
+                                "span": 2,
+                                "class": "graph_panel",
+                                "spec/title": "Stored Vectors in index",
+                                "spec/description": "Number of stored vectors in the index",
+                                "spec/vizConfig/spec/fieldConfig": {
+                                    "defaults": {
+                                        "class": "fieldConfig_defaults",
+                                        "unit": "si:Vectors"
+                                    },
+                                    "overrides": []
+                                },
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "avg(index_size{index_name=\"$index\", instance=~\"$node\"}) by ([[by]], index_name)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                            },
+                            {
+                                "span": 2,
+                                "class": "ops_panel",
+                                "spec/title": "Index build rate",
+                                "spec/description": "Rate of new vectors being added to the index or removed from the index",
+                                "spec/vizConfig/spec/fieldConfig": {
+                                    "defaults": {
+                                        "class": "fieldConfig_defaults",
+                                        "unit": "recps"
+                                    },
+                                    "overrides": []
+                                },
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "avg(deriv(index_size{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                            },
+                            {
+                                "span": 2,
+                                "class": "ops_panel",
+                                "spec/title": "Index requests rate",
+                                "spec/description": "Rate of requests to the index",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "avg(rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                            },
+                            {
+                                "span": 2,
+                                "class": "seconds_panel",
+                                "spec/title": "Average Latency",
+                                "spec/description": "Average latency of requests to the index",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "avg(rate(request_latency_seconds_sum{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])/rate(request_latency_seconds_count{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], index_name)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                            },
+                            {
+                                "span": 2,
+                                "class": "seconds_panel",
+                                "spec/title": "P95 Latency",
+                                "spec/description": "95th percentile latency of requests to the index",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(request_latency_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                            },
+                            {
+                                "span": 2,
+                                "class": "seconds_panel",
+                                "spec/title": "P99 Latency",
+                                "spec/description": "99th percentile latency of requests to the index",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(request_latency_seconds_bucket{index_name=\"$index\", instance=~\"$node\"}[$__rate_interval])) by ([[by]], keyspace,index_name, le))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{instance}} {{index_name}}"
+                            }
+                        ]
+                    }
+                ]
             },
             {
                 "title": "",
@@ -442,40 +485,6 @@
                     "allowCustomValue": true,
                     "name": "node",
                     "label": "Node"
-                }
-            },
-            {
-                "kind": "QueryVariable",
-                "spec": {
-                    "current": {
-                        "text": "All",
-                        "value": "$__all"
-                    },
-                    "hide": "dontHide",
-                    "refresh": "onTimeRangeChanged",
-                    "skipUrlSync": false,
-                    "query": {
-                        "kind": "DataQuery",
-                        "group": "prometheus",
-                        "version": "v0",
-                        "datasource": {
-                            "name": "prometheus"
-                        },
-                        "spec": {
-                            "__legacyStringValue": "label_values(index_size{},index_name)"
-                        }
-                    },
-                    "regex": "",
-                    "regexApplyTo": "value",
-                    "sort": "numericalAsc",
-                    "definition": "",
-                    "options": [],
-                    "multi": true,
-                    "includeAll": true,
-                    "allValue": ".*",
-                    "allowCustomValue": true,
-                    "name": "index",
-                    "label": "index"
                 }
             },
             {
