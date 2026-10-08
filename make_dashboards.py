@@ -597,6 +597,8 @@ def make_grafana_13(results, args):
         if repeat is not None:
             spec["repeat"] = _section_repeat(repeat)
         if kind == "RowsLayoutRow":
+            if item.get("hideHeader") and spec["collapse"]:
+                raise ValueError(f"row '{spec['title']}': hideHeader with collapse — a hidden header has no collapse toggle, so the row renders expanded")
             if item.get("hideHeader"):
                 spec["hideHeader"] = True
             if item.get("fillScreen"):
