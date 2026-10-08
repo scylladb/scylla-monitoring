@@ -160,6 +160,79 @@
             },
             {
                 "class": "row",
+                "title": "Scheduler",
+                "dashversion": [
+                    ">2024.2"
+                ],
+                "panels": [
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Calls",
+                        "spec/description": "Load balancer invocations.\n\nscylla_load_balancer_calls",
+                        "spec/data/spec/queries": [
+                            {
+                                "class": "graph_query",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_calls{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "calls"
+                            }
+                        ]
+                    },
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Transitions scheduled",
+                        "spec/description": "Tablet transitions the load balancer schedules, by kind.\n\nscylla_load_balancer_migrations_produced\nscylla_load_balancer_repairs_produced\nscylla_load_balancer_rebuilds_produced",
+                        "spec/data/spec/queries": [
+                            {
+                                "class": "graph_query",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_migrations_produced{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "migrations"
+                            },
+                            {
+                                "class": "graph_query",
+                                "spec/refId": "B",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_repairs_produced{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "repairs"
+                            },
+                            {
+                                "class": "graph_query",
+                                "spec/refId": "C",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_rebuilds_produced{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "rebuilds"
+                            }
+                        ]
+                    },
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Resize decisions",
+                        "spec/description": "Tablet split and merge decisions.\n\nscylla_load_balancer_resizes_emitted",
+                        "spec/data/spec/queries": [
+                            {
+                                "class": "graph_query",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_resizes_emitted{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "resize decisions"
+                            }
+                        ]
+                    },
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Resizes finalized",
+                        "spec/description": "Tablet splits and merges completed.\n\nscylla_load_balancer_resizes_finalized",
+                        "spec/data/spec/queries": [
+                            {
+                                "class": "graph_query",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_resizes_finalized{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "resizes finalized"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "class": "row",
                 "hideHeader": true,
                 "gridPos/h": 2,
                 "panels": [
