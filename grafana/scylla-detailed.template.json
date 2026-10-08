@@ -48,7 +48,7 @@
                 "panels": [
                     {
                         "gridPos": {
-                            "w": 4
+                            "w": 6
                         },
                         "class": "percent_panel",
                         "spec/title": "Load",
@@ -57,7 +57,7 @@
                     },
                     {
                         "gridPos": {
-                            "w": 5
+                            "w": 6
                         },
                         "class": "ops_panel",
                         "spec/title": "Requests Served $func by [[by]] - Coordinator",
@@ -66,7 +66,7 @@
                     },
                     {
                         "gridPos": {
-                            "w": 5
+                            "w": 6
                         },
                         "class": "rps_panel",
                         "spec/title": "Reads $func by [[by]] - Replica",
@@ -75,22 +75,30 @@
                     },
                     {
                         "gridPos": {
-                            "w": 5
+                            "w": 6
                         },
                         "class": "wps_panel",
                         "spec/title": "Writes $func by [[by]] - Replica",
                         "spec/description": "scylla_database_total_writes",
                         "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_database_total_writes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
-                    },
-                    {
-                        "gridPos": {
-                            "w": 5
-                        },
-                        "class": "graph_panel",
-                        "spec/title": "Tablets over time per [[by]]",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_tablets_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by([[by]]))",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{dc}} {{instance}} {{shard}}"
                     }
+                ]
+            },
+            {
+                "class": "row",
+                "hideHeader": true,
+                "gridPos/h": 2,
+                "panels": [
+                    {
+                        "class": "plain_text",
+                        "gridPos": {
+                            "h": 2
+                        },
+                        "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Tablets</h1>"
+                    }
+                ],
+                "dashversion": [
+                    ">2024.2"
                 ]
             },
             {
@@ -101,16 +109,14 @@
                 ],
                 "panels": [
                     {
-                        "span": 9,
-                        "class": "barchart_panel",
-                        "spec/title": "Tablets per [[by]]",
+                        "span": 6,
+                        "class": "graph_panel",
+                        "spec/title": "Tablets over time per [[by]]",
                         "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_tablets_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}) by([[by]]))",
-                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "__auto",
-                        "spec/data/spec/queries/0/spec/query/spec/instant": true,
-                        "spec/data/spec/queries/0/spec/query/spec/range": false
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{dc}} {{instance}} {{shard}}"
                     },
                     {
-                        "span": 3,
+                        "span": 6,
                         "class": "graph_panel",
                         "dashversion": [
                             "<2025.1"
@@ -121,7 +127,7 @@
                         "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{target_node}}"
                     },
                     {
-                        "span": 3,
+                        "span": 6,
                         "dashversion": [
                             ">2025.1"
                         ],
@@ -133,6 +139,97 @@
                     }
                 ],
                 "title": "Tablets information"
+            },
+            {
+                "class": "row",
+                "title": "Rack load",
+                "dashversion": [
+                    ">2025.1"
+                ],
+                "panels": [
+                    {
+                        "span": 3,
+                        "class": "graph_panel",
+                        "repeat": "rack",
+                        "spec/title": "Tablets load per instance in rack $rack",
+                        "spec/description": "Represents the ‘load’ value the balancer equalizes across instances.\n\nIt is based on the number of tablets assigned to each instance, adjusted so larger disks are expected to hold proportionally more tablets.\n\nscylla_load_balancer_load",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_load_balancer_load{cluster=\"$cluster\"} + on(target_node) group_left(dc, instance, rack) 0* label_replace(max(scylla_raft_apply_index{cluster=\"$cluster\", dc=~\"$dc\", instance=~\"$node\"} * on(instance) group_left(rack) max(scylla_scylladb_current_version{cluster=\"$cluster\", rack=~\"$rack\"}) by (instance, rack)) by (dc, instance, id, rack), \"target_node\", \"$1\", \"id\", \"(.*)\"))",
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{dc}} {{instance}}"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "title": "Scheduler",
+                "dashversion": [
+                    ">2024.2"
+                ],
+                "panels": [
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Calls",
+                        "spec/description": "Load balancer invocations.\n\nscylla_load_balancer_calls",
+                        "spec/data/spec/queries": [
+                            {
+                                "class": "graph_query",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_calls{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "calls"
+                            }
+                        ]
+                    },
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Transitions scheduled",
+                        "spec/description": "Tablet transitions the load balancer schedules, by kind.\n\nscylla_load_balancer_migrations_produced\nscylla_load_balancer_repairs_produced\nscylla_load_balancer_rebuilds_produced",
+                        "spec/data/spec/queries": [
+                            {
+                                "class": "graph_query",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_migrations_produced{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "migrations"
+                            },
+                            {
+                                "class": "graph_query",
+                                "spec/refId": "B",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_repairs_produced{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "repairs"
+                            },
+                            {
+                                "class": "graph_query",
+                                "spec/refId": "C",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_rebuilds_produced{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "rebuilds"
+                            }
+                        ]
+                    },
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Resize decisions",
+                        "spec/description": "Tablet split and merge decisions.\n\nscylla_load_balancer_resizes_emitted",
+                        "spec/data/spec/queries": [
+                            {
+                                "class": "graph_query",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_resizes_emitted{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "resize decisions"
+                            }
+                        ]
+                    },
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Resizes finalized",
+                        "spec/description": "Tablet splits and merges completed.\n\nscylla_load_balancer_resizes_finalized",
+                        "spec/data/spec/queries": [
+                            {
+                                "class": "graph_query",
+                                "spec/query/spec/expr": "sum(rate(scylla_load_balancer_resizes_finalized{cluster=\"$cluster\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "resizes finalized"
+                            }
+                        ]
+                    }
+                ]
             },
             {
                 "class": "row",
@@ -1699,6 +1796,40 @@
                     "allowCustomValue": true,
                     "name": "dc",
                     "label": "dc"
+                }
+            },
+            {
+                "kind": "QueryVariable",
+                "spec": {
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "hide": "hideVariable",
+                    "refresh": "onTimeRangeChanged",
+                    "skipUrlSync": false,
+                    "query": {
+                        "kind": "DataQuery",
+                        "group": "prometheus",
+                        "version": "v0",
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "spec": {
+                            "__legacyStringValue": "label_values(scylla_scylladb_current_version{cluster=~\"$cluster\", dc=~\"$dc\"}, rack)"
+                        }
+                    },
+                    "regex": "",
+                    "regexApplyTo": "value",
+                    "sort": "alphabeticalAsc",
+                    "definition": "",
+                    "options": [],
+                    "multi": true,
+                    "includeAll": true,
+                    "allValue": ".*",
+                    "allowCustomValue": true,
+                    "name": "rack",
+                    "label": "rack"
                 }
             },
             {
