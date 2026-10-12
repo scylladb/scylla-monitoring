@@ -353,6 +353,19 @@
                 }
             },
             {
+                "kind": "SwitchVariable",
+                "spec": {
+                    "name": "all_tables",
+                    "label": "All tables",
+                    "description": "Show all tables instead of the 20 most active",
+                    "current": "20",
+                    "enabledValue": "100000",
+                    "disabledValue": "20",
+                    "hide": "dontHide",
+                    "skipUrlSync": false
+                }
+            },
+            {
                 "kind": "QueryVariable",
                 "spec": {
                     "current": {
@@ -373,13 +386,13 @@
                         },
                         "spec": {
                             "qryType": 3,
-                            "query": "query_result(topk(20, sum by (cf) (rate(scylla_column_family_read_latency_count{cluster=\"$cluster\", ks=\"$ks\"}[${__range_s}s])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks=\"$ks\"}*0) + sum by (cf) (rate(scylla_column_family_write_latency_count{cluster=\"$cluster\", ks=\"$ks\"}[${__range_s}s])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks=\"$ks\"}*0)))"
+                            "query": "query_result(topk($all_tables, sum by (cf) (rate(scylla_column_family_read_latency_count{cluster=\"$cluster\", ks=\"$ks\"}[${__range_s}s])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks=\"$ks\"}*0) + sum by (cf) (rate(scylla_column_family_write_latency_count{cluster=\"$cluster\", ks=\"$ks\"}[${__range_s}s])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks=\"$ks\"}*0)))"
                         }
                     },
                     "regex": "/.*cf=\"([^\"]+)\".*/",
                     "regexApplyTo": "value",
                     "sort": "alphabeticalAsc",
-                    "definition": "query_result(topk(20, sum by (cf) (rate(scylla_column_family_read_latency_count{cluster=\"$cluster\", ks=\"$ks\"}[${__range_s}s])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks=\"$ks\"}*0) + sum by (cf) (rate(scylla_column_family_write_latency_count{cluster=\"$cluster\", ks=\"$ks\"}[${__range_s}s])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks=\"$ks\"}*0)))",
+                    "definition": "query_result(topk($all_tables, sum by (cf) (rate(scylla_column_family_read_latency_count{cluster=\"$cluster\", ks=\"$ks\"}[${__range_s}s])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks=\"$ks\"}*0) + sum by (cf) (rate(scylla_column_family_write_latency_count{cluster=\"$cluster\", ks=\"$ks\"}[${__range_s}s])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\", ks=\"$ks\"}*0)))",
                     "options": [],
                     "multi": true,
                     "includeAll": true,
