@@ -224,7 +224,7 @@
                         "spec": {
                            "editorMode": "code",
                            "exemplar": false,
-                           "expr": "(sum(rate(scylla_storage_proxy_coordinator_write_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) or on() vector(0)) + (sum(rate(scylla_storage_proxy_coordinator_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) or on() vector(0))>0",
+                           "expr": "(sum(rate(scylla_storage_proxy_coordinator_write_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) or on() vector(0)) + (sum(rate(scylla_storage_proxy_coordinator_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) or on() vector(0))>0",
                            "format": "time_series",
                            "instant": true,
                            "legendFormat": "Timeouts",
@@ -534,7 +534,7 @@
             "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
             "span": 1,
             "title": "Load",
-            "data/spec/queries/0/spec/query/spec/expr": "sum(avg(rate(scylla_scheduler_runtime_ms{group=~\"sl:.*|commitlog\",cluster=\"$cluster\", dc=~\"$dc\"}[1m])) by (group)/10)"
+            "data/spec/queries/0/spec/query/spec/expr": "sum(avg(rate(scylla_scheduler_runtime_ms{group=~\"sl:.*|commitlog\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[1m])) by (group)/10)"
          },
          {
             "class": "num_nodes_panel"
@@ -590,7 +590,7 @@
             "data/spec/queries": [
                {
                   "class": "panel_query",
-                  "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
+                  "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
                   "spec/query/spec/legendFormat": "Writes/s",
                   "spec/query/spec/instant": false,
                   "spec/query/spec/range": true
@@ -646,7 +646,7 @@
             "data/spec/queries": [
                {
                   "class": "panel_query",
-                  "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
+                  "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
                   "spec/query/spec/legendFormat": "Reads/s",
                   "spec/query/spec/instant": false,
                   "spec/query/spec/range": true
@@ -710,7 +710,7 @@
             "description": "The percentage of the time during which Scylla utilized the CPU. Note that because Scylla does busy polling for some time before going idle, CPU utilization as seen by the operating system may be much higher. Your system is not yet CPU-bottlenecked until this metric is high.",
             "span": 1,
             "title": "Load",
-            "data/spec/queries/0/spec/query/spec/expr": "sum(avg(rate(scylla_scheduler_runtime_ms{group=~\"sl:.*|commitlog\",cluster=\"$cluster\", dc=~\"$dc\"}[1m])) by (group)/10)"
+            "data/spec/queries/0/spec/query/spec/expr": "sum(avg(rate(scylla_scheduler_runtime_ms{group=~\"sl:.*|commitlog\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[1m])) by (group)/10)"
          },
          {
             "class": "num_nodes_panel"
@@ -765,7 +765,7 @@
             "data/spec/queries": [
                {
                   "class": "panel_query",
-                  "spec/query/spec/expr": "(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*\"}[$__rate_interval])) or vector(0))+ on() (sum(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\"}[$__rate_interval])) or vector(0))",
+                  "spec/query/spec/expr": "(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", op !~\"Batch.*\"}[$__rate_interval])) or vector(0))+ on() (sum(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) or vector(0))",
                   "spec/query/spec/legendFormat": "",
                   "spec/query/spec/instant": true,
                   "dashversion": [
@@ -774,7 +774,7 @@
                },
                {
                   "class": "panel_query",
-                  "spec/query/spec/expr": "(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", shard=~\"[[shard]]\", op !~\"Batch.*Item\"}[$__rate_interval])) or vector(0))",
+                  "spec/query/spec/expr": "(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", op !~\"Batch.*Item\"}[$__rate_interval])) or vector(0))",
                   "spec/query/spec/legendFormat": "",
                   "spec/query/spec/instant": true,
                   "dashversion": [
@@ -843,14 +843,14 @@
             "data/spec/queries": [
                {
                   "class": "panel_query",
-                  "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
+                  "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
                   "spec/query/spec/legendFormat": "{{op}}",
                   "spec/query/spec/instant": true
                },
                {
                   "class": "panel_query",
                   "spec/refId": "B",
-                  "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", shard=~\"[[shard]]|$^\", op=~\"$ops_batch\"}[$__rate_interval])>0) by (op, le))",
+                  "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops_batch\"}[$__rate_interval])>0) by (op, le))",
                   "spec/query/spec/legendFormat": "{{op}}",
                   "spec/query/spec/instant": true,
                   "dashversion": [
@@ -3787,7 +3787,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() (scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}!= 3 or on (instance) ((scylla_gossip_live{cluster=\"$cluster\", dc=~\"$dc\"}+1<  bool scalar(count(scylla_node_operation_mode{cluster=\"$cluster\"}==3)))*6 + 3))",
+                     "expr": "0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"} + on (instance) group_left() (scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}!= 3 or on (instance) ((scylla_gossip_live{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}+1<  bool scalar(count(scylla_node_operation_mode{cluster=\"$cluster\"}==3)))*6 + 3))",
                      "instant": true,
                      "format": "table",
                      "range": false,
@@ -3809,7 +3809,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "avg(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\"} ) by (instance)",
+                     "expr": "avg(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"} ) by (instance)",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -3830,7 +3830,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "sum(rate(scylla_reactor_aio_errors{cluster=~\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (instance)",
+                     "expr": "sum(rate(scylla_reactor_aio_errors{cluster=~\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by (instance)",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -3851,7 +3851,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "sum(scylla_errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0",
+                     "expr": "sum(scylla_errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by (instance) >bool 0",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -3872,7 +3872,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "(min(scylla_streaming_finished_percentage{cluster=\"$cluster\", dc=~\"$dc\"}*100) by (instance) < 100) or on (instance)  0*sum(scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"}) by (instance)",
+                     "expr": "(min(scylla_streaming_finished_percentage{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}*100) by (instance) < 100) or on (instance)  0*sum(scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by (instance)",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -3893,7 +3893,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "100-100*node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", instance=~\"$node\"}/node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", instance=~\"$node\"}",
+                     "expr": "100-100*node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", rack=~\"$rack\", instance=~\"$node\"}/node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"$node\"}",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -3914,7 +3914,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "avg(scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.5\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=~\"GetItem|PutItem|UpdateItem|DeleteItem\"}) by (instance)",
+                     "expr": "avg(scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.5\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\",op=~\"GetItem|PutItem|UpdateItem|DeleteItem\"}) by (instance)",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -3935,7 +3935,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"GetItem\"}",
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\",op=\"GetItem\"}",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -3956,7 +3956,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"PutItem\"}",
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\",op=\"PutItem\"}",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -3977,7 +3977,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"UpdateItem\"}",
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\",op=\"UpdateItem\"}",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -3998,7 +3998,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"DeleteItem\"}",
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\",op=\"DeleteItem\"}",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -4019,7 +4019,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"BatchGetItem\"}",
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\",op=\"BatchGetItem\"}",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -4040,7 +4040,7 @@
                      "name": "prometheus"
                   },
                   "spec": {
-                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\",op=\"BatchWriteItem\"}",
+                     "expr": "scylla_alternator_op_latency_summary{by=\"instance\", quantile=\"0.99\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\",op=\"BatchWriteItem\"}",
                      "instant": true,
                      "format": "table",
                      "range": false
@@ -4655,7 +4655,7 @@
                               "name": "prometheus"
                            },
                            "spec": {
-                              "expr": "0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"} + on (instance) group_left() (scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\"}!= 3 or on (instance) ((scylla_gossip_live{cluster=\"$cluster\", dc=~\"$dc\"}+1<  bool scalar(count(scylla_node_operation_mode{cluster=\"$cluster\"}==3)))*6 + 3))",
+                              "expr": "0*scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"} + on (instance) group_left() (scylla_node_operation_mode{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}!= 3 or on (instance) ((scylla_gossip_live{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}+1<  bool scalar(count(scylla_node_operation_mode{cluster=\"$cluster\"}==3)))*6 + 3))",
                               "format": "table",
                               "instant": true,
                               "interval": "",
@@ -4678,7 +4678,7 @@
                               "name": "prometheus"
                            },
                            "spec": {
-                              "expr": "avg(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\"} ) by (instance)",
+                              "expr": "avg(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"} ) by (instance)",
                               "format": "table",
                               "instant": true,
                               "interval": "",
@@ -4700,7 +4700,7 @@
                               "name": "prometheus"
                            },
                            "spec": {
-                              "expr": "sum(rate(scylla_reactor_aio_errors{cluster=~\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by (instance)",
+                              "expr": "sum(rate(scylla_reactor_aio_errors{cluster=~\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by (instance)",
                               "format": "table",
                               "instant": true,
                               "interval": "",
@@ -4722,7 +4722,7 @@
                               "name": "prometheus"
                            },
                            "spec": {
-                              "expr": "sum(scylla_errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 0",
+                              "expr": "sum(scylla_errors:nodes_total{cluster=~\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by (instance) >bool 0",
                               "format": "table",
                               "instant": true,
                               "interval": "",
@@ -4744,7 +4744,7 @@
                               "name": "prometheus"
                            },
                            "spec": {
-                              "expr": "(sum(scylla_cql:non_system_prepared1m{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 1) + (sum(rate(scylla_cql_reverse_queries{cluster=~\"$cluster\", dc=~\"$dc\"}[$__rate_interval])) by(instance) >bool 1) + (sum(scylla_cql:non_paged_no_system1m{cluster=~\"$cluster\", dc=~\"$dc\"}) by (instance) >bool 1)",
+                              "expr": "(sum(scylla_cql:non_system_prepared1m{cluster=~\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by (instance) >bool 1) + (sum(rate(scylla_cql_reverse_queries{cluster=~\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by(instance) >bool 1) + (sum(scylla_cql:non_paged_no_system1m{cluster=~\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by (instance) >bool 1)",
                               "format": "table",
                               "instant": true,
                               "interval": "",
@@ -4766,7 +4766,7 @@
                               "name": "prometheus"
                            },
                            "spec": {
-                              "expr": "100-100*node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\"}/node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\"}",
+                              "expr": "100-100*node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", rack=~\"$rack\"}/node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", rack=~\"$rack\"}",
                               "format": "table",
                               "instant": true,
                               "interval": "",
@@ -4788,7 +4788,7 @@
                               "name": "prometheus"
                            },
                            "spec": {
-                              "expr": "(min(scylla_streaming_finished_percentage{cluster=\"$cluster\", dc=~\"$dc\"}*100) by (instance) < 100) or on (instance) (min(scylla_node_ops_finished_percentage{cluster=\"$cluster\", dc=~\"$dc\"}*100) by (instance) < 100) or on (instance)  0*sum(scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\"}) by (instance)",
+                              "expr": "(min(scylla_streaming_finished_percentage{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}*100) by (instance) < 100) or on (instance) (min(scylla_node_ops_finished_percentage{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}*100) by (instance) < 100) or on (instance)  0*sum(scylla_scylladb_current_version{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by (instance)",
                               "format": "table",
                               "instant": true,
                               "interval": "",
@@ -4810,7 +4810,7 @@
                               "name": "prometheus"
                            },
                            "spec": {
-                              "expr": "count(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\"} ) by (instance)",
+                              "expr": "count(scylla_reactor_utilization{cluster=~\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"} ) by (instance)",
                               "format": "table",
                               "instant": true,
                               "interval": "",
@@ -4832,7 +4832,7 @@
                               "name": "prometheus"
                            },
                            "spec": {
-                              "expr": "node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\"} - node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\"}",
+                              "expr": "node_filesystem_size_bytes{mountpoint=\"$mount_point\", dc=~\"$dc\", rack=~\"$rack\"} - node_filesystem_avail_bytes{mountpoint=\"$mount_point\",  dc=~\"$dc\", rack=~\"$rack\"}",
                               "format": "table",
                               "instant": true,
                               "interval": "",
