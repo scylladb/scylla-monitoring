@@ -33,3 +33,12 @@ groups:
         dashboard: "cql"
       annotations:
         description: '{{ $labels.instance }} Reversed read exceeds memory limit'
+  - name: compaction
+    rules:
+    - alert: sstableQuarantined
+      expr: rate({app="scylla", module="compaction_manager", severity="error"} |= "Automatically quarantined malformed sstable" [1h])>0
+      for: 20s
+      labels:
+        severity: "error"
+      annotations:
+        description: '{{ $labels.instance }} {{ $labels.msg }}'
