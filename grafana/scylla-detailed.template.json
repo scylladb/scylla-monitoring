@@ -299,14 +299,14 @@
                         "class": "wps_panel",
                         "spec/title": "Hints Written $func by [[by]]",
                         "spec/description": "scylla_hints_manager_written",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_hints_manager_written{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_hints_manager_written{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))[$__interval:]))"
                     },
                     {
                         "span": 3,
                         "class": "ops_panel",
                         "spec/title": "Hints sent $func by [[by]]",
                         "spec/description": "scylla_hints_manager_sent",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_hints_manager_sent_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_hints_manager_sent_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))[$__interval:]))"
                     },
                     {
                         "span": 3,
@@ -334,7 +334,7 @@
                         "class": "requestsps_panel",
                         "spec/title": "Requests Shed $func by [[by]]",
                         "spec/description": "scylla_transport_requests_shed",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_transport_requests_shed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_transport_requests_shed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))[$__interval:]))"
                     }
                 ],
                 "title": "",
@@ -496,14 +496,14 @@
                         "class": "wps_panel",
                         "spec/title": "Write Timeouts/Seconds $func by [[by]]",
                         "spec/description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_storage_proxy_coordinator_write_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))[$__interval:]))"
                     },
                     {
                         "span": 3,
                         "class": "wps_panel",
                         "spec/title": "Write Unavailable/Seconds $func by [[by]]",
                         "spec/description": "Requests that Scylla did not even try to write because replicas that were needed to execute this write were unavailable. Unavailable writes are counted in the node that received the request (the coordinator), not at the replicas.",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_storage_proxy_coordinator_write_unavailable{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))[$__interval:]))"
                     },
                     {
                         "span": 3,
@@ -513,7 +513,7 @@
                         "spec/data/spec/queries": [
                             {
                                 "class": "graph_query",
-                                "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))",
+                                "spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_storage_proxy_coordinator_read_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))[$__interval:]))",
                                 "spec/query/spec/legendFormat": "Read {{dc}} {{rack}} {{instance}} {{shard}}"
                             },
                             {
@@ -535,7 +535,7 @@
                         "class": "rps_panel",
                         "spec/title": "Read Unavailable/Seconds $func by [[by]]",
                         "spec/description": "Requests that Scylla did not even try to read because replicas that were needed to execute this write were unavailable. Unavailable reads are counted in the node that received the request (the coordinator), not at the replicas.",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_storage_proxy_coordinator_read_unavailable{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))[$__interval:]))"
                     }
                 ]
             },
@@ -594,21 +594,21 @@
                         "class": "rps_panel",
                         "spec/title": "Reads failed $func by [[by]]",
                         "spec/description": "scylla_database_total_reads_failed",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_database_total_reads_failed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_database_total_reads_failed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))[$__interval:]))"
                     },
                     {
                         "span": 3,
                         "class": "wps_panel",
                         "spec/title": "Writes blocked on dirty $func by [[by]]",
                         "spec/description": "scylla_database_requests_blocked_memory",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_database_requests_blocked_memory{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_database_requests_blocked_memory{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))[$__interval:]))"
                     },
                     {
                         "span": 3,
                         "class": "wps_panel",
                         "spec/title": "Writes blocked on commitlog $func by [[by]]",
                         "spec/description": "scylla_commitlog_requests_blocked_memory",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_commitlog_requests_blocked_memory{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_commitlog_requests_blocked_memory{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))[$__interval:]))"
                     },
                     {
                         "span": 3,
@@ -629,14 +629,14 @@
                         "class": "wps_panel",
                         "spec/title": "Writes failed $func by [[by]]",
                         "spec/description": "scylla_database_total_writes_failed",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_database_total_writes_failed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_database_total_writes_failed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))[$__interval:]))"
                     },
                     {
                         "span": 3,
                         "class": "wps_panel",
                         "spec/title": "Writes timed out $func by [[by]]",
                         "spec/description": "scylla_database_total_writes_timedout",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_database_total_writes_timedout{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_database_total_writes_timedout{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))[$__interval:]))"
                     }
                 ],
                 "title": "",
@@ -1073,7 +1073,7 @@
                         "class": "wps_panel",
                         "spec/title": "Hints for view $func by [[by]]",
                         "spec/description": "Number of hints sent for view.",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_hints_for_views_manager_sent_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]]))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_hints_for_views_manager_sent_total{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]]))[$__interval:]))"
                     },
                     {
                         "span": 3,
@@ -1223,7 +1223,7 @@
                                 "class": "wps_panel",
                                 "spec/title": "LWT Write Timeouts $func by [[by]]",
                                 "spec/description": "LWT Write Timeouts",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_cas_write_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]]))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_storage_proxy_coordinator_cas_write_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]]))[$__interval:]))"
                             },
                             {
                                 "span": 3,
@@ -1263,7 +1263,7 @@
                                 "class": "wps_panel",
                                 "spec/title": "LWT Write Contention $func by [[by]]",
                                 "spec/description": "Number of times some INSERT, UPDATE or DELETE request with conditions had to retry because there was a concurrent conditional statement against the same key. Each retry is performed after a randomized sleep interval, so it can lead to statement timing out completely.\n\nIt can indicates contention over a hot row or key",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_cas_write_contention_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_storage_proxy_coordinator_cas_write_contention_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]))[$__interval:]))"
                             },
                             {
                                 "span": 3,
@@ -1277,7 +1277,7 @@
                                 "class": "wps_panel",
                                 "spec/title": "LWT Write Timeout Due to Uncertainty $func by [[by]]",
                                 "spec/description": "Number of partially succeeded conditional statements. These statements were not committed by the coordinator, due to some replicas responding with errors or timing out. The coordinator had to propagate the error to the client. However, the statement succeeded on a minority of replicas, so may later be propagated to the rest during repair.",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_cas_write_timeout_due_to_uncertainty{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]]))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_storage_proxy_coordinator_cas_write_timeout_due_to_uncertainty{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]]))[$__interval:]))"
                             },
                             {
                                 "span": 3,
@@ -1298,7 +1298,7 @@
                                 "class": "wps_panel",
                                 "spec/title": "LWT Write Unfinished - Repair Attempts $func by [[by]]",
                                 "spec/description": "Number of Paxos-repairs of INSERT, UPDATE, or DELETE with conditions.\n\nA repair is necessary when a previous Paxos statement was partially successful. A subsequent statement then may not proceed before completing the work of its predecessor. A repair is not guaranteed to succeed, the metric indicates the number of repair attempts made",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_cas_write_unfinished_commit{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_storage_proxy_coordinator_cas_write_unfinished_commit{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]))[$__interval:]))"
                             },
                             {
                                 "span": 3,
