@@ -408,6 +408,48 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_expiration_items_deleted{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])"
                             }
                         ]
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "conditionalRendering": {
+                            "class": "conditionalRendering_var",
+                            "spec/items/0/spec/variable": "alternator_filtered_read"
+                        },
+                        "panels": [
+                            {
+                                "span": 6,
+                                "class": "ops_panel",
+                                "spec/title": "Filtered rows $func by [[by]]",
+                                "spec/description": "Rows read, matched, and dropped by Alternator filtering operations.",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_filtered_rows_read_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])",
+                                        "spec/query/spec/legendFormat": "rows read $node $shard"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_filtered_rows_matched_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])",
+                                        "spec/query/spec/legendFormat": "rows matched $node $shard"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "C",
+                                        "spec/query/spec/expr": "$func(rate(scylla_alternator_filtered_rows_dropped_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])",
+                                        "spec/query/spec/legendFormat": "rows dropped $node $shard"
+                                    }
+                                ]
+                            },
+                            {
+                                "span": 6,
+                                "class": "percent_panel",
+                                "spec/title": "Filtered rows dropped ratio",
+                                "spec/description": "The percentage of filtered rows that were dropped.",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "100 * sum(rate(scylla_alternator_filtered_rows_dropped_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) / sum(rate(scylla_alternator_filtered_rows_read_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1392,6 +1434,12 @@
                     "definition": "scylla_alternator_total_operations{cluster=~\"$cluster|$^\"}",
                     "sort": "disabled"
                 }
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "alternator_filtered_read",
+                "spec/label": "alternator_filtered_read",
+                "spec/query/spec/__legacyStringValue": "query_result(sum(scylla_alternator_filtered_rows_read_total{cluster=~\"$cluster|$^\"}) > 0)"
             }
         ],
         "spec/annotations": [
