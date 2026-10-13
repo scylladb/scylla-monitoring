@@ -317,3 +317,11 @@ groups:
       severity: "warn"
       description: 'Bloom filter size in node {{ $labels.instance }}'
       summary: The bloom filter takes too much memory, update bloom_filter_fp_chance
+  - alert: sstableQuarantined
+    expr: sum(increase(scylla_compaction_manager_automatic_sstable_quarantines[1h])) by (cluster, instance) > 0
+    for: 10s
+    labels:
+      severity: "warn"
+    annotations:
+      description: 'Node {{ $labels.instance }} quarantined a malformed sstable'
+      summary: 'Node {{ $labels.instance }} quarantined a malformed sstable'
