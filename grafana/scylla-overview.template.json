@@ -301,7 +301,7 @@
                                 "span": 2,
                                 "spec/title": "Write Timeouts by [[by]]",
                                 "spec/description": "Requests that Scylla tried to write but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_write_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\" }[$__rate_interval])) by ([[by]])",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "max_over_time((sum(irate(scylla_storage_proxy_coordinator_write_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\" }[$__rate_interval])) by ([[by]]))[$__interval:])",
                                 "spec/data/spec/queries/0/spec/query/spec/legendFormat": "Writes {{instance}}",
                                 "spec/vizConfig/spec/options/legend": {
                                     "displayMode": "list",
@@ -422,7 +422,7 @@
                                 },
                                 "spec/title": "Read Timeouts by [[by]]",
                                 "spec/description": "Requests that Scylla tried to read but timed out. Timeouts are counted in the node that received the request (the coordinator), not at the replicas.",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "(sum(rate(scylla_storage_proxy_coordinator_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) or vector(0))+on([[by]]) (sum(rate(scylla_storage_proxy_coordinator_cas_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) or vector(0))+on([[by]]) (sum(rate(scylla_storage_proxy_coordinator_range_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) or vector(0))",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "(max_over_time((sum(irate(scylla_storage_proxy_coordinator_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]))[$__interval:]) or vector(0))+on([[by]]) (sum(rate(scylla_storage_proxy_coordinator_cas_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) or vector(0))+on([[by]]) (sum(rate(scylla_storage_proxy_coordinator_range_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) or vector(0))",
                                 "spec/data/spec/queries/0/spec/query/spec/legendFormat": "Read {{dc}}",
                                 "spec/vizConfig/spec/options/legend": {
                                     "displayMode": "list",
