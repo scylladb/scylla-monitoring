@@ -242,6 +242,116 @@
             },
             {
                 "class": "row",
+                "title": "Tablet Repair",
+                "dashversion": [
+                    ">2024.2"
+                ],
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "tablets"
+                },
+                "panels": [
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Tablets repaired",
+                        "spec/description": "Tablets repaired per second, by repair kind (user_repair, auto_repair). Failed tablet repairs are shown as separate series.\n\nscylla_tablet_ops_succeeded\nscylla_tablet_ops_failed",
+                        "spec/data/spec/queries": [
+                            {
+                                "class": "graph_query",
+                                "spec/query/spec/expr": "sum(rate(scylla_tablet_ops_succeeded{kind=~\".*repair\", cluster=\"$cluster\"}[$__rate_interval])) by (kind)",
+                                "spec/query/spec/legendFormat": "{{kind}}"
+                            },
+                            {
+                                "class": "graph_query",
+                                "spec/refId": "B",
+                                "spec/query/spec/expr": "sum(rate(scylla_tablet_ops_failed{kind=~\".*repair\", cluster=\"$cluster\"}[$__rate_interval])) by (kind)",
+                                "spec/query/spec/legendFormat": "{{kind}} failed"
+                            }
+                        ]
+                    },
+                    {
+                        "span": 3,
+                        "class": "bps_panel",
+                        "spec/title": "Repair bytes sent $func by [[by]]",
+                        "spec/description": "Repair throughput: bytes of rows sent to other replicas during repair.\n\nscylla_repair_tx_row_bytes",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_repair_tx_row_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                    },
+                    {
+                        "span": 3,
+                        "class": "bps_panel",
+                        "spec/title": "Incremental repair read vs skipped",
+                        "conditionalRendering": {
+                            "class": "conditionalRendering_data"
+                        },
+                        "spec/description": "SSTable bytes read by incremental repair, and SSTable bytes it skipped because they were already repaired. The skipped bytes are work a full repair would have done.\n\nscylla_repair_inc_sst_read_bytes\nscylla_repair_inc_sst_skipped_bytes",
+                        "spec/data/spec/queries": [
+                            {
+                                "class": "graph_query",
+                                "spec/query/spec/expr": "sum(rate(scylla_repair_inc_sst_read_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "read"
+                            },
+                            {
+                                "class": "graph_query",
+                                "spec/refId": "B",
+                                "spec/query/spec/expr": "sum(rate(scylla_repair_inc_sst_skipped_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval]))",
+                                "spec/query/spec/legendFormat": "skipped"
+                            }
+                        ]
+                    },
+                    {
+                        "span": 3,
+                        "class": "percentunit_panel",
+                        "spec/title": "Tablet repair time $func by [[by]]",
+                        "conditionalRendering": {
+                            "class": "conditionalRendering_data"
+                        },
+                        "spec/description": "Fraction of time spent on tablet repair. Per shard it is between 0 and 1; with sum it adds up across shards.\n\nscylla_repair_tablet_time_ms",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_repair_tablet_time_ms{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])/1000)"
+                    }
+                ]
+            },
+            {
+                "class": "row",
+                "title": "Vnode Repair",
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "tablets",
+                    "spec/items/0/spec/operator": "notMatches"
+                },
+                "panels": [
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Repair rows sent $func by [[by]]",
+                        "spec/description": "Rows sent to other replicas during repair.\n\nscylla_repair_tx_row_nr",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_repair_tx_row_nr{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                    },
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Repair rows received $func by [[by]]",
+                        "spec/description": "Rows received from other replicas during repair.\n\nscylla_repair_rx_row_nr",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_repair_rx_row_nr{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                    },
+                    {
+                        "span": 3,
+                        "class": "bps_panel",
+                        "spec/title": "Repair bytes sent $func by [[by]]",
+                        "spec/description": "Repair throughput: bytes of rows sent to other replicas during repair.\n\nscylla_repair_tx_row_bytes",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_repair_tx_row_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                    },
+                    {
+                        "span": 3,
+                        "class": "bps_panel",
+                        "spec/title": "Repair bytes read from disk $func by [[by]]",
+                        "spec/description": "Bytes of rows repair read from disk.\n\nscylla_repair_row_from_disk_bytes",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_repair_row_from_disk_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]))"
+                    }
+                ]
+            },
+            {
+                "class": "row",
                 "hideHeader": true,
                 "gridPos/h": 2,
                 "panels": [
@@ -2065,6 +2175,12 @@
                     "allowCustomValue": true,
                     "valuesFormat": "csv"
                 }
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "tablets",
+                "spec/label": "tablets",
+                "spec/query/spec/__legacyStringValue": "label_values(scylla_tablets_count{cluster=\"$cluster\"}, cluster)"
             }
         ]
     }
