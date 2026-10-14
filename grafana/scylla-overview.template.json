@@ -174,19 +174,19 @@
                             {
                                 "class": "ops_panel",
                                 "span": 3,
-                                "spec/title": "Cache Hits/Misses",
-                                "spec/description": "The Hits and Misses",
+                                "spec/title": "Cache Reads/Misses",
+                                "spec/description": "Reads served by the cache, and the part of them that missed the cache (needed disk). The gap between the lines is cache hits.\n\nscylla_cache_reads, scylla_cache_reads_with_misses",
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "sum(rate(scylla_cache_row_hits{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]])",
-                                        "spec/query/spec/legendFormat": "Hit {{instance}}"
+                                        "spec/query/spec/expr": "sum(rate(scylla_cache_reads{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]])",
+                                        "spec/query/spec/legendFormat": "Reads {{dc}} {{rack}} {{instance}} {{shard}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "sum(rate(scylla_cache_row_misses{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]])",
-                                        "spec/query/spec/legendFormat": "Misses {{instance}}"
+                                        "spec/query/spec/expr": "sum(rate(scylla_cache_reads_with_misses{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]])",
+                                        "spec/query/spec/legendFormat": "Reads with misses {{dc}} {{rack}} {{instance}} {{shard}}"
                                     }
                                 ],
                                 "spec/vizConfig/spec/options/legend": {
