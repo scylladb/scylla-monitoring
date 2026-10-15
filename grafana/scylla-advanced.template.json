@@ -275,8 +275,11 @@
                                 "class": "percentunit_panel",
                                 "span": 3,
                                 "spec/title": "Time spent in stalls by [[by]]",
-                                "spec/description": "Fraction of time the reactor spent stalled, summed over shards (a value of 1 is one full CPU).\n\nscylla_reactor_stalls",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_reactor_stalls_sum{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) / 1000000)"
+                                "spec/description": "Fraction of reactor time spent in stalls, averaged over the shards.\n\nThe stall metric has no shard label, so the panel is hidden when grouping by shard.\n\nscylla_reactor_stalls",
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                },
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_reactor_stalls_sum{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) / 1000000 / count(scylla_reactor_utilization{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]]))"
                             }
                         ]
                     },
