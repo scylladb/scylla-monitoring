@@ -247,9 +247,22 @@
                             {
                                 "class": "us_panel",
                                 "span": 3,
-                                "spec/title": "Stall P99 by [[by]]",
-                                "spec/description": "99th percentile of reactor stall duration. Stalls include every task that overran the task quota, so on a busy node short overruns dominate the percentile; use the cutoff panel to spot rare long stalls.\n\nscylla_reactor_stalls",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], histogram_quantile(0.99, sum(rate(scylla_reactor_stalls_bucket{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
+                                "spec/title": "Stall P99 and P999 by [[by]]",
+                                "spec/description": "99th and 99.9th percentiles of reactor stall duration. Stalls include every task that overran the task quota, so on a busy node short overruns dominate the percentiles; use the cutoff panel to spot rare long stalls.\n\nscylla_reactor_stalls",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "A",
+                                        "spec/query/spec/legendFormat": "P99 {{dc}} {{rack}} {{instance}}",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], histogram_quantile(0.99, sum(rate(scylla_reactor_stalls_bucket{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/legendFormat": "P999 {{dc}} {{rack}} {{instance}}",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], histogram_quantile(0.999, sum(rate(scylla_reactor_stalls_bucket{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
+                                    }
+                                ]
                             },
                             {
                                 "class": "us_panel",
