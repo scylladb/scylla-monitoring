@@ -209,6 +209,86 @@
                     },
                     {
                         "class": "row",
+                        "title": "Reactor stalls",
+                        "hideHeader": true,
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 4
+                        },
+                        "conditionalRendering": {
+                            "class": "conditionalRendering_var",
+                            "spec/items/0/spec/variable": "reactor_stalls"
+                        },
+                        "variables": [
+                            {
+                                "kind": "CustomVariable",
+                                "spec": {
+                                    "name": "stall_cutoff",
+                                    "label": "Stall cutoff (ms)",
+                                    "query": "50 : 49152,75 : 81920,100 : 98304,200 : 196608,400 : 393216",
+                                    "current": {
+                                        "text": "100",
+                                        "value": "98304"
+                                    },
+                                    "options": [],
+                                    "multi": false,
+                                    "includeAll": false,
+                                    "hide": "dontHide",
+                                    "skipUrlSync": false,
+                                    "allowCustomValue": false,
+                                    "valuesFormat": "csv"
+                                }
+                            }
+                        ],
+                        "panels": [
+                            {
+                                "class": "ops_panel",
+                                "span": 3,
+                                "spec/title": "Stalls longer than $stall_cutoff ms by [[by]]",
+                                "spec/description": "Number of reactor stalls per second longer than the selected cutoff. Unlike percentiles, a single long stall is visible here regardless of how many short ones there are.\n\nThe cutoff is rounded to the nearest histogram bucket: 50→49ms, 75→82ms, 100→98ms, 200→197ms, 400→393ms.\n\nscylla_reactor_stalls",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_reactor_stalls_count{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) - sum(rate(scylla_reactor_stalls_bucket{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", le=~\"${stall_cutoff}(\\\\.0+)?\"}[$__rate_interval])) by ([[by]]))"
+                            },
+                            {
+                                "class": "us_panel",
+                                "span": 3,
+                                "spec/title": "Stall P99 and P999 by [[by]]",
+                                "spec/description": "99th and 99.9th percentiles of reactor stall duration. Stalls include every task that overran the task quota, so on a busy node short overruns dominate the percentiles; use the cutoff panel to spot rare long stalls.\n\nscylla_reactor_stalls",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "A",
+                                        "spec/query/spec/legendFormat": "P99 {{dc}} {{rack}} {{instance}}",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], histogram_quantile(0.99, sum(rate(scylla_reactor_stalls_bucket{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/legendFormat": "P999 {{dc}} {{rack}} {{instance}}",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], histogram_quantile(0.999, sum(rate(scylla_reactor_stalls_bucket{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "us_panel",
+                                "span": 3,
+                                "spec/title": "Average stall by [[by]]",
+                                "spec/description": "Average reactor stall duration.\n\nscylla_reactor_stalls",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_reactor_stalls_sum{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) / (sum(rate(scylla_reactor_stalls_count{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) > 0))"
+                            },
+                            {
+                                "class": "percentunit_panel",
+                                "span": 3,
+                                "spec/title": "Time spent in stalls by [[by]]",
+                                "spec/description": "Fraction of reactor time spent in stalls, averaged over the shards.\n\nThe stall metric has no shard label, so the panel is hidden when grouping by shard.\n\nscylla_reactor_stalls",
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                },
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_reactor_stalls_sum{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) / 1000000 / count(scylla_reactor_utilization{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]]))"
+                            }
+                        ]
+                    },
+                    {
+                        "class": "row",
                         "panels": [
                             {
                                 "class": "rps_panel",
@@ -990,6 +1070,12 @@
                 "spec/name": "location_info",
                 "spec/label": "location_info",
                 "spec/query/spec/__legacyStringValue": "label_values(scylla_reactor_location_info{cluster=\"$cluster\"}, cluster)"
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "reactor_stalls",
+                "spec/label": "reactor_stalls",
+                "spec/query/spec/__legacyStringValue": "label_values(scylla_reactor_stalls_count{cluster=\"$cluster\"}, cluster)"
             }
         ]
     }

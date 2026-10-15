@@ -517,8 +517,13 @@ def make_grafana_13(results, args):
                 })
         return layout_items
 
-    def _build_leaf_layout(row, row_layout_kind):
-        """Build a GridLayout/AutoGridLayout for a leaf row (one that has panels)."""
+    def _build_leaf_layout(row, layout):
+        """Build a GridLayout/AutoGridLayout for a leaf row (one that has panels).
+
+        ``layout`` is the row's resolved layout object (a grid_layout or
+        auto_grid_layout class from types.json); its spec is kept and the
+        items are added to it.
+        """
         default_height = 6
         if "height" in row:
             try:
@@ -529,19 +534,8 @@ def make_grafana_13(results, args):
         if "gridPos" in row and "h" in row.get("gridPos", {}):
             default_height = row["gridPos"]["h"]
         panels = row.get("panels", [])
-        layout_items = _process_panels(panels, row_layout_kind, default_height)
-        if row_layout_kind == "GridLayout":
-            return layout_items, {"kind": "GridLayout", "spec": {"items": layout_items}}
-        else:
-            return layout_items, {
-                "kind": "AutoGridLayout",
-                "spec": {
-                    "maxColumnCount": 3,
-                    "columnWidthMode": "standard",
-                    "rowHeightMode": "standard",
-                    "items": layout_items
-                }
-            }
+        layout_items = _process_panels(panels, layout["kind"], default_height)
+        return layout_items, {"kind": layout["kind"], "spec": {**layout.get("spec", {}), "items": layout_items}}
 
     def _clean_variables(variables, where):
         """Keep only kind+spec on each variable; names must be unique within one list."""
@@ -561,8 +555,8 @@ def make_grafana_13(results, args):
     def _container_layout(item, allowed=("panels", "rows", "tabs")):
         """Build the layout for a dashboard/row/tab from whichever of panels/rows/tabs it holds.
 
-        ``rows`` -> RowsLayout, ``tabs`` -> TabsLayout, ``panels`` -> GridLayout or
-        AutoGridLayout (picked by the item's ``layout`` key).
+        ``rows`` -> RowsLayout, ``tabs`` -> TabsLayout, ``panels`` -> the item's
+        ``layout`` object (GridLayout or AutoGridLayout).
         """
         keys = [k for k in ("panels", "rows", "tabs") if k in item]
         if len(keys) != 1 or keys[0] not in allowed:
@@ -573,7 +567,9 @@ def make_grafana_13(results, args):
         if "rows" in keys:
             rows = [r for r in (_process_section(c, "RowsLayoutRow") for c in item["rows"]) if r is not None]
             return rows, {"kind": "RowsLayout", "spec": {"rows": rows}}
-        return _build_leaf_layout(item, item.get("layout", "AutoGridLayout"))
+        if not isinstance(item.get("layout"), dict):
+            raise ValueError(f"'{item.get('title', '')}' has panels but no layout class (grid_layout or auto_grid_layout)")
+        return _build_leaf_layout(item, item["layout"])
 
     def _process_section(item, kind):
         """Convert a template row/tab to a RowsLayoutRow or TabsLayoutTab.
