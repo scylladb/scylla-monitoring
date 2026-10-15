@@ -450,6 +450,70 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "100 * sum(rate(scylla_alternator_filtered_rows_dropped_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) / sum(rate(scylla_alternator_filtered_rows_read_total{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))"
                             }
                         ]
+                    },
+                    {
+                        "class": "row",
+                        "title": "Operation Size",
+                        "conditionalRendering": {
+                            "class": "conditionalRendering_var",
+                            "spec/items/0/spec/variable": "alternator_operation_size"
+                        },
+                        "rows": [
+                            {
+                                "class": "header_row",
+                                "hideHeader": true,
+                                "panels": [
+                                    {
+                                        "class": "plain_text",
+                                        "spec/vizConfig/spec/options/content": "<h1 style=\"color:#FFF; background-color:#1250b0; line-height: 150%; padding-left: 5px\">Operation Size</h1>",
+                                        "spec/vizConfig/spec/options/mode": "html"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "row",
+                                "title": "Operation Size",
+                                "hideHeader": true,
+                                "variables": [
+                                    {
+                                        "class": "query_variable_all",
+                                        "spec/name": "size_ops",
+                                        "spec/label": "ops",
+                                        "spec/query/spec/__legacyStringValue": "label_values(scylla_alternator_operation_size_kb_count{cluster=~\"$cluster|$^\"}, op)"
+                                    }
+                                ],
+                                "tabs": [
+                                    {
+                                        "class": "row",
+                                        "title": "$size_ops",
+                                        "repeat": "size_ops",
+                                        "panels": [
+                                            {
+                                                "span": 4,
+                                                "class": "kbytes_panel",
+                                                "spec/title": "Average operation size $func by [[by]]",
+                                                "spec/description": "The average size of items involved in Alternator operations.",
+                                                "spec/data/spec/queries/0/spec/query/spec/expr": "$func(sum(rate(scylla_alternator_operation_size_kb_sum{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$size_ops\"}[$__rate_interval])) by ([[by]], instance)/(sum(rate(scylla_alternator_operation_size_kb_count{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$size_ops\"}[$__rate_interval])) by ([[by]], instance) > 0)) by ([[by]])"
+                                            },
+                                            {
+                                                "span": 4,
+                                                "class": "kbytes_panel",
+                                                "spec/title": "95th percentile operation size by [[by]]",
+                                                "spec/description": "The P95 size of items involved in Alternator operations.",
+                                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_operation_size_kb_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$size_ops\"}[$__rate_interval])) by ([[by]], le))"
+                                            },
+                                            {
+                                                "span": 4,
+                                                "class": "kbytes_panel",
+                                                "spec/title": "99th percentile operation size by [[by]]",
+                                                "spec/description": "The P99 size of items involved in Alternator operations.",
+                                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_operation_size_kb_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$size_ops\"}[$__rate_interval])) by ([[by]], le))"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 ]
             },
@@ -1450,6 +1514,12 @@
                 "spec/name": "alternator_filtered_read",
                 "spec/label": "alternator_filtered_read",
                 "spec/query/spec/__legacyStringValue": "query_result(sum(scylla_alternator_filtered_rows_read_total{cluster=~\"$cluster|$^\"}) > 0)"
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "alternator_operation_size",
+                "spec/label": "alternator_operation_size",
+                "spec/query/spec/__legacyStringValue": "query_result(sum(scylla_alternator_operation_size_kb_count{cluster=~\"$cluster|$^\"}))"
             }
         ]
     }
