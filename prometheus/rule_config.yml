@@ -83,23 +83,23 @@ route:
 # already critical.
 inhibit_rules:
 - source_match:
+    severity: 'warn'
+  target_match:
     severity: 'info'
-  target_match:
-    severity: 'warn'
-  # Apply inhibition if the alertname is the same.
-  equal: ['alertname']
-- source_match:
-    severity: 'warn'
-  target_match:
-    severity: 'error'
-  # Apply inhibition if the alertname is the same.
-  equal: ['alertname']
+  # Apply inhibition if the alertname is the same on the same instance.
+  equal: ['alertname', 'cluster', 'instance']
 - source_match:
     severity: 'error'
   target_match:
+    severity: 'warn'
+  # Apply inhibition if the alertname is the same on the same instance.
+  equal: ['alertname', 'cluster', 'instance']
+- source_match:
     severity: 'critical'
-  # Apply inhibition if the alertname is the same.
-  equal: ['alertname']
+  target_match:
+    severity: 'error'
+  # Apply inhibition if the alertname is the same on the same instance.
+  equal: ['alertname', 'cluster', 'instance']
 
 
 receivers:
