@@ -189,13 +189,21 @@ groups:
     annotations:
       description: '{{ $labels.instance }} has less than 20% free disk space on the root partition.'
       summary: Instance {{ $labels.instance }} low disk space
+  - alert: ManagerDown
+    expr: up{job="scylla_manager", instance!="127.0.0.1:5090"} == 0
+    for: 5m
+    labels:
+      severity: "warn"
+    annotations:
+      description: 'Scylla Manager {{ $labels.instance }} cannot be reached by Prometheus for more than 5 minutes.'
+      summary: Scylla Manager {{ $labels.instance }} offline
   - alert: NoCql
     expr: scylla_manager_healthcheck_cql_status == -1
     for: 5m
     labels:
-      severity: "info"
+      severity: "warn"
     annotations:
-      description: '{{ $labels.host }} has denied CQL connection for more than 30 seconds.'
+      description: '{{ $labels.host }} has denied CQL connection for more than 5 minutes.'
       summary: Instance {{ $labels.host }} no CQL connection
   - alert: HighLatencies
     expr: wlatencyp95{by="instance"} > 100000
