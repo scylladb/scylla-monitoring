@@ -317,3 +317,19 @@ groups:
       severity: "warn"
       description: 'Bloom filter size in node {{ $labels.instance }}'
       summary: The bloom filter takes too much memory, update bloom_filter_fp_chance
+  - alert: nonLsaMemoryHigh
+    expr: max(scylla_lsa_non_lsa_used_space_bytes/scylla_memory_total_memory) by (cluster, dc, instance) > 0.3
+    for: 10m
+    keep_firing_for: 1h
+    labels:
+      severity: "warn"
+      description: 'Non-LSA memory is over 30% of the memory in node {{ $labels.instance }}'
+      summary: Non-LSA memory is high, it can lead to OOM
+  - alert: nonLsaMemoryHigh
+    expr: max(scylla_lsa_non_lsa_used_space_bytes/scylla_memory_total_memory) by (cluster, dc, instance) > 0.4
+    for: 10m
+    keep_firing_for: 1h
+    labels:
+      severity: "error"
+      description: 'Non-LSA memory is over 40% of the memory in node {{ $labels.instance }}'
+      summary: Non-LSA memory is close to the 50% limit, it can lead to OOM
