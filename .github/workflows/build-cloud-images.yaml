@@ -66,6 +66,11 @@ jobs:
           packer build -only=amazon-ebs -var monitor_version="$MONITOR_VERSION" -var monitor_branch="$MONITOR_BRANCH" -var arch=arm64 scylla-monitor-template.json
         working-directory: packer
 
+      - name: List images in the job summary
+        run: |
+          echo "### Cloud images for $MONITOR_VERSION" >> "$GITHUB_STEP_SUMMARY"
+          jq -r '.builds[] | "- \(.builder_type) \(.custom_data.arch): `\(.artifact_id)`"' packer/packer-manifest.json >> "$GITHUB_STEP_SUMMARY"
+
       - name: Archive Packer manifest
         uses: actions/upload-artifact@v4
         with:
