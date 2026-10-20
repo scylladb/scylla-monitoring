@@ -83,7 +83,7 @@ Options:
   -m alertmanager port           - Override the default Prometheus port.
   -M scylla-manager version      - Override the default Scylla Manager version to use.
   -D docker param                - Encapsulate docker param, the parameter will be used by all containers.
-  -r alert-manager-config        - Override the default alert-manager configuration file.
+  -r alert-manager-config        - Override the default alert-manager configuration file, or a directory holding config.yml.
   -f path/to/alertmanager/data   - If set, the alertmanager would store its data in the given directory.
   -R prometheus-alert-file       - Override the default Prometheus alerts configuration file.
   -N path/to/manager/target file - Set the location of the target file for Scylla Manager.
@@ -606,9 +606,20 @@ else
 	fi
 fi
 
-if ((${#ALERTMANAGER_COMMANDS[@]})); then
-	ALERTMANAGER_COMMAND="    command:\n"$(add_param "${ALERTMANAGER_COMMANDS[@]}")
+if [ -z $ALERT_MANAGER_RULE_CONFIG ]; then
+	ALERT_MANAGER_RULE_CONFIG=./prometheus/rule_config.yml
 fi
+# A directory is mounted as a whole, so a config.yml replaced by rename is
+# seen by the next reload.
+if [ -d "$ALERT_MANAGER_RULE_CONFIG" ]; then
+	ALERT_MANAGER_RULE_CONFIG="$ALERT_MANAGER_RULE_CONFIG:/etc/alertmanager/conf/"
+	ALERTMANAGER_CONFIG_FILE=/etc/alertmanager/conf/config.yml
+else
+	ALERT_MANAGER_RULE_CONFIG="$ALERT_MANAGER_RULE_CONFIG:/etc/alertmanager/config.yml"
+	ALERTMANAGER_CONFIG_FILE=/etc/alertmanager/config.yml
+fi
+# The command replaces the image's, which sets both paths.
+ALERTMANAGER_COMMAND="    command:\n"$(add_param --config.file=$ALERTMANAGER_CONFIG_FILE --storage.path=/alertmanager "${ALERTMANAGER_COMMANDS[@]}")
 
 if [ -z $PROMETHEUS_PORT ]; then
 	PROMETHEUS_PORT=9090
@@ -675,9 +686,6 @@ if [[ ! -d $LOKI_WALL_DIR ]]; then
 	echo "loki WALL directory does not exists"
 fi
 
-if [ -z $ALERT_MANAGER_RULE_CONFIG ]; then
-	ALERT_MANAGER_RULE_CONFIG=./prometheus/rule_config.yml
-fi
 if [ $RUN_LOKI -eq 1 ]; then
 	cat docker-compose.template.yml >docker-compose.yml
 else
