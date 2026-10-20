@@ -1112,18 +1112,18 @@ if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "Using victoria metrics"
 
 	docker run -d $DOCKER_PARAM $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
-		-v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml:z \
+		-v $PWD/prometheus/build/:/etc/prometheus/config/:z \
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
 		$NODE_TARGET_FILE \
 		$SCYLLA_MANGER_AGENT_TARGET_FILE \
 		victoriametrics/victoria-metrics:$VICTORIA_METRICS_VERSION $PROMETHEUS_COMMAND_LINE_OPTIONS \
-		${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090
+		${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/prometheus/config/prometheus.yml -promscrape.config.strictParse=false -httpListenAddr=:9090
 else
 	docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
 		$DATA_DIR_CMD \
 		"${group_args[@]}" \
-		-v $PWD/prometheus/build$STACK/prometheus.yml:/etc/prometheus/prometheus.yml:z \
+		-v $PWD/prometheus/build$STACK/:/etc/prometheus/config/:z \
 		-v $PROMETHEUS_RULES:z \
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
@@ -1131,7 +1131,7 @@ else
 		$VECTOR_SEARCH \
 		$SCYLLA_MANGER_AGENT_TARGET_FILE \
 		$PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
-		--web.enable-lifecycle --enable-feature=promql-experimental-functions --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
+		--web.enable-lifecycle --enable-feature=promql-experimental-functions --config.file=/etc/prometheus/config/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
 		${DOCKER_PARAMS["prometheus"]}
 fi
 

@@ -724,10 +724,9 @@ echo "LOKI_PORT=$LOKI_PORT" >>.env
 echo "LOKI_WALL_DIR=$LOKI_WALL_DIR" >>.env
 if [ "$VICTORIA_METRICS" = "1" ]; then
 	sed -i 's&prom/prometheus:${PROMETHEUS_VERSION}&victoriametrics/victoria-metrics:${VICTORIA_METRICS_VERSION}&' docker-compose.yml
-	sed -i 's&./prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml&./prometheus/build/prometheus.yml:/etc/promscrape.config.yml:z&' docker-compose.yml
-	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(-promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090)
+	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(-promscrape.config=/etc/prometheus/config/prometheus.yml -promscrape.config.strictParse=false -httpListenAddr=:9090)
 else
-	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--config.file=/etc/prometheus/prometheus.yml --web.enable-lifecycle)
+	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--config.file=/etc/prometheus/config/prometheus.yml --web.enable-lifecycle)
 fi
 PROMETHEUS_COMMAND_LINE=""
 if ((${#PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]})); then
