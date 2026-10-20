@@ -17,7 +17,9 @@
 # (Alertmanager), 9100 (node_exporter) and 10911 (sidecar), and forwards each to
 # 127.0.0.1 on the same port, so those services must listen on 127.0.0.1 only
 # (start-all.sh -A 127.0.0.1, node_exporter --web.listen-address=127.0.0.1:9100).
-# Its ping endpoint is on localhost:8080. Generated config goes to traefik/build.
+# Its ping endpoint is on localhost:8080. Generated config goes to traefik/build:
+# static/ holds traefik.yml and confs/ holds traefik-conf.yml; both are mounted
+# as directories, with CERT_DIR mounted as /etc/traefik/certs.
 # Any existing container named traefik is replaced.
 
 cd "$(dirname "$0")" || exit 1
@@ -43,6 +45,13 @@ done
 as_root() { if ((NEED_SUDO)); then sudo "$@"; else "$@"; fi; }
 as_root test -f "$CERT_DIR/server.crt" -a -f "$CERT_DIR/server.key" -a -f "$CERT_DIR/rootCA.crt" ||
 	die "error: CERT_DIR must hold server.crt server.key rootCA.crt"
+# CERT_DIR is mounted whole, so a symlink out of it does not resolve in the
+# container
+CERT_REAL=$(as_root readlink -f "$CERT_DIR")
+for f in server.crt server.key rootCA.crt; do
+	[[ "$(as_root readlink -f "$CERT_DIR/$f")" == "$CERT_REAL/"* ]] ||
+		die "error: CERT_DIR/$f links out of CERT_DIR; copy the file into it"
+done
 
 # Any listener on a proxied port outside loopback bypasses mTLS, or takes the
 # address traefik needs. Published docker ports are checked too, because with
@@ -85,13 +94,17 @@ exposed=$(
 export TAG="${TAG:-$TRAEFIK_VERSION}"
 IMG="traefik:${TAG}"
 CONF_DIR="$PWD/traefik/build"
+STATIC_DIR="$CONF_DIR/static"
+CONFS_DIR="$CONF_DIR/confs"
 # Whatever can fail runs before the old proxy is removed. The config is
 # rendered to .new files and renamed into place only after that, so a failed
 # write leaves the running proxy and the config it watches untouched.
 if ! docker image inspect "$IMG" >/dev/null 2>&1; then
 	./fetch_traefik_image.sh || die "failed: could not pull $IMG from any registry"
 fi
-mkdir -p "$CONF_DIR"
+# confs/ and certs/ are the mount points of the nested mounts; docker cannot
+# create them inside the read-only static mount.
+mkdir -p "$STATIC_DIR/confs" "$STATIC_DIR/certs" "$CONFS_DIR"
 
 # json-file, docker's default driver, never rotates; the access log would
 # grow until the disk is full.
@@ -101,7 +114,7 @@ if [[ "$driver" == json-file ]]; then
 	LOG_OPTS+=(--log-opt max-size=50m --log-opt max-file=3)
 fi
 
-cat > "$CONF_DIR/traefik.yml.new" <<EOF
+cat > "$STATIC_DIR/traefik.yml.new" <<EOF
 global:
   checkNewVersion: false
   sendAnonymousUsage: false
@@ -133,7 +146,7 @@ ping:
   entryPoint: "ping"
 EOF
 
-cat > "$CONF_DIR/traefik-conf.yml.new" <<EOF
+cat > "$CONFS_DIR/traefik-conf.yml.new" <<EOF
 http:
   routers:
     to-agraf:
@@ -193,18 +206,18 @@ tls:
       minVersion: VersionTLS12
       clientAuth:
         caFiles:
-          - /etc/traefik/rootCA.crt
+          - /etc/traefik/certs/rootCA.crt
         clientAuthType: RequireAndVerifyClientCert
   stores:
     default:
       defaultCertificate:
-        certFile: /etc/traefik/server.crt
-        keyFile: /etc/traefik/server.key
+        certFile: /etc/traefik/certs/server.crt
+        keyFile: /etc/traefik/certs/server.key
 EOF
 
 docker rm --force traefik || true
-mv "$CONF_DIR/traefik.yml.new" "$CONF_DIR/traefik.yml"
-mv "$CONF_DIR/traefik-conf.yml.new" "$CONF_DIR/traefik-conf.yml"
+mv "$STATIC_DIR/traefik.yml.new" "$STATIC_DIR/traefik.yml"
+mv "$CONFS_DIR/traefik-conf.yml.new" "$CONFS_DIR/traefik-conf.yml"
 
 # DAC_READ_SEARCH is the one capability kept, so traefik can read a key owned
 # by another user without being able to write it; with host networking the
@@ -215,11 +228,9 @@ docker run -d --name traefik \
 	--cap-drop ALL --cap-add DAC_READ_SEARCH \
 	--security-opt no-new-privileges \
 	"${LOG_OPTS[@]}" \
-	-v "$CONF_DIR/traefik.yml:/etc/traefik/traefik.yml:ro,z" \
-	-v "$CONF_DIR/traefik-conf.yml:/etc/traefik/confs/traefik-conf.yml:ro,z" \
-	-v "${CERT_DIR}/server.crt:/etc/traefik/server.crt:ro" \
-	-v "${CERT_DIR}/server.key:/etc/traefik/server.key:ro" \
-	-v "${CERT_DIR}/rootCA.crt:/etc/traefik/rootCA.crt:ro" \
+	-v "$STATIC_DIR:/etc/traefik:ro,z" \
+	-v "$CONFS_DIR:/etc/traefik/confs:ro,z" \
+	-v "${CERT_DIR}:/etc/traefik/certs:ro" \
 	"$IMG"
 
 # A bare `docker run -d` returns as soon as the container is created, before
