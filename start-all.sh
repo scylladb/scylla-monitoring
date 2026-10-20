@@ -128,7 +128,7 @@ Options:
   -m alertmanager port           - Override the default Prometheus port.
   -M scylla-manager version      - Override the default Scylla Manager version to use.
   -D docker param                - Encapsulate docker param, the parameter will be used by all containers.
-  -r alert-manager-config        - Override the default alert-manager configuration file.
+  -r alert-manager-config        - Override the default alert-manager configuration file, or a directory holding config.yml.
   -f path/to/alertmanager/data   - If set, the alertmanager would store its data in the given directory.
   -R prometheus-alert-file       - Override the default Prometheus alerts configuration file.
   -N path/to/manager/target file - Set the location of the target file for Scylla Manager.
