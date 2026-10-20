@@ -22,6 +22,7 @@
 import os
 import sys
 import shlex
+import json
 import argparse
 import subprocess
 HOME_DIR='/home/centos/'
@@ -123,6 +124,21 @@ def install_monitoring(version):
     run('sudo -u {_USER} tar -xvf {_HOME}/scylla-monitoring.tar.gz -C {_HOME}/')
     run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/{NAME} {_HOME}/scylla-grafana-monitoring-scylla-monitoring'.format(NAME=name, _HOME=HOME_DIR, _USER=USER, _COPY_OR_MOVE=COPY_OR_MOVE))
     set_scylla_datasource_json_data()
+
+def install_scylla_datasource_binary(arch):
+    # The release only ships the linux_amd64 plugin binary; fetch the one for
+    # this arch from the datasource tag matching the bundled plugin version.
+    if arch == 'amd64':
+        return
+    dist = '{_HOME}/scylla-grafana-monitoring-scylla-monitoring/grafana/plugins/scylla-plugin/dist'.format(_HOME=HOME_DIR)
+    if dry_run:
+        tag = 'vX.Y.Z'
+    else:
+        with open(dist + '/plugin.json') as f:
+            tag = 'v' + json.load(f)['info']['version']
+    binary = 'gpx_scylladb_linux_{ARCH}'.format(ARCH=arch)
+    run('sudo -u {_USER} curl -fL -o {DIST}/{BINARY} https://raw.githubusercontent.com/scylladb/scylla-grafana-datasource/{TAG}/dist/{BINARY}'.format(DIST=dist, BINARY=binary, TAG=tag, _USER=USER))
+    run('chmod a+x {DIST}/{BINARY}'.format(DIST=dist, BINARY=binary))
 
 def set_scylla_datasource_json_data(settings=None):
     # Grafana provisions the scylla-datasource from these files; on an image the
@@ -232,6 +248,7 @@ if __name__ == '__main__':
     update_swap(args.swap_size)
     install_docker(args.arch)
     install_monitoring(args.version)
+    install_scylla_datasource_binary(args.arch)
     post_monitoring_installation(args)
     install_dependencies(args)
     if args.mode == "dbaas":
