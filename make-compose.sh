@@ -665,7 +665,8 @@ fi
 if [ $RUN_LOKI -eq 1 ]; then
 	# Alloy listens on the same ports inside the container as outside, so the ports
 	# hold with host networking too, where Compose ignores the port mapping.
-	sed -e "s/LOKI_IP/$ALLOY_LOKI_ADDRESS/" -e "s/0.0.0.0:1514/0.0.0.0:$ALLOY_SYSLOG_PORT/" loki/alloy/config.template.alloy >loki/alloy/config.alloy
+	mkdir -p loki/alloy/build
+	sed -e "s/LOKI_IP/$ALLOY_LOKI_ADDRESS/" -e "s/0.0.0.0:1514/0.0.0.0:$ALLOY_SYSLOG_PORT/" loki/alloy/config.template.alloy >loki/alloy/build/config.alloy
 else
 	DATA_SOURCES=$(echo "$DATA_SOURCES" | sed 's/ -L .*//')
 fi

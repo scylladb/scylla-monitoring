@@ -10,7 +10,7 @@ fi
 VERSIONS=$DEFAULT_VERSION
 LOKI_RULE_DIR=$PWD/loki/rules/scylla
 LOKI_CONF_DIR=$PWD/loki/conf
-PROMTAIL_CONFIG=$PWD/loki/promtail/promtail_config.yml
+PROMTAIL_CONFIG_DIR=$PWD/loki/promtail/build
 DOCKER_PARAM=""
 BIND_ADDRESS=""
 LOKI_COMMANDS="--ingester.wal-enabled=false"
@@ -251,11 +251,12 @@ if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:
 	PROMTAIL_PORT_MAPPING="-p $BIND_ADDRESS$PROMTAIL_PORT:9080 -p ${BIND_ADDRESS}$PROMTAIL_BIN_PORT:1514"
 fi
 
-sed "s/LOKI_IP/$LOKI_ADDRESS/" loki/promtail/promtail_config.template.yml >loki/promtail/promtail_config.yml
+mkdir -p $PROMTAIL_CONFIG_DIR
+sed "s/LOKI_IP/$LOKI_ADDRESS/" loki/promtail/promtail_config.template.yml >$PROMTAIL_CONFIG_DIR/config.yml
 
 docker run ${DOCKER_LIMITS["promtail"]} -d $DOCKER_PARAM -i $PROMTAIL_PORT_MAPPING \
-	-v $PROMTAIL_CONFIG:/etc/promtail/config.yml:z \
-	--name $PROMTAIL_NAME docker.io/grafana/promtail:$PROMTAIL_VERSION --config.file=/etc/promtail/config.yml ${DOCKER_PARAMS["promtail"]}
+	-v $PROMTAIL_CONFIG_DIR:/etc/promtail/conf:ro,z \
+	--name $PROMTAIL_NAME docker.io/grafana/promtail:$PROMTAIL_VERSION --config.file=/etc/promtail/conf/config.yml ${DOCKER_PARAMS["promtail"]}
 
 if [ $? -ne 0 ]; then
 	echo "Error: Promtail container failed to start"
