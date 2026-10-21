@@ -772,7 +772,8 @@ sed -i "s&#LOKI_DIR&$LOKI_DIR&" docker-compose.yml
 sed -i "s&#LOKi_USER_PERMISSIONS&$LOKi_USER_PERMISSIONS&" docker-compose.yml
 sed -i "s&#GRAFANA_USER_PERMISSIONS&$GRAFANA_USER_PERMISSIONS&" docker-compose.yml
 
-./prometheus-config.sh -m $ALERTMANAGER_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS "${CLUSTER_LABEL_ARGS[@]}"
+# The compose service is always named agraf.
+./prometheus-config.sh -m $ALERTMANAGER_ADDRESS -G agraf:3000 $CONSUL_ADDRESS $PROMETHEUS_TARGETS "${CLUSTER_LABEL_ARGS[@]}"
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done

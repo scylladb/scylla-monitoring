@@ -195,52 +195,6 @@ is_local() {
 	return 1
 }
 
-# Resolve the address of a Docker container.
-# Usage: container_address <container_name> <container_port> [host_port]
-# Prints <ip>:<container_port>, the address the container is reachable at from
-# inside the Docker network. Falls back to BIND_ADDRESS or the host IP when the
-# container has no address of its own, and then uses host_port, because that is
-# the port the container is published on. host_port defaults to container_port.
-container_address() {
-	local name=$1
-	local port=$2
-	local host_port=${3:-$2}
-	local ip
-	ip=$(first_container_address "$name")
-	if [ -z "$ip" ]; then
-		if [ ! -z "$BIND_ADDRESS" ]; then
-			ip=$(echo $BIND_ADDRESS | sed 's/:$//')
-		elif [[ $(uname) == "Linux" ]]; then
-			ip=$(hostname -I | awk '{print $1}')
-		elif [[ $(uname) == "Darwin" ]]; then
-			ip=$(ifconfig en0 | awk '/inet / {print $2}')
-		fi
-		port=$host_port
-	fi
-	echo "$ip:$port"
-}
-
-# Resolve the address of a monitoring container, as seen by the other containers
-# of the stack.
-# Usage: service_address <container_name> <container_port> [host_port]
-# On a user-defined network Docker's embedded DNS resolves container names. A name
-# stays correct when Docker gives the container a different address, which it does
-# whenever the containers are recreated or the host reboots, so prefer it there.
-# This covers the network the script creates and one the caller passed in -D
-# alike. Falls back to container_address when the network resolves no names, as
-# with host networking, which has no container address either.
-service_address() {
-	local name=$1
-	local port=$2
-	local host_port=${3:-$2}
-
-	if stack_network >/dev/null; then
-		echo "$name:$port"
-		return
-	fi
-	container_address "$name" "$port" "$host_port"
-}
-
 if [ -z "$PROMETHEUS_RULES" ]; then
 	PROMETHEUS_RULES="$PWD/prometheus/prom_rules/:/etc/prometheus/prom_rules/"
 fi
@@ -820,10 +774,7 @@ if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:sp
 	HOST_NETWORK=host
 	GRAFANA_ADDRESS="-G localhost:3000"
 elif [[ ! $DOCKER_PARAM = *"--net"* ]]; then
-    HOST_NETWORK="monitor-net"
-    if [ "$STACK_ID" != "" ]; then
-        HOST_NETWORK="$HOST_NETWORK$STACK_ID"
-    fi
+    HOST_NETWORK=$(default_network "$STACK_ID")
     if ! docker network inspect $HOST_NETWORK >/dev/null 2>&1; then
       docker network create $HOST_NETWORK
     fi
@@ -988,13 +939,10 @@ else
 	# the name off the flag that is actually passed: env.sh can set
 	# ALERTMANAGER_PORT_CMD while leaving the port itself unset.
 	ALERTMANAGER_PORT_ARG=$(echo "$ALERTMANAGER_PORT_CMD" | sed -n 's/.*-p[[:space:]]*\([^[:space:]]*\).*/\1/p')
-	if [ -z "$ALERTMANAGER_PORT_ARG" ]; then
-		ALERTMANAGER_NAME=aalert
-	else
-		ALERTMANAGER_NAME=aalert-$ALERTMANAGER_PORT_ARG
+	if [ -n "$ALERTMANAGER_PORT_ARG" ]; then
 		ALERTMANAGER_PORT=$ALERTMANAGER_PORT_ARG
 	fi
-	AM_ADDRESS=$(service_address $ALERTMANAGER_NAME 9093 $ALERTMANAGER_PORT)
+	AM_ADDRESS=$(alertmanager_address "$ALERTMANAGER_PORT_ARG" "$ALERTMANAGER_PORT")
 fi
 
 LOKI_ADDRESS=""
@@ -1083,20 +1031,7 @@ if [ -z "$GRAFANA_ADDRESS" ] && stack_network >/dev/null; then
 			;;
 		esac
 	fi
-	# Named the way start-grafana.sh names it: a GRAFANA_NAME from env.sh wins over
-	# the port, and otherwise the name follows a port having been given at all
-	# rather than its value, so -g 3000 names the container agraf-3000. Kept in a
-	# variable of its own, because assigning to GRAFANA_NAME here would overwrite
-	# the name env.sh chose, while start-grafana.sh reads env.sh for itself and
-	# would still use it.
-	if [ ! -z "$GRAFANA_NAME" ]; then
-		GRAFANA_SCRAPE_NAME=$GRAFANA_NAME
-	elif [ -z "$GRAFANA_BARE_PORT" ]; then
-		GRAFANA_SCRAPE_NAME=agraf
-	else
-		GRAFANA_SCRAPE_NAME=agraf-$GRAFANA_BARE_PORT
-	fi
-	GRAFANA_ADDRESS="-G $GRAFANA_SCRAPE_NAME:3000"
+	GRAFANA_ADDRESS="-G $(grafana_container_name "$GRAFANA_BARE_PORT"):3000"
 fi
 
 ./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $NATIVE_HISTOGRAM $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD "${CLUSTER_LABEL_ARGS[@]}"
