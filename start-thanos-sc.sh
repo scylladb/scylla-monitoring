@@ -183,9 +183,10 @@ if [ -z "$HOST_NETWORK" ]; then
 fi
 
 echo "Starting Thanos sidecar"
-docker run ${DOCKER_LIMITS["sidecar"]} -d $USER_PERMISSIONS \
+docker run -d $USER_PERMISSIONS \
 	$DATA_DIR \
 	$DOCKER_PARAM \
+	${DOCKER_LIMITS["sidecar"]} \
 	-i $PORT_MAPPING --name sidecar$NAME docker.io/thanosio/thanos:$THANOS_VERSION \
 	"sidecar" \
 	"--debug.name=$NAME" \

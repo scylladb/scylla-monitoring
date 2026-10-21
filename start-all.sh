@@ -1056,7 +1056,7 @@ fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "Using victoria metrics"
 
-	docker run -d $DOCKER_PARAM $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
+	docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
 		-v $PWD/prometheus/build/:/etc/prometheus/config/:z \
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
@@ -1114,14 +1114,14 @@ DB_ADDRESS=$(service_address $PROMETHEUS_NAME 9090)
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "running vmalert"
 
-	docker run -d $DOCKER_PARAM \
+	docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["vmalert"]} \
 		--name vmalert \
 		-v $PROMETHEUS_RULES:z \
 		victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
 		-datasource.url=http://$DB_ADDRESS \
 		-notifier.url=http://$AM_ADDRESS \
 		-remoteWrite.url=http://$DB_ADDRESS \
-		-remoteRead.url=http://$DB_ADDRESS
+		-remoteRead.url=http://$DB_ADDRESS ${DOCKER_PARAMS["vmalert"]}
 fi
 if [ $RUN_THANOS_SC -eq 1 ]; then
 	if [ -z $DATA_DIR ]; then
@@ -1143,21 +1143,21 @@ if [ $RUN_THANOS -eq 1 ]; then
 			SC_ADDRESS_FLAG="-S sidecar1:10911"
 		fi
 	fi
-	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG $SC_ADDRESS_FLAG
+	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $SC_ADDRESS_FLAG
 elif [ "$RUN_LOCAL_THANOS" = "1" ]; then
     if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
         SC_ADDRESS="localhost:10911"
     else
         SC_ADDRESS="sidecar1:10911"
     fi
-    run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG -S $SC_ADDRESS
+    run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG -S $SC_ADDRESS
 fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 if [ ! -z "$DATDOGPARAM" ]; then
-	run_script ./start-datadog.sh $DATDOGPARAM -D "$DOCKER_PARAM" -p $DB_ADDRESS
+	run_script ./start-datadog.sh $DATDOGPARAM -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -p $DB_ADDRESS
 fi
 if [ "$RUN_ALTERNATOR" = 1 ]; then
 	GRAFANA_ENV_ARRAY+=(--alternator)

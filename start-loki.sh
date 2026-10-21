@@ -183,7 +183,7 @@ fi
 
 sed "s/ALERTMANAGER/$ALERT_MANAGER_ADDRESS/" loki/conf/loki-config.template.yaml >loki/conf/loki-config.yaml
 
-docker run ${DOCKER_LIMITS["loki"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
+docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["loki"]} -i $PORT_MAPPING \
 	$USER_PERMISSIONS \
 	-v $LOKI_RULE_DIR:/etc/loki/rules/fake:z \
 	-v $LOKI_CONF_DIR:/mnt/config:z \
@@ -254,7 +254,7 @@ fi
 mkdir -p $PROMTAIL_CONFIG_DIR
 sed "s/LOKI_IP/$LOKI_ADDRESS/" loki/promtail/promtail_config.template.yml >$PROMTAIL_CONFIG_DIR/config.yml
 
-docker run ${DOCKER_LIMITS["promtail"]} -d $DOCKER_PARAM -i $PROMTAIL_PORT_MAPPING \
+docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["promtail"]} -i $PROMTAIL_PORT_MAPPING \
 	-v $PROMTAIL_CONFIG_DIR:/etc/promtail/conf:ro,z \
 	--name $PROMTAIL_NAME docker.io/grafana/promtail:$PROMTAIL_VERSION --config.file=/etc/promtail/conf/config.yml ${DOCKER_PARAMS["promtail"]}
 

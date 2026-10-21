@@ -169,7 +169,7 @@ fi
 mkdir -p $ALLOY_CONFIG_DIR
 sed -e "s/LOKI_IP/$ALLOY_LOKI_ADDRESS/" -e "s/0.0.0.0:1514/0.0.0.0:$ALLOY_SYSLOG_PORT/" loki/alloy/config.template.alloy >$ALLOY_CONFIG_DIR/config.alloy
 
-docker run ${DOCKER_LIMITS["alloy"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
+docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["alloy"]} -i $PORT_MAPPING \
 	-v $ALLOY_CONFIG_DIR:/etc/alloy/conf:ro,z \
 	--name $ALLOY_NAME docker.io/grafana/alloy:$ALLOY_VERSION \
 	run --server.http.listen-addr=0.0.0.0:$ALLOY_PORT --storage.path=/var/lib/alloy/data /etc/alloy/conf/config.alloy ${DOCKER_PARAMS["alloy"]}

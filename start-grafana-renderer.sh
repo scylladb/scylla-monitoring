@@ -116,7 +116,7 @@ if docker container inspect $GRAFANA_NAME >/dev/null 2>&1; then
 	fi
 fi
 
-docker run ${DOCKER_LIMITS["grafanarender"]} -d $DOCKER_PARAM $PORT_MAPPING \
+docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafanarender"]} $PORT_MAPPING \
 	-e "AUTH_TOKEN=$GRAFANA_RENDERER_TOKEN" \
 	--name $GRAFANA_NAME docker.io/grafana/grafana-image-renderer:$VERSION server \
 	${DOCKER_PARAMS["grafanarender"]}

@@ -148,7 +148,7 @@ else
 	CONFIG_FILE=/etc/alertmanager/config.yml
 fi
 
-docker run ${DOCKER_LIMITS["alertmanager"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
+docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["alertmanager"]} -i $PORT_MAPPING \
 	-v $RULE_MOUNT \
 	$ALERT_MANAGER_DIR \
 	--name $ALERTMANAGER_NAME docker.io/prom/alertmanager:$ALERT_MANAGER_VERSION \
