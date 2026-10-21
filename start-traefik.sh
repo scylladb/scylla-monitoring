@@ -8,6 +8,10 @@
 # input (env): PRIVATE_IP  address traefik listens on
 #              CERT_DIR    absolute path holding server.crt server.key rootCA.crt
 # optional (env): TAG overrides TRAEFIK_VERSION
+#                 TRAEFIK_GENERATION, written as a comment in the dynamic config
+#
+# --reload only rewrites the dynamic config, so the running traefik reads the
+# certificates in CERT_DIR again; it needs neither PRIVATE_IP nor CERT_DIR.
 #
 # Clients must present a certificate signed by rootCA.crt. The readiness probe
 # presents server.crt, so that certificate must also allow client auth, and it
@@ -29,124 +33,12 @@ set -euo pipefail
 
 die() { echo "$@" >&2; exit 1; }
 
-: "${PRIVATE_IP:?is required}" "${CERT_DIR:?is required}"
-ip -o addr show scope global | awk -v ip="$PRIVATE_IP" '{sub(/\/.*/, "", $4)} $4 == ip {found = 1} END {exit !found}' ||
-	die "error: PRIVATE_IP must be a global address on this host, as \`ip addr\` prints it"
-[[ "$CERT_DIR" == /* && "$CERT_DIR" != *:* ]] || die "error: CERT_DIR must be an absolute path without ':'"
-
-ADDR="$PRIVATE_IP"
-if [[ "$ADDR" == *:* ]]; then ADDR="[$ADDR]"; fi
-
-# The key is usually root-only; use sudo only when it is needed to read it.
-NEED_SUDO=0
-for f in server.crt server.key rootCA.crt; do
-	[[ -r "$CERT_DIR/$f" ]] || NEED_SUDO=1
-done
-as_root() { if ((NEED_SUDO)); then sudo "$@"; else "$@"; fi; }
-as_root test -f "$CERT_DIR/server.crt" -a -f "$CERT_DIR/server.key" -a -f "$CERT_DIR/rootCA.crt" ||
-	die "error: CERT_DIR must hold server.crt server.key rootCA.crt"
-# CERT_DIR is mounted whole, so a symlink out of it does not resolve in the
-# container
-CERT_REAL=$(as_root readlink -f "$CERT_DIR")
-for f in server.crt server.key rootCA.crt; do
-	[[ "$(as_root readlink -f "$CERT_DIR/$f")" == "$CERT_REAL/"* ]] ||
-		die "error: CERT_DIR/$f links out of CERT_DIR; copy the file into it"
-done
-
-# Any listener on a proxied port outside loopback bypasses mTLS, or takes the
-# address traefik needs. Published docker ports are checked too, because with
-# userland-proxy disabled they have no socket for ss to see. Both are captured
-# first so a failing ss or docker ps stops the script instead of passing it.
-PORTS='3000|9090|9093|9100|10911'
-OWN=""
-# A crash-looping traefik also reports Running while in restart backoff.
-if [[ "$(docker inspect --format '{{and .State.Running (not .State.Restarting)}}' traefik 2>/dev/null)" == true ]]; then
-	OWN="$ADDR"
-fi
-listeners=$(ss -ltn)
-published=$(docker ps --format '{{.Ports}}')
-# A container in restart backoff lists no ports, yet gets them back on restart.
-restarting=$(docker ps --quiet --filter status=restarting)
-if [[ -n "$restarting" ]]; then
-	# shellcheck disable=SC2086
-	published+=$'\n'$(docker inspect --format '{{range $p, $b := .HostConfig.PortBindings}}{{range $b}}{{.HostIp}}:{{.HostPort}}->{{$p}},{{end}}{{end}}' $restarting)
-fi
-exposed=$(
-	{
-		awk 'NR > 1 {print "ss", $4}' <<<"$listeners"
-		tr ',' '\n' <<<"$published" | sed -nE 's/^ *(.+)->.*/docker \1/p'
-	} | awk -v own="$OWN" -v ports="$PORTS" '
-		BEGIN { n = split(ports, p, "|") }
-		{
-			i = match($2, /:[0-9]+(-[0-9]+)?$/)
-			if (!i) next
-			host = substr($2, 1, i - 1)
-			if (host ~ /^(127\.|\[::1\]$|::1$|\[?::ffff:127\.)/) next
-			# only a socket can be traefik itself; a published port on it is DNAT
-			if ($1 == "ss" && (host == own || "[" host "]" == own)) next
-			lo = hi = substr($2, i + 1)
-			if (lo ~ /-/) { split(lo, r, "-"); lo = r[1]; hi = r[2] }
-			for (k = 1; k <= n; k++) if (p[k] + 0 >= lo + 0 && p[k] + 0 <= hi + 0) { print $2; next }
-		}' | sort -u
-)
-[[ -z "$exposed" ]] || die "error: listening outside loopback, move to 127.0.0.1 first: ${exposed//$'\n'/ }"
-
-export TAG="${TAG:-$TRAEFIK_VERSION}"
-IMG="traefik:${TAG}"
-CONF_DIR="$PWD/traefik/build"
-STATIC_DIR="$CONF_DIR/static"
-CONFS_DIR="$CONF_DIR/confs"
-# Whatever can fail runs before the old proxy is removed. The config is
-# rendered to .new files and renamed into place only after that, so a failed
-# write leaves the running proxy and the config it watches untouched.
-if ! docker image inspect "$IMG" >/dev/null 2>&1; then
-	./fetch_traefik_image.sh || die "failed: could not pull $IMG from any registry"
-fi
-# confs/ and certs/ are the mount points of the nested mounts; docker cannot
-# create them inside the read-only static mount.
-mkdir -p "$STATIC_DIR/confs" "$STATIC_DIR/certs" "$CONFS_DIR"
-
-# json-file, docker's default driver, never rotates; the access log would
-# grow until the disk is full.
-driver=$(docker info --format '{{.LoggingDriver}}')
-LOG_OPTS=(--log-opt mode=non-blocking)
-if [[ "$driver" == json-file ]]; then
-	LOG_OPTS+=(--log-opt max-size=50m --log-opt max-file=3)
-fi
-
-cat > "$STATIC_DIR/traefik.yml.new" <<EOF
-global:
-  checkNewVersion: false
-  sendAnonymousUsage: false
-# log process events to stdout
-log:
-  filePath: ""
-  level: INFO
-# log traffic to stdout
-accessLog:
-  filePath: ""
-entryPoints:
-  agraf:
-    address: "${ADDR}:3000"
-  aprom:
-    address: "${ADDR}:9090"
-  aalert:
-    address: "${ADDR}:9093"
-  node-exporter:
-    address: "${ADDR}:9100"
-  sidecar1:
-    address: "${ADDR}:10911"
-  ping:
-    address: "localhost:8080"
-providers:
-  file:
-    directory: "/etc/traefik/confs"
-
-ping:
-  entryPoint: "ping"
-EOF
-
-cat > "$CONFS_DIR/traefik-conf.yml.new" <<EOF
+# The dynamic config. traefik's file provider reloads it, and the certificates
+# with it, whenever it changes; the generation comment makes each rewrite a
+# change, which is how --reload makes traefik read new certificates.
+write_dynamic_conf() {
+	cat > "$1" <<EOF
+# generation: ${TRAEFIK_GENERATION:-}
 http:
   routers:
     to-agraf:
@@ -214,6 +106,136 @@ tls:
         certFile: /etc/traefik/certs/server.crt
         keyFile: /etc/traefik/certs/server.key
 EOF
+}
+
+CONFS_DIR="$PWD/traefik/build/confs"
+if [ "${1:-}" = "--reload" ]; then
+	# traefik skips a config that did not change, so the comment must change
+	# for it to read the new certificates
+	TRAEFIK_GENERATION="${TRAEFIK_GENERATION:-$(date +%s.%N)}"
+	mkdir -p "$CONFS_DIR"
+	write_dynamic_conf "$CONFS_DIR/traefik-conf.yml.new"
+	mv "$CONFS_DIR/traefik-conf.yml.new" "$CONFS_DIR/traefik-conf.yml"
+	exit 0
+fi
+
+: "${PRIVATE_IP:?is required}" "${CERT_DIR:?is required}"
+ip -o addr show scope global | awk -v ip="$PRIVATE_IP" '{sub(/\/.*/, "", $4)} $4 == ip {found = 1} END {exit !found}' ||
+	die "error: PRIVATE_IP must be a global address on this host, as \`ip addr\` prints it"
+[[ "$CERT_DIR" == /* && "$CERT_DIR" != *:* ]] || die "error: CERT_DIR must be an absolute path without ':'"
+
+ADDR="$PRIVATE_IP"
+if [[ "$ADDR" == *:* ]]; then ADDR="[$ADDR]"; fi
+
+# The key is usually root-only; use sudo only when it is needed to read it.
+NEED_SUDO=0
+for f in server.crt server.key rootCA.crt; do
+	[[ -r "$CERT_DIR/$f" ]] || NEED_SUDO=1
+done
+as_root() { if ((NEED_SUDO)); then sudo "$@"; else "$@"; fi; }
+as_root test -f "$CERT_DIR/server.crt" -a -f "$CERT_DIR/server.key" -a -f "$CERT_DIR/rootCA.crt" ||
+	die "error: CERT_DIR must hold server.crt server.key rootCA.crt"
+# CERT_DIR is mounted whole, so a symlink out of it does not resolve in the
+# container
+CERT_REAL=$(as_root readlink -f "$CERT_DIR")
+for f in server.crt server.key rootCA.crt; do
+	[[ "$(as_root readlink -f "$CERT_DIR/$f")" == "$CERT_REAL/"* ]] ||
+		die "error: CERT_DIR/$f links out of CERT_DIR; copy the file into it"
+done
+
+# Any listener on a proxied port outside loopback bypasses mTLS, or takes the
+# address traefik needs. Published docker ports are checked too, because with
+# userland-proxy disabled they have no socket for ss to see. Both are captured
+# first so a failing ss or docker ps stops the script instead of passing it.
+PORTS='3000|9090|9093|9100|10911'
+OWN=""
+# A crash-looping traefik also reports Running while in restart backoff.
+if [[ "$(docker inspect --format '{{and .State.Running (not .State.Restarting)}}' traefik 2>/dev/null)" == true ]]; then
+	OWN="$ADDR"
+fi
+listeners=$(ss -ltn)
+published=$(docker ps --format '{{.Ports}}')
+# A container in restart backoff lists no ports, yet gets them back on restart.
+restarting=$(docker ps --quiet --filter status=restarting)
+if [[ -n "$restarting" ]]; then
+	# shellcheck disable=SC2086
+	published+=$'\n'$(docker inspect --format '{{range $p, $b := .HostConfig.PortBindings}}{{range $b}}{{.HostIp}}:{{.HostPort}}->{{$p}},{{end}}{{end}}' $restarting)
+fi
+exposed=$(
+	{
+		awk 'NR > 1 {print "ss", $4}' <<<"$listeners"
+		tr ',' '\n' <<<"$published" | sed -nE 's/^ *(.+)->.*/docker \1/p'
+	} | awk -v own="$OWN" -v ports="$PORTS" '
+		BEGIN { n = split(ports, p, "|") }
+		{
+			i = match($2, /:[0-9]+(-[0-9]+)?$/)
+			if (!i) next
+			host = substr($2, 1, i - 1)
+			if (host ~ /^(127\.|\[::1\]$|::1$|\[?::ffff:127\.)/) next
+			# only a socket can be traefik itself; a published port on it is DNAT
+			if ($1 == "ss" && (host == own || "[" host "]" == own)) next
+			lo = hi = substr($2, i + 1)
+			if (lo ~ /-/) { split(lo, r, "-"); lo = r[1]; hi = r[2] }
+			for (k = 1; k <= n; k++) if (p[k] + 0 >= lo + 0 && p[k] + 0 <= hi + 0) { print $2; next }
+		}' | sort -u
+)
+[[ -z "$exposed" ]] || die "error: listening outside loopback, move to 127.0.0.1 first: ${exposed//$'\n'/ }"
+
+export TAG="${TAG:-$TRAEFIK_VERSION}"
+IMG="traefik:${TAG}"
+CONF_DIR="$PWD/traefik/build"
+STATIC_DIR="$CONF_DIR/static"
+# Whatever can fail runs before the old proxy is removed. The config is
+# rendered to .new files and renamed into place only after that, so a failed
+# write leaves the running proxy and the config it watches untouched.
+if ! docker image inspect "$IMG" >/dev/null 2>&1; then
+	./fetch_traefik_image.sh || die "failed: could not pull $IMG from any registry"
+fi
+# confs/ and certs/ are the mount points of the nested mounts; docker cannot
+# create them inside the read-only static mount.
+mkdir -p "$STATIC_DIR/confs" "$STATIC_DIR/certs" "$CONFS_DIR"
+
+# json-file, docker's default driver, never rotates; the access log would
+# grow until the disk is full.
+driver=$(docker info --format '{{.LoggingDriver}}')
+LOG_OPTS=(--log-opt mode=non-blocking)
+if [[ "$driver" == json-file ]]; then
+	LOG_OPTS+=(--log-opt max-size=50m --log-opt max-file=3)
+fi
+
+cat > "$STATIC_DIR/traefik.yml.new" <<EOF
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+# log process events to stdout
+log:
+  filePath: ""
+  level: INFO
+# log traffic to stdout
+accessLog:
+  filePath: ""
+entryPoints:
+  agraf:
+    address: "${ADDR}:3000"
+  aprom:
+    address: "${ADDR}:9090"
+  aalert:
+    address: "${ADDR}:9093"
+  node-exporter:
+    address: "${ADDR}:9100"
+  sidecar1:
+    address: "${ADDR}:10911"
+  ping:
+    address: "localhost:8080"
+providers:
+  file:
+    directory: "/etc/traefik/confs"
+
+ping:
+  entryPoint: "ping"
+EOF
+
+write_dynamic_conf "$CONFS_DIR/traefik-conf.yml.new"
 
 docker rm --force traefik || true
 mv "$STATIC_DIR/traefik.yml.new" "$STATIC_DIR/traefik.yml"
