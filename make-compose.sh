@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+echo "Warning: make-compose.sh is deprecated and will be removed, use make_compose.py instead;" >&2
+echo "  it takes the same options and covers every container start-all.sh runs." >&2
+
 . versions.sh
 if [ -f env.sh ]; then
 	. env.sh

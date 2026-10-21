@@ -287,7 +287,7 @@ PARAMS=""
 for arg; do
 	if [ "$arg" = "--compose" ]; then
 		log INFO "Using compose"
-		exec ./make-compose.sh "$@"
+		exec ./make_compose.py "$@"
 	fi
 	if [ "$arg" = "--verbose" ]; then
 		VERBOSE="1"
