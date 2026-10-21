@@ -681,7 +681,8 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
 		LDAP_FILE="-P $OPTARG"
 		;;
 	a)
-		GRAFANA_ADMIN_PASSWORD="-a $OPTARG"
+		# Passed to start-grafana.sh in the environment, out of the process list.
+		export GRAFANA_ADMIN_PASSWORD="$OPTARG"
 		;;
 	j)
 		GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
@@ -1224,7 +1225,7 @@ fi
 if [ ! -z "$GRAFANA_RENDERER_TOKEN_FILE" ]; then
 	grafana_renderer_args+=(--grafana-render-token-to-file "$GRAFANA_RENDERER_TOKEN_FILE")
 fi
-run_script ./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD $VECTOR_SEARCH_CMD "${grafana_renderer_args[@]}"
+run_script ./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $STACK_CMD $VECTOR_SEARCH_CMD "${grafana_renderer_args[@]}"
 # run_script sends the output of its script to the log file, so a renderer that
 # failed to start would otherwise leave the stack looking healthy while every
 # render fails at use time. Grafana itself is up, so this is a warning.

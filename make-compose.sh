@@ -47,10 +47,13 @@ if [ -z $PROMTAIL_CONFIG ]; then
 fi
 if [ "$(id -u)" -eq 0 ]; then
 	echo "Running as root is not advised, please check the documentation on how to run as non-root user"
+	GRAFANA_USER_PERMISSIONS="user: 0:0"
 else
 	GROUPID=$(id -g)
 	PROMETHEUS_USER_PERMISSIONS="user: $UID:$GROUPID"
 	LOKi_USER_PERMISSIONS="user: $UID:$GROUPID"
+	# grafana-datasource.sh writes the datasource file 0600, as this user
+	GRAFANA_USER_PERMISSIONS="user: $UID:$GROUPID"
 fi
 
 if [[ $(uname) == "Linux" ]]; then
@@ -692,7 +695,10 @@ else
 	# Drop the loki and alloy services, each runs until the next unindented or service line.
 	awk '/^[^ ]/ || /^  [^ ]/ {skip = ($0 ~ /^  (loki|alloy):/)} !skip' docker-compose.template.yml >docker-compose.yml
 fi
-echo "" >.env
+# .env holds the Grafana admin password.
+: >.env
+chmod 600 .env
+echo "" >>.env
 echo "PROMETHEUS_VERSION=$PROMETHEUS_VERSION" >>.env
 echo "ALERT_MANAGER_VERSION=$ALERT_MANAGER_VERSION" >>.env
 echo "GRAFANA_VERSION=$GRAFANA_VERSION" >>.env
@@ -755,6 +761,7 @@ sed -i "s& *#ALERTMANAGER_COMMAND&$ALERTMANAGER_COMMAND&" docker-compose.yml
 sed -i "s&#PROMETHEUS_USER_PERMISSIONS&$PROMETHEUS_USER_PERMISSIONS&" docker-compose.yml
 sed -i "s&#LOKI_DIR&$LOKI_DIR&" docker-compose.yml
 sed -i "s&#LOKi_USER_PERMISSIONS&$LOKi_USER_PERMISSIONS&" docker-compose.yml
+sed -i "s&#GRAFANA_USER_PERMISSIONS&$GRAFANA_USER_PERMISSIONS&" docker-compose.yml
 
 ./prometheus-config.sh -m $ALERTMANAGER_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do

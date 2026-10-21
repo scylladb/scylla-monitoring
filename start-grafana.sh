@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# start-all.sh -a exports the password; it wins over env.sh, as -a always did
+INHERITED_ADMIN_PASSWORD="${GRAFANA_ADMIN_PASSWORD:-}"
 : "${CURRENT_VERSION:=master}"
 : "${GRAFANA_RENDERER_TOKEN:=}"
 : "${GRAFANA_RENDERER_TOKEN_FILE:=}"
@@ -33,6 +35,11 @@ DEFAULT_THEME="light"
 . UA.sh
 if [ -f env.sh ]; then
 	. env.sh
+fi
+# env.sh may set it in the start-all.sh form, "-a <password>"
+GRAFANA_ADMIN_PASSWORD="${GRAFANA_ADMIN_PASSWORD#-a }"
+if [ -n "$INHERITED_ADMIN_PASSWORD" ]; then
+	GRAFANA_ADMIN_PASSWORD="$INHERITED_ADMIN_PASSWORD"
 fi
 if [ -z "$GRAFANA_RENDERER_TOKEN_FILE" ] && [ ! -z "$GRAFANA_RENDERER_TOKEN_TO_FILE" ]; then
 	GRAFANA_RENDERER_TOKEN_FILE="$GRAFANA_RENDERER_TOKEN_TO_FILE"
@@ -451,6 +458,14 @@ if [ -z $STACK ]; then
 	STACK=""
 fi
 
+# The password reaches docker and curl through the environment and stdin,
+# out of the process list.
+export GF_SECURITY_ADMIN_PASSWORD="$GRAFANA_ADMIN_PASSWORD"
+curl_admin_auth() {
+	local p=${GRAFANA_ADMIN_PASSWORD//\\/\\\\}
+	printf 'user = "admin:%s"\n' "${p//\"/\\\"}"
+}
+
 docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PORT_MAPPING \
 	-e "GF_AUTH_BASIC_ENABLED=$GRAFANA_AUTH" \
 	-e "GF_AUTH_ANONYMOUS_ENABLED=$GRAFANA_AUTH_ANONYMOUS" \
@@ -464,7 +479,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
 	-v $PWD/grafana/plugins:/var/lib/grafana/plugins:z \
 	-v $PWD/grafana$STACK/provisioning:/var/lib/grafana/provisioning:z $EXTERNAL_VOLUME \
 	-e "GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning" \
-	-e "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD" \
+	-e GF_SECURITY_ADMIN_PASSWORD \
 	-e "GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID=$UA_ANALTYICS" \
 	-e "GF_ANALYTICS_REPORTING_ENABLED=$ANALYTICS_REPORTING_ENABLED" \
 	-e "GF_ANALYTICS_CHECK_FOR_UPDATES=$ANALYTICS_CHECK_FOR_UPDATES" \
@@ -512,7 +527,7 @@ if [ -z "$BIND_ADDRESS" ]; then
 fi
 
 if [ ! -z "$SUPPORT_DASHBOARD" ]; then
-    FOLDER_ID=`curl -s 'http://admin:'"$GRAFANA_ADMIN_PASSWORD@$BIND_ADDRESS$GRAFANA_PORT"'/api/search?/query=support&type=dash-folder' | jq . |& grep '"uid"'|cut -d'"' -f4`
-    curl -s -X POST -H "Content-Type: application/json" -d '{"items": [{ "role": "Editor", "permission": 2 }]}' "http://admin:$GRAFANA_ADMIN_PASSWORD@$BIND_ADDRESS$GRAFANA_PORT/api/folders/$FOLDER_ID/permissions" >& /dev/null
+    FOLDER_ID=`curl -s -K - "http://$BIND_ADDRESS$GRAFANA_PORT"'/api/search?/query=support&type=dash-folder' <<<"$(curl_admin_auth)" | jq . |& grep '"uid"'|cut -d'"' -f4`
+    curl -s -K - -X POST -H "Content-Type: application/json" -d '{"items": [{ "role": "Editor", "permission": 2 }]}' "http://$BIND_ADDRESS$GRAFANA_PORT/api/folders/$FOLDER_ID/permissions" <<<"$(curl_admin_auth)" >& /dev/null
 fi
 printf "Start completed successfully, check http://$BIND_ADDRESS$GRAFANA_PORT\n"
