@@ -30,7 +30,6 @@ import traceback
 import urllib.error
 import urllib.request
 
-import jsonschema
 import yaml
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -185,8 +184,9 @@ def expand(opt, value):
     return [((opt,), opt, value)]
 
 
-def parse_flags(words):
-    """Parses start-all.sh arguments into [(option, value or None)]."""
+def parse_flags(words, owned=WATCHER_OWNED, what="extra_flags"):
+    """Parses start-all.sh arguments into [(option, value or None)]; owned
+    are the options rejected, what names the arguments in errors."""
     result = []
     i = 0
     while i < len(words):
@@ -203,24 +203,24 @@ def parse_flags(words):
                     break
                 opts.append(opt)
         else:
-            raise ConfigError("extra_flags: an argument without an option")
+            raise ConfigError("%s: an argument without an option" % what)
         for opt in opts:
             if isinstance(opt, tuple):
                 result.append(opt)
                 continue
             if opt not in OPTIONS:
-                raise ConfigError("extra_flags: unknown option %s" % opt)
+                raise ConfigError("%s: unknown option %s" % (what, opt))
             if OPTIONS[opt][0]:
                 if i + 1 >= len(words):
-                    raise ConfigError("extra_flags: %s needs a value" % opt)
+                    raise ConfigError("%s: %s needs a value" % (what, opt))
                 i += 1
                 result.append((opt, words[i]))
             else:
                 result.append((opt, None))
         i += 1
     for opt, _ in result:
-        if opt in WATCHER_OWNED:
-            raise ConfigError("extra_flags: %s is set by the watcher from the file" % opt)
+        if opt in owned:
+            raise ConfigError("%s: %s is set by the watcher from the file" % (what, opt))
     return result
 
 
@@ -448,6 +448,7 @@ def load(path, strict=False):
         raise ConfigError("%s: %s" % (path, e.strerror))
     if not isinstance(cfg, dict):
         raise ConfigError("the file is not a YAML mapping")
+    import jsonschema  # only the watcher needs it, not make_compose.py
     errors = sorted(jsonschema.Draft7Validator(schema(strict)).iter_errors(cfg),
                     key=lambda e: [str(p) for p in e.absolute_path])
     if errors:

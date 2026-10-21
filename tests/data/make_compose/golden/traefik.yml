@@ -1,0 +1,137 @@
+compose:
+  name: scylla-monitoring
+  services:
+    aalert:
+      container_name: aalert
+      image: docker.io/prom/alertmanager:<ALERT_MANAGER_VERSION>
+      ports:
+      - 127.0.0.1:9093:9093
+      volumes:
+      - ./prometheus/rule_config.yml:/etc/alertmanager/config.yml:z
+      command:
+      - --log.level=debug
+      - --config.file=/etc/alertmanager/config.yml
+    loki:
+      container_name: loki
+      image: docker.io/grafana/loki:<LOKI_VERSION>
+      ports:
+      - 127.0.0.1:3100:3100
+      volumes:
+      - ./loki/rules/scylla:/etc/loki/rules/fake:z
+      - ./loki/conf:/mnt/config:z
+      command:
+      - --ingester.wal-enabled=false
+      - --config.file=/mnt/config/loki-config.yaml
+    promtail:
+      container_name: promtail
+      image: docker.io/grafana/promtail:<PROMTAIL_VERSION>
+      ports:
+      - 127.0.0.1:9080:9080
+      - 127.0.0.1:1514:1514
+      volumes:
+      - ./loki/promtail/build:/etc/promtail/conf:ro,z
+      command:
+      - --config.file=/etc/promtail/conf/config.yml
+    aprom:
+      container_name: aprom
+      image: docker.io/prom/prometheus:<PROMETHEUS_VERSION>
+      ports:
+      - 127.0.0.1:9090:9090
+      volumes:
+      - ./prometheus/build/:/etc/prometheus/config/:z
+      - ./prometheus/prom_rules/:/etc/prometheus/prom_rules/:z
+      - ./tests/data/make_compose/targets/:/etc/scylla.d/prometheus/targets/:z
+      command:
+      - --web.enable-lifecycle
+      - --enable-feature=promql-experimental-functions
+      - --config.file=/etc/prometheus/config/prometheus.yml
+    agraf:
+      container_name: agraf
+      image: docker.io/grafana/grafana:<GRAFANA_VERSION>
+      user: 1000:1000
+      ports:
+      - 127.0.0.1:3000:3000
+      volumes:
+      - ./grafana/build:/var/lib/grafana/dashboards:z
+      - ./grafana/plugins:/var/lib/grafana/plugins:z
+      - ./grafana/provisioning:/var/lib/grafana/provisioning:z
+      environment:
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      - GF_RENDERING_DEFAULT_WIDTH=1920
+      - GF_RENDERING_DEFAULT_HEIGHT=1080
+      - GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning
+      - GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID=UA-43975320-9
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=false
+      - GF_SECURITY_ANGULAR_SUPPORT_ENABLED=false
+      - GF_DATABASE_WAL=true
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/ver_2025.3/scylla-overview.2025.3.json
+      - GF_PROVISIONING_PERMITTED_PROVISIONED_PATHS=/var/lib/grafana/dashboards/
+      - GF_SERVER_ENABLE_GZIP=true
+      - GF_SECURITY_ALLOW_EMBEDDING=false
+      - GF_SECURITY_COOKIE_SECURE=false
+      - GF_SECURITY_COOKIE_SAMESITE=lax
+      - GF_USERS_DEFAULT_THEME=light
+      - GF_FEATURE_TOGGLES_ENABLE=dashboardSectionVariables
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    traefik:
+      container_name: traefik
+      image: traefik:<TRAEFIK_VERSION>
+      network_mode: host
+      restart: unless-stopped
+      cap_drop:
+      - ALL
+      cap_add:
+      - DAC_READ_SEARCH
+      security_opt:
+      - no-new-privileges
+      logging:
+        driver: json-file
+        options:
+          mode: non-blocking
+          max-size: 50m
+          max-file: '3'
+      volumes:
+      - ./traefik/build/static:/etc/traefik:ro,z
+      - ./traefik/build/confs:/etc/traefik/confs:ro,z
+      - /etc/certs:/etc/traefik/certs:ro
+env:
+  GRAFANA_ADMIN_PASSWORD: admin
+commands:
+- - ./prometheus-config.sh
+  - -m
+  - aalert:9093
+  - -G
+  - agraf:3000
+- - ./generate-dashboards.sh
+  - -v
+  - '2025.3'
+  - -M
+  - '3'
+- - ./generate-dashboards.sh
+  - -t
+  - -v
+  - '2025.3'
+  - -M
+  - '3'
+- - ./grafana-datasource.sh
+  - -p
+  - aprom:9090
+  - -m
+  - aalert:9093
+  - -L
+  - loki:3100
+- - ./start-traefik.sh
+  - --config-only
+files:
+- loki/conf/loki-config.yaml
+- loki/promtail/build/config.yml
+dirs: []
+warnings:
+- Without an external Prometheus directory, Prometheus data will be deleted on shutdown, use the -d command line flag for data persistence.
