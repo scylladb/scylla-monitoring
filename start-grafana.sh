@@ -429,7 +429,7 @@ if [ ! -z $RUN_RENDERER ]; then
 		GRAFANA_CALLBACK_PORT="$GRAFANA_PORT"  # External/mapped port
 	fi
 
-	./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS -D "$DOCKER_PARAM" -T "$GRAFANA_RENDERER_TOKEN"
+	./start-grafana-renderer.sh $LIMITS $VOLUMES $PARAMS -D "$DOCKER_PARAM" ${BIND_ADDRESS:+-A ${BIND_ADDRESS%:}} -T "$GRAFANA_RENDERER_TOKEN"
 	RENDERER_STATUS=$?
 
 	if [ $RENDERER_STATUS -ne 0 ]; then

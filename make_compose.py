@@ -862,7 +862,7 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
         root = "" if re.match(r"https?://", root) else root.rstrip("/")
         svc = service("agrafrender", "grafanarender",
                       "docker.io/grafana/grafana-image-renderer:" + v["GRAFANA_RENDERER_VERSION"],
-                      ports=[] if host else ["8081:8081"], command=["server"])
+                      ports=ports((8081, 8081)), command=["server"])
         svc["secrets_env"] = ["AUTH_TOKEN=${GRAFANA_RENDERER_TOKEN}"]
         extra += ["GF_RENDERING_SERVER_URL=http://%s/render" % address("agrafrender", 8081),
                   "GF_RENDERING_CALLBACK_URL=http://%s%s/" % (address(grafana_name, 3000 if not host else grafana_port),
