@@ -743,9 +743,9 @@ if [ "$CURRENT_VERSION" = "master" ]; then
 		echo "* WARNING: You are using the unstable master branch *"
 		echo "* Check the README.md file for the stable releases  *"
 		echo "*****************************************************"
-		./generate-dashboards.sh -v $VERSIONS -m $MANAGER_VERSION $STACK_CMD "$SUPPORT_DASHBOARD" $VECTOR_SEARCH_CMD
+		./generate-dashboards.sh -v $VERSIONS -M $MANAGER_VERSION $STACK_CMD "$SUPPORT_DASHBOARD" $VECTOR_SEARCH_CMD
 	else
-		./generate-dashboards.sh -v $VERSIONS -F -R 0 -m $MANAGER_VERSION $STACK_CMD $VECTOR_SEARCH_CMD
+		./generate-dashboards.sh -v $VERSIONS -F -R 0 -M $MANAGER_VERSION $STACK_CMD $VECTOR_SEARCH_CMD
 	fi
 	log INFO "Generating the dashboards"
 
