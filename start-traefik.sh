@@ -12,6 +12,8 @@
 #
 # --reload only rewrites the dynamic config, so the running traefik reads the
 # certificates in CERT_DIR again; it needs neither PRIVATE_IP nor CERT_DIR.
+# --config-only writes the static and dynamic config and exits; it needs
+# PRIVATE_IP only.
 #
 # Clients must present a certificate signed by rootCA.crt. The readiness probe
 # presents server.crt, so that certificate must also allow client auth, and it
@@ -108,7 +110,44 @@ tls:
 EOF
 }
 
-CONFS_DIR="$PWD/traefik/build/confs"
+# The static config: the entry points on ADDR and the file provider.
+write_static_conf() {
+	cat > "$1" <<EOF
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+# log process events to stdout
+log:
+  filePath: ""
+  level: INFO
+# log traffic to stdout
+accessLog:
+  filePath: ""
+entryPoints:
+  agraf:
+    address: "${ADDR}:3000"
+  aprom:
+    address: "${ADDR}:9090"
+  aalert:
+    address: "${ADDR}:9093"
+  node-exporter:
+    address: "${ADDR}:9100"
+  sidecar1:
+    address: "${ADDR}:10911"
+  ping:
+    address: "localhost:8080"
+providers:
+  file:
+    directory: "/etc/traefik/confs"
+
+ping:
+  entryPoint: "ping"
+EOF
+}
+
+CONF_DIR="$PWD/traefik/build"
+STATIC_DIR="$CONF_DIR/static"
+CONFS_DIR="$CONF_DIR/confs"
 if [ "${1:-}" = "--reload" ]; then
 	# traefik skips a config that did not change, so the comment must change
 	# for it to read the new certificates
@@ -119,13 +158,25 @@ if [ "${1:-}" = "--reload" ]; then
 	exit 0
 fi
 
-: "${PRIVATE_IP:?is required}" "${CERT_DIR:?is required}"
+: "${PRIVATE_IP:?is required}"
+ADDR="$PRIVATE_IP"
+if [[ "$ADDR" == *:* ]]; then ADDR="[$ADDR]"; fi
+
+# --config-only writes both configs and exits; docker compose runs traefik
+# from them (make_compose.py --traefik).
+if [ "${1:-}" = "--config-only" ]; then
+	mkdir -p "$STATIC_DIR/confs" "$STATIC_DIR/certs" "$CONFS_DIR"
+	write_static_conf "$STATIC_DIR/traefik.yml.new"
+	write_dynamic_conf "$CONFS_DIR/traefik-conf.yml.new"
+	mv "$STATIC_DIR/traefik.yml.new" "$STATIC_DIR/traefik.yml"
+	mv "$CONFS_DIR/traefik-conf.yml.new" "$CONFS_DIR/traefik-conf.yml"
+	exit 0
+fi
+
+: "${CERT_DIR:?is required}"
 ip -o addr show scope global | awk -v ip="$PRIVATE_IP" '{sub(/\/.*/, "", $4)} $4 == ip {found = 1} END {exit !found}' ||
 	die "error: PRIVATE_IP must be a global address on this host, as \`ip addr\` prints it"
 [[ "$CERT_DIR" == /* && "$CERT_DIR" != *:* ]] || die "error: CERT_DIR must be an absolute path without ':'"
-
-ADDR="$PRIVATE_IP"
-if [[ "$ADDR" == *:* ]]; then ADDR="[$ADDR]"; fi
 
 # The key is usually root-only; use sudo only when it is needed to read it.
 NEED_SUDO=0
@@ -183,8 +234,6 @@ exposed=$(
 
 export TAG="${TAG:-$TRAEFIK_VERSION}"
 IMG="traefik:${TAG}"
-CONF_DIR="$PWD/traefik/build"
-STATIC_DIR="$CONF_DIR/static"
 # Whatever can fail runs before the old proxy is removed. The config is
 # rendered to .new files and renamed into place only after that, so a failed
 # write leaves the running proxy and the config it watches untouched.
@@ -203,37 +252,7 @@ if [[ "$driver" == json-file ]]; then
 	LOG_OPTS+=(--log-opt max-size=50m --log-opt max-file=3)
 fi
 
-cat > "$STATIC_DIR/traefik.yml.new" <<EOF
-global:
-  checkNewVersion: false
-  sendAnonymousUsage: false
-# log process events to stdout
-log:
-  filePath: ""
-  level: INFO
-# log traffic to stdout
-accessLog:
-  filePath: ""
-entryPoints:
-  agraf:
-    address: "${ADDR}:3000"
-  aprom:
-    address: "${ADDR}:9090"
-  aalert:
-    address: "${ADDR}:9093"
-  node-exporter:
-    address: "${ADDR}:9100"
-  sidecar1:
-    address: "${ADDR}:10911"
-  ping:
-    address: "localhost:8080"
-providers:
-  file:
-    directory: "/etc/traefik/confs"
-
-ping:
-  entryPoint: "ping"
-EOF
+write_static_conf "$STATIC_DIR/traefik.yml.new"
 
 write_dynamic_conf "$CONFS_DIR/traefik-conf.yml.new"
 
