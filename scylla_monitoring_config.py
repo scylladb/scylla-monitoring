@@ -652,6 +652,8 @@ class Stack:
         self.run = run
         self.http = http or http_status
         self.sleep = sleep
+        self.compose = getattr(args, "compose", False)
+        self.compose_build = None  # make_compose.build, set on first use; tests replace it
 
     def sh(self, cmd, env=None, input=None):
         res = self.run(cmd, cwd=self.dirs.monitoring, env=dict(os.environ, **(env or {})), input=input,
@@ -701,11 +703,45 @@ class Stack:
                 cmd += [opt, option(argv, opt)]
         self.sh(cmd)
 
-    def restart_stack(self, argv, env):
-        self.kill_all(argv)
-        self.sh(["./start-all.sh"] + argv, env)
+    def restart_stack(self, argv, env, cfg, first=False):
+        if not self.compose:
+            self.kill_all(argv)
+            self.sh(["./start-all.sh"] + argv, env)
+            if cfg.get("tls", {}).get("enabled"):
+                self.traefik(cfg)
+            return
+        import make_compose
+        stack, environ = self.compose_stack(argv, env, cfg)
+        # the containers a start-all.sh run left have the same names
+        if first:
+            self.kill_all(argv)
+        stack.up = True
+        make_compose.write(stack, self.dirs.monitoring, environ,
+                           run=lambda cmd, cwd=None, env=None, check=True: self.sh(cmd, env))
 
-    def render_prometheus_config(self, argv):
+    def compose_stack(self, argv, env, cfg):
+        """make_compose.py's stack for argv, and the environment it runs in;
+        traefik is one of its services when TLS is on."""
+        if self.compose_build is None:
+            import make_compose
+            self.compose_build = make_compose.build
+        environ = dict(os.environ, **env)
+        tls = cfg.get("tls", {})
+        if tls.get("enabled"):
+            argv = argv + ["--traefik"]
+            environ.update(PRIVATE_IP=tls["listen_ip"], CERT_DIR=self.args.cert_dir,
+                           TRAEFIK_GENERATION=str(cfg["generation"]))
+        try:
+            return self.compose_build(argv, environ=environ, cwd=self.dirs.monitoring), environ
+        except ConfigError as e:
+            raise ApplyError("make_compose.py: %s" % e)
+
+    def render_prometheus_config(self, argv, env=None, cfg=None):
+        if self.compose:
+            # the command make_compose.py runs, with the compose service names
+            stack, environ = self.compose_stack(argv, env or {}, cfg or {})
+            self.sh(next(c for c in stack.commands if c[0] == "./prometheus-config.sh"), environ)
+            return
         cmd = ["./prometheus-config.sh"]
         for opt, to in (("-L", "-L"), ("-T", "-T"), ("--evaluation-interval", "-E"), ("--scrap", "--scrap"),
                         ("--cluster-label", "--cluster-label"), ("--stack", "-s"), ("-D", "-D"), ("-A", "-A"),
@@ -804,19 +840,20 @@ class Stack:
         if "install_certs" in actions:
             self.install_certs(new)
         if RESTART in actions:
-            self.restart_stack(argv, env)
-            if new.get("tls", {}).get("enabled"):
-                self.traefik(new)
+            self.restart_stack(argv, env, new, first=old is None)
         else:
             if "render_prometheus_config" in actions:
-                self.render_prometheus_config(argv)
+                self.render_prometheus_config(argv, env, new)
             if "reload_prometheus" in actions:
                 self.reload(argv, "prometheus", "-p", "9090")
             if "reload_alertmanager" in actions and "--no-alertmanager" not in argv:
                 self.reload(argv, "alertmanager", "-m", "9093")
             if "grafana_datasource" in actions:
                 self.grafana_datasource(argv, new)
-            if "start_traefik" in actions:
+            if "start_traefik" in actions and self.compose:
+                # traefik is a compose service; up recreates only what changed
+                self.restart_stack(argv, env, new)
+            elif "start_traefik" in actions:
                 self.traefik(new)
             elif "reload_traefik" in actions:
                 self.traefik(new, reload_only=True)
@@ -1007,6 +1044,8 @@ def main(argv=None):
                                              "(default: <monitoring-dir>/scylla-monitoring-root.sh)")
         p.add_argument("--health-timeout", type=int, default=180,
                        help="seconds to wait for the components to be ready (default: %(default)s)")
+        p.add_argument("--compose", action="store_true",
+                       help="run the stack with docker compose, through make_compose.py")
         if name == "apply":
             p.add_argument("--force", action="store_true",
                            help="apply the whole file, as on a first apply, even if it was applied")

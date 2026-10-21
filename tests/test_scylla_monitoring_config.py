@@ -380,10 +380,10 @@ def test_apply_failure():
         calls = []
         real_restart = stack.restart_stack
 
-        def restart(argv, env):
+        def restart(argv, env, cfg, first=False):
             calls.append([v for v in smc.option_values(argv, "-b") if "retention" in v][0])
             if len(calls) == 1:
-                real_restart(argv, env)
+                real_restart(argv, env, cfg, first)
             host.fail = set()
         stack.restart_stack = restart
         assert apply(args, stack, host, bad) == 1
@@ -433,6 +433,53 @@ def test_force_removes_dropins():
         assert apply(args, stack, host, cfg) == 0
         assert ["dropin", "node-exporter.service", "--remove"] == host.commands[0][0][3:]
 
+
+
+def test_apply_compose():
+    import make_compose
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        stack.compose = True
+        builds = []
+
+        def build(argv, environ, cwd):
+            builds.append((argv, environ))
+            result = make_compose.Stack()
+            result.compose = {"services": {}}
+            result.env = {"GRAFANA_ADMIN_PASSWORD": environ["GRAFANA_ADMIN_PASSWORD"]}
+            result.commands = [["./prometheus-config.sh", "-m", "aalert:9093"], ["./grafana-datasource.sh"]]
+            return result
+        stack.compose_build = build
+        cfg = example()
+        # the first apply removes what start-all.sh left, then compose brings the stack up
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host) == ["helper dropin", "helper certs", "kill-all.sh", "prometheus-config.sh -m",
+                               "grafana-datasource.sh", "docker compose", "docker exec"]
+        argv, environ = builds[-1]
+        assert "--traefik" in argv and environ["PRIVATE_IP"] == cfg["tls"]["listen_ip"]
+        assert environ["CERT_DIR"] == "/certs" and environ["TRAEFIK_GENERATION"] == cfg["generation"]
+        assert os.stat(os.path.join(tmp, ".env")).st_mode & 0o777 == 0o600
+        assert os.path.exists(os.path.join(tmp, "docker-compose.yml"))
+        # the cluster label: make_compose.py's prometheus-config.sh command, then a reload
+        host.commands.clear()
+        cfg["generation"] = "g2"
+        cfg["cluster"] = "cluster2"
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host) == ["prometheus-config.sh -m"]
+        # a restart is compose up alone, which recreates only what changed
+        host.commands.clear()
+        cfg["generation"] = "g3"
+        cfg["storage"]["retention_days"] = 60
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host) == ["prometheus-config.sh -m", "grafana-datasource.sh", "docker compose"]
+        # TLS off: compose up without traefik, which --remove-orphans removes
+        host.commands.clear()
+        cfg["generation"] = "g4"
+        cfg["tls"]["enabled"] = False
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host) == ["prometheus-config.sh -m", "grafana-datasource.sh", "docker compose"]
+        assert "--traefik" not in builds[-1][0]
 
 
 def quiet(fn, *args):
