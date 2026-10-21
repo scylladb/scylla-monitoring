@@ -112,6 +112,7 @@ Options:
   --no-renderer                  - If set, do not run the Grafana renderer container.
   --thanos-sc                    - If set, run thanos side car with the Prometheus server.
   --thanos                       - If set, run thanos query as a Grafana datasource.
+  --cluster-label label          - Set the cluster label on Prometheus's and Grafana's own metrics.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
                                    the file names should be scylla_server.yml, node_exporter_servers.yml, and  scylla_manager_servers.yml
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
@@ -235,6 +236,7 @@ fi
 if [ -z "$LOKI_DIR" ]; then
 	LOKI_DIR=""
 fi
+CLUSTER_LABEL_ARGS=()
 for arg; do
 	shift
 	if [ -z "$LIMIT" ]; then
@@ -333,6 +335,10 @@ for arg; do
 			LIMIT="1"
 			PARAM="target-directory"
 			;;
+		--cluster-label)
+			LIMIT="1"
+			PARAM="cluster-label"
+			;;
 		--help)
 			usage
 			;;
@@ -371,6 +377,9 @@ for arg; do
 			unset PARAM
 		elif [ "$PARAM" = "target-directory" ]; then
 			TARGET_DIRECTORY="$NOSPACE"
+			unset PARAM
+		elif [ "$PARAM" = "cluster-label" ]; then
+			CLUSTER_LABEL_ARGS=(--cluster-label "$arg")
 			unset PARAM
 		elif [ "$PARAM" = "datadog-api-keys" ]; then
 			DATDOGPARAM="$DATDOGPARAM -A $NOSPACE"
@@ -763,7 +772,7 @@ sed -i "s&#LOKI_DIR&$LOKI_DIR&" docker-compose.yml
 sed -i "s&#LOKi_USER_PERMISSIONS&$LOKi_USER_PERMISSIONS&" docker-compose.yml
 sed -i "s&#GRAFANA_USER_PERMISSIONS&$GRAFANA_USER_PERMISSIONS&" docker-compose.yml
 
-./prometheus-config.sh -m $ALERTMANAGER_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS
+./prometheus-config.sh -m $ALERTMANAGER_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS "${CLUSTER_LABEL_ARGS[@]}"
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done

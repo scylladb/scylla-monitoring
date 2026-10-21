@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [-G grafana address] [--compose] -- Generate grafana's datasource file"
+usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [-G grafana address] [--compose] [--cluster-label label] -- Generate grafana's datasource file"
 CONSUL_ADDRESS=""
 COMPOSE=0
 
@@ -33,6 +33,9 @@ for arg; do
 		--scrap)
 			PARAM="scrap"
 			;;
+		--cluster-label)
+			PARAM="cluster-label"
+			;;
 		--vector-store)
 			VECTOR_SEARCH="1"
 			;;
@@ -64,6 +67,9 @@ for arg; do
 		fi
 		if [ "$PARAM" = "scrap" ]; then
 			SCRAP_INTERVAL="$NOSPACE"
+		fi
+		if [ "$PARAM" = "cluster-label" ]; then
+			CLUSTER_LABEL="$arg"
 		fi
 		unset PARAM
 	fi
@@ -117,6 +123,14 @@ else
 		CONSUL_ADDRESS="$CONSUL_ADDRESS:5090"
 	fi
 	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template | sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" | sed "s/GRAFANA_ADDRESS/$GRAFANA_ADDRESS/" >$BASE_DIR/prometheus.yml
+fi
+
+# The cluster label of the jobs that scrape the monitoring stack itself, as a
+# YAML single-quoted string; awk takes it from the environment as is.
+if [ -n "$CLUSTER_LABEL" ]; then
+	CLUSTER_LABEL_YAML="'${CLUSTER_LABEL//\'/\'\'}'" awk '
+		/^ *# CLUSTER_LABEL$/ { print "      labels:"; print "        cluster: " ENVIRON["CLUSTER_LABEL_YAML"]; next }
+		{ print }' $BASE_DIR/prometheus.yml >$BASE_DIR/prometheus.yml.new && mv $BASE_DIR/prometheus.yml.new $BASE_DIR/prometheus.yml
 fi
 
 if [[ "$EVALUATION_INTERVAL" != "" ]]; then

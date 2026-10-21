@@ -163,6 +163,7 @@ Options:
   --enable-protobuf              - [Deprecated]If set, enable the experimental Prometheus Protobuf with Native histograms support.
   --native-histogram             - If set, enable the Prometheus Protobuf with Native histograms support.
   --scrap [scrap duration]       - Change the default Prometheus scrap duration. Duration is in seconds.
+  --cluster-label label          - Set the cluster label on Prometheus's and Grafana's own metrics.
   --vector-store path/to/file.yml - [depricated] see vector-search
   --vector-search path/to/file.yml- Specifiy a vector search target file, the file should contain a list of vector search servers.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
@@ -325,6 +326,7 @@ fi
 if [ -z "$LOG_COLLECTOR" ]; then
 	LOG_COLLECTOR="alloy"
 fi
+CLUSTER_LABEL_ARGS=()
 LIMITS=""
 VOLUMES=""
 PARAMS=""
@@ -465,6 +467,10 @@ for arg; do
 			LIMIT="1"
 			PARAM="scrap"
 			;;
+		--cluster-label)
+			LIMIT="1"
+			PARAM="cluster-label"
+			;;
 		--vector-store)
 			LIMIT="1"
 			PARAM="vector-search"
@@ -573,6 +579,9 @@ for arg; do
 			unset PARAM
 		elif [ "$PARAM" = "scrap" ]; then
 			SCRAP_CMD="--scrap $NOSPACE"
+			unset PARAM
+		elif [ "$PARAM" = "cluster-label" ]; then
+			CLUSTER_LABEL_ARGS=(--cluster-label "$arg")
 			unset PARAM
 		elif [ "$PARAM" = "vector-search" ]; then
 			VECTOR_SEARCH="$NOSPACE"
@@ -1090,7 +1099,7 @@ if [ -z "$GRAFANA_ADDRESS" ] && stack_network >/dev/null; then
 	GRAFANA_ADDRESS="-G $GRAFANA_SCRAPE_NAME:3000"
 fi
 
-./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $NATIVE_HISTOGRAM $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD
+./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $NATIVE_HISTOGRAM $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD "${CLUSTER_LABEL_ARGS[@]}"
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
 	DATE=$(date +"%Y-%m-%d_%H_%M_%S")
 	if [ -f $DATA_DIR/scylla.txt ]; then
