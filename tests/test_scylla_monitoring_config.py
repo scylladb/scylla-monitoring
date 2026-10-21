@@ -4,6 +4,7 @@
 # tests/data/scylla_monitoring_config/; UPDATE_GOLDEN=1 rewrites them.
 # Run: python3 tests/test_scylla_monitoring_config.py
 import contextlib
+import copy
 import io
 import json
 import os
@@ -216,6 +217,154 @@ def test_check_status():
         status = json.load(open(status_path))
         assert status["state"] == "rejected" and status["generation"] == bad["generation"]
         assert status["error"].startswith("stack.log_collector: must be one of")
+
+
+def test_plan():
+    old = example()
+
+    def actions(change):
+        new = copy.deepcopy(old)
+        change(new)
+        return smc.plan(old, new)
+
+    assert smc.plan(None, old) == smc.FIRST_APPLY
+    assert actions(lambda c: c["targets"]["scylla"][0]["targets"].append("10.0.0.9")) == set()
+    assert actions(lambda c: c["targets"]["vector_search"][0]["targets"].append("10.0.0.9")) == set()
+    assert actions(lambda c: c["targets"].pop("vector_search")) == {"restart_stack"}
+    assert actions(lambda c: c["alert_rules"]["groups"].append({"name": "x", "rules": []})) == {"reload_prometheus"}
+    assert actions(lambda c: c.pop("alert_rules")) == {"restart_stack"}
+    assert actions(lambda c: c["alertmanager_config"].update(receivers=[])) == {"reload_alertmanager"}
+    assert actions(lambda c: c.update(cluster="c2")) == {"render_prometheus_config", "reload_prometheus"}
+    assert actions(lambda c: c["grafana"].update(admin_password="x")) == {"grafana_password"}
+    assert actions(lambda c: c["grafana"]["datasource"].update(scylla_password="x")) == {"grafana_datasource"}
+    assert actions(lambda c: c["grafana"].update(default_theme="dark")) == {"restart_stack"}
+    assert actions(lambda c: c["storage"].update(retention_days=60)) == {"restart_stack"}
+    assert actions(lambda c: c["stack"].update(scylla_version="2025.4")) == {"restart_stack"}
+    assert actions(lambda c: c["tls"].update(server_key="k")) == {"install_certs", "reload_traefik"}
+    assert actions(lambda c: c["tls"].update(listen_ip="10.0.0.11")) == {"start_traefik"}
+    assert actions(lambda c: c["systemd"].clear()) == {"systemd_dropins"}
+    # a restart covers the reloads, not the password or the certificates
+    assert actions(lambda c: (c["storage"].update(retention_days=60), c.update(cluster="c2"),
+                              c["grafana"].update(admin_password="x"), c["tls"].update(server_key="k"))) == \
+        {"restart_stack", "grafana_password", "install_certs"}
+
+
+class FakeHost:
+    """Records commands, answers the versions and Grafana name lookups, and
+    fails the commands named in fail."""
+
+    def __init__(self, fail=()):
+        self.commands = []
+        self.fail = set(fail)
+
+    def run(self, cmd, **kwargs):
+        if cmd[0] == "bash" and "versions.sh" in cmd[2]:
+            return SimpleNamespace(returncode=0, stdout="v1 v2\n")
+        if cmd[0] == "bash":
+            return SimpleNamespace(returncode=0, stdout="agraf\n")
+        if cmd[0] == "docker" and cmd[1] == "run":
+            return SimpleNamespace(returncode=0, stdout="")
+        self.commands.append((cmd, kwargs.get("input")))
+        return SimpleNamespace(returncode=1 if os.path.basename(cmd[0]) in self.fail else 0, stdout="")
+
+
+def make_stack(tmp, host):
+    for f in ("versions.sh", "network-lib.sh"):
+        subprocess.run(["cp", f, tmp], check=True)
+    os.makedirs(os.path.join(tmp, "grafana"))
+    for f in ("datasource.scylla.yml", "datasource.psswd.scylla.yml"):
+        subprocess.run(["cp", os.path.join("grafana", f), os.path.join(tmp, "grafana")], check=True)
+    args = SimpleNamespace(monitoring_dir=tmp, staging_dir=None, strict=False, auto_revert=False, force=False,
+                           cert_dir="/certs", root_helper="/helper", health_timeout=0, config_file=None)
+    dirs = smc.make_dirs(args)
+    http = lambda method, url: 200
+    return args, smc.Stack(dirs, args, host.run, http, sleep=lambda s: None)
+
+
+def apply(args, stack, host, cfg):
+    args.config_file = write_config(args.monitoring_dir, cfg)
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+        return smc.apply_once(args, stack, host.run)
+
+
+def names(host):
+    """Each command: its program, and the root helper's subcommand."""
+    out = []
+    for cmd, _ in host.commands:
+        if cmd[0] == "sudo":
+            out.append("helper " + cmd[3])
+        else:
+            out.append(" ".join([os.path.basename(cmd[0])] + [w for w in cmd[1:2] if w.startswith("-") or cmd[0] == "docker"]))
+    return out
+
+
+def test_apply():
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        cfg = example()
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host) == ["helper dropin", "helper certs", "kill-all.sh", "start-all.sh -v",
+                               "start-traefik.sh", "docker exec"]
+        assert host.commands[0][0][-2:] == ["node-exporter.service",
+                                            tmp + "/config-build/staging/systemd/node-exporter.service.conf"]
+        assert host.commands[-1][1] == cfg["grafana"]["admin_password"]
+        assert os.path.exists(os.path.join(tmp, "config-build/live/targets/scylla_servers.yml"))
+        # the same file again does nothing
+        host.commands.clear()
+        assert apply(args, stack, host, cfg) == 0 and host.commands == []
+        # a certificate rotation installs them and reloads traefik
+        cfg["generation"] = "g2"
+        cfg["tls"]["server_key"] = "-----BEGIN PRIVATE KEY-----\nnew\n-----END PRIVATE KEY-----\n"
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host) == ["helper certs", "start-traefik.sh --reload"]
+        # removing vector search restarts the stack and removes its target file
+        host.commands.clear()
+        cfg["generation"] = "g3"
+        cfg["targets"].pop("vector_search")
+        assert apply(args, stack, host, cfg) == 0
+        assert not os.path.exists(os.path.join(tmp, "config-build/live/targets/vector_search_servers.yml"))
+        assert names(host) == ["kill-all.sh", "start-all.sh -v", "start-traefik.sh"]
+
+
+def test_apply_failure():
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        good = example()
+        assert apply(args, stack, host, good) == 0
+        bad = copy.deepcopy(good)
+        bad["generation"] = "bad"
+        bad["storage"]["retention_days"] = 60
+        host.fail = {"start-all.sh"}
+        assert apply(args, stack, host, bad) == 1
+        status = json.load(open(os.path.join(tmp, "config-state/status.json")))
+        assert status["state"] == "failed" and status["error"] == "start-all.sh failed"
+        # the stack stays on the failed configuration, so a fix is planned from it
+        host.fail = set()
+        host.commands.clear()
+        fixed = copy.deepcopy(good)
+        fixed["generation"] = "fixed"
+        assert apply(args, stack, host, fixed) == 0
+        assert "start-all.sh" in [c.split()[0] for c in names(host)]
+        # with --auto-revert the previous configuration comes back
+        args.auto_revert = True
+        host.fail = {"start-all.sh"}
+        calls = []
+        real_restart = stack.restart_stack
+
+        def restart(argv, env):
+            calls.append([v for v in smc.option_values(argv, "-b") if "retention" in v][0])
+            if len(calls) == 1:
+                real_restart(argv, env)
+            host.fail = set()
+        stack.restart_stack = restart
+        assert apply(args, stack, host, bad) == 1
+        status = json.load(open(os.path.join(tmp, "config-state/status.json")))
+        assert status["state"] == "reverted" and status["applied_generation"] == "fixed"
+        assert calls == ["--storage.tsdb.retention.time=60d", "--storage.tsdb.retention.time=30d"]
+
 
 
 if __name__ == "__main__":
