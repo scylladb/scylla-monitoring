@@ -1,0 +1,94 @@
+# An example of the configuration file applied by scylla_monitoring_config.py.
+# scylla-monitoring.schema.json is the definition; this file is checked
+# against it. Every write replaces the file whole; keep it 0600, it holds
+# secrets.
+version: 1
+generation: "2026-10-21T10:00:00Z-1"  # set by the writer; reported back in the status
+cluster: cluster1                     # the cluster label on the prometheus and grafana jobs
+
+stack:
+  scylla_version: "2025.3"            # -v
+  manager_version: "3.5"              # -M; missing: the release default
+  alertmanager: true                  # false: --no-alertmanager
+  log_collector: alloy                # --log-collector alloy|promtail|none
+  thanos_sidecar: true                # --thanos-sc
+  local_thanos: false                 # --local-thanos
+  bind_address: 127.0.0.1             # -A; 127.0.0.1 when tls.enabled is true
+  docker_args: ["--restart=unless-stopped"]   # -D
+  extra_flags: []                     # start-all.sh syntax; takes precedence over the rest
+
+storage:
+  prometheus_dir: /data/prometheus      # -d
+  grafana_dir: /data/grafana            # -G
+  alertmanager_dir: /data/alertmanager  # -f
+  retention_days: 30                    # -b --storage.tsdb.retention.time=30d
+
+prometheus:
+  external_url: https://example.com/prometheus   # -b --web.external-url, with --web.route-prefix=/
+
+grafana:
+  root_url: https://example.com/grafana  # GF_SERVER_ROOT_URL
+  default_theme: light                   # GF_USERS_DEFAULT_THEME
+  anonymous_role: Viewer                 # -Q
+  env:                                   # -c, any other Grafana setting
+    GF_SECURITY_COOKIE_SECURE: "true"
+  admin_password: "change-me"            # GRAFANA_ADMIN_PASSWORD
+  datasource:
+    scylla_user: "monitor"               # SCYLLA_USER
+    scylla_password: "change-me"         # SCYLLA_PSSWD
+
+targets:                                 # Prometheus file_sd entries
+  scylla:                                # hosts without a port; also scraped for node_exporter and the manager agent
+    - targets: ["10.0.0.1", "10.0.0.2"]
+      labels: {cluster: cluster1, dc: dc1}
+    - targets: ["10.0.0.3"]
+      labels: {cluster: cluster1, dc: dc2}
+  node_exporter:                         # optional; replaces the copy of scylla
+    - targets: ["10.0.1.1:9100"]
+      labels: {cluster: cluster1, dc: dc1, instance: "10.0.0.1"}
+  manager:
+    - targets: ["10.0.0.5:5090"]
+  vector_search:                         # present: --vector-search
+    - targets: ["10.0.0.6"]
+      labels: {cluster: cluster1}
+
+alert_rules:                             # a Prometheus rule file
+  groups:
+    - name: scylla.rules
+      rules:
+        - alert: InstanceDown
+          expr: up{job="scylla"} == 0
+          for: 30s
+          labels:
+            severity: error
+          annotations:
+            description: "{{ $labels.instance }} has been down for more than 30 seconds."
+            summary: Instance {{ $labels.instance }} down
+
+alertmanager_config:                     # an Alertmanager config file
+  route:
+    receiver: default
+    group_by: [alertname, cluster]
+  receivers:
+    - name: default
+
+systemd:                                 # drop-ins for host services, by unit
+  node-exporter.service: |               # 127.0.0.1:9100 behind traefik
+    [Service]
+    Environment=NODE_EXPORTER_ARGS=--web.listen-address=127.0.0.1:9100
+
+tls:
+  enabled: true                          # run traefik
+  listen_ip: 10.0.0.10                   # PRIVATE_IP of start-traefik.sh
+  ca_crt: |                              # rootCA.crt
+    -----BEGIN CERTIFICATE-----
+    ...
+    -----END CERTIFICATE-----
+  server_crt: |                          # server.crt
+    -----BEGIN CERTIFICATE-----
+    ...
+    -----END CERTIFICATE-----
+  server_key: |                          # server.key
+    -----BEGIN PRIVATE KEY-----
+    ...
+    -----END PRIVATE KEY-----

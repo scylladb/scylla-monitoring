@@ -1,0 +1,261 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/scylladb/scylla-monitoring/scylla-monitoring.schema.json",
+  "title": "Scylla Monitoring Stack configuration",
+  "description": "The configuration file applied by scylla_monitoring_config.py, version 1. The file holds the complete configuration and every write replaces it whole. Fields the watcher does not know are ignored; with --strict they reject the file. Objects whose keys are free (labels, grafana.env, systemd, alert_rules, alertmanager_config) say so with their own additionalProperties. scylla-monitoring.example.yaml is a complete example.",
+  "type": "object",
+  "required": ["version", "generation", "stack", "targets"],
+  "properties": {
+    "version": {
+      "description": "The schema version. Renamed or removed fields, or a changed meaning, bump it; new optional fields keep it.",
+      "const": 1
+    },
+    "generation": {
+      "description": "Set by the writer, any string. The watcher reports it back as is in the status file.",
+      "type": "string",
+      "minLength": 1
+    },
+    "cluster": {
+      "description": "The cluster label on the prometheus and grafana jobs, which scrape the monitoring stack itself.",
+      "type": "string",
+      "minLength": 1
+    },
+    "stack": {
+      "description": "The stack and its components.",
+      "type": "object",
+      "required": ["scylla_version"],
+      "properties": {
+        "scylla_version": {
+          "description": "The ScyllaDB version of the dashboards (start-all.sh -v).",
+          "type": "string",
+          "minLength": 1
+        },
+        "manager_version": {
+          "description": "The Scylla Manager version of the dashboards (start-all.sh -M). Missing: the default manager version of the release.",
+          "type": "string",
+          "minLength": 1
+        },
+        "alertmanager": {
+          "description": "Run Alertmanager. false: start-all.sh --no-alertmanager.",
+          "type": "boolean",
+          "default": true
+        },
+        "log_collector": {
+          "description": "The log collector (start-all.sh --log-collector). none runs no Loki either.",
+          "enum": ["alloy", "promtail", "none"],
+          "default": "alloy"
+        },
+        "thanos_sidecar": {
+          "description": "Run the Thanos sidecar next to Prometheus (start-all.sh --thanos-sc). Needs storage.prometheus_dir.",
+          "type": "boolean",
+          "default": false
+        },
+        "local_thanos": {
+          "description": "Run a local Thanos query in front of Prometheus (start-all.sh --local-thanos).",
+          "type": "boolean",
+          "default": false
+        },
+        "bind_address": {
+          "description": "The address the containers' ports are published on (start-all.sh -A). Set it to 127.0.0.1 when tls.enabled is true, so traefik is the only way in.",
+          "type": "string",
+          "minLength": 1
+        },
+        "docker_args": {
+          "description": "Docker arguments for every container (start-all.sh -D).",
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "extra_flags": {
+          "description": "start-all.sh flags, in start-all.sh syntax. A flag here takes precedence over the same option derived from the rest of the file.",
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "storage": {
+      "description": "Data directories on the host. A missing directory keeps the data inside the container, and it is lost when the container is removed.",
+      "type": "object",
+      "properties": {
+        "prometheus_dir": {
+          "description": "The Prometheus data directory (start-all.sh -d).",
+          "$ref": "#/definitions/absolute_path"
+        },
+        "grafana_dir": {
+          "description": "The Grafana data directory (start-all.sh -G).",
+          "$ref": "#/definitions/absolute_path"
+        },
+        "alertmanager_dir": {
+          "description": "The Alertmanager data directory (start-all.sh -f).",
+          "$ref": "#/definitions/absolute_path"
+        },
+        "retention_days": {
+          "description": "Prometheus retention, in days (start-all.sh -b --storage.tsdb.retention.time=<n>d).",
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "prometheus": {
+      "description": "Prometheus settings.",
+      "type": "object",
+      "properties": {
+        "external_url": {
+          "description": "The URL Prometheus is reached at (start-all.sh -b --web.external-url, with --web.route-prefix=/).",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "grafana": {
+      "description": "Grafana settings.",
+      "type": "object",
+      "properties": {
+        "root_url": {
+          "description": "The URL Grafana is reached at (GF_SERVER_ROOT_URL).",
+          "type": "string",
+          "format": "uri"
+        },
+        "default_theme": {
+          "description": "The default theme for users (GF_USERS_DEFAULT_THEME).",
+          "enum": ["light", "dark", "system"]
+        },
+        "anonymous_role": {
+          "description": "The role of anonymous users (start-all.sh -Q).",
+          "enum": ["Admin", "Editor", "Viewer"]
+        },
+        "env": {
+          "description": "Any other Grafana setting, as GF_* environment variables (start-all.sh -c).",
+          "type": "object",
+          "propertyNames": {"pattern": "^GF_[A-Z0-9_]+$"},
+          "additionalProperties": {"type": "string"}
+        },
+        "admin_password": {
+          "description": "The Grafana admin password (GRAFANA_ADMIN_PASSWORD). A change is applied to the running Grafana.",
+          "type": "string",
+          "minLength": 1
+        },
+        "datasource": {
+          "description": "The ScyllaDB CQL datasource credentials.",
+          "type": "object",
+          "properties": {
+            "scylla_user": {
+              "description": "The CQL user (SCYLLA_USER).",
+              "type": "string"
+            },
+            "scylla_password": {
+              "description": "The CQL password (SCYLLA_PSSWD).",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "targets": {
+      "description": "Prometheus targets, as file_sd entries.",
+      "type": "object",
+      "required": ["scylla"],
+      "properties": {
+        "scylla": {
+          "description": "The ScyllaDB nodes, as hosts without a port. Written as scylla_servers.yml, node_exporter_servers.yml and scylla_manager_agents.yml; each job adds its own port (9180, 9100, 5090).",
+          "$ref": "#/definitions/file_sd"
+        },
+        "node_exporter": {
+          "description": "node_exporter targets, written as node_exporter_servers.yml in place of the copy of scylla. A target keeps its port; 9100 is added to one without. instance is the address without its port; an entry whose address differs from its ScyllaDB node sets instance in its labels.",
+          "$ref": "#/definitions/file_sd"
+        },
+        "manager": {
+          "description": "The Scylla Manager server (scylla_manager_servers.yml).",
+          "$ref": "#/definitions/file_sd"
+        },
+        "vector_search": {
+          "description": "Vector search nodes (vector_search_servers.yml). Present: start-all.sh --vector-search, which adds the vector search dashboards.",
+          "$ref": "#/definitions/file_sd"
+        }
+      }
+    },
+    "alert_rules": {
+      "description": "A Prometheus rule file, checked with promtool check rules.",
+      "type": "object",
+      "required": ["groups"],
+      "properties": {
+        "groups": {"type": "array"}
+      },
+      "additionalProperties": true
+    },
+    "alertmanager_config": {
+      "description": "An Alertmanager config file, checked with amtool check-config.",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "systemd": {
+      "description": "systemd drop-ins for host services, by unit name. Each value is the content of /etc/systemd/system/<unit>.d/50-scylla-monitoring.conf; a changed drop-in restarts its unit, and a unit removed from here has its drop-in removed and is restarted. docker.service and the watcher's own unit are refused.",
+      "type": "object",
+      "propertyNames": {"pattern": "^[A-Za-z0-9@._-]+\\.(service|socket|timer)$",
+                        "not": {"enum": ["docker.service", "scylla-monitoring-config.service"]}},
+      "additionalProperties": {"type": "string"}
+    },
+    "tls": {
+      "description": "The traefik mTLS proxy in front of the stack. Missing or enabled false: no traefik.",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Run traefik.",
+          "type": "boolean",
+          "default": false
+        },
+        "listen_ip": {
+          "description": "The host address traefik listens on (PRIVATE_IP of start-traefik.sh).",
+          "type": "string",
+          "minLength": 1
+        },
+        "ca_crt": {
+          "description": "PEM. Clients must present a certificate signed by it (rootCA.crt).",
+          "$ref": "#/definitions/pem"
+        },
+        "server_crt": {
+          "description": "PEM. traefik's certificate (server.crt). It also needs client auth and listen_ip as an IP SAN, for the readiness probe.",
+          "$ref": "#/definitions/pem"
+        },
+        "server_key": {
+          "description": "PEM. The key of server_crt (server.key).",
+          "$ref": "#/definitions/pem"
+        }
+      },
+      "if": {
+        "properties": {"enabled": {"const": true}},
+        "required": ["enabled"]
+      },
+      "then": {
+        "required": ["listen_ip", "ca_crt", "server_crt", "server_key"]
+      }
+    }
+  },
+  "definitions": {
+    "absolute_path": {
+      "type": "string",
+      "pattern": "^/"
+    },
+    "pem": {
+      "type": "string",
+      "pattern": "-----BEGIN [A-Z ]+-----"
+    },
+    "file_sd": {
+      "description": "Prometheus file_sd entries.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["targets"],
+        "properties": {
+          "targets": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+          }
+        }
+      }
+    }
+  }
+}
