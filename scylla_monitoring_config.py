@@ -3,11 +3,14 @@
 # Configures the monitoring stack from one declarative file, defined by
 # scylla-monitoring.schema.json (scylla-monitoring.example.yaml is an example).
 #
-#   scylla_monitoring_config.py check --config-file F --monitoring-dir D [--staging-dir S] [--strict]
+#   scylla_monitoring_config.py check|apply|run --config-file F [--config-file F2 ...] --monitoring-dir D
 #
 # check parses and validates the file, renders the derived files into the
 # staging directory, checks them with promtool and amtool, writes the status
-# file and prints the start-all.sh command line the file stands for.
+# file and prints the start-all.sh command line the file stands for. apply
+# also applies it, and run applies it whenever it changes. With several
+# --config-file paths the newest file is used, and run applies whichever one
+# changes; the status is also written next to each of them.
 #
 # Error messages name the field and its position and never quote values,
 # since the file carries secrets.
@@ -23,6 +26,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import traceback
 import urllib.error
 import urllib.request
 
@@ -221,15 +225,17 @@ def parse_flags(words):
 
 
 class Dirs:
-    """The watcher's directories: staging holds the rendered files, live the
-    ones the containers mount."""
+    """The watcher's paths: staging holds the rendered files, live the ones
+    the containers mount, state the applied file and the status, and
+    config_files the config paths, each written by its own writer."""
 
-    def __init__(self, monitoring_dir, staging_dir=None):
+    def __init__(self, monitoring_dir, staging_dir=None, state_dir=None, config_files=()):
         self.monitoring = monitoring_dir
         build = staging_dir or os.path.join(monitoring_dir, "config-build")
         self.staging = os.path.join(build, "staging")
         self.live = os.path.join(build, "live")
-        self.state = os.path.join(monitoring_dir, "config-state")
+        self.state = state_dir or os.path.join(monitoring_dir, "config-state")
+        self.config_files = list(config_files)
 
 
 def derive(cfg, dirs):
@@ -449,21 +455,43 @@ def load(path, strict=False):
     return cfg
 
 
-def write_status(dirs, status):
-    """Writes the status file atomically, 0600."""
-    os.makedirs(dirs.state, mode=0o700, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=dirs.state, prefix=".status.")
+def write_private(path, text):
+    """Writes a file atomically, 0600."""
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), prefix="." + os.path.basename(path) + ".")
     with os.fdopen(fd, "w") as f:
-        json.dump(status, f)
-        f.write("\n")
-    os.replace(tmp, os.path.join(dirs.state, "status.json"))
+        f.write(text)
+    os.replace(tmp, path)
+
+
+def write_status(dirs, status):
+    """Writes the status to the state directory, and next to each config
+    path as scylla-monitoring.status.json, so a writer finds it beside the
+    file it wrote."""
+    text = json.dumps(status) + "\n"
+    os.makedirs(dirs.state, mode=0o700, exist_ok=True)
+    write_private(os.path.join(dirs.state, "status.json"), text)
+    for path in dirs.config_files:
+        if os.path.isdir(os.path.dirname(path)):
+            try:
+                write_private(os.path.join(os.path.dirname(path), "scylla-monitoring.status.json"), text)
+            except OSError as e:
+                # the config directory may be closed to the watcher's user
+                print("warning: cannot write the status next to %s: %s" % (path, e.strerror), file=sys.stderr)
+
+
+def newest(paths):
+    """The existing config path written last; warns when several exist."""
+    existing = [p for p in paths if os.path.exists(p)]
+    if len(existing) > 1:
+        print("warning: several config files exist, using the newest: " + ", ".join(existing), file=sys.stderr)
+    return max(existing, key=os.path.getmtime) if existing else None
 
 
 def now():
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def prepare(args, dirs, run=subprocess.run):
+def prepare(args, dirs, path, run=subprocess.run):
     """Loads, normalizes, renders and validates the file.
 
     Returns (cfg, argv, env); raises ConfigError with the generation, when the
@@ -471,9 +499,15 @@ def prepare(args, dirs, run=subprocess.run):
     if os.path.exists(os.path.join(dirs.monitoring, "env.sh")):
         print("warning: %s/env.sh is sourced by the start scripts and can override the file" % dirs.monitoring,
               file=sys.stderr)
-    cfg = load(args.config_file, args.strict)
+    cfg = load(path, args.strict)
     try:
         argv, env = normalize(cfg, dirs)
+        # The derived files hold secrets (the Alertmanager config, the
+        # drop-ins). The containers read them through their bind mounts, so
+        # closing the build directory keeps out other host users only.
+        build = os.path.dirname(dirs.staging)
+        os.makedirs(build, exist_ok=True)
+        os.chmod(build, 0o700)
         render(cfg, dirs.staging)
         validate(dirs.staging, stack_versions(dirs.monitoring), run)
     except ConfigError as e:
@@ -489,17 +523,47 @@ def rejected(dirs, e):
 
 
 def make_dirs(args):
-    return Dirs(os.path.abspath(args.monitoring_dir), args.staging_dir and os.path.abspath(args.staging_dir))
+    absolute = lambda p: p and os.path.abspath(p)
+    return Dirs(absolute(args.monitoring_dir), absolute(args.staging_dir), absolute(getattr(args, "state_dir", None)),
+                [os.path.abspath(p) for p in args.config_file])
+
+
+# What check prints in place of a secret: the options that carry one, and
+# the -c and -D variables whose name says it is one.
+SECRET_VALUE_OPTIONS = {"--grafana-render-token", "--datadog-api-keys"}
+SECRET_NAME = re.compile(r"PASSWORD|PASSWD|PSSWD|SECRET|TOKEN|KEY", re.I)
+
+
+def masked(argv):
+    words = []
+    for i, w in enumerate(argv):
+        prev = argv[i - 1] if i else None
+        if prev in SECRET_VALUE_OPTIONS:
+            w = "***"
+        elif prev in ("-c", "-D"):
+            w = re.sub(r"([A-Za-z0-9_]+)=\S+",
+                       lambda m: m.group(1) + "=***" if SECRET_NAME.search(m.group(1)) else m.group(0), w)
+        words.append(w)
+    return words
 
 
 def check(args, run=subprocess.run):
+    """Validates and renders the file into a scratch staging directory, and
+    prints the start-all.sh command line; the running watcher's staging and
+    status stay as they are."""
     dirs = make_dirs(args)
-    try:
-        cfg, argv, env = prepare(args, dirs, run)
-    except ConfigError as e:
-        return rejected(dirs, e)
-    write_status(dirs, {"generation": cfg["generation"], "state": "validated", "time": now()})
-    print(" ".join(shlex.quote(w) for w in ["./start-all.sh"] + argv))
+    path = newest(dirs.config_files)
+    if path is None:
+        print("error: no config file exists", file=sys.stderr)
+        return 1
+    with tempfile.TemporaryDirectory() as build:
+        dirs.staging = os.path.join(build, "staging")
+        try:
+            cfg, argv, env = prepare(args, dirs, path, run)
+        except ConfigError as e:
+            print("rejected: " + e.args[0], file=sys.stderr)
+            return 1
+    print(" ".join(shlex.quote(w) for w in ["./start-all.sh"] + masked(argv)))
     print("environment: " + " ".join(sorted(env)))
     return 0
 
@@ -692,12 +756,14 @@ class Stack:
         if cfg.get("tls", {}).get("enabled"):
             self.root("certs", os.path.join(self.dirs.staging, "certs"), self.args.cert_dir)
 
-    def systemd_dropins(self, old, new):
+    def systemd_dropins(self, old, new, previous=None):
+        """Writes the drop-ins that changed; on a first apply (no old) all of
+        them, and removes those of the units previous had and new does not."""
         before, after = (old or {}).get("systemd", {}), new.get("systemd", {})
-        for unit in sorted(set(before) | set(after)):
-            if unit not in after:
-                self.root("dropin", unit, "--remove")
-            elif before.get(unit) != after[unit]:
+        for unit in sorted(set((old or previous or {}).get("systemd", {})) - set(after)):
+            self.root("dropin", unit, "--remove")
+        for unit in sorted(after):
+            if before.get(unit) != after[unit]:
                 self.root("dropin", unit, os.path.join(self.dirs.staging, "systemd", unit + ".conf"))
 
     def traefik(self, cfg, reload_only=False):
@@ -727,12 +793,13 @@ class Stack:
                 raise ApplyError("%s: not ready" % ", ".join(sorted(pending)))
             self.sleep(2)
 
-    def apply(self, old, new, argv, env):
-        """Applies the actions that take the stack from old to new."""
+    def apply(self, old, new, argv, env, previous=None):
+        """Applies the actions that take the stack from old to new; with no
+        old, a first apply, which also removes the drop-ins previous had."""
         actions = plan(old, new)
         self.move_staged()
         if "systemd_dropins" in actions:
-            self.systemd_dropins(old, new)
+            self.systemd_dropins(old, new, previous)
         if "install_certs" in actions:
             self.install_certs(new)
         if RESTART in actions:
@@ -787,88 +854,127 @@ def read_applied(dirs):
 
 def store_applied(dirs, text):
     os.makedirs(dirs.state, mode=0o700, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=dirs.state, prefix=".applied.")
-    with os.fdopen(fd, "w") as f:
-        f.write(text)
-    os.replace(tmp, applied_path(dirs))
+    write_private(applied_path(dirs), text)
 
 
-def apply_once(args, stack=None, run=subprocess.run):
-    """Applies the file once; returns 0 when it is applied or already was."""
+def incomplete_path(dirs):
+    """Marks applied.yaml as only partly applied: the next apply is a first apply."""
+    return os.path.join(dirs.state, "applied.incomplete")
+
+
+def failed(dirs, text, cfg, error):
+    """An apply that stopped part way: the file is stored as applied, marked
+    incomplete, so the next apply runs every action. With no text (an
+    internal error), applied.yaml stays as it is."""
+    if text is not None:
+        store_applied(dirs, text)
+    os.makedirs(dirs.state, mode=0o700, exist_ok=True)
+    write_private(incomplete_path(dirs), "")
+    write_status(dirs, {"generation": cfg and cfg["generation"], "state": "failed", "error": error,
+                        "applied_generation": cfg and cfg["generation"], "time": now()})
+    print("failed: " + error, file=sys.stderr)
+    return 1
+
+
+def done(dirs, text):
+    store_applied(dirs, text)
+    if os.path.exists(incomplete_path(dirs)):
+        os.remove(incomplete_path(dirs))
+
+
+def apply_once(args, stack=None, run=subprocess.run, path=None):
+    """Applies a config file once, by default the newest; returns 0 when it is
+    applied or already was."""
     dirs = make_dirs(args)
     stack = stack or Stack(dirs, args, run)
-    with open(args.config_file) as f:
-        text = f.read()
+    path = path or newest(dirs.config_files)
+    if path is None:
+        print("error: no config file exists", file=sys.stderr)
+        return 1
+    try:
+        with open(path) as f:
+            text = f.read()
+    except OSError as e:
+        return rejected(dirs, ConfigError("%s: %s" % (path, e.strerror)))
     applied_text = read_applied(dirs)
-    if text == applied_text and not getattr(args, "force", False):
+    incomplete = os.path.exists(incomplete_path(dirs))
+    force = getattr(args, "force", False) or incomplete
+    if text == applied_text and not force:
         return 0
     try:
-        new, argv, env = prepare(args, dirs, run)
+        new, argv, env = prepare(args, dirs, path, run)
     except ConfigError as e:
         return rejected(dirs, e)
-    old = yaml.safe_load(applied_text) if applied_text else None
-    if getattr(args, "force", False):
-        old = None
+    previous = yaml.safe_load(applied_text) if applied_text else None
+    old = None if force else previous
     try:
-        actions = stack.apply(old, new, argv, env)
+        actions = stack.apply(old, new, argv, env, previous)
     except ApplyError as failure:
         error = str(failure)
-        if not (args.auto_revert and old is not None):
-            # The stack stays on the new configuration, so the next change is
-            # planned from it.
-            store_applied(dirs, text)
-            write_status(dirs, {"generation": new["generation"], "state": "failed", "error": error,
-                                "applied_generation": new["generation"], "time": now()})
-            print("failed: " + error, file=sys.stderr)
-            return 1
-        # back to the previous configuration, still in applied.yaml
-        revert = argparse.Namespace(**vars(args))
-        revert.config_file = applied_path(dirs)
+        if not (args.auto_revert and previous is not None and not incomplete):
+            return failed(dirs, text, new, error)
+        # back to the previous configuration, still in applied.yaml; a first
+        # apply, since the failed one may have stopped anywhere
         try:
-            old_cfg, old_argv, old_env = prepare(revert, dirs, run)
-            stack.apply(new, old_cfg, old_argv, old_env)
+            old_cfg, old_argv, old_env = prepare(args, dirs, applied_path(dirs), run)
+            stack.apply(None, old_cfg, old_argv, old_env, new)
         except (ApplyError, ConfigError) as e:
-            error = "%s; revert failed: %s" % (error, e.args[0])
-            store_applied(dirs, text)
-            write_status(dirs, {"generation": new["generation"], "state": "failed", "error": error,
-                                "applied_generation": new["generation"], "time": now()})
-            print("failed: " + error, file=sys.stderr)
-            return 1
+            return failed(dirs, text, new, "%s; revert failed: %s" % (error, e.args[0]))
         write_status(dirs, {"generation": new["generation"], "state": "reverted", "error": error,
                             "applied_generation": old_cfg["generation"], "time": now()})
         print("reverted: " + error, file=sys.stderr)
         return 1
-    store_applied(dirs, text)
+    done(dirs, text)
     write_status(dirs, {"generation": new["generation"], "state": "applied", "time": now()})
     print("applied %s: %s" % (new["generation"], ", ".join(sorted(actions)) or "files only"))
     return 0
 
 
+def signature(path):
+    try:
+        st = os.stat(path)
+    except FileNotFoundError:
+        return None
+    return (st.st_ino, st.st_mtime_ns, st.st_size)
+
+
+def stack_up(dirs, stack):
+    """Whether the stack of the applied file answers, with a short timeout."""
+    applied = read_applied(dirs)
+    if applied is None:
+        return True  # nothing applied yet: the apply is a first apply anyway
+    try:
+        cfg = yaml.safe_load(applied)
+        argv, _ = normalize(cfg, dirs)
+        stack.health(argv, cfg, timeout=10)
+    except (ApplyError, ConfigError, yaml.YAMLError):
+        return False
+    return True
+
+
 def run_loop(args, stack=None, run=subprocess.run):
-    """Applies the file on start and whenever it changes, polling it."""
+    """Applies the newest config file on start, and then whichever one
+    changes, polling them; on a fresh host it waits for the first one."""
     dirs = make_dirs(args)
     stack = stack or Stack(dirs, args, run)
-    seen = None
+    seen = {}
     first = True
     while True:
-        try:
-            st = os.stat(args.config_file)
-            signature = (st.st_ino, st.st_mtime_ns, st.st_size)
-        except FileNotFoundError:
-            signature = None
-        if signature is not None and (signature != seen or first):
-            seen = signature
-            args.force = False
-            if first and read_applied(dirs) == open(args.config_file).read():
+        current = {p: signature(p) for p in dirs.config_files}
+        changed = [p for p, sig in current.items() if sig is not None and sig != seen.get(p)]
+        seen = current
+        if changed:
+            # on start, and when several changed in one poll, the newest wins
+            path = newest(dirs.config_files if first else changed)
+            try:
                 # On start the stack may be down, after a reboot or a docker
-                # restart; bring it up again from the applied file.
-                applied = yaml.safe_load(read_applied(dirs))
-                try:
-                    _, argv, _ = prepare(args, dirs, run)
-                    stack.health(argv, applied, timeout=10)
-                except (ApplyError, ConfigError):
-                    args.force = True
-            apply_once(args, stack, run)
+                # restart; then the file is applied whole.
+                args.force = first and not stack_up(dirs, stack)
+                apply_once(args, stack, run, path)
+            except Exception as e:
+                # one bad pass must not stop the watcher; the next change retries
+                traceback.print_exc()
+                failed(dirs, None, None, "internal error: %s" % type(e).__name__)
             first = False
         stack.sleep(args.poll_interval)
 
@@ -883,10 +989,13 @@ def main(argv=None):
     }
     for name, help_text in commands.items():
         p = sub.add_parser(name, help=help_text)
-        p.add_argument("--config-file", required=True, help="the configuration file")
+        p.add_argument("--config-file", required=True, action="append",
+                       help="a configuration file; can be given more than once, the newest one is used")
         p.add_argument("--monitoring-dir", required=True, help="the monitoring stack directory")
         p.add_argument("--staging-dir", help="where the derived files go (default: <monitoring-dir>/config-build)")
         p.add_argument("--strict", action="store_true", help="reject fields the schema does not know")
+        p.add_argument("--state-dir", help="where the applied file and the status go "
+                                           "(default: <monitoring-dir>/config-state)")
         if name == "check":
             continue
         p.add_argument("--auto-revert", action="store_true",

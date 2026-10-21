@@ -200,23 +200,49 @@ def test_check_status():
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run(["cp", "versions.sh", tmp], check=True)
         ok = lambda cmd, **kwargs: SimpleNamespace(returncode=0, stdout="")
-        args = SimpleNamespace(config_file=EXAMPLE, monitoring_dir=tmp, staging_dir=None, strict=False)
+        args = SimpleNamespace(config_file=[EXAMPLE], monitoring_dir=tmp, staging_dir=None, strict=False)
         out = io.StringIO()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
             assert smc.check(args, ok) == 0
         assert out.getvalue().startswith("./start-all.sh -v 2025.3 ")
-        status_path = os.path.join(tmp, "config-state", "status.json")
-        status = json.load(open(status_path))
-        assert status["state"] == "validated" and status["generation"] == example()["generation"]
-        assert os.stat(status_path).st_mode & 0o777 == 0o600
+        # check leaves the running watcher's status and staging alone
+        assert not os.path.exists(os.path.join(tmp, "config-state"))
+        assert not os.path.exists(os.path.join(tmp, "config-build"))
         bad = example()
         bad["stack"]["log_collector"] = "loki"
-        args.config_file = write_config(tmp, bad)
+        args.config_file = [write_config(tmp, bad)]
+        out = io.StringIO()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
             assert smc.check(args, ok) == 1
-        status = json.load(open(status_path))
-        assert status["state"] == "rejected" and status["generation"] == bad["generation"]
-        assert status["error"].startswith("stack.log_collector: must be one of")
+        assert out.getvalue().startswith("rejected: stack.log_collector: must be one of")
+        # secrets are masked in the printed command line
+        cfg = example()
+        cfg["grafana"]["env"]["GF_AUTH_CLIENT_SECRET"] = "s3cret"
+        cfg["stack"]["extra_flags"] = ["--grafana-render-token tok3n"]
+        args.config_file = [write_config(tmp, cfg)]
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+            assert smc.check(args, ok) == 0
+        assert "s3cret" not in out.getvalue() and "tok3n" not in out.getvalue()
+        assert "GF_AUTH_CLIENT_SECRET=***" in out.getvalue()
+
+
+def test_bad_values_rejected():
+    for flags in (['-c "x'], ['-b ""'], ['--param "grafana, "']):
+        cfg = example()
+        cfg["stack"]["extra_flags"] = flags
+        try:
+            smc.normalize(cfg, smc.Dirs("/m"))
+        except smc.ConfigError:
+            continue
+        raise AssertionError(flags)
+    cfg = example()
+    cfg["stack"]["docker_args"] = ['"x']
+    try:
+        smc.normalize(cfg, smc.Dirs("/m"))
+        raise AssertionError("docker_args")
+    except smc.ConfigError:
+        pass
 
 
 def test_plan():
@@ -275,14 +301,14 @@ def make_stack(tmp, host):
     for f in ("datasource.scylla.yml", "datasource.psswd.scylla.yml"):
         subprocess.run(["cp", os.path.join("grafana", f), os.path.join(tmp, "grafana")], check=True)
     args = SimpleNamespace(monitoring_dir=tmp, staging_dir=None, strict=False, auto_revert=False, force=False,
-                           cert_dir="/certs", root_helper="/helper", health_timeout=0, config_file=None)
+                           cert_dir="/certs", root_helper="/helper", health_timeout=0, config_file=[], state_dir=None)
     dirs = smc.make_dirs(args)
     http = lambda method, url: 200
     return args, smc.Stack(dirs, args, host.run, http, sleep=lambda s: None)
 
 
 def apply(args, stack, host, cfg):
-    args.config_file = write_config(args.monitoring_dir, cfg)
+    args.config_file = [write_config(args.monitoring_dir, cfg)]
     out = io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
         return smc.apply_once(args, stack, host.run)
@@ -365,6 +391,158 @@ def test_apply_failure():
         assert status["state"] == "reverted" and status["applied_generation"] == "fixed"
         assert calls == ["--storage.tsdb.retention.time=60d", "--storage.tsdb.retention.time=30d"]
 
+
+def test_apply_incomplete():
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        good = example()
+        assert apply(args, stack, host, good) == 0
+        # the drop-in fails before the restart the new version needs
+        bad = copy.deepcopy(good)
+        bad["generation"] = "g2"
+        bad["stack"]["scylla_version"] = "2025.4"
+        bad["systemd"]["missing.service"] = "[Service]\n"
+        host.fail = {"sudo"}
+        assert apply(args, stack, host, bad) == 1
+        assert os.path.exists(os.path.join(tmp, "config-state/applied.incomplete"))
+        # the fix runs every action, so the version change is not lost, and
+        # removes the drop-in of the unit it dropped
+        host.fail = set()
+        host.commands.clear()
+        fixed = copy.deepcopy(bad)
+        fixed["generation"] = "g3"
+        fixed["systemd"].pop("missing.service")
+        assert apply(args, stack, host, fixed) == 0
+        assert "start-all.sh -v" in names(host)
+        assert [c[3:5] for c, _ in host.commands if c[0] == "sudo" and c[3] == "dropin"] == \
+            [["dropin", "missing.service"], ["dropin", "node-exporter.service"]]
+        assert not os.path.exists(os.path.join(tmp, "config-state/applied.incomplete"))
+
+
+def test_force_removes_dropins():
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        cfg = example()
+        assert apply(args, stack, host, cfg) == 0
+        host.commands.clear()
+        cfg["generation"] = "g2"
+        cfg["systemd"].clear()
+        args.force = True
+        assert apply(args, stack, host, cfg) == 0
+        assert ["dropin", "node-exporter.service", "--remove"] == host.commands[0][0][3:]
+
+
+
+def quiet(fn, *args):
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+        return fn(*args), out.getvalue()
+
+
+def test_several_config_files():
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        a, b = os.path.join(tmp, "a"), os.path.join(tmp, "b")
+        os.makedirs(a)
+        os.makedirs(b)
+        os.makedirs(os.path.join(tmp, "gone"))
+        args.state_dir = os.path.join(tmp, "state")
+        cfg = example()
+        cfg["generation"] = "from-a"
+        path_a = write_config(a, cfg)
+        cfg["generation"] = "from-b"
+        path_b = write_config(b, cfg)
+        os.utime(path_a, (1, 1))
+        args.config_file = [path_a, path_b, os.path.join(tmp, "missing", "config.yaml")]
+        rc, out = quiet(smc.apply_once, args, stack, host.run)
+        assert rc == 0 and "several config files exist" in out and "applied from-b" in out
+        for status_dir in (args.state_dir, a, b):
+            name = "status.json" if status_dir == args.state_dir else "scylla-monitoring.status.json"
+            path = os.path.join(status_dir, name)
+            assert json.load(open(path))["generation"] == "from-b", path
+            assert os.stat(path).st_mode & 0o777 == 0o600
+        assert not os.path.exists(os.path.join(tmp, "missing"))
+        assert os.path.exists(os.path.join(args.state_dir, "applied.yaml"))
+
+
+def test_run_loop():
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        args.poll_interval = 1
+        a, b = os.path.join(tmp, "a"), os.path.join(tmp, "b")
+        os.makedirs(a)
+        os.makedirs(b)
+        args.config_file = [os.path.join(a, "config.yaml"), os.path.join(b, "config.yaml")]
+        generations = []
+        steps = []
+
+        def step(seconds):
+            # each poll: run the next change, then stop when none is left
+            if not steps:
+                raise StopIteration
+            steps.pop(0)()
+
+        def write(directory, generation, mtime):
+            cfg = example()
+            cfg["generation"] = generation
+            path = write_config(directory, cfg)
+            os.utime(path, (mtime, mtime))
+
+        stack.apply = lambda old, new, argv, env, previous=None: generations.append(new["generation"]) or set()
+        stack.sleep = step
+        # nothing there yet: the loop waits; then a writes, then b, then a again
+        steps += [lambda: None, lambda: write(a, "a1", 100), lambda: write(b, "b1", 200),
+                  lambda: write(a, "a2", 300), lambda: None]
+        try:
+            quiet(smc.run_loop, args, stack, host.run)
+        except StopIteration:
+            pass
+        assert generations == ["a1", "b1", "a2"], generations
+
+
+def test_run_loop_start():
+    """On start, a file that changed while the watcher was down is applied
+    whole when the stack is down, and an error does not stop the loop."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        args.poll_interval = 1
+        cfg = example()
+        assert apply(args, stack, host, cfg) == 0
+        cfg["generation"] = "g2"
+        cfg["targets"]["scylla"][0]["targets"].append("10.0.0.9")
+        write_config(args.monitoring_dir, cfg)
+
+        def down(argv, cfg, timeout=None):
+            raise smc.ApplyError("prometheus: not ready")
+        stack.health = down
+        olds = []
+
+        def fake_apply(old, new, argv, env, previous=None):
+            olds.append(old)
+            if len(olds) == 1:
+                raise RuntimeError("boom")
+            return set()
+        stack.apply = fake_apply
+        steps = [lambda: write_config(args.monitoring_dir, dict(cfg, generation="g3"))]
+
+        def step(seconds):
+            if not steps:
+                raise StopIteration
+            steps.pop(0)()
+        stack.sleep = step
+        try:
+            quiet(smc.run_loop, args, stack, host.run)
+        except StopIteration:
+            pass
+        # the first pass is a first apply; it fails, and the next change is
+        # applied whole too, since the failed one is incomplete
+        assert olds == [None, None]
+        assert json.load(open(os.path.join(tmp, "config-state/status.json")))["state"] == "applied"
 
 
 if __name__ == "__main__":
