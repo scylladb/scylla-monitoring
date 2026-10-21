@@ -170,7 +170,9 @@ Options:
                                    the file names should be scylla_servers.yml, node_exporter_servers.yml, scylla_manager_agents.yml, and scylla_manager_servers.yml
   --stack id                     - Use this option when running a secondary stack, id could be 1-4
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
-                                   prometheus, grafana, alertmanager, loki, promtail, alloy, sidecar, grafanarender
+                                   prometheus, alertmanager, grafana, grafanarender, loki, promtail, alloy, sidecar, thanos, vmalert, datadog
+  --volume container,src:dst     - Mount a host path into a container (same container names as --limit).
+  --param container,flag         - Add a command-line flag to the process in a container (same container names as --limit).
   --archive  data-directory      - Treat data directory as an archive. This disables Prometheus time-to-live (infinite retention), and would run a minimal mode
   --quick-startup                - If set, the script will not validate that each of the processes start correctly.
   --grafana-render-token token   - Use the provided renderer token instead of generating one.

@@ -10,6 +10,7 @@ Download and Install Scylla Monitoring Stack
    The start-all.sh script <start-all>
    Deploy without Docker <monitor-without-docker>
    Docker Compose <docker-compose>
+   Configure from One File <config-file>
    System Recommendations <min-prod-hw>
    Using Thanos <thanos>
 
@@ -22,4 +23,5 @@ Choose a topic to begin:
 * :doc:`The start-all.sh script <start-all>`
 * :doc:`Deploy Scylla Monitoring Stack Without Docker <monitor-without-docker>`
 * :doc:`Running using Docker Compose <docker-compose>`
+* :doc:`Configure the Stack from One File <config-file>`
 * :doc:`Using Thanos <thanos>`

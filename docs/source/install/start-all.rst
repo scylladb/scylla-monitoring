@@ -21,9 +21,16 @@ You cannot use port mapping when using the ``-l`` flag
 
 **-D encapsulate docker param** Allows passing additional parameters to all the docker containers. For example, to start the monitoring containers with a specific network driver use -D "--net=network_name".
 
+**--limit container,docker-param** Pass a Docker parameter to one container. The container is one of: prometheus, alertmanager, grafana, grafanarender, loki, promtail, alloy, sidecar, thanos, vmalert, datadog.
+For example, ``--limit prometheus,--memory=8g``. A container's own setting takes precedence over the same setting in ``-D``.
+
+**--volume container,src:dst** Mount a host path into one container, using the same container names as ``--limit``.
+
+**--param container,flag** Add a command-line flag to the process inside one container, using the same container names as ``--limit``.
+
 **--auto-restart** When set, Docker will automatically restart all the services inside the containers in case of a failure.
 
-**--compose** This is an experimental option. When set, it initiates a two-stage process. Firstly, a ``docker-compose.yml`` file is created along with an ``.env`` file. Following this, the script executes ``docker-compose up``. Please note that having docker-compose is a prerequisite.
+**--compose** Run the stack with Docker Compose: ``make_compose.py`` writes a ``docker-compose.yml`` file and an ``.env`` file for the same options, and runs ``docker compose up``. See :doc:`Docker Compose <docker-compose>`.
 
 **--scrap scrap-interval** Allows changing Prometheus scrap interval.
 
@@ -137,7 +144,7 @@ This flag places the Prometheus data directory outside of its container and by d
 
 **-N manager target file** Specify the location of the Scylla Manager target file.
 
-**-R prometheus-alert-file** By default Prometheus alert rules are found in ``prometheus.rules.yml`` in the ``prometheus`` directory. The ``-R`` flag allows specifying a different location.
+**-R prometheus-alert-file** By default Prometheus alert rules are found in ``prometheus.rules.yml`` in the ``prometheus`` directory. The ``-R`` flag allows specifying a different location: a rule file, or a directory of rule files.
 
 **-L manager-address** Using Scylla Manager **Consul** API to resolve the servers' IP address. When using this option, Prometheus will ignore the target files even if they are explicitly passed in the command line.
 
@@ -171,6 +178,6 @@ The Alertmanager handles the alerts and takes the following parameters:
 
 **-m alertmanager-port** Override the default Alertmanager port, this is done using port mapping, note that port mapping does not work when using the host network.
 
-**-r alert-manager-config** By default, the Alertmanager takes its configuration from ``rule_config.yml`` in the ``prometheus`` directory. The ``-r`` flag overrides it to another file.prometheus
+**-r alert-manager-config** By default, the Alertmanager takes its configuration from ``rule_config.yml`` in the ``prometheus`` directory. The ``-r`` flag overrides it with another file, or with a directory that holds ``config.yml``.
 
 **-C alertmanager-commands** Allows adding an arbitrary command line to the alertmanager container starting command.
