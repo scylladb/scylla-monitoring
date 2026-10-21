@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 # Checks make_dashboards.py Grafana 13 layouts: rows/tabs nesting and section variables.
-# Run: python3 test_make_dashboards_layout.py
+# Run: python3 tests/test_make_dashboards_layout.py
 import copy
 import json
+import os
+import sys
 from types import SimpleNamespace
+
+# Runs from the repository root, where make_dashboards.py and grafana/ are.
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(ROOT)
+sys.path.insert(0, ROOT)
 
 import make_dashboards as md
 
