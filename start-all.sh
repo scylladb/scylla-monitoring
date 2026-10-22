@@ -1042,7 +1042,16 @@ if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
 	if [ -f $DATA_DIR/scylla.txt ]; then
 		mv $DATA_DIR/scylla.txt $DATA_DIR/scylla.$DATE.txt
 	fi
-	echo LAST_COMMAND_LINE='"'"$@"'"' >$DATA_DIR/scylla.txt
+	# the file is sourced by --archive, so the command line is quoted, and
+	# it is kept without the secrets
+	LAST_COMMAND_LINE=()
+	PREV_ARG=""
+	for arg in "$@"; do
+		case "$PREV_ARG" in -a | --grafana-render-token | --datadog-api-keys) arg="***" ;; esac
+		LAST_COMMAND_LINE+=("$arg")
+		PREV_ARG=$arg
+	done
+	printf 'LAST_COMMAND_LINE=%q\n' "${LAST_COMMAND_LINE[*]}" >$DATA_DIR/scylla.txt
 	echo VERSIONS='"'"$VERSIONS"'"' >>$DATA_DIR/scylla.txt
 	echo MANAGER_VERSION='"'"$MANAGER_VERSION"'"' >>$DATA_DIR/scylla.txt
 	echo MONITORING_VERSION='"'"$CURRENT_VERSION"'"' >>$DATA_DIR/scylla.txt
@@ -1059,7 +1068,7 @@ if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "Using victoria metrics"
 
 	docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
-		-v $PWD/prometheus/build/:/etc/prometheus/config/:z \
+		-v $PWD/prometheus/build$STACK/:/etc/prometheus/config/:z \
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
 		$NODE_TARGET_FILE \
