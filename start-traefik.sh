@@ -178,12 +178,18 @@ ip -o addr show scope global | awk -v ip="$PRIVATE_IP" '{sub(/\/.*/, "", $4)} $4
 	die "error: PRIVATE_IP must be a global address on this host, as \`ip addr\` prints it"
 [[ "$CERT_DIR" == /* && "$CERT_DIR" != *:* ]] || die "error: CERT_DIR must be an absolute path without ':'"
 
-# The key is usually root-only; use sudo only when it is needed to read it.
+# The key is usually root-only; the readiness probe reads it with sudo. Without
+# a terminal and without passwordless sudo (a service), the probe uses
+# traefik's ping endpoint instead.
 NEED_SUDO=0
 for f in server.crt server.key rootCA.crt; do
 	[[ -r "$CERT_DIR/$f" ]] || NEED_SUDO=1
 done
-as_root() { if ((NEED_SUDO)); then sudo "$@"; else "$@"; fi; }
+PING_PROBE=0
+if ((NEED_SUDO)) && [[ ! -t 0 ]] && ! sudo -n true 2>/dev/null; then
+	PING_PROBE=1
+fi
+as_root() { if ((NEED_SUDO && !PING_PROBE)); then sudo "$@"; else "$@"; fi; }
 as_root test -f "$CERT_DIR/server.crt" -a -f "$CERT_DIR/server.key" -a -f "$CERT_DIR/rootCA.crt" ||
 	die "error: CERT_DIR must hold server.crt server.key rootCA.crt"
 # CERT_DIR is mounted whole, so a symlink out of it does not resolve in the
@@ -282,6 +288,10 @@ docker run -d --name traefik \
 # come from traefik. Any other status (302/502/503/...) means traefik is ready,
 # even if the target service is still down.
 probe() {
+	if ((PING_PROBE)); then
+		curl --noproxy '*' --output /dev/null --connect-timeout 5 --max-time 10 "$@" "http://localhost:8080/ping"
+		return
+	fi
 	as_root curl --noproxy '*' --globoff \
 		--cacert "${CERT_DIR}/rootCA.crt" \
 		--cert "${CERT_DIR}/server.crt" --key "${CERT_DIR}/server.key" \
