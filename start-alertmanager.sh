@@ -12,7 +12,7 @@ BIND_ADDRESS=""
 ALERTMANAGER_COMMANDS=""
 ALERT_MANAGER_DIR=""
 USER_PERMISSIONS=""
-usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param] [-C alertmanager commands] [-r rule-file] [-f alertmanager-dir]"
+usage="$(basename "$0") [-h] [-p alertmanager port ] [-l] [-D encapsulate docker param] [-C alertmanager commands] [-r rule-file, or a directory holding config.yml] [-f alertmanager-dir]"
 if [ "$(id -u)" -ne 0 ]; then
 	GROUPID=$(id -g)
 	USER_PERMISSIONS="-u $UID:$GROUPID"
@@ -138,11 +138,21 @@ if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:
 	PORT_MAPPING="-p $BIND_ADDRESS$ALERTMANAGER_PORT:9093"
 fi
 
-docker run ${DOCKER_LIMITS["alertmanager"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
-	-v $RULE_FILE:/etc/alertmanager/config.yml:z \
+# A directory is mounted as a whole, so a config.yml replaced by rename is
+# seen by the next reload.
+if [ -d "$RULE_FILE" ]; then
+	RULE_MOUNT="$RULE_FILE:/etc/alertmanager/conf/:z"
+	CONFIG_FILE=/etc/alertmanager/conf/config.yml
+else
+	RULE_MOUNT="$RULE_FILE:/etc/alertmanager/config.yml:z"
+	CONFIG_FILE=/etc/alertmanager/config.yml
+fi
+
+docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["alertmanager"]} -i $PORT_MAPPING \
+	-v $RULE_MOUNT \
 	$ALERT_MANAGER_DIR \
 	--name $ALERTMANAGER_NAME docker.io/prom/alertmanager:$ALERT_MANAGER_VERSION \
-	$ALERTMANAGER_COMMANDS --log.level=debug --config.file=/etc/alertmanager/config.yml ${DOCKER_PARAMS["alertmanager"]} >&/dev/null
+	$ALERTMANAGER_COMMANDS --log.level=debug --config.file=$CONFIG_FILE ${DOCKER_PARAMS["alertmanager"]} >&/dev/null
 
 if [ $? -ne 0 ]; then
 	echo "Error: Alertmanager container failed to start"

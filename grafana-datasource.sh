@@ -57,7 +57,15 @@ fi
 if [ -z "$SCYLLA_USER" ] || [ -z "$SCYLLA_PSSWD" ]; then
 	cp grafana/datasource.scylla.yml $BASE_DIR/datasource.scylla.yml
 else
-	sed "s/SCYLLA_USER/$SCYLLA_USER/" grafana/datasource.psswd.scylla.yml | sed "s/SCYLLA_PSSWD/$SCYLLA_PSSWD/" >$BASE_DIR/datasource.scylla.yml
+	# YAML single-quoted strings, with ' doubled, take any value as is. The
+	# replacements are quoted so a & in them stays literal.
+	user="'${SCYLLA_USER//\'/\'\'}'"
+	psswd="'${SCYLLA_PSSWD//\'/\'\'}'"
+	datasource=$(<grafana/datasource.psswd.scylla.yml)
+	datasource=${datasource//"'SCYLLA_USER'"/"$user"}
+	datasource=${datasource//"'SCYLLA_PSSWD'"/"$psswd"}
+	rm -f $BASE_DIR/datasource.scylla.yml
+	(umask 077 && printf '%s\n' "$datasource" >$BASE_DIR/datasource.scylla.yml)
 fi
 
 if [[ "$SCRAP_INTERVAL" != "" ]]; then

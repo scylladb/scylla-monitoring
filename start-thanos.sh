@@ -158,7 +158,7 @@ if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:
 	PORT_FLAGS=(-p ${BIND_ADDRESS}10903:10903 -p ${BIND_ADDRESS}10904:10904)
 fi
 
-docker run ${DOCKER_LIMITS["thanos"]} -d $DOCKER_PARAM "${PORT_FLAGS[@]}" -i --name $THANOS_NAME -- docker.io/thanosio/thanos:$THANOS_VERSION \
+docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["thanos"]} "${PORT_FLAGS[@]}" -i --name $THANOS_NAME -- docker.io/thanosio/thanos:$THANOS_VERSION \
 	query \
 	"--debug.name=query0" \
 	"--grpc-address=0.0.0.0:10903" \

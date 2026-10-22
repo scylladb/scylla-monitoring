@@ -128,7 +128,7 @@ Options:
   -m alertmanager port           - Override the default Prometheus port.
   -M scylla-manager version      - Override the default Scylla Manager version to use.
   -D docker param                - Encapsulate docker param, the parameter will be used by all containers.
-  -r alert-manager-config        - Override the default alert-manager configuration file.
+  -r alert-manager-config        - Override the default alert-manager configuration file, or a directory holding config.yml.
   -f path/to/alertmanager/data   - If set, the alertmanager would store its data in the given directory.
   -R prometheus-alert-file       - Override the default Prometheus alerts configuration file.
   -N path/to/manager/target file - Set the location of the target file for Scylla Manager.
@@ -163,13 +163,16 @@ Options:
   --enable-protobuf              - [Deprecated]If set, enable the experimental Prometheus Protobuf with Native histograms support.
   --native-histogram             - If set, enable the Prometheus Protobuf with Native histograms support.
   --scrap [scrap duration]       - Change the default Prometheus scrap duration. Duration is in seconds.
+  --cluster-label label          - Set the cluster label on Prometheus's and Grafana's own metrics.
   --vector-store path/to/file.yml - [depricated] see vector-search
   --vector-search path/to/file.yml- Specifiy a vector search target file, the file should contain a list of vector search servers.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
                                    the file names should be scylla_servers.yml, node_exporter_servers.yml, scylla_manager_agents.yml, and scylla_manager_servers.yml
   --stack id                     - Use this option when running a secondary stack, id could be 1-4
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
-                                   prometheus, grafana, alertmanager, loki, promtail, alloy, sidecar, grafanarender
+                                   prometheus, alertmanager, grafana, grafanarender, loki, promtail, alloy, sidecar, thanos, vmalert, datadog
+  --volume container,src:dst     - Mount a host path into a container (same container names as --limit).
+  --param container,flag         - Add a command-line flag to the process in a container (same container names as --limit).
   --archive  data-directory      - Treat data directory as an archive. This disables Prometheus time-to-live (infinite retention), and would run a minimal mode
   --quick-startup                - If set, the script will not validate that each of the processes start correctly.
   --grafana-render-token token   - Use the provided renderer token instead of generating one.
@@ -192,52 +195,6 @@ is_local() {
 		fi
 	done
 	return 1
-}
-
-# Resolve the address of a Docker container.
-# Usage: container_address <container_name> <container_port> [host_port]
-# Prints <ip>:<container_port>, the address the container is reachable at from
-# inside the Docker network. Falls back to BIND_ADDRESS or the host IP when the
-# container has no address of its own, and then uses host_port, because that is
-# the port the container is published on. host_port defaults to container_port.
-container_address() {
-	local name=$1
-	local port=$2
-	local host_port=${3:-$2}
-	local ip
-	ip=$(first_container_address "$name")
-	if [ -z "$ip" ]; then
-		if [ ! -z "$BIND_ADDRESS" ]; then
-			ip=$(echo $BIND_ADDRESS | sed 's/:$//')
-		elif [[ $(uname) == "Linux" ]]; then
-			ip=$(hostname -I | awk '{print $1}')
-		elif [[ $(uname) == "Darwin" ]]; then
-			ip=$(ifconfig en0 | awk '/inet / {print $2}')
-		fi
-		port=$host_port
-	fi
-	echo "$ip:$port"
-}
-
-# Resolve the address of a monitoring container, as seen by the other containers
-# of the stack.
-# Usage: service_address <container_name> <container_port> [host_port]
-# On a user-defined network Docker's embedded DNS resolves container names. A name
-# stays correct when Docker gives the container a different address, which it does
-# whenever the containers are recreated or the host reboots, so prefer it there.
-# This covers the network the script creates and one the caller passed in -D
-# alike. Falls back to container_address when the network resolves no names, as
-# with host networking, which has no container address either.
-service_address() {
-	local name=$1
-	local port=$2
-	local host_port=${3:-$2}
-
-	if stack_network >/dev/null; then
-		echo "$name:$port"
-		return
-	fi
-	container_address "$name" "$port" "$host_port"
 }
 
 if [ -z "$PROMETHEUS_RULES" ]; then
@@ -325,13 +282,14 @@ fi
 if [ -z "$LOG_COLLECTOR" ]; then
 	LOG_COLLECTOR="alloy"
 fi
+CLUSTER_LABEL_ARGS=()
 LIMITS=""
 VOLUMES=""
 PARAMS=""
 for arg; do
 	if [ "$arg" = "--compose" ]; then
 		log INFO "Using compose"
-		exec ./make-compose.sh "$@"
+		exec ./make_compose.py "$@"
 	fi
 	if [ "$arg" = "--verbose" ]; then
 		VERBOSE="1"
@@ -465,6 +423,10 @@ for arg; do
 			LIMIT="1"
 			PARAM="scrap"
 			;;
+		--cluster-label)
+			LIMIT="1"
+			PARAM="cluster-label"
+			;;
 		--vector-store)
 			LIMIT="1"
 			PARAM="vector-search"
@@ -574,6 +536,9 @@ for arg; do
 		elif [ "$PARAM" = "scrap" ]; then
 			SCRAP_CMD="--scrap $NOSPACE"
 			unset PARAM
+		elif [ "$PARAM" = "cluster-label" ]; then
+			CLUSTER_LABEL_ARGS=(--cluster-label "$arg")
+			unset PARAM
 		elif [ "$PARAM" = "vector-search" ]; then
 			VECTOR_SEARCH="$NOSPACE"
 			unset PARAM
@@ -681,7 +646,8 @@ while getopts ':hleEd:g:p:v:s:n:a:c:j:b:m:r:R:M:G:D:L:N:C:Q:A:f:P:S:T:k:' option
 		LDAP_FILE="-P $OPTARG"
 		;;
 	a)
-		GRAFANA_ADMIN_PASSWORD="-a $OPTARG"
+		# Passed to start-grafana.sh in the environment, out of the process list.
+		export GRAFANA_ADMIN_PASSWORD="$OPTARG"
 		;;
 	j)
 		GRAFANA_DASHBOARD_ARRAY+=("$OPTARG")
@@ -779,9 +745,9 @@ if [ "$CURRENT_VERSION" = "master" ]; then
 		echo "* WARNING: You are using the unstable master branch *"
 		echo "* Check the README.md file for the stable releases  *"
 		echo "*****************************************************"
-		./generate-dashboards.sh -v $VERSIONS -m $MANAGER_VERSION $STACK_CMD "$SUPPORT_DASHBOARD" $VECTOR_SEARCH_CMD
+		./generate-dashboards.sh -v $VERSIONS -M $MANAGER_VERSION $STACK_CMD "$SUPPORT_DASHBOARD" $VECTOR_SEARCH_CMD
 	else
-		./generate-dashboards.sh -v $VERSIONS -F -R 0 -m $MANAGER_VERSION $STACK_CMD $VECTOR_SEARCH_CMD
+		./generate-dashboards.sh -v $VERSIONS -F -R 0 -M $MANAGER_VERSION $STACK_CMD $VECTOR_SEARCH_CMD
 	fi
 	log INFO "Generating the dashboards"
 
@@ -810,10 +776,7 @@ if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:sp
 	HOST_NETWORK=host
 	GRAFANA_ADDRESS="-G localhost:3000"
 elif [[ ! $DOCKER_PARAM = *"--net"* ]]; then
-    HOST_NETWORK="monitor-net"
-    if [ "$STACK_ID" != "" ]; then
-        HOST_NETWORK="$HOST_NETWORK$STACK_ID"
-    fi
+    HOST_NETWORK=$(default_network "$STACK_ID")
     if ! docker network inspect $HOST_NETWORK >/dev/null 2>&1; then
       docker network create $HOST_NETWORK
     fi
@@ -978,13 +941,10 @@ else
 	# the name off the flag that is actually passed: env.sh can set
 	# ALERTMANAGER_PORT_CMD while leaving the port itself unset.
 	ALERTMANAGER_PORT_ARG=$(echo "$ALERTMANAGER_PORT_CMD" | sed -n 's/.*-p[[:space:]]*\([^[:space:]]*\).*/\1/p')
-	if [ -z "$ALERTMANAGER_PORT_ARG" ]; then
-		ALERTMANAGER_NAME=aalert
-	else
-		ALERTMANAGER_NAME=aalert-$ALERTMANAGER_PORT_ARG
+	if [ -n "$ALERTMANAGER_PORT_ARG" ]; then
 		ALERTMANAGER_PORT=$ALERTMANAGER_PORT_ARG
 	fi
-	AM_ADDRESS=$(service_address $ALERTMANAGER_NAME 9093 $ALERTMANAGER_PORT)
+	AM_ADDRESS=$(alertmanager_address "$ALERTMANAGER_PORT_ARG" "$ALERTMANAGER_PORT")
 fi
 
 LOKI_ADDRESS=""
@@ -1073,29 +1033,25 @@ if [ -z "$GRAFANA_ADDRESS" ] && stack_network >/dev/null; then
 			;;
 		esac
 	fi
-	# Named the way start-grafana.sh names it: a GRAFANA_NAME from env.sh wins over
-	# the port, and otherwise the name follows a port having been given at all
-	# rather than its value, so -g 3000 names the container agraf-3000. Kept in a
-	# variable of its own, because assigning to GRAFANA_NAME here would overwrite
-	# the name env.sh chose, while start-grafana.sh reads env.sh for itself and
-	# would still use it.
-	if [ ! -z "$GRAFANA_NAME" ]; then
-		GRAFANA_SCRAPE_NAME=$GRAFANA_NAME
-	elif [ -z "$GRAFANA_BARE_PORT" ]; then
-		GRAFANA_SCRAPE_NAME=agraf
-	else
-		GRAFANA_SCRAPE_NAME=agraf-$GRAFANA_BARE_PORT
-	fi
-	GRAFANA_ADDRESS="-G $GRAFANA_SCRAPE_NAME:3000"
+	GRAFANA_ADDRESS="-G $(grafana_container_name "$GRAFANA_BARE_PORT"):3000"
 fi
 
-./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $NATIVE_HISTOGRAM $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD
+./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $NATIVE_HISTOGRAM $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD "${CLUSTER_LABEL_ARGS[@]}"
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
 	DATE=$(date +"%Y-%m-%d_%H_%M_%S")
 	if [ -f $DATA_DIR/scylla.txt ]; then
 		mv $DATA_DIR/scylla.txt $DATA_DIR/scylla.$DATE.txt
 	fi
-	echo LAST_COMMAND_LINE='"'"$@"'"' >$DATA_DIR/scylla.txt
+	# the file is sourced by --archive, so the command line is quoted, and
+	# it is kept without the secrets
+	LAST_COMMAND_LINE=()
+	PREV_ARG=""
+	for arg in "$@"; do
+		case "$PREV_ARG" in -a | --grafana-render-token | --datadog-api-keys) arg="***" ;; esac
+		LAST_COMMAND_LINE+=("$arg")
+		PREV_ARG=$arg
+	done
+	printf 'LAST_COMMAND_LINE=%q\n' "${LAST_COMMAND_LINE[*]}" >$DATA_DIR/scylla.txt
 	echo VERSIONS='"'"$VERSIONS"'"' >>$DATA_DIR/scylla.txt
 	echo MANAGER_VERSION='"'"$MANAGER_VERSION"'"' >>$DATA_DIR/scylla.txt
 	echo MONITORING_VERSION='"'"$CURRENT_VERSION"'"' >>$DATA_DIR/scylla.txt
@@ -1111,19 +1067,19 @@ fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "Using victoria metrics"
 
-	docker run -d $DOCKER_PARAM $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
-		-v $PWD/prometheus/build/prometheus.yml:/etc/promscrape.config.yml:z \
+	docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $DATA_DIR_CMD $PORT_MAPPING --name $PROMETHEUS_NAME \
+		-v $PWD/prometheus/build$STACK/:/etc/prometheus/config/:z \
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
 		$NODE_TARGET_FILE \
 		$SCYLLA_MANGER_AGENT_TARGET_FILE \
 		victoriametrics/victoria-metrics:$VICTORIA_METRICS_VERSION $PROMETHEUS_COMMAND_LINE_OPTIONS \
-		${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090
+		${DOCKER_PARAMS["prometheus"]} -promscrape.config=/etc/prometheus/config/prometheus.yml -promscrape.config.strictParse=false -httpListenAddr=:9090
 else
 	docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["prometheus"]} $USER_PERMISSIONS \
 		$DATA_DIR_CMD \
 		"${group_args[@]}" \
-		-v $PWD/prometheus/build$STACK/prometheus.yml:/etc/prometheus/prometheus.yml:z \
+		-v $PWD/prometheus/build$STACK/:/etc/prometheus/config/:z \
 		-v $PROMETHEUS_RULES:z \
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
@@ -1131,7 +1087,7 @@ else
 		$VECTOR_SEARCH \
 		$SCYLLA_MANGER_AGENT_TARGET_FILE \
 		$PORT_MAPPING --name $PROMETHEUS_NAME docker.io/prom/prometheus:$PROMETHEUS_VERSION \
-		--web.enable-lifecycle --enable-feature=promql-experimental-functions --config.file=/etc/prometheus/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
+		--web.enable-lifecycle --enable-feature=promql-experimental-functions --config.file=/etc/prometheus/config/prometheus.yml $PROMETHEUS_COMMAND_LINE_OPTIONS \
 		${DOCKER_PARAMS["prometheus"]}
 fi
 
@@ -1169,14 +1125,14 @@ DB_ADDRESS=$(service_address $PROMETHEUS_NAME 9090)
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "running vmalert"
 
-	docker run -d $DOCKER_PARAM \
+	docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["vmalert"]} \
 		--name vmalert \
 		-v $PROMETHEUS_RULES:z \
 		victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
 		-datasource.url=http://$DB_ADDRESS \
 		-notifier.url=http://$AM_ADDRESS \
 		-remoteWrite.url=http://$DB_ADDRESS \
-		-remoteRead.url=http://$DB_ADDRESS
+		-remoteRead.url=http://$DB_ADDRESS ${DOCKER_PARAMS["vmalert"]}
 fi
 if [ $RUN_THANOS_SC -eq 1 ]; then
 	if [ -z $DATA_DIR ]; then
@@ -1198,21 +1154,21 @@ if [ $RUN_THANOS -eq 1 ]; then
 			SC_ADDRESS_FLAG="-S sidecar1:10911"
 		fi
 	fi
-	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG $SC_ADDRESS_FLAG
+	run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $SC_ADDRESS_FLAG
 elif [ "$RUN_LOCAL_THANOS" = "1" ]; then
     if [[ $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
         SC_ADDRESS="localhost:10911"
     else
         SC_ADDRESS="sidecar1:10911"
     fi
-    run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $BIND_ADDRESS_CONFIG -S $SC_ADDRESS
+    run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG -S $SC_ADDRESS
 fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done
 if [ ! -z "$DATDOGPARAM" ]; then
-	run_script ./start-datadog.sh $DATDOGPARAM -D "$DOCKER_PARAM" -p $DB_ADDRESS
+	run_script ./start-datadog.sh $DATDOGPARAM -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS -p $DB_ADDRESS
 fi
 if [ "$RUN_ALTERNATOR" = 1 ]; then
 	GRAFANA_ENV_ARRAY+=(--alternator)
@@ -1224,7 +1180,7 @@ fi
 if [ ! -z "$GRAFANA_RENDERER_TOKEN_FILE" ]; then
 	grafana_renderer_args+=(--grafana-render-token-to-file "$GRAFANA_RENDERER_TOKEN_FILE")
 fi
-run_script ./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $GRAFANA_ADMIN_PASSWORD $STACK_CMD $VECTOR_SEARCH_CMD "${grafana_renderer_args[@]}"
+run_script ./start-grafana.sh $QUICK_STARTUP_CMD $SCRAP_CMD $LDAP_FILE $LOKI_ADDRESS $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG $RUN_RENDERER $SPECIFIC_SOLUTION -p $DB_ADDRESS $GRAFNA_ANONYMOUS_ROLE -D "$DOCKER_PARAM" $GRAFANA_PORT $EXTERNAL_VOLUME -m $AM_ADDRESS -M $MANAGER_VERSION -v $VERSIONS "${GRAFANA_ENV_ARRAY[@]}" $GRAFANA_DASHBOARD_COMMAND $STACK_CMD $VECTOR_SEARCH_CMD "${grafana_renderer_args[@]}"
 # run_script sends the output of its script to the log file, so a renderer that
 # failed to start would otherwise leave the stack looking healthy while every
 # render fails at use time. Grafana itself is up, so this is a warning.

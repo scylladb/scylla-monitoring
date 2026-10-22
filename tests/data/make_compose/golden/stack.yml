@@ -1,0 +1,97 @@
+compose:
+  name: scylla-monitoring-stack2
+  services:
+    aalert-9042:
+      container_name: aalert-9042
+      image: docker.io/prom/alertmanager:<ALERT_MANAGER_VERSION>
+      ports:
+      - 9042:9093
+      volumes:
+      - ./prometheus/rule_config.yml:/etc/alertmanager/config.yml:z
+      command:
+      - --log.level=debug
+      - --config.file=/etc/alertmanager/config.yml
+    aprom-9052:
+      container_name: aprom-9052
+      image: docker.io/prom/prometheus:<PROMETHEUS_VERSION>
+      ports:
+      - 9052:9090
+      volumes:
+      - ./prometheus/build/stack/2/:/etc/prometheus/config/:z
+      - ./prometheus/prom_rules/:/etc/prometheus/prom_rules/:z
+      - ./tests/data/make_compose/targets/:/etc/scylla.d/prometheus/targets/:z
+      command:
+      - --web.enable-lifecycle
+      - --enable-feature=promql-experimental-functions
+      - --config.file=/etc/prometheus/config/prometheus.yml
+    agraf-3002:
+      container_name: agraf-3002
+      image: docker.io/grafana/grafana:<GRAFANA_VERSION>
+      user: 1000:1000
+      ports:
+      - 3002:3000
+      volumes:
+      - ./grafana/build:/var/lib/grafana/dashboards:z
+      - ./grafana/plugins:/var/lib/grafana/plugins:z
+      - ./grafana/stack/2/provisioning:/var/lib/grafana/provisioning:z
+      environment:
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      - GF_RENDERING_DEFAULT_WIDTH=1920
+      - GF_RENDERING_DEFAULT_HEIGHT=1080
+      - GF_PATHS_PROVISIONING=/var/lib/grafana/provisioning
+      - GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID=UA-43975320-9
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=false
+      - GF_SECURITY_ANGULAR_SUPPORT_ENABLED=false
+      - GF_DATABASE_WAL=true
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/ver_2025.3/scylla-overview.2025.3.json
+      - GF_PROVISIONING_PERMITTED_PROVISIONED_PATHS=/var/lib/grafana/dashboards/
+      - GF_SERVER_ENABLE_GZIP=true
+      - GF_SECURITY_ALLOW_EMBEDDING=false
+      - GF_SECURITY_COOKIE_SECURE=false
+      - GF_SECURITY_COOKIE_SAMESITE=lax
+      - GF_USERS_DEFAULT_THEME=light
+      - GF_FEATURE_TOGGLES_ENABLE=dashboardSectionVariables
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+env:
+  GRAFANA_ADMIN_PASSWORD: admin
+commands:
+- - ./prometheus-config.sh
+  - -m
+  - aalert-9042:9093
+  - -s
+  - '2'
+  - -G
+  - agraf-3002:3000
+- - ./generate-dashboards.sh
+  - -v
+  - '2025.3'
+  - -M
+  - '3'
+  - -s
+  - '2'
+- - ./generate-dashboards.sh
+  - -t
+  - -v
+  - '2025.3'
+  - -M
+  - '3'
+  - -s
+  - '2'
+- - ./grafana-datasource.sh
+  - -p
+  - aprom-9052:9090
+  - -m
+  - aalert-9042:9093
+  - -s
+  - '2'
+files: []
+dirs: []
+warnings:
+- Without an external Prometheus directory, Prometheus data will be deleted on shutdown, use the -d command line flag for data persistence.

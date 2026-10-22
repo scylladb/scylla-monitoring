@@ -4,102 +4,89 @@ Using Docker Compose
 Scylla-Monitoring Stack is container-based.
 You can start and stop the Scylla Monitoring Stack with the `start-all.sh` and `kill-all.sh` scripts.
 
-Docker Compose is an alternative method to start and stop the stack. It requires more manual steps, but once
-configured, it simplifies starting and stopping the stack.
+Docker Compose is an alternative way to run the same stack. ``make_compose.py`` takes the ``start-all.sh``
+command-line options and writes a ``docker-compose.yml`` file, an ``.env`` file and the configuration files
+for the stack that ``start-all.sh`` would run with those options.
 
 .. warning::
 
-    *docker-compose up* **and** *start-all.sh* are two **alternative** ways to launch Scylla Monitoring Stack.
-    You should use **one** method, **not both**. In particular,  creating and updating *docker-compose.yml* is ignored
-    when using *start_all.sh*
-
-.. note::
-
-   There is an experimental method that uses scripts to create the Docker Compose file. See the details below.
+    *docker compose up* **and** *start-all.sh* are two **alternative** ways to launch Scylla Monitoring Stack.
+    You should use **one** method, **not both**. Run ``./kill-all.sh`` before switching from ``start-all.sh`` to Docker Compose.
 
 Prerequisite
 ------------
 
-Make sure you have `docker` and `docker-compose` installed.
+* ``docker`` with the ``docker compose`` plugin.
+* Python 3 with ``PyYAML`` (``python3-yaml``). Only Docker Compose needs Python; ``start-all.sh`` does not.
 
-Experimental - Configure docker-compose file using scripts
-----------------------------------------------------------
-The ``make-compose.sh`` script accepts the same command-line arguments as ``start-all.sh``. It generates a ``docker-compose.yaml`` file and a ``.env`` file.
+Generate the Compose File
+-------------------------
 
-Once the script is run, you can use ``docker-compose up`` to start the monitoring stack.
-You can manually modify the generated Compose file, but be aware that running ``make-compose.sh`` script again, will overwrite it.
-
-There is also an experimental ``--compose`` command-line option for ``start-all.sh``. It will first, generates the Compose file
-and then uses docker-compose to run the monitoring stack.
-
-Setting Prometheus
-------------------
-
-The Prometheus configuration file contains among others the IP address of the *alertmanager* and either the location
-of the *scylla_server.yml* file or a Consul IP address of Scylla Manager, if Scylla Manager is used for server provisioning.
-
-You can use `./prometheus-config.sh` to generate the file, for example:
+Run ``make_compose.py`` from the monitoring directory, with the options you would pass to ``start-all.sh``, for example:
 
 .. code-block:: shell
 
-   ./prometheus-config.sh --compose
+   ./make_compose.py -d /path/to/prometheus/data -v 2025.3 -s prometheus/scylla_servers.yml
 
-For production systems, It is advised to use an external directory for the Prometheus database. Make sure to create one and
-update the docker-compose file accordingly (see the docker-compose example below).
+``make_compose.py`` accepts every ``start-all.sh`` option (see :doc:`The start-all.sh script <start-all>`),
+reads ``env.sh`` the same way, and rejects an option it cannot express in Docker Compose. It writes:
 
-Setting Grafana Provisioning
-----------------------------
+* ``docker-compose.yml``, with one service per container ``start-all.sh`` runs, with the same container names, so ``kill-all.sh`` finds them.
+* ``.env`` (``0600``), with the secrets only: the Grafana admin password, the Grafana renderer token and the Datadog API key.
+* The Prometheus configuration, the Grafana data source and dashboard provisioning, and the Loki, Alloy or Promtail configuration.
 
-Grafana reads its provisioning configuration from files, one for the data-source and one for the dashboards.
-Note that the latter tells Grafana where the dashboards are located, it is not the dashboards themselves, which are
-at a different location.
-
-By default, Grafana iframe embedding is disabled. The generated ``docker-compose.yml`` and ``.env`` files
-include ``GF_SECURITY_ALLOW_EMBEDDING``, ``GF_SECURITY_COOKIE_SECURE``, and ``GF_SECURITY_COOKIE_SAMESITE``.
-Use ``--allow-embedding`` or set ``GF_SECURITY_ALLOW_EMBEDDING=true`` in ``env.sh`` to enable embedding.
-
-Grafana Data-Source file
-^^^^^^^^^^^^^^^^^^^^^^^^
-Run the following command to update the datasource:
+Then start the stack:
 
 .. code-block:: shell
 
-   ./grafana-datasource.sh --compose
+   docker compose up -d
 
-You can see the generated file under: `grafana/provisioning/datasources/datasource.yaml`
-
-Grafana Dashboard Load file
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To set the dashboard load file, you can run the `./generate-sashboards.sh` with the `-t` command line flag and the `-v` flag to specify the version.
-For example, Scylla-enterprise version 2020.1:
+Or let ``make_compose.py`` run it, with ``--compose``:
 
 .. code-block:: shell
 
-   ./generate-dashboards.sh -t -v 2020.1
+   ./make_compose.py --compose -d /path/to/prometheus/data -v 2025.3
 
-This command generates the files under: `grafana/provisioning/dashboards/`
+``./start-all.sh --compose [options]`` does the same.
 
-Setting Alloy
--------------
+All the containers start in parallel, so the stack is up sooner than with ``start-all.sh``.
 
-Alloy collects the Scylla logs over syslog and pushes them to Loki. Generate its configuration file from the template:
+Running ``make_compose.py`` again overwrites the generated files. Changing an option and running it again with ``--compose``
+recreates only the containers whose definition or configuration files changed. Keep your changes in the options, not in the generated files.
+
+Options
+-------
+
+**--compose** Also run ``docker compose up -d --remove-orphans``.
+
+**--traefik** Add traefik, which serves the stack over TLS with mutual authentication.
+Set ``PRIVATE_IP`` (the address traefik listens on) and ``CERT_DIR`` (the directory with ``server.crt``, ``server.key`` and ``rootCA.crt``)
+in the environment. ``--traefik`` needs ``-A 127.0.0.1``, so traefik is the only way in, and cannot be used with ``-l``.
+With ``--compose``, traefik starts after the rest of the stack, once ``start-traefik.sh --check`` finds no proxied port
+reachable outside loopback.
+
+**--stack id** Run a secondary stack. Its Compose project is ``scylla-monitoring-stack<id>``, written to ``docker-compose.stack<id>.yml``
+and ``.env.stack<id>``, so it does not replace the first one. Pass ``-f docker-compose.stack<id>.yml --env-file .env.stack<id>``
+to ``docker compose`` to act on it.
+
+``-D`` and the per-container ``--limit``, ``--volume`` and ``--param`` options are translated to Docker Compose settings, for example:
 
 .. code-block:: shell
 
-   sed "s/LOKI_IP/loki:3100/" loki/alloy/config.template.alloy > loki/alloy/config.alloy
-
-Docker Compose file
--------------------
-You can use the following example as a base for your docker compose.
-
-Pass the following to a file called `docker-compose.yml`
-
-
-.. literalinclude:: docker-compose.example.yml
-   :language: ruby
-
+   ./make_compose.py --limit prometheus,--memory=8g --limit grafana,--cpus=1
 
 Start and Stop
-^^^^^^^^^^^^^^
+--------------
 
-To start the Scylla Monitoring Stack run ``docker-compose up`` and to stop run ``docker-compose down``.
+To stop the stack, run ``docker compose down`` (or ``./kill-all.sh``) in the monitoring directory.
+To start it again, run ``docker compose up -d``.
+
+The Configuration File
+----------------------
+
+``scylla_monitoring_config.py --compose`` applies a configuration file to a stack run with Docker Compose.
+See :doc:`Configure the Stack from One File <config-file>`.
+
+.. note::
+
+   ``make-compose.sh`` is deprecated. Use ``make_compose.py``.

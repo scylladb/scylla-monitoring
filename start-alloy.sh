@@ -6,7 +6,7 @@ if [ -f env.sh ]; then
 	. env.sh
 fi
 
-ALLOY_CONFIG=$PWD/loki/alloy/config.alloy
+ALLOY_CONFIG_DIR=$PWD/loki/alloy/build
 DOCKER_PARAM=""
 BIND_ADDRESS=""
 usage="$(basename "$0") [-h] [-l] [--loki-address ip:port] [--alloy-port port] [--alloy-syslog-port port] [-A bind-to-ip-address] [-D encapsulate docker param] -- starts Grafana Alloy, sending syslog to Loki
@@ -166,12 +166,13 @@ if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:
 	PORT_MAPPING="-p $BIND_ADDRESS$ALLOY_PORT:$ALLOY_PORT -p $BIND_ADDRESS$ALLOY_SYSLOG_PORT:$ALLOY_SYSLOG_PORT"
 fi
 
-sed -e "s/LOKI_IP/$ALLOY_LOKI_ADDRESS/" -e "s/0.0.0.0:1514/0.0.0.0:$ALLOY_SYSLOG_PORT/" loki/alloy/config.template.alloy >$ALLOY_CONFIG
+mkdir -p $ALLOY_CONFIG_DIR
+sed -e "s/LOKI_IP/$ALLOY_LOKI_ADDRESS/" -e "s/0.0.0.0:1514/0.0.0.0:$ALLOY_SYSLOG_PORT/" loki/alloy/config.template.alloy >$ALLOY_CONFIG_DIR/config.alloy
 
-docker run ${DOCKER_LIMITS["alloy"]} -d $DOCKER_PARAM -i $PORT_MAPPING \
-	-v $ALLOY_CONFIG:/etc/alloy/config.alloy:z \
+docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["alloy"]} -i $PORT_MAPPING \
+	-v $ALLOY_CONFIG_DIR:/etc/alloy/conf:ro,z \
 	--name $ALLOY_NAME docker.io/grafana/alloy:$ALLOY_VERSION \
-	run --server.http.listen-addr=0.0.0.0:$ALLOY_PORT --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy ${DOCKER_PARAMS["alloy"]}
+	run --server.http.listen-addr=0.0.0.0:$ALLOY_PORT --storage.path=/var/lib/alloy/data /etc/alloy/conf/config.alloy ${DOCKER_PARAMS["alloy"]}
 
 if [ $? -ne 0 ]; then
 	echo "Error: Alloy container failed to start"

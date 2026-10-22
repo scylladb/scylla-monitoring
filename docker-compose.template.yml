@@ -6,7 +6,7 @@ services:
     ports:
     - ${BIND_ADDRESS}${ALERTMANAGER_PORT}:9093
     volumes:
-    - ${ALERT_MANAGER_RULE_CONFIG}:/etc/alertmanager/config.yml
+    - ${ALERT_MANAGER_RULE_CONFIG}
     #ALERT_MANAGER_DIR
     #ALERTMANAGER_COMMAND
   grafana:
@@ -33,7 +33,7 @@ services:
     image: grafana/grafana:${GRAFANA_VERSION}
     ports:
     - ${BIND_ADDRESS}${GRAFANA_PORT}:3000
-    user: 1000:1000
+    #GRAFANA_USER_PERMISSIONS
     volumes:
     - ./grafana/build:/var/lib/grafana/dashboards
     - ./grafana/plugins:/var/lib/grafana/plugins
@@ -63,7 +63,7 @@ services:
     ports:
     - ${BIND_ADDRESS}${PROMETHEUS_PORT}:9090
     volumes:
-    - ./prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml
+    - ./prometheus/build/:/etc/prometheus/config/
     - ${SCYLLA_TARGET_FILE}
     - ${PROMETHEUS_RULES}
     - ${SCYLLA_MANGER_TARGET_FILE}
@@ -76,7 +76,7 @@ services:
     - run
     - --server.http.listen-addr=0.0.0.0:${ALLOY_PORT}
     - --storage.path=/var/lib/alloy/data
-    - /etc/alloy/config.alloy
+    - /etc/alloy/conf/config.alloy
     container_name: alloy
     #GENERAL_DOCER_CONFIG
     image: grafana/alloy:${ALLOY_VERSION}
@@ -84,5 +84,5 @@ services:
     - ${BIND_ADDRESS}${ALLOY_SYSLOG_PORT}:${ALLOY_SYSLOG_PORT}
     - ${BIND_ADDRESS}${ALLOY_PORT}:${ALLOY_PORT}
     volumes:
-    - ./loki/alloy/config.alloy:/etc/alloy/config.alloy:z
+    - ./loki/alloy/build:/etc/alloy/conf:ro,z
 version: '3'

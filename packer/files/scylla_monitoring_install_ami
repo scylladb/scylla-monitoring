@@ -35,6 +35,7 @@ def is_centos():
 def install_pip_dep():
     run('pip3 install --break-system-packages psutil')
     run('pip3 install --break-system-packages pyyaml')
+    run('pip3 install --break-system-packages jsonschema')
     run('pip3 install --break-system-packages distro')
     run('pip3 install --break-system-packages traceback-with-variables')
 
@@ -219,6 +220,19 @@ def install_node_exporter(arch='amd64'):
     # an image without node_exporter.
     run('{_HOME}/node_exporter_install --arch {arch}'.format(arch=arch, _HOME=HOME_DIR))
 
+def install_config_watcher():
+    # The units run the watcher from the centos copy of the stack, made by
+    # add_centos_user.sh after this script.
+    if not os.path.exists(os.path.join(HOME_DIR, 'scylla-grafana-monitoring-scylla-monitoring', 'scylla_monitoring_config.py')):
+        print('This monitoring version has no scylla_monitoring_config.py, the config watcher is not installed')
+        return
+    run('install -m 755 -o root -g root {_HOME}/scylla-grafana-monitoring-scylla-monitoring/scylla-monitoring-root.sh /usr/local/sbin/')
+    run('install -m 755 -o root -g root {_HOME}/scylla-monitoring-sync.sh /usr/local/sbin/')
+    for unit in ['scylla-monitoring-config.service', 'scylla-monitoring-sync.path', 'scylla-monitoring-sync.service']:
+        run('install -m 644 {_HOME}/' + unit + ' /etc/systemd/system/')
+    run('systemctl daemon-reload')
+    run('systemctl enable scylla-monitoring-config.service scylla-monitoring-sync.path scylla-monitoring-sync.service')
+
 if __name__ == '__main__':
     if os.getuid() > 0:
         print('Requires root permission.')
@@ -256,3 +270,4 @@ if __name__ == '__main__':
     else:
         setup_monitoring()
         install_node_exporter(args.arch)
+        install_config_watcher()

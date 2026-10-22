@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+echo "Warning: make-compose.sh is deprecated and will be removed, use make_compose.py instead;" >&2
+echo "  it takes the same options and covers every container start-all.sh runs." >&2
+
 . versions.sh
 if [ -f env.sh ]; then
 	. env.sh
@@ -47,10 +50,13 @@ if [ -z $PROMTAIL_CONFIG ]; then
 fi
 if [ "$(id -u)" -eq 0 ]; then
 	echo "Running as root is not advised, please check the documentation on how to run as non-root user"
+	GRAFANA_USER_PERMISSIONS="user: 0:0"
 else
 	GROUPID=$(id -g)
 	PROMETHEUS_USER_PERMISSIONS="user: $UID:$GROUPID"
 	LOKi_USER_PERMISSIONS="user: $UID:$GROUPID"
+	# grafana-datasource.sh writes the datasource file 0600, as this user
+	GRAFANA_USER_PERMISSIONS="user: $UID:$GROUPID"
 fi
 
 if [[ $(uname) == "Linux" ]]; then
@@ -83,7 +89,7 @@ Options:
   -m alertmanager port           - Override the default Prometheus port.
   -M scylla-manager version      - Override the default Scylla Manager version to use.
   -D docker param                - Encapsulate docker param, the parameter will be used by all containers.
-  -r alert-manager-config        - Override the default alert-manager configuration file.
+  -r alert-manager-config        - Override the default alert-manager configuration file, or a directory holding config.yml.
   -f path/to/alertmanager/data   - If set, the alertmanager would store its data in the given directory.
   -R prometheus-alert-file       - Override the default Prometheus alerts configuration file.
   -N path/to/manager/target file - Set the location of the target file for Scylla Manager.
@@ -109,6 +115,7 @@ Options:
   --no-renderer                  - If set, do not run the Grafana renderer container.
   --thanos-sc                    - If set, run thanos side car with the Prometheus server.
   --thanos                       - If set, run thanos query as a Grafana datasource.
+  --cluster-label label          - Set the cluster label on Prometheus's and Grafana's own metrics.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
                                    the file names should be scylla_server.yml, node_exporter_servers.yml, and  scylla_manager_servers.yml
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
@@ -232,6 +239,7 @@ fi
 if [ -z "$LOKI_DIR" ]; then
 	LOKI_DIR=""
 fi
+CLUSTER_LABEL_ARGS=()
 for arg; do
 	shift
 	if [ -z "$LIMIT" ]; then
@@ -330,6 +338,10 @@ for arg; do
 			LIMIT="1"
 			PARAM="target-directory"
 			;;
+		--cluster-label)
+			LIMIT="1"
+			PARAM="cluster-label"
+			;;
 		--help)
 			usage
 			;;
@@ -368,6 +380,9 @@ for arg; do
 			unset PARAM
 		elif [ "$PARAM" = "target-directory" ]; then
 			TARGET_DIRECTORY="$NOSPACE"
+			unset PARAM
+		elif [ "$PARAM" = "cluster-label" ]; then
+			CLUSTER_LABEL_ARGS=(--cluster-label "$arg")
 			unset PARAM
 		elif [ "$PARAM" = "datadog-api-keys" ]; then
 			DATDOGPARAM="$DATDOGPARAM -A $NOSPACE"
@@ -606,9 +621,20 @@ else
 	fi
 fi
 
-if ((${#ALERTMANAGER_COMMANDS[@]})); then
-	ALERTMANAGER_COMMAND="    command:\n"$(add_param "${ALERTMANAGER_COMMANDS[@]}")
+if [ -z $ALERT_MANAGER_RULE_CONFIG ]; then
+	ALERT_MANAGER_RULE_CONFIG=./prometheus/rule_config.yml
 fi
+# A directory is mounted as a whole, so a config.yml replaced by rename is
+# seen by the next reload.
+if [ -d "$ALERT_MANAGER_RULE_CONFIG" ]; then
+	ALERT_MANAGER_RULE_CONFIG="$ALERT_MANAGER_RULE_CONFIG:/etc/alertmanager/conf/"
+	ALERTMANAGER_CONFIG_FILE=/etc/alertmanager/conf/config.yml
+else
+	ALERT_MANAGER_RULE_CONFIG="$ALERT_MANAGER_RULE_CONFIG:/etc/alertmanager/config.yml"
+	ALERTMANAGER_CONFIG_FILE=/etc/alertmanager/config.yml
+fi
+# The command replaces the image's, which sets both paths.
+ALERTMANAGER_COMMAND="    command:\n"$(add_param --config.file=$ALERTMANAGER_CONFIG_FILE --storage.path=/alertmanager "${ALERTMANAGER_COMMANDS[@]}")
 
 if [ -z $PROMETHEUS_PORT ]; then
 	PROMETHEUS_PORT=9090
@@ -665,7 +691,8 @@ fi
 if [ $RUN_LOKI -eq 1 ]; then
 	# Alloy listens on the same ports inside the container as outside, so the ports
 	# hold with host networking too, where Compose ignores the port mapping.
-	sed -e "s/LOKI_IP/$ALLOY_LOKI_ADDRESS/" -e "s/0.0.0.0:1514/0.0.0.0:$ALLOY_SYSLOG_PORT/" loki/alloy/config.template.alloy >loki/alloy/config.alloy
+	mkdir -p loki/alloy/build
+	sed -e "s/LOKI_IP/$ALLOY_LOKI_ADDRESS/" -e "s/0.0.0.0:1514/0.0.0.0:$ALLOY_SYSLOG_PORT/" loki/alloy/config.template.alloy >loki/alloy/build/config.alloy
 else
 	DATA_SOURCES=$(echo "$DATA_SOURCES" | sed 's/ -L .*//')
 fi
@@ -674,16 +701,16 @@ if [[ ! -d $LOKI_WALL_DIR ]]; then
 	echo "loki WALL directory does not exists"
 fi
 
-if [ -z $ALERT_MANAGER_RULE_CONFIG ]; then
-	ALERT_MANAGER_RULE_CONFIG=./prometheus/rule_config.yml
-fi
 if [ $RUN_LOKI -eq 1 ]; then
 	cat docker-compose.template.yml >docker-compose.yml
 else
 	# Drop the loki and alloy services, each runs until the next unindented or service line.
 	awk '/^[^ ]/ || /^  [^ ]/ {skip = ($0 ~ /^  (loki|alloy):/)} !skip' docker-compose.template.yml >docker-compose.yml
 fi
-echo "" >.env
+# .env holds the Grafana admin password.
+: >.env
+chmod 600 .env
+echo "" >>.env
 echo "PROMETHEUS_VERSION=$PROMETHEUS_VERSION" >>.env
 echo "ALERT_MANAGER_VERSION=$ALERT_MANAGER_VERSION" >>.env
 echo "GRAFANA_VERSION=$GRAFANA_VERSION" >>.env
@@ -724,10 +751,9 @@ echo "LOKI_PORT=$LOKI_PORT" >>.env
 echo "LOKI_WALL_DIR=$LOKI_WALL_DIR" >>.env
 if [ "$VICTORIA_METRICS" = "1" ]; then
 	sed -i 's&prom/prometheus:${PROMETHEUS_VERSION}&victoriametrics/victoria-metrics:${VICTORIA_METRICS_VERSION}&' docker-compose.yml
-	sed -i 's&./prometheus/build/prometheus.yml:/etc/prometheus/prometheus.yml&./prometheus/build/prometheus.yml:/etc/promscrape.config.yml:z&' docker-compose.yml
-	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(-promscrape.config=/etc/promscrape.config.yml -promscrape.config.strictParse=false -httpListenAddr=:9090)
+	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(-promscrape.config=/etc/prometheus/config/prometheus.yml -promscrape.config.strictParse=false -httpListenAddr=:9090)
 else
-	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--config.file=/etc/prometheus/prometheus.yml --web.enable-lifecycle)
+	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--config.file=/etc/prometheus/config/prometheus.yml --web.enable-lifecycle)
 fi
 PROMETHEUS_COMMAND_LINE=""
 if ((${#PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY[@]})); then
@@ -747,8 +773,10 @@ sed -i "s& *#ALERTMANAGER_COMMAND&$ALERTMANAGER_COMMAND&" docker-compose.yml
 sed -i "s&#PROMETHEUS_USER_PERMISSIONS&$PROMETHEUS_USER_PERMISSIONS&" docker-compose.yml
 sed -i "s&#LOKI_DIR&$LOKI_DIR&" docker-compose.yml
 sed -i "s&#LOKi_USER_PERMISSIONS&$LOKi_USER_PERMISSIONS&" docker-compose.yml
+sed -i "s&#GRAFANA_USER_PERMISSIONS&$GRAFANA_USER_PERMISSIONS&" docker-compose.yml
 
-./prometheus-config.sh -m $ALERTMANAGER_ADDRESS $CONSUL_ADDRESS $PROMETHEUS_TARGETS
+# The compose service is always named agraf.
+./prometheus-config.sh -m $ALERTMANAGER_ADDRESS -G agraf:3000 $CONSUL_ADDRESS $PROMETHEUS_TARGETS "${CLUSTER_LABEL_ARGS[@]}"
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"
 done

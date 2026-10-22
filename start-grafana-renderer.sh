@@ -11,7 +11,7 @@ GRAFANA_NAME="agrafrender"
 BIND_ADDRESS=""
 GRAFANA_RENDPORT="8081"
 
-usage="$(basename "$0") [-h] [-D encapsulate docker param] -- Start the grafana render container"
+usage="$(basename "$0") [-h] [-D encapsulate docker param] [-A bind-to-ip-address] -- Start the grafana render container"
 LIMITS=""
 VOLUMES=""
 PARAMS=""
@@ -64,7 +64,7 @@ for arg; do
 		unset LIMIT
 	fi
 done
-while getopts ':hlg:D:T:' option; do
+while getopts ':hlg:D:T:A:' option; do
 	case "$option" in
 	h)
 		echo "$usage"
@@ -78,6 +78,9 @@ while getopts ':hlg:D:T:' option; do
 		;;
 	T)
 		GRAFANA_RENDERER_TOKEN="$OPTARG"
+		;;
+	A)
+		BIND_ADDRESS="$OPTARG:"
 		;;
 	:)
 		printf "missing argument for -%s\n" "$OPTARG" >&2
@@ -98,7 +101,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
-	PORT_MAPPING="-p $GRAFANA_RENDPORT:8081"
+	PORT_MAPPING="-p $BIND_ADDRESS$GRAFANA_RENDPORT:8081"
 fi
 
 # The renderer is handed the token Grafana is about to be given, so it has to be
@@ -113,7 +116,7 @@ if docker container inspect $GRAFANA_NAME >/dev/null 2>&1; then
 	fi
 fi
 
-docker run ${DOCKER_LIMITS["grafanarender"]} -d $DOCKER_PARAM $PORT_MAPPING \
+docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafanarender"]} $PORT_MAPPING \
 	-e "AUTH_TOKEN=$GRAFANA_RENDERER_TOKEN" \
 	--name $GRAFANA_NAME docker.io/grafana/grafana-image-renderer:$VERSION server \
 	${DOCKER_PARAMS["grafanarender"]}

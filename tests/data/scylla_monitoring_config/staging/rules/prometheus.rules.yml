@@ -1,0 +1,11 @@
+groups:
+- name: scylla.rules
+  rules:
+  - alert: InstanceDown
+    expr: up{job="scylla"} == 0
+    for: 30s
+    labels:
+      severity: error
+    annotations:
+      description: '{{ $labels.instance }} has been down for more than 30 seconds.'
+      summary: Instance {{ $labels.instance }} down

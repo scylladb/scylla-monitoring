@@ -1,0 +1,14 @@
+[Unit]
+Description=Configure the monitoring stack from its config file
+After=docker.service network-online.target
+Wants=network-online.target
+PartOf=docker.service
+
+[Service]
+User=centos
+WorkingDirectory=/home/centos/scylla-grafana-monitoring-scylla-monitoring
+ExecStart=/usr/bin/python3 /home/centos/scylla-grafana-monitoring-scylla-monitoring/scylla_monitoring_config.py run --monitoring-dir /home/centos/scylla-grafana-monitoring-scylla-monitoring --config-file /home/centos/scylla-monitoring/scylla-monitoring.yaml --root-helper /usr/local/sbin/scylla-monitoring-root.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

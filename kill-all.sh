@@ -121,6 +121,13 @@ if [ -z $STACK_ID ]; then
 	./kill-container.sh -b sidecar1
 	./kill-container.sh -b thanos
 	./kill-container.sh -b datadog-agent
+	# started by start-traefik.sh, not start-all.sh; removed by its exact name,
+	# since a name filter would also match other containers holding "traefik",
+	# and only when it mounts this directory's traefik config, so another
+	# traefik on the host stays
+	if docker inspect -f '{{range .Mounts}}{{.Source}} {{end}}' traefik 2>/dev/null | grep -qF "$PWD/traefik/build/"; then
+		docker rm -f traefik >/dev/null 2>&1 || true
+	fi
 fi
 HOST_NETWORK="monitor-net"
 if [ "$STACK_ID" != "" ]; then

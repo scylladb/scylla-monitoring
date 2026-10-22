@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
-usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [-G grafana address] [--compose] -- Generate grafana's datasource file"
+usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [-G grafana address] [--compose] [--cluster-label label] [-D docker param] [-A bind address] [--alertmanager-port port] [--grafana-port port] [--no-alertmanager] -- Generate Prometheus's configuration file
+Without -m and -G, the Alertmanager and Grafana addresses are worked out the way start-all.sh does, from -D, -A, -s and the ports."
 CONSUL_ADDRESS=""
 COMPOSE=0
 
 BASE_DIR="$PWD/prometheus/build"
 if [ -f env.sh ]; then
 	. env.sh
+fi
+. network-lib.sh
+DOCKER_PARAM_FROM_FILE=""
+if [ "$DOCKER_PARAM" != "" ]; then
+	DOCKER_PARAM_FROM_FILE="1"
 fi
 
 if [ "$1" = "" ]; then
@@ -32,6 +38,18 @@ for arg; do
 			;;
 		--scrap)
 			PARAM="scrap"
+			;;
+		--cluster-label)
+			PARAM="cluster-label"
+			;;
+		--alertmanager-port)
+			PARAM="alertmanager-port"
+			;;
+		--grafana-port)
+			PARAM="grafana-port"
+			;;
+		--no-alertmanager)
+			NO_ALERTMANAGER="1"
 			;;
 		--vector-store)
 			VECTOR_SEARCH="1"
@@ -65,11 +83,20 @@ for arg; do
 		if [ "$PARAM" = "scrap" ]; then
 			SCRAP_INTERVAL="$NOSPACE"
 		fi
+		if [ "$PARAM" = "cluster-label" ]; then
+			CLUSTER_LABEL="$arg"
+		fi
+		if [ "$PARAM" = "alertmanager-port" ]; then
+			ALERTMANAGER_PORT="$arg"
+		fi
+		if [ "$PARAM" = "grafana-port" ]; then
+			GRAFANA_BARE_PORT="$arg"
+		fi
 		unset PARAM
 	fi
 done
 
-while getopts ':hL:m:T:E:G:s:' option; do
+while getopts ':hL:m:T:E:G:s:D:A:' option; do
 	case "$option" in
 	h)
 		echo "$usage"
@@ -86,6 +113,18 @@ while getopts ':hL:m:T:E:G:s:' option; do
 		;;
 	s)
 		BASE_DIR="$PWD/prometheus/build/stack/$OPTARG"
+		STACK_ID="$OPTARG"
+		;;
+	D)
+		# as in start-all.sh, -D replaces a DOCKER_PARAM from env.sh
+		if [ "$DOCKER_PARAM_FROM_FILE" = "1" ]; then
+			DOCKER_PARAM=""
+			DOCKER_PARAM_FROM_FILE=""
+		fi
+		DOCKER_PARAM="$DOCKER_PARAM $OPTARG"
+		;;
+	A)
+		BIND_ADDRESS="$OPTARG:"
 		;;
 	E)
 		EVALUATION_INTERVAL="$OPTARG"
@@ -105,6 +144,33 @@ while getopts ':hL:m:T:E:G:s:' option; do
 	esac
 done
 
+# Without -D naming a network, start-all.sh attaches the containers to the one
+# it creates.
+if [ -z "$(network_param)" ]; then
+	DOCKER_PARAM="$DOCKER_PARAM --net=$(default_network "$STACK_ID")"
+fi
+if [ -z "$AM_ADDRESS" ]; then
+	if [ "$NO_ALERTMANAGER" = "1" ]; then
+		AM_ADDRESS="127.0.0.1:9093"
+	else
+		ALERTMANAGER_PORT=${ALERTMANAGER_PORT:-9093}
+		ALERTMANAGER_PORT_ARG=""
+		if [ "$ALERTMANAGER_PORT" != "9093" ]; then
+			ALERTMANAGER_PORT_ARG=$ALERTMANAGER_PORT
+		fi
+		AM_ADDRESS=$(alertmanager_address "$ALERTMANAGER_PORT_ARG" "$ALERTMANAGER_PORT")
+	fi
+fi
+# Prometheus scrapes Grafana from its own container: localhost with host
+# networking, the container name on a network that resolves names, and the
+# default below otherwise.
+if [ "$GRAFANA_ADDRESS" = "" ]; then
+	if [ "$(network_param)" = "host" ]; then
+		GRAFANA_ADDRESS="localhost:3000"
+	elif stack_network >/dev/null; then
+		GRAFANA_ADDRESS="$(grafana_container_name "$GRAFANA_BARE_PORT"):3000"
+	fi
+fi
 if [ "$GRAFANA_ADDRESS" = "" ]; then
     GRAFANA_ADDRESS="agraf:3000"
 fi
@@ -117,6 +183,14 @@ else
 		CONSUL_ADDRESS="$CONSUL_ADDRESS:5090"
 	fi
 	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template | sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" | sed "s/GRAFANA_ADDRESS/$GRAFANA_ADDRESS/" >$BASE_DIR/prometheus.yml
+fi
+
+# The cluster label of the jobs that scrape the monitoring stack itself, as a
+# YAML single-quoted string; awk takes it from the environment as is.
+if [ -n "$CLUSTER_LABEL" ]; then
+	CLUSTER_LABEL_YAML="'${CLUSTER_LABEL//\'/\'\'}'" awk '
+		/^ *# CLUSTER_LABEL$/ { print "      labels:"; print "        cluster: " ENVIRON["CLUSTER_LABEL_YAML"]; next }
+		{ print }' $BASE_DIR/prometheus.yml >$BASE_DIR/prometheus.yml.new && mv $BASE_DIR/prometheus.yml.new $BASE_DIR/prometheus.yml
 fi
 
 if [[ "$EVALUATION_INTERVAL" != "" ]]; then
