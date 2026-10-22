@@ -227,6 +227,40 @@ def test_check_status():
         assert "GF_AUTH_CLIENT_SECRET=***" in out.getvalue()
 
 
+def test_strict_tls():
+    """--strict keeps the tls if/then: enabled TLS still needs every field."""
+    for field in ("ca_crt", "server_crt", "server_key", "listen_ip"):
+        cfg = example()
+        cfg["tls"].pop(field)
+        with tempfile.TemporaryDirectory() as tmp:
+            try:
+                smc.load(write_config(tmp, cfg), strict=True)
+            except smc.ConfigError as e:
+                assert field in e.args[0], e.args[0]
+                continue
+        raise AssertionError(field)
+
+
+def test_unknown_option_value_hidden():
+    try:
+        smc.parse_flags(["--grafana-render-token=s3cret"])
+        raise AssertionError("accepted")
+    except smc.ConfigError as e:
+        assert "s3cret" not in e.args[0] and "--grafana-render-token" in e.args[0]
+    assert smc.masked(["-D", "--env=SCYLLA_PASSWORD=s3cret -e FOO=1"]) == ["-D", "--env=SCYLLA_PASSWORD=*** -e FOO=1"]
+
+
+def test_stack_components():
+    """A secondary stack: the ports versions.sh assigns it, and no Loki."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        argv = ["--stack", "2", "-p", "9999", "--log-collector", "alloy"]
+        assert stack.components(argv) == [("prometheus", "9052", "/-/ready"), ("grafana", "3002", "/api/health"),
+                                          ("alertmanager", "9042", "/-/ready")]
+        assert ("loki", "3100", "/ready") in stack.components(["--log-collector", "alloy"])
+
+
 def test_bad_values_rejected():
     for flags in (['-c "x'], ['-b ""'], ['--param "grafana, "']):
         cfg = example()
@@ -284,6 +318,8 @@ class FakeHost:
         self.fail = set(fail)
 
     def run(self, cmd, **kwargs):
+        if cmd[0] == "bash" and "STACK_PROMETHEUS" in cmd[2]:
+            return SimpleNamespace(returncode=0, stdout="9052 3002 9042\n")
         if cmd[0] == "bash" and "versions.sh" in cmd[2]:
             return SimpleNamespace(returncode=0, stdout="v1 v2\n")
         if cmd[0] == "bash":

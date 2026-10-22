@@ -36,11 +36,11 @@ DEFAULT_THEME="light"
 if [ -f env.sh ]; then
 	. env.sh
 fi
-# env.sh may set it in the start-all.sh form, "-a <password>"
-GRAFANA_ADMIN_PASSWORD="${GRAFANA_ADMIN_PASSWORD#-a }"
 if [ -n "$INHERITED_ADMIN_PASSWORD" ]; then
 	GRAFANA_ADMIN_PASSWORD="$INHERITED_ADMIN_PASSWORD"
 fi
+# it may be set in the start-all.sh form, "-a <password>"
+GRAFANA_ADMIN_PASSWORD="${GRAFANA_ADMIN_PASSWORD#-a }"
 if [ -z "$GRAFANA_RENDERER_TOKEN_FILE" ] && [ ! -z "$GRAFANA_RENDERER_TOKEN_TO_FILE" ]; then
 	GRAFANA_RENDERER_TOKEN_FILE="$GRAFANA_RENDERER_TOKEN_TO_FILE"
 fi

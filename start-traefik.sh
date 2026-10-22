@@ -14,6 +14,8 @@
 # certificates in CERT_DIR again; it needs neither PRIVATE_IP nor CERT_DIR.
 # --config-only writes the static and dynamic config and exits; it needs
 # PRIVATE_IP only.
+# --check checks only that no proxied port is reachable outside loopback; it
+# needs PRIVATE_IP only.
 #
 # Clients must present a certificate signed by rootCA.crt. The readiness probe
 # presents server.crt, so that certificate must also allow client auth, and it
@@ -162,6 +164,54 @@ fi
 ADDR="$PRIVATE_IP"
 if [[ "$ADDR" == *:* ]]; then ADDR="[$ADDR]"; fi
 
+# Any listener on a proxied port outside loopback bypasses mTLS, or takes the
+# address traefik needs. Published docker ports are checked too, because with
+# userland-proxy disabled they have no socket for ss to see. Both are captured
+# first so a failing ss or docker ps stops the script instead of passing it.
+check_exposed() {
+	local OWN listeners published restarting exposed
+	local PORTS='3000|9090|9093|9100|10911'
+	OWN=""
+	# A crash-looping traefik also reports Running while in restart backoff.
+	if [[ "$(docker inspect --format '{{and .State.Running (not .State.Restarting)}}' traefik 2>/dev/null)" == true ]]; then
+		OWN="$ADDR"
+	fi
+	listeners=$(ss -ltn)
+	published=$(docker ps --format '{{.Ports}}')
+	# A container in restart backoff lists no ports, yet gets them back on restart.
+	restarting=$(docker ps --quiet --filter status=restarting)
+	if [[ -n "$restarting" ]]; then
+		# shellcheck disable=SC2086
+		published+=$'\n'$(docker inspect --format '{{range $p, $b := .HostConfig.PortBindings}}{{range $b}}{{.HostIp}}:{{.HostPort}}->{{$p}},{{end}}{{end}}' $restarting)
+	fi
+	exposed=$(
+		{
+			awk 'NR > 1 {print "ss", $4}' <<<"$listeners"
+			tr ',' '\n' <<<"$published" | sed -nE 's/^ *(.+)->.*/docker \1/p'
+		} | awk -v own="$OWN" -v ports="$PORTS" '
+			BEGIN { n = split(ports, p, "|") }
+			{
+				i = match($2, /:[0-9]+(-[0-9]+)?$/)
+				if (!i) next
+				host = substr($2, 1, i - 1)
+				if (host ~ /^(127\.|\[::1\]$|::1$|\[?::ffff:127\.)/) next
+				# only a socket can be traefik itself; a published port on it is DNAT
+				if ($1 == "ss" && (host == own || "[" host "]" == own)) next
+				lo = hi = substr($2, i + 1)
+				if (lo ~ /-/) { split(lo, r, "-"); lo = r[1]; hi = r[2] }
+				for (k = 1; k <= n; k++) if (p[k] + 0 >= lo + 0 && p[k] + 0 <= hi + 0) { print $2; next }
+			}' | sort -u
+	)
+	[[ -z "$exposed" ]] || die "error: listening outside loopback, move to 127.0.0.1 first: ${exposed//$'\n'/ }"
+}
+
+# --check runs only the check above; make_compose.py --compose runs it after
+# the rest of the stack is up, before it starts traefik.
+if [ "${1:-}" = "--check" ]; then
+	check_exposed
+	exit 0
+fi
+
 # --config-only writes both configs and exits; docker compose runs traefik
 # from them (make_compose.py --traefik).
 if [ "${1:-}" = "--config-only" ]; then
@@ -200,43 +250,7 @@ for f in server.crt server.key rootCA.crt; do
 		die "error: CERT_DIR/$f links out of CERT_DIR; copy the file into it"
 done
 
-# Any listener on a proxied port outside loopback bypasses mTLS, or takes the
-# address traefik needs. Published docker ports are checked too, because with
-# userland-proxy disabled they have no socket for ss to see. Both are captured
-# first so a failing ss or docker ps stops the script instead of passing it.
-PORTS='3000|9090|9093|9100|10911'
-OWN=""
-# A crash-looping traefik also reports Running while in restart backoff.
-if [[ "$(docker inspect --format '{{and .State.Running (not .State.Restarting)}}' traefik 2>/dev/null)" == true ]]; then
-	OWN="$ADDR"
-fi
-listeners=$(ss -ltn)
-published=$(docker ps --format '{{.Ports}}')
-# A container in restart backoff lists no ports, yet gets them back on restart.
-restarting=$(docker ps --quiet --filter status=restarting)
-if [[ -n "$restarting" ]]; then
-	# shellcheck disable=SC2086
-	published+=$'\n'$(docker inspect --format '{{range $p, $b := .HostConfig.PortBindings}}{{range $b}}{{.HostIp}}:{{.HostPort}}->{{$p}},{{end}}{{end}}' $restarting)
-fi
-exposed=$(
-	{
-		awk 'NR > 1 {print "ss", $4}' <<<"$listeners"
-		tr ',' '\n' <<<"$published" | sed -nE 's/^ *(.+)->.*/docker \1/p'
-	} | awk -v own="$OWN" -v ports="$PORTS" '
-		BEGIN { n = split(ports, p, "|") }
-		{
-			i = match($2, /:[0-9]+(-[0-9]+)?$/)
-			if (!i) next
-			host = substr($2, 1, i - 1)
-			if (host ~ /^(127\.|\[::1\]$|::1$|\[?::ffff:127\.)/) next
-			# only a socket can be traefik itself; a published port on it is DNAT
-			if ($1 == "ss" && (host == own || "[" host "]" == own)) next
-			lo = hi = substr($2, i + 1)
-			if (lo ~ /-/) { split(lo, r, "-"); lo = r[1]; hi = r[2] }
-			for (k = 1; k <= n; k++) if (p[k] + 0 >= lo + 0 && p[k] + 0 <= hi + 0) { print $2; next }
-		}' | sort -u
-)
-[[ -z "$exposed" ]] || die "error: listening outside loopback, move to 127.0.0.1 first: ${exposed//$'\n'/ }"
+check_exposed
 
 export TAG="${TAG:-$TRAEFIK_VERSION}"
 IMG="traefik:${TAG}"

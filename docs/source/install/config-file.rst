@@ -143,6 +143,7 @@ Adding or removing ``alert_rules``, ``alertmanager_config`` or ``targets.vector_
 
 A ``systemd`` entry maps a unit name to the content of a drop-in, written as
 ``/etc/systemd/system/<unit>.d/50-scylla-monitoring.conf``. The watcher owns only that file.
+Keep secrets out of drop-ins: systemd shows a unit's settings, ``Environment=`` included, to every user on the host.
 For example, the node_exporter unit installed by the ScyllaDB images ends its command line with ``$NODE_EXPORTER_ARGS``,
 so a drop-in can set its arguments:
 

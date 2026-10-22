@@ -100,6 +100,9 @@ class Stack:
         # host paths of config the containers read only on start, other than
         # files; their content goes into each service's config-hash label
         self.config = []
+        # a secondary stack (--stack N) keeps its own files, next to the main ones
+        self.compose_file = "docker-compose.yml"
+        self.env_file = ".env"
 
 
 def shell_vars(cwd, environ, env_file):
@@ -264,7 +267,8 @@ def options(argv, v, paths):
         "versions": v.get("VERSIONS", ""), "manager_version": v.get("MANAGER_VERSION", ""),
         "data_dir": v.get("DATA_DIR", ""), "grafana_dir": "", "bind": v.get("BIND_ADDRESS", ""),
         "am_rules": "", "prom_rules": v.get("PROMETHEUS_RULES", ""),
-        "grafana_port": v.get("GRAFANA_PORT", ""), "am_port": v.get("ALERTMANAGER_PORT", ""),
+        # start-all.sh keeps GRAFANA_PORT as its flag, "-g <port>"
+        "grafana_port": re.sub(r"^-g\s*", "", v.get("GRAFANA_PORT", "")).strip(), "am_port": v.get("ALERTMANAGER_PORT", ""),
         "prom_port": v.get("PROMETHEUS_PORT", ""), "loki_port": v.get("LOKI_PORT", ""),
         "promtail_port": "", "promtail_bin_port": "",
         "alloy_port": v.get("ALLOY_PORT", ""), "alloy_syslog_port": v.get("ALLOY_SYSLOG_PORT", ""),
@@ -479,8 +483,8 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
     v = shell_vars(cwd, environ, env_file or os.path.join(cwd, "env.sh"))
     # as start-grafana.sh takes it: an exported password wins over env.sh,
     # which may set it in the start-all.sh form, "-a <password>"
-    v["GRAFANA_ADMIN_PASSWORD"] = environ.get("GRAFANA_ADMIN_PASSWORD") or \
-        re.sub(r"^-a ", "", v.get("GRAFANA_ADMIN_PASSWORD", ""))
+    v["GRAFANA_ADMIN_PASSWORD"] = re.sub(r"^-a ", "", environ.get("GRAFANA_ADMIN_PASSWORD") or
+                                         v.get("GRAFANA_ADMIN_PASSWORD", ""))
     paths = Paths(cwd)
     stack = Stack()
     o = options(argv, v, paths)
@@ -851,7 +855,8 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
     theme = v.get("DEFAULT_THEME", "light")
     if theme and not any(e.startswith("GF_USERS_DEFAULT_THEME=") for e in extra):
         extra.append("GF_USERS_DEFAULT_THEME=" + theme)
-    token = o["render_token"] or read_env_file(os.path.join(cwd, ".env")).get("GRAFANA_RENDERER_TOKEN") or ""
+    token = o["render_token"] or read_env_file(os.path.join(cwd, ".env.stack" + stack_id if stack_id else ".env")).get(
+        "GRAFANA_RENDERER_TOKEN") or ""
     if (renderer or o["render_token_file"]) and not token:
         token = secrets.token_hex(16)
     if o["render_token_file"]:
@@ -946,6 +951,8 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
         if secret:
             svc["environment"] = svc.get("environment", []) + secret
     stack.compose = {"name": "scylla-monitoring" + ("-stack" + stack_id if stack_id else ""), "services": services}
+    if stack_id:
+        stack.compose_file, stack.env_file = "docker-compose.stack%s.yml" % stack_id, ".env.stack" + stack_id
     if network and not host:
         stack.compose["networks"] = {"default": {"name": network, "external": True}}
     stack.up = o["up"]
@@ -1020,11 +1027,24 @@ def write(stack, cwd=None, environ=None, run=subprocess.run):
             labels[CONFIG_LABEL] = label.split("=", 1)[1]
         else:
             svc["labels"] = [l for l in labels if not l.startswith(CONFIG_LABEL + "=")] + [label]
-    write_text(os.path.join(cwd, ".env"), "".join("%s=%s\n" % (k, env_value(val)) for k, val in sorted(stack.env.items())),
-               0o600)
-    write_text(os.path.join(cwd, "docker-compose.yml"), yaml.safe_dump(stack.compose, sort_keys=False), 0o644)
+    write_text(os.path.join(cwd, stack.env_file),
+               "".join("%s=%s\n" % (k, env_value(val)) for k, val in sorted(stack.env.items())), 0o600)
+    write_text(os.path.join(cwd, stack.compose_file), yaml.safe_dump(stack.compose, sort_keys=False), 0o644)
     if stack.up:
-        run(["docker", "compose", "up", "-d", "--remove-orphans"], cwd=cwd, env=environ, check=True)
+        compose = ["docker", "compose"]
+        if stack.compose_file != "docker-compose.yml":
+            compose += ["-f", stack.compose_file, "--env-file", stack.env_file]
+        services = list(stack.compose.get("services", {}))
+        if "traefik" not in services:
+            run(compose + ["up", "-d", "--remove-orphans"], cwd=cwd, env=environ, check=True)
+            return
+        # as start-all.sh then start-traefik.sh: the stack first, so the old
+        # containers are replaced by their loopback ones, then the check that
+        # nothing proxied is reachable outside loopback, then traefik
+        run(compose + ["up", "-d", "--remove-orphans"] + [s for s in services if s != "traefik"],
+            cwd=cwd, env=environ, check=True)
+        run(["./start-traefik.sh", "--check"], cwd=cwd, env=environ, check=True)
+        run(compose + ["up", "-d", "traefik"], cwd=cwd, env=environ, check=True)
 
 
 def main(argv):

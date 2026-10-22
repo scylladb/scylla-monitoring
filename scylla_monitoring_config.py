@@ -209,7 +209,8 @@ def parse_flags(words, owned=WATCHER_OWNED, what="extra_flags"):
                 result.append(opt)
                 continue
             if opt not in OPTIONS:
-                raise ConfigError("%s: unknown option %s" % (what, opt))
+                # the name only: a value attached with = may be a secret
+                raise ConfigError("%s: unknown option %s" % (what, opt.partition("=")[0]))
             if OPTIONS[opt][0]:
                 if i + 1 >= len(words):
                     raise ConfigError("%s: %s needs a value" % (what, opt))
@@ -405,13 +406,19 @@ def schema(strict=False):
     return s
 
 
+# Subschemas that test or combine a value rather than define it; forbidding
+# fields in them would change what they match (a tls "if" would stop matching).
+CONDITIONS = {"if", "then", "else", "not", "allOf", "anyOf", "oneOf"}
+
+
 def make_strict(node):
     """Forbids unknown fields in every object that does not say otherwise."""
     if isinstance(node, dict):
         if "properties" in node and "additionalProperties" not in node:
             node["additionalProperties"] = False
-        for value in node.values():
-            make_strict(value)
+        for key, value in node.items():
+            if key not in CONDITIONS:
+                make_strict(value)
     elif isinstance(node, list):
         for value in node:
             make_strict(value)
@@ -503,8 +510,8 @@ def prepare(args, dirs, path, run=subprocess.run):
     cfg = load(path, args.strict)
     try:
         argv, env = normalize(cfg, dirs)
-        # The derived files hold secrets (the Alertmanager config, the
-        # drop-ins). The containers read them through their bind mounts, so
+        # The derived files hold secrets (the Alertmanager config, the TLS
+        # key). The containers read them through their bind mounts, so
         # closing the build directory keeps out other host users only.
         build = os.path.dirname(dirs.staging)
         os.makedirs(build, exist_ok=True)
@@ -542,8 +549,9 @@ def masked(argv):
         if prev in SECRET_VALUE_OPTIONS:
             w = "***"
         elif prev in ("-c", "-D"):
-            w = re.sub(r"([A-Za-z0-9_]+)=\S+",
-                       lambda m: m.group(1) + "=***" if SECRET_NAME.search(m.group(1)) else m.group(0), w)
+            # NAME=value at the start of a word or after = (--env=NAME=value)
+            w = re.sub(r"(^|[\s=])([A-Za-z_][A-Za-z0-9_]*)=(\S+)",
+                       lambda m: m.group(1) + m.group(2) + "=***" if SECRET_NAME.search(m.group(2)) else m.group(0), w)
         words.append(w)
     return words
 
@@ -666,15 +674,32 @@ class Stack:
         bind = option(argv, "-A")
         return bind if bind and bind != "0.0.0.0" else "127.0.0.1"
 
+    def ports(self, argv):
+        """The published ports, as start-all.sh works them out: the defaults,
+        the port options, and for a secondary stack the ports versions.sh
+        assigns it, which replace the options."""
+        ports = {"prometheus": option(argv, "-p", "9090"), "grafana": option(argv, "-g", "3000"),
+                 "alertmanager": option(argv, "-m", "9093"), "loki": option(argv, "--loki-port", "3100")}
+        stack = option(argv, "--stack")
+        if stack:
+            out = self.run(["bash", "-c", '. ./versions.sh && echo "${STACK_PROMETHEUS[$1]} ${STACK_GRAFANA[$1]} '
+                                          '${STACK_ALERTMANAGER[$1]}"', "_", stack],
+                           cwd=self.dirs.monitoring, stdout=subprocess.PIPE, universal_newlines=True).stdout.split()
+            if len(out) != 3:
+                raise ApplyError("--stack %s: versions.sh assigns it no ports" % stack)
+            ports.update(zip(("prometheus", "grafana", "alertmanager"), out))
+        return ports
+
     def components(self, argv):
         """The components the configuration runs: (name, port, ready path)."""
+        ports = self.ports(argv)
         prometheus_ready = "/health" if "--victoria-metrics" in argv else "/-/ready"
-        result = [("prometheus", option(argv, "-p", "9090"), prometheus_ready),
-                  ("grafana", option(argv, "-g", "3000"), "/api/health")]
+        result = [("prometheus", ports["prometheus"], prometheus_ready), ("grafana", ports["grafana"], "/api/health")]
         if "--no-alertmanager" not in argv:
-            result.append(("alertmanager", option(argv, "-m", "9093"), "/-/ready"))
-        if option(argv, "--log-collector", "alloy") != "none":
-            result.append(("loki", option(argv, "--loki-port", "3100"), "/ready"))
+            result.append(("alertmanager", ports["alertmanager"], "/-/ready"))
+        # a secondary stack runs no Loki
+        if option(argv, "--log-collector", "alloy") != "none" and not option(argv, "--stack"):
+            result.append(("loki", ports["loki"], "/ready"))
         return result
 
     def move_staged(self):
@@ -756,14 +781,15 @@ class Stack:
             cmd += ["-D", "--net=host"]
         self.sh(cmd)
 
-    def reload(self, argv, name, opt, port):
-        url = "http://%s:%s/-/reload" % (self.host(argv), option(argv, opt, port))
+    def reload(self, argv, name):
+        url = "http://%s:%s/-/reload" % (self.host(argv), self.ports(argv)[name])
         if self.http("POST", url) != 200:
             raise ApplyError("%s: reload failed" % name)
 
     def grafana_name(self, argv):
         out = self.run(["bash", "-c", '[ -f env.sh ] && . ./env.sh; . ./network-lib.sh; grafana_container_name "$1"',
-                        "_", option(argv, "-g", "")], cwd=self.dirs.monitoring, stdout=subprocess.PIPE,
+                        "_", self.ports(argv)["grafana"] if option(argv, "--stack") else option(argv, "-g", "")],
+                       cwd=self.dirs.monitoring, stdout=subprocess.PIPE,
                        universal_newlines=True)
         return out.stdout.strip()
 
@@ -845,9 +871,9 @@ class Stack:
             if "render_prometheus_config" in actions:
                 self.render_prometheus_config(argv, env, new)
             if "reload_prometheus" in actions:
-                self.reload(argv, "prometheus", "-p", "9090")
+                self.reload(argv, "prometheus")
             if "reload_alertmanager" in actions and "--no-alertmanager" not in argv:
-                self.reload(argv, "alertmanager", "-m", "9093")
+                self.reload(argv, "alertmanager")
             if "grafana_datasource" in actions:
                 self.grafana_datasource(argv, new)
             if "start_traefik" in actions and self.compose:
@@ -1061,4 +1087,7 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
+    # make_compose.py imports this module by name; one module keeps one
+    # ConfigError, so the errors it raises are caught here
+    sys.modules.setdefault("scylla_monitoring_config", sys.modules["__main__"])
     sys.exit(main())

@@ -62,8 +62,12 @@ Options
 **--traefik** Add traefik, which serves the stack over TLS with mutual authentication.
 Set ``PRIVATE_IP`` (the address traefik listens on) and ``CERT_DIR`` (the directory with ``server.crt``, ``server.key`` and ``rootCA.crt``)
 in the environment. ``--traefik`` needs ``-A 127.0.0.1``, so traefik is the only way in, and cannot be used with ``-l``.
+With ``--compose``, traefik starts after the rest of the stack, once ``start-traefik.sh --check`` finds no proxied port
+reachable outside loopback.
 
-**--stack id** Run a secondary stack. Its Compose project is ``scylla-monitoring-stack<id>``, so it does not replace the first one.
+**--stack id** Run a secondary stack. Its Compose project is ``scylla-monitoring-stack<id>``, written to ``docker-compose.stack<id>.yml``
+and ``.env.stack<id>``, so it does not replace the first one. Pass ``-f docker-compose.stack<id>.yml --env-file .env.stack<id>``
+to ``docker compose`` to act on it.
 
 ``-D`` and the per-container ``--limit``, ``--volume`` and ``--param`` options are translated to Docker Compose settings, for example:
 

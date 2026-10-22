@@ -248,6 +248,33 @@ def test_config_hash():
         assert labels("b", "y")["datadog"] != second["datadog"]
 
 
+
+def test_write_stack_and_traefik():
+    """A secondary stack has its own files; with traefik, the stack comes up
+    first, then start-traefik.sh --check, then traefik."""
+    with tempfile.TemporaryDirectory() as tmp:
+        stack = mc.Stack()
+        stack.compose = {"name": "scylla-monitoring-stack2", "services": {"aprom": {}, "traefik": {}}}
+        stack.compose_file, stack.env_file = "docker-compose.stack2.yml", ".env.stack2"
+        stack.up = True
+        ran = []
+        mc.write(stack, cwd=tmp, environ={}, run=lambda cmd, **kw: ran.append(cmd))
+        compose = ["docker", "compose", "-f", "docker-compose.stack2.yml", "--env-file", ".env.stack2"]
+        assert ran == [compose + ["up", "-d", "--remove-orphans", "aprom"], ["./start-traefik.sh", "--check"],
+                       compose + ["up", "-d", "traefik"]], ran
+        assert sorted(os.listdir(tmp)) == [".env.stack2", "docker-compose.stack2.yml"]
+    assert build(CASES["stack"]).compose_file == "docker-compose.stack2.yml"
+
+
+def test_env_sh_grafana_port():
+    with tempfile.TemporaryDirectory() as tmp:
+        env_sh = os.path.join(tmp, "env.sh")
+        with open(env_sh, "w") as f:
+            f.write('GRAFANA_PORT="-g 3001"\n')
+        stack = mc.build(["-v", "2025.3"] + TARGETS, environ=ENVIRON, cwd=ROOT, env_file=env_sh, ids=(1000, 1000))
+        assert stack.compose["services"]["agraf-3001"]["ports"] == ["3001:3000"]
+
+
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):
