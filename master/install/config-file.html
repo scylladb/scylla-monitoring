@@ -1,0 +1,1083 @@
+
+
+<!DOCTYPE html>
+<html class="no-js" lang="en" style="visibility: hidden;">
+    
+    
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width initial-scale=1" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>
+             Configure the Stack from One File | ScyllaDB Docs 
+        </title>
+        <meta name="description" content="Scylla Monitoring Stack is a full stack for Scylla monitoring and alerting. The stack contains open source tools including Prometheus and Grafana, as well as custom Scylla dashboards and tooling." />
+        <link rel="icon" href="../_static/img/favicon.ico" type="image/x-icon" />
+        <link rel="icon" href="../_static/img/favicon-32x32.png" sizes="32x32" />
+        <link rel="icon" href="../_static/img/favicon-228x228.png" sizes="192x192" />
+        <link rel="apple-touch-icon" href="../_static/img/favicon-228x228.png" />
+        <meta name="msapplication-TileImage" href="../_static/img/favicon-228x228.png" />
+
+        <script>
+            (function () {
+                if (window.location.hostname === 'previews.docs.scylladb.com') {
+                    var meta = document.createElement('meta');
+                    meta.name = 'robots';
+                    meta.content = 'noindex, nofollow';
+                    document.head.appendChild(meta);
+                }
+            })();
+        </script>
+
+        
+            
+            
+        
+
+        
+            
+            <link rel="canonical" href="https://monitoring.docs.scylladb.com/stable/install/config-file.html"/>
+        
+
+        <link rel="author" href="mailto:info@scylladb.com" />
+
+        
+            
+            
+            
+            
+                <link rel="alternate" type="text/markdown" href="https://monitoring.docs.scylladb.com/master/install/config-file.md" />
+            
+        
+
+        
+            
+        
+
+
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="preload" as="style"
+              href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" />
+
+        <!-- async CSS -->
+        <link rel="stylesheet" media="print" onload="this.onload=null;this.removeAttribute('media');"
+              href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" />
+
+        <!-- no-JS fallback -->
+        <noscript>
+            <link rel="stylesheet"
+                  href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" />
+        </noscript>
+
+        
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/biel-search@latest/dist/biel-search/biel-search.css">
+            <script type="module" src="https://cdn.jsdelivr.net/npm/biel-search@latest/dist/biel-search/biel-search.esm.js"></script>
+        
+
+        
+            
+                <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+            
+        
+            
+                <link rel="stylesheet" type="text/css" href="../_static/css/main.css?v=041c0933" />
+            
+        
+            
+                <link rel="stylesheet" type="text/css" href="../_static/sphinx_collapse.css?v=226d88b4" />
+            
+        
+            
+                <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+            
+        
+    
+        
+        
+            
+        <script type="text/javascript" src="../_static/js/runtime.bundle.js"></script>
+        <script type="text/javascript" src="../_static/js/main.bundle.js"></script>
+        
+            
+                <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+            
+        
+            
+                <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+            
+        
+            
+                <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+            
+        
+            
+                <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+            
+        
+            
+                <script src="../_static/copybutton.js?v=f281be69"></script>
+            
+        
+    
+            
+                <!-- Local meta tags -->
+            
+            
+                <!-- Google Tag Manager docs -->
+<script>
+    (function (w, d, s, l, i) {
+        var h = w.location.hostname;
+        if (h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0' || h === '') return;
+        w[l] = w[l] || [];
+        w[l].push({
+            "gtm.start": new Date().getTime(),
+            event: "gtm.js"
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s),
+            dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, "script", "dataLayer", "GTM-54NWVS4");
+</script>
+<!-- End Google Tag Manager -->
+
+<!-- Google Tag Manager global -->
+<script>
+    (function (w, d, s, l, i) {
+        var h = w.location.hostname;
+        if (h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0' || h === '') return;
+        w[l] = w[l] || [];
+        w[l].push({
+            "gtm.start": new Date().getTime(),
+            event: "gtm.js"
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s),
+            dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, "script", "dataLayer", "GTM-T8P2JP");
+</script>
+<!-- End Google Tag Manager -->
+            
+        
+    </head>
+
+    <body class="brand-product">
+        <section class="promo-banner  promo-banner--hide" style="display: none;">
+    <div class="promo-banner-wrapper">
+        <div class="promo-banner__content">
+            
+            <div class="promo-banner__title">ScyllaDB University Live | Free Virtual Training Event</div>
+            <a class="promo-banner__button button button--reverse" href="#"
+               target="_blank" rel="noopener noreferrer">Learn more</a>
+        </div>
+        <button class="promo-banner__close">
+            <i class="icon-cancel"></i>
+        </button>
+    </div>
+</section>
+        <header class="header">
+    <div class="header-logo">
+        <a class="header-logo__img" href="https://scylladb.com/">
+            <img src="../_static/img/scylladb-logo-horizontal.svg" alt="ScyllaDB Documentation Logo" />
+        </a>
+        <span class="header-logo__bar"></span>
+        <a class="header-logo__text" href="https://docs.scylladb.com/">
+            Documentation
+        </a>
+    </div>
+    <div class="header-navigation">
+        <ul class="dropdown menu scylla-dropdown scylla-dropdown--header" data-dropdown-menu>
+            <li class="scylla-dropdown__item">
+                <a href="#" class="scylla-dropdown__title">Deployments <i class="chevron icon-arrow-dropdown"></i></a>
+                <ul class="menu scylla-dropdown__content">
+                    <li>
+                        <a href="https://docs.scylladb.com/scylla-cloud/">
+                            <i class="icon-docs-cloud"></i>Cloud</a>
+                    </li>
+                    <li>
+                        <a href="https://docs.scylladb.com/manual/">
+                            <i class="icon-server"></i>Server</a>
+                    </li>
+                </ul>
+            </li>
+            <li class="scylla-dropdown__item">
+                <a href="#" class="scylla-dropdown__title">Tools <i class="chevron icon-arrow-dropdown"></i></a>
+                <ul class="menu scylla-dropdown__content">
+                    <li>
+                        <a href="https://manager.docs.scylladb.com/">
+                            <i class="icon-docs-manager"></i>ScyllaDB Manager</a>
+                    </li>
+                    <li>
+                        <a href="https://monitoring.docs.scylladb.com/">
+                            <i class="icon-docs-monitoring"></i>ScyllaDB
+                            Monitoring Stack</a>
+                    </li>
+                    <li>
+                        <a href="https://operator.docs.scylladb.com/">
+                            <i class="icon-docs-operator"></i>ScyllaDB Operator
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="scylla-dropdown__item">
+                <a href="#" class="scylla-dropdown__title">Drivers <i class="chevron icon-arrow-dropdown"></i></a>
+                <ul class="menu scylla-dropdown__content">
+                    <li>
+                        <a href="https://docs.scylladb.com/stable/drivers/cql-drivers">
+                            <i class="icon-docs-nsql-guides"></i>CQL Drivers
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://docs.scylladb.com/stable/drivers/dynamo-drivers">
+                            <i class="icon-docs-alternator"></i>DynamoDB Drivers
+                        </a>
+
+                        <li>
+                            <a href="https://docs.scylladb.com/stable/versioning/driver-support">
+                                <i class="icon-docs-blog"></i>Supported Driver Versions
+                            </a>
+                        </li>
+                    </li>
+                </ul>
+            </li>
+            <li class="scylla-dropdown__item">
+                <a href="#" class="scylla-dropdown__title">Resources
+                    <i class="chevron icon-arrow-dropdown"></i></a>
+                <ul class="menu scylla-dropdown__content">
+                    <li>
+                        <a href="https://university.scylladb.com">
+                            <i class="icon-university"></i>
+                            ScyllaDB University
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://forum.scylladb.com">
+                            <i class="icon-docs-community"></i>
+                            Community Forum
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://docs.scylladb.com/stable/get-started/develop-with-scylladb/tutorials-example-projects.html">
+                            <i class="icon-docs-training"></i>
+                            Tutorials
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <div class="header-button">
+            <a href="https://docs.scylladb.com/manual/stable/getting-started/install-scylla/index.html" class="button"><i class="icon-download me-2"></i> Install</a>
+        </div>
+    </div>
+    <div class="header-search-box">
+        <i class="dark-theme-toggler icon-theme"></i>
+        
+            <biel-search-button
+                project="ddfdo8m94k"
+                button-style="rounded"
+                hide-filters="false"
+                header-title="ScyllaDB chatbot"
+                modal-position="top-center">
+                Search
+            </biel-search-button>
+            
+                <biel-button class="header-ask-ai" project="ddfdo8m94k"
+                             header-title="ScyllaDB chatbot"
+                             button-position="default"
+                             modal-position="sidebar-right"
+                             button-style="dark">
+                    Ask AI
+                </biel-button>
+            
+        
+    </div>
+    <div class="side-nav-toggle">
+    <i class="dark-theme-toggler icon-theme"></i>
+    <div class="side-nav-toggle__button" data-toggle="side-nav">
+        <i class="icon-menu"></i>
+    </div>
+</div>
+</header>
+        <div class="title"></div>
+        <section
+            class="layout  layout--sidebar layout--has-secondary-sidebar ">
+            <div class="content large-order-2">
+                
+                    <div class="pre-content">
+                        <div class="breadcrumbs">
+    <span class="bread__item">
+        <a href="https://docs.scylladb.com"
+           class="bread__highlight">
+            <i class="icon-home"></i> ScyllaDB Docs
+        </a>
+    </span>
+    <span class="bread__item">
+        <a href="../index.html"
+           class="bread__highlight">
+            ScyllaDB Monitoring
+        </a>
+    </span>
+    
+        <span class="bread__item">
+            <a href="index.html" class="bread__highlight">
+                Download and Install Scylla Monitoring Stack
+            </a>
+        </span>
+    
+    <span class="bread__item bread__item--last">Configure the Stack from One File</span>
+</div>
+                    </div>
+                
+                
+                    <div class="sidebar-right-layout">
+                        <div class="body-container">
+                
+
+                <div class="content-body"
+                     
+                         data-llms-txt-url="https://monitoring.docs.scylladb.com/master/llms.txt"
+                     
+                     
+                         data-view-source-url="https://github.com/scylladb/scylla-monitoring/blob/master/docs/source/install/config-file.rst"
+                     >
+                    
+                        <div style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
+                            For AI agents: a documentation index is available at <a href="https://monitoring.docs.scylladb.com/master/llms.txt">https://monitoring.docs.scylladb.com/master/llms.txt</a>. A Markdown version of this page is at <a href="https://monitoring.docs.scylladb.com/master/install/config-file.md">https://monitoring.docs.scylladb.com/master/install/config-file.md</a>.
+                        </div>
+                    
+                    
+                        
+    <div class="admonition caution">
+        <p class="admonition-title">Caution</p>
+        <p>
+            
+                You're viewing documentation for an unstable version of ScyllaDB Monitoring.
+            
+            <a href="../../stable/index.html">Switch to the latest stable version.</a>
+        </p>
+    </div>
+
+                    
+
+                    <section id="configure-the-stack-from-one-file">
+<h1>Configure the Stack from One File<a class="headerlink" href="#configure-the-stack-from-one-file" title="Link to this heading">¶</a></h1>
+<p>Instead of passing command-line flags to <code class="docutils literal notranslate"><span class="pre">start-all.sh</span></code>, you can describe the whole monitoring stack in one YAML file.
+<code class="docutils literal notranslate"><span class="pre">scylla_monitoring_config.py</span></code>, the <em>watcher</em>, reads the file, applies it, and applies it again whenever it changes.</p>
+<p>The file holds everything the stack needs: the targets, the alert rules, the Alertmanager configuration,
+the Grafana settings, the storage directories, TLS, and systemd drop-ins for host services such as node_exporter.
+The watcher generates the derived files from it, starts the stack, and on a later change runs only what
+that change needs: a change to the targets needs no restart, a change to the alert rules reloads Prometheus,
+and a new Grafana password is set in place.</p>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>Python 3, with <code class="docutils literal notranslate"><span class="pre">PyYAML</span></code> (<code class="docutils literal notranslate"><span class="pre">python3-yaml</span></code>) and <code class="docutils literal notranslate"><span class="pre">jsonschema</span></code> 3.2 or later (<code class="docutils literal notranslate"><span class="pre">python3-jsonschema</span></code>).</p></li>
+<li><p>The watcher runs as a regular user who is a member of the <code class="docutils literal notranslate"><span class="pre">docker</span></code> group.</p></li>
+<li><p>TLS certificates and systemd drop-ins need root. The watcher runs <code class="docutils literal notranslate"><span class="pre">scylla-monitoring-root.sh</span></code> for them with <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">-n</span></code>.
+Install the script root-owned and let the watcher’s user run it, and only it, for example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>install<span class="w"> </span>-o<span class="w"> </span>root<span class="w"> </span>-g<span class="w"> </span>root<span class="w"> </span>-m<span class="w"> </span><span class="m">755</span><span class="w"> </span>scylla-monitoring-root.sh<span class="w"> </span>/usr/local/sbin/
+<span class="nb">echo</span><span class="w"> </span><span class="s1">'scylla ALL=(root) NOPASSWD: /usr/local/sbin/scylla-monitoring-root.sh'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>tee<span class="w"> </span>/etc/sudoers.d/scylla-monitoring
+</pre></div>
+</div>
+<p>Replace <code class="docutils literal notranslate"><span class="pre">scylla</span></code> with the watcher’s user. Without the <code class="docutils literal notranslate"><span class="pre">tls</span></code> and <code class="docutils literal notranslate"><span class="pre">systemd</span></code> sections, the watcher does not need root.</p>
+</li>
+</ul>
+</section>
+<section id="the-configuration-file">
+<h2>The Configuration File<a class="headerlink" href="#the-configuration-file" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">scylla-monitoring.schema.json</span></code>, in the root of the monitoring directory, defines the file.
+The description of each field names the <code class="docutils literal notranslate"><span class="pre">start-all.sh</span></code> flag it replaces and its default.
+<code class="docutils literal notranslate"><span class="pre">scylla-monitoring.example.yaml</span></code> is a complete, commented example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># An example of the configuration file applied by scylla_monitoring_config.py.</span>
+<span class="c1"># scylla-monitoring.schema.json is the definition; this file is checked</span>
+<span class="c1"># against it. Every write replaces the file whole; keep it 0600, it holds</span>
+<span class="c1"># secrets.</span>
+<span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="nt">generation</span><span class="p">:</span><span class="w"> </span><span class="s">"2026-10-21T10:00:00Z-1"</span><span class="w">  </span><span class="c1"># set by the writer; reported back in the status</span>
+<span class="nt">cluster</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cluster1</span><span class="w">                     </span><span class="c1"># the cluster label on the prometheus and grafana jobs</span>
+
+<span class="nt">stack</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">scylla_version</span><span class="p">:</span><span class="w"> </span><span class="s">"2025.3"</span><span class="w">            </span><span class="c1"># -v</span>
+<span class="w">  </span><span class="nt">manager_version</span><span class="p">:</span><span class="w"> </span><span class="s">"3.5"</span><span class="w">              </span><span class="c1"># -M; missing: the release default</span>
+<span class="w">  </span><span class="nt">alertmanager</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">                  </span><span class="c1"># false: --no-alertmanager</span>
+<span class="w">  </span><span class="nt">log_collector</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alloy</span><span class="w">                </span><span class="c1"># --log-collector alloy|promtail|none</span>
+<span class="w">  </span><span class="nt">thanos_sidecar</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">                </span><span class="c1"># --thanos-sc</span>
+<span class="w">  </span><span class="nt">local_thanos</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">                 </span><span class="c1"># --local-thanos</span>
+<span class="w">  </span><span class="nt">bind_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w">             </span><span class="c1"># -A; 127.0.0.1 when tls.enabled is true</span>
+<span class="w">  </span><span class="nt">docker_args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"--restart=unless-stopped"</span><span class="p p-Indicator">]</span><span class="w">   </span><span class="c1"># -D</span>
+<span class="w">  </span><span class="nt">extra_flags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w">                     </span><span class="c1"># start-all.sh syntax; takes precedence over the rest</span>
+
+<span class="nt">storage</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">prometheus_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/prometheus</span><span class="w">      </span><span class="c1"># -d</span>
+<span class="w">  </span><span class="nt">grafana_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/grafana</span><span class="w">            </span><span class="c1"># -G</span>
+<span class="w">  </span><span class="nt">alertmanager_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/alertmanager</span><span class="w">  </span><span class="c1"># -f</span>
+<span class="w">  </span><span class="nt">retention_days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span><span class="w">                    </span><span class="c1"># -b --storage.tsdb.retention.time=30d</span>
+
+<span class="nt">prometheus</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">external_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.com/prometheus</span><span class="w">   </span><span class="c1"># -b --web.external-url, with --web.route-prefix=/</span>
+
+<span class="nt">grafana</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">root_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.com/grafana</span><span class="w">  </span><span class="c1"># GF_SERVER_ROOT_URL</span>
+<span class="w">  </span><span class="nt">default_theme</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">light</span><span class="w">                   </span><span class="c1"># GF_USERS_DEFAULT_THEME</span>
+<span class="w">  </span><span class="nt">anonymous_role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Viewer</span><span class="w">                 </span><span class="c1"># -Q</span>
+<span class="w">  </span><span class="nt">env</span><span class="p">:</span><span class="w">                                   </span><span class="c1"># -c, any other Grafana setting</span>
+<span class="w">    </span><span class="nt">GF_SECURITY_COOKIE_SECURE</span><span class="p">:</span><span class="w"> </span><span class="s">"true"</span>
+<span class="w">  </span><span class="nt">admin_password</span><span class="p">:</span><span class="w"> </span><span class="s">"change-me"</span><span class="w">            </span><span class="c1"># GRAFANA_ADMIN_PASSWORD</span>
+<span class="w">  </span><span class="nt">datasource</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">scylla_user</span><span class="p">:</span><span class="w"> </span><span class="s">"monitor"</span><span class="w">               </span><span class="c1"># SCYLLA_USER</span>
+<span class="w">    </span><span class="nt">scylla_password</span><span class="p">:</span><span class="w"> </span><span class="s">"change-me"</span><span class="w">         </span><span class="c1"># SCYLLA_PSSWD</span>
+
+<span class="nt">targets</span><span class="p">:</span><span class="w">                                 </span><span class="c1"># Prometheus file_sd entries</span>
+<span class="w">  </span><span class="nt">scylla</span><span class="p">:</span><span class="w">                                </span><span class="c1"># hosts without a port; also scraped for node_exporter and the manager agent</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"10.0.0.1"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"10.0.0.2"</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">cluster</span><span class="p">:</span><span class="w"> </span><span class="nv">cluster1</span><span class="p p-Indicator">,</span><span class="nt"> dc</span><span class="p">:</span><span class="w"> </span><span class="nv">dc1</span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"10.0.0.3"</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">cluster</span><span class="p">:</span><span class="w"> </span><span class="nv">cluster1</span><span class="p p-Indicator">,</span><span class="nt"> dc</span><span class="p">:</span><span class="w"> </span><span class="nv">dc2</span><span class="p p-Indicator">}</span>
+<span class="w">  </span><span class="nt">node_exporter</span><span class="p">:</span><span class="w">                         </span><span class="c1"># optional; replaces the copy of scylla</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"10.0.1.1:9100"</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">cluster</span><span class="p">:</span><span class="w"> </span><span class="nv">cluster1</span><span class="p p-Indicator">,</span><span class="nt"> dc</span><span class="p">:</span><span class="w"> </span><span class="nv">dc1</span><span class="p p-Indicator">,</span><span class="nt"> instance</span><span class="p">:</span><span class="w"> </span><span class="s">"10.0.0.1"</span><span class="p p-Indicator">}</span>
+<span class="w">  </span><span class="nt">manager</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"10.0.0.5:5090"</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">vector_search</span><span class="p">:</span><span class="w">                         </span><span class="c1"># present: --vector-search</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"10.0.0.6"</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">cluster</span><span class="p">:</span><span class="w"> </span><span class="nv">cluster1</span><span class="p p-Indicator">}</span>
+
+<span class="nt">alert_rules</span><span class="p">:</span><span class="w">                             </span><span class="c1"># a Prometheus rule file</span>
+<span class="w">  </span><span class="nt">groups</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scylla.rules</span>
+<span class="w">      </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">InstanceDown</span>
+<span class="w">          </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">up{job="scylla"} == 0</span>
+<span class="w">          </span><span class="nt">for</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+<span class="w">          </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">error</span>
+<span class="w">          </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">$labels.instance</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">been</span><span class="nv"> </span><span class="s">down</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">more</span><span class="nv"> </span><span class="s">than</span><span class="nv"> </span><span class="s">30</span><span class="nv"> </span><span class="s">seconds."</span>
+<span class="w">            </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Instance {{ $labels.instance }} down</span>
+
+<span class="nt">alertmanager_config</span><span class="p">:</span><span class="w">                     </span><span class="c1"># an Alertmanager config file</span>
+<span class="w">  </span><span class="nt">route</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">    </span><span class="nt">group_by</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">alertname</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">cluster</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">receivers</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+
+<span class="nt">systemd</span><span class="p">:</span><span class="w">                                 </span><span class="c1"># drop-ins for host services, by unit</span>
+<span class="w">  </span><span class="nt">node-exporter.service</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w">               </span><span class="c1"># 127.0.0.1:9100 behind traefik</span>
+<span class="w">    </span><span class="no">[Service]</span>
+<span class="w">    </span><span class="no">Environment=NODE_EXPORTER_ARGS=--web.listen-address=127.0.0.1:9100</span>
+
+<span class="nt">tls</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">                          </span><span class="c1"># run traefik</span>
+<span class="w">  </span><span class="nt">listen_ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.0.0.10</span><span class="w">                   </span><span class="c1"># PRIVATE_IP of start-traefik.sh</span>
+<span class="w">  </span><span class="nt">ca_crt</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w">                              </span><span class="c1"># rootCA.crt</span>
+<span class="w">    </span><span class="no">-----BEGIN CERTIFICATE-----</span>
+<span class="w">    </span><span class="no">...</span>
+<span class="w">    </span><span class="no">-----END CERTIFICATE-----</span>
+<span class="w">  </span><span class="nt">server_crt</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w">                          </span><span class="c1"># server.crt</span>
+<span class="w">    </span><span class="no">-----BEGIN CERTIFICATE-----</span>
+<span class="w">    </span><span class="no">...</span>
+<span class="w">    </span><span class="no">-----END CERTIFICATE-----</span>
+<span class="w">  </span><span class="nt">server_key</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w">                          </span><span class="c1"># server.key</span>
+<span class="w">    </span><span class="no">-----BEGIN PRIVATE KEY-----</span>
+<span class="w">    </span><span class="no">...</span>
+<span class="w">    </span><span class="no">-----END PRIVATE KEY-----</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">version</span></code>, <code class="docutils literal notranslate"><span class="pre">generation</span></code>, <code class="docutils literal notranslate"><span class="pre">stack</span></code> and <code class="docutils literal notranslate"><span class="pre">targets</span></code> are required. A missing optional section keeps the
+<code class="docutils literal notranslate"><span class="pre">start-all.sh</span></code> default: without <code class="docutils literal notranslate"><span class="pre">tls</span></code> no traefik runs, and without <code class="docutils literal notranslate"><span class="pre">systemd</span></code> the host’s units are left as they are.</p>
+<p><code class="docutils literal notranslate"><span class="pre">stack.extra_flags</span></code> takes any other <code class="docutils literal notranslate"><span class="pre">start-all.sh</span></code> flag, in <code class="docutils literal notranslate"><span class="pre">start-all.sh</span></code> syntax. A flag there takes
+precedence over the same option derived from the rest of the file. The options the watcher sets from the file itself
+(the targets, rule and Alertmanager files, <code class="docutils literal notranslate"><span class="pre">--target-directory</span></code>, <code class="docutils literal notranslate"><span class="pre">--vector-search</span></code>, <code class="docutils literal notranslate"><span class="pre">--vector-store</span></code>,
+<code class="docutils literal notranslate"><span class="pre">--cluster-label</span></code>, <code class="docutils literal notranslate"><span class="pre">--archive</span></code>, <code class="docutils literal notranslate"><span class="pre">--compose</span></code> and <code class="docutils literal notranslate"><span class="pre">-h</span></code>) are rejected in <code class="docutils literal notranslate"><span class="pre">extra_flags</span></code>.</p>
+<section id="writing-the-file">
+<h3>Writing the File<a class="headerlink" href="#writing-the-file" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Always write the whole file, and replace it atomically: write a temporary file in the same directory and rename it into place.</p></li>
+<li><p>The file holds secrets (the Grafana admin password, the CQL password and the TLS private key). Keep it <code class="docutils literal notranslate"><span class="pre">0600</span></code>, owned by the watcher’s user.</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">generation</span></code> to a new value on every write. The watcher reports it back in the status file, so you know when your change is applied.</p></li>
+<li><p>The watcher ignores fields it does not know. With <code class="docutils literal notranslate"><span class="pre">--strict</span></code>, an unknown field rejects the file.</p></li>
+</ul>
+</section>
+</section>
+<section id="running-the-watcher">
+<h2>Running the Watcher<a class="headerlink" href="#running-the-watcher" title="Link to this heading">¶</a></h2>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>scylla_monitoring_config.py<span class="w"> </span>check<span class="p">|</span>apply<span class="p">|</span>run<span class="w"> </span>--config-file<span class="w"> </span>FILE<span class="w"> </span>--monitoring-dir<span class="w"> </span>DIR<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">check</span></code> validates the file, renders the derived files into a temporary directory and prints the <code class="docutils literal notranslate"><span class="pre">start-all.sh</span></code> command line,
+with the secrets masked. It changes nothing, so it is safe to run next to a running watcher.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">apply</span></code> applies the file once. <code class="docutils literal notranslate"><span class="pre">--force</span></code> applies it as a first apply, restarting the whole stack.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run</span></code> applies the file on start, then checks it every <code class="docutils literal notranslate"><span class="pre">--poll-interval</span></code> seconds (30) and applies it when it changes.
+On start, it checks that the stack is up; when it is not (for example, after a reboot), the file is applied whole.
+Until the file exists, it waits and changes nothing.</p></li>
+</ul>
+<p>Options:</p>
+<p><strong>–config-file path</strong> The configuration file. It can be given more than once; the watcher watches every path and applies the one that changed last.</p>
+<p><strong>–monitoring-dir path</strong> The monitoring directory, where <code class="docutils literal notranslate"><span class="pre">start-all.sh</span></code> is. The watcher runs the start scripts from it.</p>
+<p><strong>–compose</strong> Run the stack with Docker Compose instead of <code class="docutils literal notranslate"><span class="pre">start-all.sh</span></code>. See <a class="reference internal" href="docker-compose.html"><span class="doc">Docker Compose</span></a>.</p>
+<p><strong>–strict</strong> Reject fields the schema does not define.</p>
+<p><strong>–auto-revert</strong> When an apply fails, apply the previous configuration again.</p>
+<p><strong>–state-dir path</strong> Where the last applied configuration and the status are kept (default: <code class="docutils literal notranslate"><span class="pre">&lt;monitoring-dir&gt;/config-state</span></code>).</p>
+<p><strong>–staging-dir path</strong> Where the derived files are generated (default: <code class="docutils literal notranslate"><span class="pre">&lt;monitoring-dir&gt;/config-build</span></code>).</p>
+<p><strong>–cert-dir path</strong> Where the TLS certificates are installed (default: <code class="docutils literal notranslate"><span class="pre">/etc/scylla-monitoring/certs</span></code>).</p>
+<p><strong>–root-helper path</strong> The root helper (default: <code class="docutils literal notranslate"><span class="pre">&lt;monitoring-dir&gt;/scylla-monitoring-root.sh</span></code>).</p>
+<p><strong>–health-timeout seconds</strong> How long to wait for the components to become ready after an apply (default: 180).</p>
+<p><strong>–poll-interval seconds</strong> How often <code class="docutils literal notranslate"><span class="pre">run</span></code> checks the file (default: 30).</p>
+<section id="as-a-systemd-service">
+<h3>As a systemd Service<a class="headerlink" href="#as-a-systemd-service" title="Link to this heading">¶</a></h3>
+<p>Run the watcher as a service, for example with <code class="docutils literal notranslate"><span class="pre">/etc/systemd/system/scylla-monitoring-config.service</span></code>:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[Unit]</span>
+<span class="na">Description</span><span class="o">=</span><span class="s">Configure the monitoring stack from its config file</span>
+<span class="na">After</span><span class="o">=</span><span class="s">docker.service network-online.target</span>
+<span class="na">Wants</span><span class="o">=</span><span class="s">network-online.target</span>
+<span class="na">PartOf</span><span class="o">=</span><span class="s">docker.service</span>
+
+<span class="k">[Service]</span>
+<span class="na">User</span><span class="o">=</span><span class="s">scylla</span>
+<span class="na">WorkingDirectory</span><span class="o">=</span><span class="s">/opt/scylla-monitoring</span>
+<span class="na">ExecStart</span><span class="o">=</span><span class="s">/usr/bin/python3 /opt/scylla-monitoring/scylla_monitoring_config.py run --monitoring-dir /opt/scylla-monitoring --config-file /etc/scylla-monitoring/scylla-monitoring.yaml --root-helper /usr/local/sbin/scylla-monitoring-root.sh</span>
+<span class="na">Restart</span><span class="o">=</span><span class="s">on-failure</span>
+
+<span class="k">[Install]</span>
+<span class="na">WantedBy</span><span class="o">=</span><span class="s">multi-user.target</span>
+</pre></div>
+</div>
+<p>The watcher’s user needs to read the config file. It writes the status next to the file when it can write to that directory,
+and always in the state directory. When the data directories are on a separate disk, add <code class="docutils literal notranslate"><span class="pre">RequiresMountsFor=&lt;data</span> <span class="pre">dir&gt;</span></code> in a drop-in.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">systemctl</span> <span class="pre">stop</span> <span class="pre">scylla-monitoring-config</span></code> stops the watcher; <code class="docutils literal notranslate"><span class="pre">./kill-all.sh</span></code> (or <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">down</span></code>) then stops the containers.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">systemctl</span> <span class="pre">start</span> <span class="pre">scylla-monitoring-config</span></code> starts the watcher, which brings the stack up.</p></li>
+</ul>
+</section>
+</section>
+<section id="how-changes-are-applied">
+<h2>How Changes Are Applied<a class="headerlink" href="#how-changes-are-applied" title="Link to this heading">¶</a></h2>
+<p>Each apply validates the file, renders the derived files and checks them with <code class="docutils literal notranslate"><span class="pre">promtool</span></code> and <code class="docutils literal notranslate"><span class="pre">amtool</span></code>.
+If the file or a derived file is invalid, the running stack is left as it is, and the status file says why.
+Otherwise the watcher compares each section with the last applied configuration and runs what the changed sections need:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Change</p></th>
+<th class="head"><p>What runs</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">targets</span></code></p></td>
+<td><p>nothing; Prometheus reads the new targets</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">alert_rules</span></code></p></td>
+<td><p>Prometheus reload</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">alertmanager_config</span></code></p></td>
+<td><p>Alertmanager reload</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cluster</span></code></p></td>
+<td><p>the Prometheus configuration is generated again, then reloaded</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">grafana.admin_password</span></code></p></td>
+<td><p>the password is set in Grafana</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">grafana.datasource</span></code></p></td>
+<td><p>the data source is written, then Grafana restarts</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tls</span></code> certificates</p></td>
+<td><p>the certificates are installed, then traefik reloads them</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tls.enabled</span></code>, <code class="docutils literal notranslate"><span class="pre">tls.listen_ip</span></code></p></td>
+<td><p>traefik starts, restarts or is removed</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">systemd</span></code></p></td>
+<td><p>the unit’s drop-in is written or removed, then the unit restarts</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stack</span></code>, <code class="docutils literal notranslate"><span class="pre">storage</span></code>, <code class="docutils literal notranslate"><span class="pre">prometheus</span></code>, other <code class="docutils literal notranslate"><span class="pre">grafana</span></code></p></td>
+<td><p>the stack restarts</p></td>
+</tr>
+</tbody>
+</table>
+<p>Adding or removing <code class="docutils literal notranslate"><span class="pre">alert_rules</span></code>, <code class="docutils literal notranslate"><span class="pre">alertmanager_config</span></code> or <code class="docutils literal notranslate"><span class="pre">targets.vector_search</span></code> also restarts the stack.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">systemd</span></code> entry maps a unit name to the content of a drop-in, written as
+<code class="docutils literal notranslate"><span class="pre">/etc/systemd/system/&lt;unit&gt;.d/50-scylla-monitoring.conf</span></code>. The watcher owns only that file.
+Keep secrets out of drop-ins: systemd shows a unit’s settings, <code class="docutils literal notranslate"><span class="pre">Environment=</span></code> included, to every user on the host.
+For example, the node_exporter unit installed by the ScyllaDB images ends its command line with <code class="docutils literal notranslate"><span class="pre">$NODE_EXPORTER_ARGS</span></code>,
+so a drop-in can set its arguments:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">systemd</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">node-exporter.service</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">    </span><span class="no">[Service]</span>
+<span class="w">    </span><span class="no">Environment=NODE_EXPORTER_ARGS=--web.listen-address=127.0.0.1:9100</span>
+</pre></div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">tls.enabled</span></code>, traefik serves the stack on <code class="docutils literal notranslate"><span class="pre">tls.listen_ip</span></code> with mutual TLS.
+Set <code class="docutils literal notranslate"><span class="pre">stack.bind_address</span></code> to <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code> as well, so traefik is the only way in.</p>
+</section>
+<section id="the-status-file">
+<h2>The Status File<a class="headerlink" href="#the-status-file" title="Link to this heading">¶</a></h2>
+<p>After each apply, the watcher writes <code class="docutils literal notranslate"><span class="pre">status.json</span></code> in the state directory, and <code class="docutils literal notranslate"><span class="pre">scylla-monitoring.status.json</span></code>
+next to each config file:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">"generation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"9f2c"</span><span class="p">,</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"applied"</span><span class="p">,</span><span class="w"> </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-10-20T10:00:00Z"</span><span class="p">}</span>
+<span class="p">{</span><span class="nt">"generation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"a1b3"</span><span class="p">,</span><span class="w"> </span><span class="nt">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rejected"</span><span class="p">,</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="s2">"alert_rules: ..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-10-20T10:05:00Z"</span><span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">applied</span></code>: the stack runs the configuration of <code class="docutils literal notranslate"><span class="pre">generation</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rejected</span></code>: the file is invalid; the stack still runs <code class="docutils literal notranslate"><span class="pre">applied_generation</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">failed</span></code>: the apply failed; the stack is left as the failed apply left it, for inspection. The next apply runs every action, as a first apply does.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reverted</span></code>: the apply failed and, with <code class="docutils literal notranslate"><span class="pre">--auto-revert</span></code>, the previous configuration was applied again.</p></li>
+</ul>
+<p>Error messages name the section and position, without the values, since the file holds secrets.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">start-all.sh</span></code> and the start scripts still read <code class="docutils literal notranslate"><span class="pre">env.sh</span></code> from the monitoring directory, and what it sets can override the file.
+The watcher logs a warning when <code class="docutils literal notranslate"><span class="pre">env.sh</span></code> exists.</p>
+</div>
+</section>
+</section>
+
+                </div>
+                
+                    <div class="post-content">
+                        
+    <div class="feedback-container">
+        <p class="feedback-container__title">Was this page helpful?</p>
+        <span data-tooltip tabindex="1" title="Yes" data-position="top">
+            <button class="feedback-container__button" id="feedback-positive">
+                <i class="feedback-container__icon icon-docs-thumbs-up"></i>
+            </button>
+        </span>
+        <span data-tooltip tabindex="1" title="No" data-position="top">
+            <button class="feedback-container__button" id="feedback-negative">
+                <i class="feedback-container__icon icon-docs-thumbs-down"></i>
+            </button>
+        </span>
+        <div class="feedback-container__message" id="feedback-message"></div>
+    </div>
+
+    <script>
+        function resetFeedbackButtonActive() {
+            const feedbackButtons = document.getElementsByClassName('feedback-container__button');
+            for (let i = 0; i < feedbackButtons.length; i++) {
+                feedbackButtons[i].classList.remove('active');
+            }
+        }
+
+        function showMessage(liked) {
+            const feedbackMessage = document.getElementById('feedback-message');
+            const themeGithubRepository = true;
+            let message = 'Great! Thanks for your feedback.';
+            if (themeGithubRepository && !liked) {
+                message = "Thanks for your feedback! Please don't hesitate to <a href='https://github.com/scylladb/scylla-monitoring/issues/new?title=docs:%20Issue on page Configure the Stack from One File&&body=I%20would%20like%20to%20report%20an%20issue%20on%20page%20https://monitoring.docs.scylladb.com/master/install/config-file%0A%0A%23%23%23%20Problem%0A%0A%23%23%23%20%20Suggest%20a%20fix&labels=documentation'>create an issue</a> if you have any suggestions on how we can improve.";
+            }
+            feedbackMessage.innerHTML = message;
+        }
+
+        function sendGaEvent(liked) {
+            const event_label = liked ? "positive" : "negative";
+            const event = "feedback_" + event_label;
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                'event': event,
+            });
+        }
+
+        const positiveFeebackButton = document.getElementById('feedback-positive');
+        const negativeFeedbackButton = document.getElementById('feedback-negative');
+
+        positiveFeebackButton.addEventListener('click', function() {
+            resetFeedbackButtonActive();
+            sendGaEvent(true);
+            showMessage(true);
+            positiveFeebackButton.classList.add('active');
+        });
+
+        negativeFeedbackButton.addEventListener('click', function() {
+            resetFeedbackButtonActive();
+            sendGaEvent(false);
+            showMessage(false);
+            negativeFeedbackButton.classList.add('active');
+        });
+    </script>
+
+                        <div class="content-navigation">
+    <div class="navigation navigation--prev">
+        
+            <a class="navigation__link" href="docker-compose.html">
+                <button class="navigation__button">
+                    <i class="icon-chevron-left"></i>
+                </button>
+                <div class="navigation__title">
+                    <span class="colored">PREVIOUS</span> <br />Using Docker Compose
+                </div>
+            </a>
+        
+    </div>
+    <div class="navigation navigation--next">
+        
+            <a class="navigation__link" href="min-prod-hw.html">
+                <div class="navigation__title">
+                    <span class="colored">NEXT</span> <br />Minimal Production System Recommendations
+                </div>
+                <button class="navigation__button">
+                    <i class="icon-chevron-right"></i>
+                </button>
+            </a>
+        
+    </div>
+</div>
+                        <!-- Post content text -->
+                    </div>
+                
+
+                
+                    </div>
+                    <div class="sidebar-right large-order-3">
+                        <div class="secondary-side-nav custom-scroll-bar">
+    
+    <ul class="contribute">
+        <li class="contribute__item">
+            <a class="button button-sm" href="https://github.com/scylladb/scylla-monitoring/issues/new?title=docs:%20Issue on page Configure the Stack from One File&&body=I%20would%20like%20to%20report%20an%20issue%20on%20page%20https://monitoring.docs.scylladb.com/master/install/config-file%0A%0A%23%23%23%20Problem%0A%0A%23%23%23%20%20Suggest%20a%20fix&labels=documentation"
+               target="_blank">
+                <i class="icon-github" aria-hidden="true"></i>Create an issue
+            </a>
+        </li>
+        
+            <li class="contribute__item">
+                <a class="button button-sm" href="https://github.com/scylladb/scylla-monitoring/edit/master/docs/source/install/config-file.rst"
+                   target="_blank">
+                    <i class="icon-edit" aria-hidden="true"></i>Edit this page
+                </a>
+            </li>
+        
+    </ul>
+
+    
+        <div class="secondary-side-nav__content">
+            <p class="topic-title">On this page</p>
+            <ul>
+<li><a class="reference internal" href="#">Configure the Stack from One File</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#the-configuration-file">The Configuration File</a><ul>
+<li><a class="reference internal" href="#writing-the-file">Writing the File</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-the-watcher">Running the Watcher</a><ul>
+<li><a class="reference internal" href="#as-a-systemd-service">As a systemd Service</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-changes-are-applied">How Changes Are Applied</a></li>
+<li><a class="reference internal" href="#the-status-file">The Status File</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+    
+</div>
+                    </div>
+                    </div>
+                
+            </div>
+            <div class="sidebar-left  large-order-1">
+                
+                    
+                        <div id="side-nav" class="side-nav custom-scroll-bar" data-closable data-toggler=".show">
+    <button class="collapsible-button">
+        <i class="icon-docs-menu-collapse"></i>
+    </button>
+    <div class="side-nav-content custom-scroll-bar">
+        <div class="side-nav__title">
+            <a href="../index.html">ScyllaDB Monitoring</a>
+        </div>
+        <div class="side-nav__search">
+            
+                <biel-search-button
+                    project="ddfdo8m94k"
+                    button-style="rounded"
+                    hide-filters="false"
+                    hide-ctrl-k="true"
+                    header-title="ScyllaDB chatbot"
+                    modal-position="top-center">
+                    Search
+                </biel-search-button>
+                
+                    <biel-button class="side-nav__ask-ai" project="ddfdo8m94k"
+                                 header-title="ScyllaDB chatbot"
+                                 button-position="default"
+                                 modal-position="sidebar-right"
+                                 button-style="dark">
+                        Ask AI
+                    </biel-button>
+                
+            
+        </div>
+        <div class="side-nav__versions"><ul class="dropdown menu scylla-dropdown scylla-dropdown--versions" data-dropdown-menu>
+    <li class="scylla-dropdown__item">
+        <a class="scylla-dropdown__title" href="#">
+            
+                master
+            
+            <i class="chevron icon-docs-chevron-right"></i>
+        </a>
+        <ul class="menu scylla-dropdown__content">
+            
+                
+            
+                
+                    <li>
+                        <a href="../../stable/index.html">4.16</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.15/index.html">4.15</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.14/index.html">4.14</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.13/index.html">4.13</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.12/index.html">4.12</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.11/index.html">4.11</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.10/index.html">4.10</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.9/index.html">4.9</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.8/index.html">4.8</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.7/index.html">4.7</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.6/index.html">4.6</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.5/index.html">4.5</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.4/index.html">4.4</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.3/index.html">4.3</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.2/index.html">4.2</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.1/index.html">4.1</a>
+                    </li>
+                
+            
+                
+                    <li>
+                        <a href="../../branch-4.0/index.html">4.0</a>
+                    </li>
+                
+            
+            
+        </ul>
+    </li>
+</ul></div>
+        <div class="side-nav__content">
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Download and Install</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label for="toctree-checkbox-1"><i class="icon-chevron-right"></i></label><div class="break"></div><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="monitoring-stack.html">Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start-all.html">The start-all.sh script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monitor-without-docker.html">Deploy without Docker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docker-compose.html">Docker Compose</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Configure from One File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="min-prod-hw.html">System Recommendations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thanos.html">Using Thanos</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../use-monitoring/index.html">User Guide</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label for="toctree-checkbox-2"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l2"><a class="reference internal" href="../use-monitoring/cql-optimization.html">CQL Optimization Dashboard</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../use-monitoring/advisor/index.html">Advisor</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label for="toctree-checkbox-3"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlAllowFiltering.html">Some queries use ALLOW FILTERING</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlCLAll.html">Some queries use Consistency Level: ALL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlCLAny.html">Some queries use Consistency Level: ANY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlNoTokenAware.html">Some queries are not token-aware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlNonPaged.html">Some SELECT queries are non-paged</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/cqlNonPrepared.html">Some queries are non-prepared</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/heavyCompaction.html">Compaction takes lots of memory and CPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/nodeCLErrors.html">Some operation failed due to unsatisfied consistency level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/nodeIOErrors.html">I/O Errors can indicate a node with a faulty disk</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/nodeLocalErrors.html">Some operations failed on the replica side</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/nonBalancedcqlTraffic.html">CQL queries are not balanced among shards</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/preparedCacheEviction.html">Prepared statements cache eviction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../use-monitoring/advisor/systemOverload.html">System Overload</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../procedures/index.html">Procedures</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label for="toctree-checkbox-4"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l2"><a class="reference internal" href="../procedures/datadog/cloud-integration.html">Cloud Users Datadog integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../procedures/datadog/index.html">Datadog Integration</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../procedures/alerts/index.html">Alert Manager</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label for="toctree-checkbox-5"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l3"><a class="reference internal" href="../procedures/alerts/alerting.html">Alerting</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../procedures/updating-dashboard.html">Adding and Modifying Dashboards</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../upgrade/index.html">Upgrade Guides</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label for="toctree-checkbox-6"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-4.x-to-monitoring-4.y.html">Monitoring 4.x to 4.y</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-3.x-to-monitoring-4.y.html">Monitoring 3.x to 4.y</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-3.x-to-monitoring-3.y.html">Monitoring 3.x to 3.y</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-2.x-to-monitoring-3.y.html">Monitoring 2.x to 3.y</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-2.x-to-monitoring-2.y.html">Monitoring 2.x to 2.y</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-1.x-to-monitoring-2.x.html">Monitoring 1.x to 2.x</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../upgrade/index.html">Upgrade</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label for="toctree-checkbox-7"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-4.x-to-monitoring-4.y.html">Monitoring 4.x to 4.y</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-3.x-to-monitoring-4.y.html">Monitoring 3.x to 4.y</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-3.x-to-monitoring-3.y.html">Monitoring 3.x to 3.y</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-2.x-to-monitoring-3.y.html">Monitoring 2.x to 3.y</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-2.x-to-monitoring-2.y.html">Monitoring 2.x to 2.y</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upgrade/upgrade-guide-from-monitoring-1.x-to-monitoring-2.x.html">Monitoring 1.x to 2.x</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../troubleshooting/index.html">Troubleshooting</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label for="toctree-checkbox-8"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting/monitor-troubleshoot.html">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://docs.scylladb.com/troubleshooting/manager_monitoring_integration/">Troubleshooting Guide for Scylla Manager and Scylla Monitor Integration</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">Reference</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label for="toctree-checkbox-9"><i class="icon-chevron-right"></i></label><div class="break"></div><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/matrix.html">Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/monitoring-apis.html">Interfaces</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/scylladb/scylla-monitoring/">GitHub Project</a></li>
+</ul>
+
+        </div>
+    </div>
+</div>
+                    
+                
+            </div>
+
+        </section>
+
+        <footer class="footer">
+    <div class="footer-group">
+        <div class="footer-top">
+            <a class="footer-logo" href="https://www.scylladb.com"></a>
+            <div class="footer-links">
+                <a class="footer-links__link" href="https://docs.scylladb.com/" target="_blank">Docs</a>
+                <a class="footer-links__link" href="https://docs.scylladb.com/stable/get-started/develop-with-scylladb/tutorials-example-projects.html" target="_blank">Tutorials</a>
+                <a class="footer-links__link" href="https://university.scylladb.com/" target="_blank">University</a>
+                <a class="footer-links__link" href="https://www.scylladb.com/company/contact-us/"
+                   target="_blank">Contact Us</a>
+                <a class="footer-links__link" href="https://www.scylladb.com/company/" target="_blank">About Us</a>
+            </div>
+            <div class="footer-actions">
+                <a class="footer-actions__link" href="http://slack.scylladb.com/" target="_blank">
+                    <span data-tooltip tabindex="1" title="User Slack channel" data-position="bottom">
+                        <i class="icon-slack"></i>
+                    </span>
+                </a>
+                <a class="footer-actions__link" href="https://forum.scylladb.com/" target="_blank">
+                    <span data-tooltip tabindex="1" title="Community forum" data-position="bottom">
+                        <i class="icon-docs-community"></i>
+                    </span>
+                </a>
+            </div>
+        </div>
+
+        
+            <div class="footer-copyright">
+                
+                    
+                        &#169; 2026, ScyllaDB. All rights reserved.
+                    
+                    | <a class="footer-copyright__link" href="https://www.scylladb.com/tos/" target="_blank">Terms of Service</a>
+                    | <a class="footer-copyright__link" href="https://www.scylladb.com/privacy/" target="_blank">Privacy Policy</a>
+                    | ScyllaDB, and ScyllaDB Cloud, are registered trademarks of ScyllaDB, Inc.
+                
+            </div>
+        
+
+
+        <div class="footer-bottom">
+            
+                <div class="footer-bottom__last-updated">
+                    
+                        Last updated on 22 October 2026.
+                    
+                </div>
+            
+            <div class="footer-bottom__version">
+                Powered by
+                <a class="footer-bottom__link" href="http://sphinx-doc.org/">Sphinx 9.1.0</a> &amp;
+                <a class="footer-bottom__link" href="https://sphinx-theme.scylladb.com/">ScyllaDB Theme 1.9.3</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+        <noscript>
+            <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8P2JP" height="0" width="0"
+                    style="display: none; visibility: hidden"></iframe>
+        </noscript>
+    </body>
+
+</html>
