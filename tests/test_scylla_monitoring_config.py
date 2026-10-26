@@ -367,7 +367,7 @@ def test_apply():
         args, stack = make_stack(tmp, host)
         cfg = example()
         assert apply(args, stack, host, cfg) == 0
-        assert names(host) == ["helper dropin", "helper certs", "kill-all.sh", "start-all.sh -v",
+        assert names(host) == ["helper dropin", "helper certs", "kill-all.sh --traefik", "start-all.sh -v",
                                "start-traefik.sh", "docker exec"]
         assert host.commands[0][0][-2:] == ["node-exporter.service",
                                             tmp + "/config-build/staging/systemd/node-exporter.service.conf"]
@@ -387,7 +387,7 @@ def test_apply():
         cfg["targets"].pop("vector_search")
         assert apply(args, stack, host, cfg) == 0
         assert not os.path.exists(os.path.join(tmp, "config-build/live/targets/vector_search_servers.yml"))
-        assert names(host) == ["kill-all.sh", "start-all.sh -v", "start-traefik.sh"]
+        assert names(host) == ["kill-all.sh --traefik", "start-all.sh -v", "start-traefik.sh"]
 
 
 def test_apply_failure():
@@ -490,7 +490,7 @@ def test_apply_compose():
         cfg = example()
         # the first apply removes what start-all.sh left, then compose brings the stack up
         assert apply(args, stack, host, cfg) == 0
-        assert names(host) == ["helper dropin", "helper certs", "kill-all.sh", "prometheus-config.sh -m",
+        assert names(host) == ["helper dropin", "helper certs", "kill-all.sh --traefik", "prometheus-config.sh -m",
                                "grafana-datasource.sh", "docker compose", "docker exec"]
         argv, environ = builds[-1]
         assert "--traefik" in argv and environ["PRIVATE_IP"] == cfg["tls"]["listen_ip"]

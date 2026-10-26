@@ -726,7 +726,8 @@ class Stack:
         for opt in ("-p", "-g", "-m", "--loki-port", "--promtail-port", "--alloy-port", "--stack"):
             if option(argv, opt):
                 cmd += [opt, option(argv, opt)]
-        self.sh(cmd)
+        # the watcher owns traefik, so it is removed with the rest
+        self.sh(cmd + ["--traefik"])
 
     def restart_stack(self, argv, env, cfg, first=False):
         if not self.compose:

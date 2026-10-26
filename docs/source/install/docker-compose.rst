@@ -78,7 +78,7 @@ to ``docker compose`` to act on it.
 Start and Stop
 --------------
 
-To stop the stack, run ``docker compose down`` (or ``./kill-all.sh``) in the monitoring directory.
+To stop the stack, run ``docker compose down`` (or ``./kill-all.sh --traefik``) in the monitoring directory.
 To start it again, run ``docker compose up -d``.
 
 The Configuration File
