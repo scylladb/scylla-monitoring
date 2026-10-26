@@ -114,7 +114,7 @@ Run the watcher as a service, for example with ``/etc/systemd/system/scylla-moni
 The watcher's user needs to read the config file. It writes the status next to the file when it can write to that directory,
 and always in the state directory. When the data directories are on a separate disk, add ``RequiresMountsFor=<data dir>`` in a drop-in.
 
-* ``systemctl stop scylla-monitoring-config`` stops the watcher; ``./kill-all.sh`` (or ``docker compose down``) then stops the containers.
+* ``systemctl stop scylla-monitoring-config`` stops the watcher; ``./kill-all.sh --traefik`` (or ``docker compose down``) then stops the containers, traefik included.
 * ``systemctl start scylla-monitoring-config`` starts the watcher, which brings the stack up.
 
 How Changes Are Applied

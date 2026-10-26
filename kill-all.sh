@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 . versions.sh
-usage="$(basename "$0") [-h] [-g grafana port ] [ -p prometheus port ] [-m alertmanager port] [-w max wait time for prometheus] [--alloy-port port, env: ALLOY_PORT] -- kills existing Grafana and Prometheus Docker instances at given ports"
+usage="$(basename "$0") [-h] [-g grafana port ] [ -p prometheus port ] [-m alertmanager port] [-w max wait time for prometheus] [--alloy-port port, env: ALLOY_PORT] [--traefik remove the traefik container start-traefik.sh started] -- kills existing Grafana and Prometheus Docker instances at given ports"
 GRAFANA_PORT=""
 PROMETHEUS_PORT=""
 ALERTMANAGER_PORT=""
@@ -28,6 +28,9 @@ for arg; do
 		--stack)
 			LIMIT="1"
 			PARAM="stack"
+			;;
+		--traefik)
+			KILL_TRAEFIK=1
 			;;
 		*)
 			set -- "$@" "$arg"
@@ -121,11 +124,12 @@ if [ -z $STACK_ID ]; then
 	./kill-container.sh -b sidecar1
 	./kill-container.sh -b thanos
 	./kill-container.sh -b datadog-agent
-	# started by start-traefik.sh, not start-all.sh; removed by its exact name,
-	# since a name filter would also match other containers holding "traefik",
-	# and only when it mounts this directory's traefik config, so another
-	# traefik on the host stays
-	if docker inspect -f '{{range .Mounts}}{{.Source}} {{end}}' traefik 2>/dev/null | grep -qF "$PWD/traefik/build/"; then
+	# --traefik: started by start-traefik.sh, and removed only on request, so
+	# a caller that starts traefik before kill-all.sh keeps it. Removed by its
+	# exact name, since a name filter would also match other containers holding
+	# "traefik", and only when it mounts this directory's traefik config, so
+	# another traefik on the host stays
+	if [ -n "$KILL_TRAEFIK" ] && docker inspect -f '{{range .Mounts}}{{.Source}} {{end}}' traefik 2>/dev/null | grep -qF "$PWD/traefik/build/"; then
 		docker rm -f traefik >/dev/null 2>&1 || true
 	fi
 fi
