@@ -8,6 +8,7 @@ PROMETHEUS_NAME="aprom"
 PROMETHEUS_KILL_WAITTIME="120"
 LOKI_PORT=""
 PROMTAIL_PORT=""
+KILL_TRAEFIK=""
 ALLOY_PORT=${ALLOY_PORT:+-p $ALLOY_PORT}
 for arg; do
 	shift
@@ -124,14 +125,15 @@ if [ -z $STACK_ID ]; then
 	./kill-container.sh -b sidecar1
 	./kill-container.sh -b thanos
 	./kill-container.sh -b datadog-agent
-	# --traefik: started by start-traefik.sh, and removed only on request, so
-	# a caller that starts traefik before kill-all.sh keeps it. Removed by its
-	# exact name, since a name filter would also match other containers holding
-	# "traefik", and only when it mounts this directory's traefik config, so
-	# another traefik on the host stays
-	if [ -n "$KILL_TRAEFIK" ] && docker inspect -f '{{range .Mounts}}{{.Source}} {{end}}' traefik 2>/dev/null | grep -qF "$PWD/traefik/build/"; then
-		docker rm -f traefik >/dev/null 2>&1 || true
-	fi
+fi
+# --traefik: started by start-traefik.sh, and removed only on request, so
+# a caller that starts traefik before kill-all.sh keeps it. Removed for every
+# stack, since its name is the same for all of them. Removed by its exact
+# name, since a name filter would also match other containers holding
+# "traefik", and only when it mounts this directory's traefik config, so
+# another traefik on the host stays
+if [ -n "$KILL_TRAEFIK" ] && docker inspect -f '{{range .Mounts}}{{.Source}} {{end}}' traefik 2>/dev/null | grep -qF "$PWD/traefik/build/"; then
+	docker rm -f traefik >/dev/null 2>&1 || true
 fi
 HOST_NETWORK="monitor-net"
 if [ "$STACK_ID" != "" ]; then
