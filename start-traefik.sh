@@ -22,8 +22,9 @@
 # connects to PRIVATE_IP, so the certificate needs PRIVATE_IP as an IP SAN.
 #
 # Traefik listens on PRIVATE_IP ports 3000 (Grafana), 9090 (Prometheus), 9093
-# (Alertmanager), 9100 (node_exporter) and 10911 (sidecar), and forwards each to
-# 127.0.0.1 on the same port, so those services must listen on 127.0.0.1 only
+# (Alertmanager), 9100 (node_exporter), 10911 (sidecar) and 10903 (Thanos
+# query), and forwards each to 127.0.0.1 on the same port, so those services
+# must listen on 127.0.0.1 only
 # (start-all.sh -A 127.0.0.1, node_exporter --web.listen-address=127.0.0.1:9100).
 # Its ping endpoint is on localhost:8080. Generated config goes to traefik/build:
 # static/ holds traefik.yml and confs/ holds traefik-conf.yml; both are mounted
@@ -75,6 +76,12 @@ http:
         - sidecar1
       rule: "PathPrefix(\`/\`)"
       service: "sidecar1"
+    to-thanos-query:
+      tls: true
+      entryPoints:
+        - thanos-query
+      rule: "PathPrefix(\`/\`)"
+      service: "thanos-query"
   services:
     agraf:
       loadBalancer:
@@ -96,6 +103,10 @@ http:
       loadBalancer:
         servers:
           - url: "h2c://127.0.0.1:10911"
+    thanos-query:
+      loadBalancer:
+        servers:
+          - url: "h2c://127.0.0.1:10903"
 tls:
   options:
     default:
@@ -136,6 +147,8 @@ entryPoints:
     address: "${ADDR}:9100"
   sidecar1:
     address: "${ADDR}:10911"
+  thanos-query:
+    address: "${ADDR}:10903"
   ping:
     address: "localhost:8080"
 providers:
@@ -170,7 +183,7 @@ if [[ "$ADDR" == *:* ]]; then ADDR="[$ADDR]"; fi
 # first so a failing ss or docker ps stops the script instead of passing it.
 check_exposed() {
 	local OWN listeners published restarting exposed
-	local PORTS='3000|9090|9093|9100|10911'
+	local PORTS='3000|9090|9093|9100|10911|10903'
 	OWN=""
 	# A crash-looping traefik also reports Running while in restart backoff.
 	if [[ "$(docker inspect --format '{{and .State.Running (not .State.Restarting)}}' traefik 2>/dev/null)" == true ]]; then
