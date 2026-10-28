@@ -390,6 +390,49 @@ def test_apply():
         assert names(host) == ["kill-all.sh --traefik", "start-all.sh -v", "start-traefik.sh"]
 
 
+def test_apply_traefik_kept_without_tls():
+    """kill-all.sh removes traefik only when this configuration runs it, or ran it before."""
+    kills = lambda host: [n for n in names(host) if n.startswith("kill-all.sh")]
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        cfg = example()
+        cfg["tls"]["enabled"] = False
+        assert apply(args, stack, host, cfg) == 0
+        assert kills(host) == ["kill-all.sh"]
+        # TLS turned off with a restart: the traefik it ran goes too
+        cfg["tls"]["enabled"] = True
+        assert apply(args, stack, host, cfg) == 0
+        host.commands.clear()
+        cfg["tls"]["enabled"] = False
+        cfg["storage"]["retention_days"] = 60
+        assert apply(args, stack, host, cfg) == 0
+        assert kills(host) == ["kill-all.sh --traefik"]
+        # TLS off before and after: traefik stays
+        host.commands.clear()
+        cfg["storage"]["retention_days"] = 90
+        assert apply(args, stack, host, cfg) == 0
+        assert kills(host) == ["kill-all.sh"]
+        # turning TLS off fails before the restart; the retry still removes traefik
+        cfg["tls"]["enabled"] = True
+        assert apply(args, stack, host, cfg) == 0
+        host.commands.clear()
+        host.fail = {"sudo"}
+        cfg["tls"]["enabled"] = False
+        cfg["storage"]["retention_days"] = 60
+        cfg["systemd"].clear()
+        assert apply(args, stack, host, cfg) == 1
+        assert kills(host) == []
+        host.fail = set()
+        assert apply(args, stack, host, cfg) == 0
+        assert kills(host) == ["kill-all.sh --traefik"]
+        # once applied, the next restart leaves traefik
+        host.commands.clear()
+        cfg["storage"]["retention_days"] = 90
+        assert apply(args, stack, host, cfg) == 0
+        assert kills(host) == ["kill-all.sh"]
+
+
 def test_apply_failure():
     with tempfile.TemporaryDirectory() as tmp:
         host = FakeHost()
@@ -416,10 +459,10 @@ def test_apply_failure():
         calls = []
         real_restart = stack.restart_stack
 
-        def restart(argv, env, cfg, first=False):
+        def restart(argv, env, cfg, first=False, traefik=False):
             calls.append([v for v in smc.option_values(argv, "-b") if "retention" in v][0])
             if len(calls) == 1:
-                real_restart(argv, env, cfg, first)
+                real_restart(argv, env, cfg, first, traefik)
             host.fail = set()
         stack.restart_stack = restart
         assert apply(args, stack, host, bad) == 1
@@ -575,7 +618,7 @@ def test_run_loop():
             path = write_config(directory, cfg)
             os.utime(path, (mtime, mtime))
 
-        stack.apply = lambda old, new, argv, env, previous=None: generations.append(new["generation"]) or set()
+        stack.apply = lambda old, new, argv, env, previous=None, ran_traefik=False: generations.append(new["generation"]) or set()
         stack.sleep = step
         # nothing there yet: the loop waits; then a writes, then b, then a again
         steps += [lambda: None, lambda: write(a, "a1", 100), lambda: write(b, "b1", 200),
@@ -605,7 +648,7 @@ def test_run_loop_start():
         stack.health = down
         olds = []
 
-        def fake_apply(old, new, argv, env, previous=None):
+        def fake_apply(old, new, argv, env, previous=None, ran_traefik=False):
             olds.append(old)
             if len(olds) == 1:
                 raise RuntimeError("boom")

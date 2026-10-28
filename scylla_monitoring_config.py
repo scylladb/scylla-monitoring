@@ -721,17 +721,18 @@ class Stack:
         stack = option(argv, "--stack")
         return os.path.join(self.dirs.monitoring, base, "stack", stack) if stack else os.path.join(self.dirs.monitoring, base)
 
-    def kill_all(self, argv):
+    def kill_all(self, argv, traefik):
         cmd = ["./kill-all.sh"]
         for opt in ("-p", "-g", "-m", "--loki-port", "--promtail-port", "--alloy-port", "--stack"):
             if option(argv, opt):
                 cmd += [opt, option(argv, opt)]
-        # the watcher owns traefik, so it is removed with the rest
-        self.sh(cmd + ["--traefik"])
+        # traefik is shared by every stack in the directory; removed only
+        # when this configuration runs it, or ran it before
+        self.sh(cmd + (["--traefik"] if traefik else []))
 
-    def restart_stack(self, argv, env, cfg, first=False):
+    def restart_stack(self, argv, env, cfg, first=False, traefik=False):
         if not self.compose:
-            self.kill_all(argv)
+            self.kill_all(argv, traefik)
             self.sh(["./start-all.sh"] + argv, env)
             if cfg.get("tls", {}).get("enabled"):
                 self.traefik(cfg)
@@ -740,7 +741,7 @@ class Stack:
         stack, environ = self.compose_stack(argv, env, cfg)
         # the containers a start-all.sh run left have the same names
         if first:
-            self.kill_all(argv)
+            self.kill_all(argv, traefik)
         stack.up = True
         make_compose.write(stack, self.dirs.monitoring, environ,
                            run=lambda cmd, cwd=None, env=None, check=True: self.sh(cmd, env))
@@ -857,17 +858,19 @@ class Stack:
                 raise ApplyError("%s: not ready" % ", ".join(sorted(pending)))
             self.sleep(2)
 
-    def apply(self, old, new, argv, env, previous=None):
+    def apply(self, old, new, argv, env, previous=None, ran_traefik=False):
         """Applies the actions that take the stack from old to new; with no
-        old, a first apply, which also removes the drop-ins previous had."""
+        old, a first apply, which also removes the drop-ins previous had.
+        ran_traefik: a failed apply may have left traefik running."""
         actions = plan(old, new)
+        traefik = ran_traefik or any(tls_on(c) for c in (old, new, previous))
         self.move_staged()
         if "systemd_dropins" in actions:
             self.systemd_dropins(old, new, previous)
         if "install_certs" in actions:
             self.install_certs(new)
         if RESTART in actions:
-            self.restart_stack(argv, env, new, first=old is None)
+            self.restart_stack(argv, env, new, first=old is None, traefik=traefik)
         else:
             if "render_prometheus_config" in actions:
                 self.render_prometheus_config(argv, env, new)
@@ -879,7 +882,7 @@ class Stack:
                 self.grafana_datasource(argv, new)
             if "start_traefik" in actions and self.compose:
                 # traefik is a compose service; up recreates only what changed
-                self.restart_stack(argv, env, new)
+                self.restart_stack(argv, env, new, traefik=traefik)
             elif "start_traefik" in actions:
                 self.traefik(new)
             elif "reload_traefik" in actions:
@@ -922,19 +925,35 @@ def store_applied(dirs, text):
     write_private(applied_path(dirs), text)
 
 
+def tls_on(cfg):
+    return bool(cfg and cfg.get("tls", {}).get("enabled"))
+
+
 def incomplete_path(dirs):
-    """Marks applied.yaml as only partly applied: the next apply is a first apply."""
+    """Marks applied.yaml as only partly applied: the next apply is a first
+    apply. It holds "traefik" when traefik may still be running, since
+    applied.yaml then no longer shows the configuration that ran it."""
     return os.path.join(dirs.state, "applied.incomplete")
 
 
-def failed(dirs, text, cfg, error):
+def traefik_may_run(dirs):
+    try:
+        with open(incomplete_path(dirs)) as f:
+            return f.read().strip() == "traefik"
+    except FileNotFoundError:
+        return False
+
+
+def failed(dirs, text, cfg, error, traefik=False):
     """An apply that stopped part way: the file is stored as applied, marked
     incomplete, so the next apply runs every action. With no text (an
-    internal error), applied.yaml stays as it is."""
+    internal error), applied.yaml stays as it is. traefik: a configuration
+    involved ran traefik."""
+    traefik = traefik or traefik_may_run(dirs)
     if text is not None:
         store_applied(dirs, text)
     os.makedirs(dirs.state, mode=0o700, exist_ok=True)
-    write_private(incomplete_path(dirs), "")
+    write_private(incomplete_path(dirs), "traefik\n" if traefik else "")
     write_status(dirs, {"generation": cfg and cfg["generation"], "state": "failed", "error": error,
                         "applied_generation": cfg and cfg["generation"], "time": now()})
     print("failed: " + error, file=sys.stderr)
@@ -972,19 +991,20 @@ def apply_once(args, stack=None, run=subprocess.run, path=None):
         return rejected(dirs, e)
     previous = yaml.safe_load(applied_text) if applied_text else None
     old = None if force else previous
+    ran_traefik = traefik_may_run(dirs) or tls_on(previous) or tls_on(new)
     try:
-        actions = stack.apply(old, new, argv, env, previous)
+        actions = stack.apply(old, new, argv, env, previous, ran_traefik=traefik_may_run(dirs))
     except ApplyError as failure:
         error = str(failure)
         if not (args.auto_revert and previous is not None and not incomplete):
-            return failed(dirs, text, new, error)
+            return failed(dirs, text, new, error, ran_traefik)
         # back to the previous configuration, still in applied.yaml; a first
         # apply, since the failed one may have stopped anywhere
         try:
             old_cfg, old_argv, old_env = prepare(args, dirs, applied_path(dirs), run)
             stack.apply(None, old_cfg, old_argv, old_env, new)
         except (ApplyError, ConfigError) as e:
-            return failed(dirs, text, new, "%s; revert failed: %s" % (error, e.args[0]))
+            return failed(dirs, text, new, "%s; revert failed: %s" % (error, e.args[0]), ran_traefik)
         write_status(dirs, {"generation": new["generation"], "state": "reverted", "error": error,
                             "applied_generation": old_cfg["generation"], "time": now()})
         print("reverted: " + error, file=sys.stderr)
