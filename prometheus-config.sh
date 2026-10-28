@@ -185,11 +185,14 @@ else
 	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template | sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" | sed "s/GRAFANA_ADDRESS/$GRAFANA_ADDRESS/" >$BASE_DIR/prometheus.yml
 fi
 
-# The cluster label of the jobs that scrape the monitoring stack itself, as a
-# YAML single-quoted string; awk takes it from the environment as is.
+# The cluster label of the jobs that scrape the monitoring stack itself, and an
+# external label, so a Thanos querier can tell the monitors apart; as a YAML
+# single-quoted string, awk takes it from the environment as is. Prometheus
+# expands environment variables in external labels, so $ is written as $$ there.
 if [ -n "$CLUSTER_LABEL" ]; then
 	CLUSTER_LABEL_YAML="'${CLUSTER_LABEL//\'/\'\'}'" awk '
 		/^ *# CLUSTER_LABEL$/ { print "      labels:"; print "        cluster: " ENVIRON["CLUSTER_LABEL_YAML"]; next }
+		/^    monitor: .scylla-monitor.$/ { v = ENVIRON["CLUSTER_LABEL_YAML"]; gsub(/\$/, "$$", v); print; print "    cluster: " v; next }
 		{ print }' $BASE_DIR/prometheus.yml >$BASE_DIR/prometheus.yml.new && mv $BASE_DIR/prometheus.yml.new $BASE_DIR/prometheus.yml
 fi
 

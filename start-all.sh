@@ -163,7 +163,9 @@ Options:
   --enable-protobuf              - [Deprecated]If set, enable the experimental Prometheus Protobuf with Native histograms support.
   --native-histogram             - If set, enable the Prometheus Protobuf with Native histograms support.
   --scrap [scrap duration]       - Change the default Prometheus scrap duration. Duration is in seconds.
-  --cluster-label label          - Set the cluster label on Prometheus's and Grafana's own metrics.
+  --cluster-label label          - Set the cluster label on Prometheus's and Grafana's own metrics, and as
+                                   an external label. Use it only when the monitor serves one cluster, with
+                                   the cluster label of its targets as the value.
   --vector-store path/to/file.yml - [depricated] see vector-search
   --vector-search path/to/file.yml- Specifiy a vector search target file, the file should contain a list of vector search servers.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
@@ -1161,7 +1163,7 @@ elif [ "$RUN_LOCAL_THANOS" = "1" ]; then
     else
         SC_ADDRESS="sidecar1:10911"
     fi
-    run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG -S $SC_ADDRESS
+    run_script ./start-thanos.sh $NO_THANOS_DATASOURCE -D "$DOCKER_PARAM" $LIMITS $VOLUMES $PARAMS $BIND_ADDRESS_CONFIG -S $SC_ADDRESS -R
 fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do

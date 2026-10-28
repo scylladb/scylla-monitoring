@@ -786,8 +786,8 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
         service("thanos", "thanos", "docker.io/thanosio/thanos:" + v["THANOS_VERSION"],
                 ports=ports((10903, 10903), (10904, 10904)),
                 command=["query", "--debug.name=query0", "--grpc-address=0.0.0.0:10903", "--grpc-grace-period=1s",
-                         "--http-address=0.0.0.0:10904", "--http-grace-period=1s", "--query.promql-engine=thanos",
-                         "--query.replica-label=cluster"])
+                         "--http-address=0.0.0.0:10904", "--http-grace-period=1s", "--query.promql-engine=thanos"]
+                + ([] if not o["thanos"] and o["local_thanos"] else ["--query.replica-label=cluster"]))
         services["thanos"]["command"] += ["--endpoint=" + e for e in endpoints]
         if not o["no_thanos_datasource"]:
             stack.files["grafana/provisioning/datasources/thanos.yaml"] = (

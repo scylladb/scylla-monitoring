@@ -115,7 +115,9 @@ Options:
   --no-renderer                  - If set, do not run the Grafana renderer container.
   --thanos-sc                    - If set, run thanos side car with the Prometheus server.
   --thanos                       - If set, run thanos query as a Grafana datasource.
-  --cluster-label label          - Set the cluster label on Prometheus's and Grafana's own metrics.
+  --cluster-label label          - Set the cluster label on Prometheus's and Grafana's own metrics, and as
+                                   an external label. Use it only when the monitor serves one cluster, with
+                                   the cluster label of its targets as the value.
   --target-directory             - If set, prometheus/targets/ directory will be set as a root directory for the target files
                                    the file names should be scylla_server.yml, node_exporter_servers.yml, and  scylla_manager_servers.yml
   --limit container,param        - Allow to set a specific Docker parameter for a container, where container can be:
