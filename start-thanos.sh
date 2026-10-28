@@ -7,12 +7,14 @@ if [ -f env.sh ]; then
 fi
 
 function usage {
-	__usage="Usage: $(basename $0) [-h] [-S ip:port] [-A bind-address]
+	__usage="Usage: $(basename $0) [-h] [-S ip:port] [-A bind-address] [-R]
 
 Options:
   -h print this help and exit
   -S sidecart address         - A side cart address:port multiple side cart can be comma delimited
   -A bind-to-ip-address       - Bind to a specific interface.
+  -R                          - Do not use cluster as a replica label, for a query in front of
+                                the local sidecar, where cluster identifies the monitor.
 
 The script starts Thanos query, it connect to external Thanos side carts and act as a grafana data source
 "
@@ -99,6 +101,7 @@ for arg; do
 done
 SIDECAR=()
 BIND_ADDRESS=""
+REPLICA_LABEL=("--query.replica-label=cluster")
 
 if [ "$DOCKER_PARAM" != "" ]; then
 	DOCKER_PARAM_FROM_FILE="1"
@@ -106,7 +109,7 @@ else
 	DOCKER_PARAM=""
 fi
 
-while getopts ':hlp:S:N:D:A:' option; do
+while getopts ':hlp:S:N:D:A:R' option; do
 	case "$option" in
 	l)
 		if [[ ! $DOCKER_PARAM =~ (^|[[:space:]])--(net|network)(=|[[:space:]])host($|[[:space:]]) ]]; then
@@ -135,6 +138,9 @@ while getopts ':hlp:S:N:D:A:' option; do
 	    ;;
 	A)
 		BIND_ADDRESS="$OPTARG:"
+		;;
+	R)
+		REPLICA_LABEL=()
 		;;
 	:)
 		printf "missing argument for -%s\n" "$OPTARG" >&2
@@ -166,7 +172,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["thanos"]} "${PORT_FLAGS[@]}" -i --n
 	"--http-address=0.0.0.0:10904" \
 	"--http-grace-period=1s" \
     "--query.promql-engine=thanos" \
-	"--query.replica-label=cluster" \
+	"${REPLICA_LABEL[@]}" \
 	${DOCKER_PARAMS["thanos"]} \
 	${SIDECAR[@]}
 
