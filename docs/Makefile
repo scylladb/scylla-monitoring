@@ -94,3 +94,7 @@ test: setup
 .PHONY: linkcheck
 linkcheck: setup
 	$(SPHINXBUILD) -b linkcheck $(SOURCEDIR) $(BUILDDIR)/linkcheck
+
+.PHONY: check-redirects
+check-redirects: setup
+	$(UV) run scylla-check-redirects --yaml _utils/redirects.yaml --conf $(SOURCEDIR)
