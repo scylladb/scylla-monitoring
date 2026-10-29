@@ -16,23 +16,25 @@
 # and you decide when and how to share it.
 #
 # Usage:
-#   ./package_metrics_for_support.sh [-v|--verbose] [--image-tag <tag>] [-h|--help]
+#   ./package_metrics_for_support.sh [-v|--verbose] [--image-tag <tag>] [--days <n>]
+#                                    [--force-daily] [--diagnostics] [-h|--help]
 #
 # Prerequisites: Docker or Podman
 
 set -euo pipefail
 
-# Versioning. Each release of this script is paired with a specific container
-# image tag: by default the script pulls that exact tag, so a given copy of
-# the script always produces results from a known, reproducible build.
+# Versioning. By default the script pulls the image tag matching its version.
 # Override at run-time with --image-tag <tag> (e.g. --image-tag latest, or a
 # pinned version like --image-tag v1.1) when support asks you to.
-SCRIPT_VERSION="v1.0"
+SCRIPT_VERSION="v1.1"
 DEFAULT_IMAGE_TAG="$SCRIPT_VERSION"
 SCRAPER_IMAGE_REPO="public.ecr.aws/scylladb-sre/scylladb-metrics-packager"
 
-VERBOSE=false
+VERBOSE_COUNT=0
 IMAGE_TAG="$DEFAULT_IMAGE_TAG"
+DAYS=""
+FORCE_DAILY=false
+DIAGNOSTICS=false
 
 usage() {
     cat <<EOF
@@ -41,10 +43,19 @@ ScyllaDB Metrics Packager ${SCRIPT_VERSION}
 Usage: $(basename "$0") [options]
 
 Options:
-  -v, --verbose          Show detailed execution information.
+  -v, --verbose          Show detailed execution information. Give it twice
+                         (-v -v or -vv) to also turn on debug logging.
   --image-tag <tag>      Container image tag to pull (default: ${DEFAULT_IMAGE_TAG}).
                          Use this only when ScyllaDB Support asks you to run a
                          specific build (e.g. --image-tag v1.1 or --image-tag latest).
+  --days <n>             Collect the last <n> days instead of the default (90).
+  --force-daily          Query one day at a time from the start. Use this when
+                         ScyllaDB Support tells you that multi-day queries time
+                         out on your Prometheus server.
+  --diagnostics          Print the collection diagnostics table at the end of
+                         the run. ScyllaDB Support may ask for it.
+                         --days, --force-daily and --diagnostics need image
+                         v1.1 or later.
   -h, --help             Show this help and exit.
 EOF
 }
@@ -52,7 +63,11 @@ EOF
 while [ $# -gt 0 ]; do
     case "$1" in
         -v|--verbose)
-            VERBOSE=true
+            VERBOSE_COUNT=$((VERBOSE_COUNT + 1))
+            shift
+            ;;
+        -vv)
+            VERBOSE_COUNT=$((VERBOSE_COUNT + 2))
             shift
             ;;
         --image-tag)
@@ -71,6 +86,30 @@ while [ $# -gt 0 ]; do
             fi
             shift
             ;;
+        --days)
+            if [ $# -lt 2 ] || [ -z "$2" ]; then
+                echo "Error: --days requires a number of days."
+                exit 1
+            fi
+            DAYS="$2"
+            shift 2
+            ;;
+        --days=*)
+            DAYS="${1#--days=}"
+            if [ -z "$DAYS" ]; then
+                echo "Error: --days requires a number of days."
+                exit 1
+            fi
+            shift
+            ;;
+        --force-daily)
+            FORCE_DAILY=true
+            shift
+            ;;
+        --diagnostics)
+            DIAGNOSTICS=true
+            shift
+            ;;
         -h|--help)
             usage
             exit 0
@@ -82,6 +121,12 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
+# Fail before the image pull on a non-number; the CLI owns the range check.
+if [ -n "$DAYS" ] && ! [[ "$DAYS" =~ ^[0-9]+$ ]]; then
+    echo "Error: --days must be a whole number (got: ${DAYS})."
+    exit 1
+fi
 
 SCRAPER_IMAGE="${SCRAPER_IMAGE_REPO}:${IMAGE_TAG}"
 CONTAINER_CMD=""
@@ -95,7 +140,7 @@ detect_container_runtime() {
         echo "Error: Neither Docker nor Podman is installed."
         exit 1
     fi
-    if [ "$VERBOSE" = true ]; then
+    if [ "$VERBOSE_COUNT" -gt 0 ]; then
         echo "Using ${CONTAINER_CMD} as container runtime."
     fi
 }
@@ -189,9 +234,10 @@ validate_and_confirm() {
             echo "Aborted."
             exit 0
         fi
+        rm -f "$full_path"
     fi
 
-    if [ "$VERBOSE" = true ]; then
+    if [ "$VERBOSE_COUNT" -gt 0 ]; then
         echo ""
         echo "Configuration:"
         echo "  Script:      ${SCRIPT_VERSION}"
@@ -203,13 +249,19 @@ validate_and_confirm() {
             echo "  Auth:        disabled"
         fi
         echo "  Output:      ${full_path}"
+        echo "  Days:        ${DAYS:-default (90)}"
+        if [ "$FORCE_DAILY" = true ]; then
+            echo "  Query mode:  one day at a time (forced)"
+        else
+            echo "  Query mode:  full range, one day at a time on failure"
+        fi
     fi
     echo ""
 }
 
 run_container() {
     echo "Preparing environment..."
-    if [ "$VERBOSE" = true ]; then
+    if [ "$VERBOSE_COUNT" -gt 0 ]; then
         if ! ${CONTAINER_CMD} pull "$SCRAPER_IMAGE"; then
             echo ""
             echo "Error: Failed to pull the container image."
@@ -232,44 +284,118 @@ run_container() {
     # because macOS ships bash 3.2, which treats an empty array as "unset" under
     # `set -u` and aborts with "unbound variable" on a plain "${arr[@]}".
     local extra_flags=()
-    if [ "$VERBOSE" = true ]; then
+    # Pass the long form once per level: images before v1.1 reject -v and
+    # treat --verbose as a plain flag, so a repeated --verbose is still valid.
+    if [ "$VERBOSE_COUNT" -ge 1 ]; then
         extra_flags+=("--verbose")
     fi
-    # Run as the current user's UID:GID so the output file is owned by the
-    # caller on Linux (where bind-mount ownership is not remapped by default).
+    if [ "$VERBOSE_COUNT" -ge 2 ]; then
+        extra_flags+=("--verbose")
+    fi
+    if [ -n "$DAYS" ]; then
+        extra_flags+=("--days" "$DAYS")
+    fi
+    if [ "$FORCE_DAILY" = true ]; then
+        extra_flags+=("--force-daily")
+    fi
+    if [ "$DIAGNOSTICS" = true ]; then
+        extra_flags+=("--diagnostics")
+    fi
+    # Pick the right --user flag based on the container runtime's mode so the
+    # bind-mounted output file ends up owned by the host user invoking this
+    # script.
+    #
+    # Rootful Docker / rootful Podman:
+    #   The container UID equals the host UID, so we pass $(id -u):$(id -g).
+    # Rootless Docker / rootless Podman:
+    #   The daemon runs inside a user namespace where container UID 0 maps to
+    #   the host user, while any other container UID is remapped via
+    #   /etc/subuid (e.g. host UID 1006 used as --user inside the container
+    #   becomes some unrelated subuid like 101005 on the host, which has no
+    #   write permission to the host-owned output directory and triggers
+    #   "Permission denied" when the scraper tries to create the result file).
+    #   Run the container as UID 0 so it writes as the host user.
+    local is_rootless=false
+    case "$CONTAINER_CMD" in
+        docker)
+            if docker info --format '{{json .SecurityOptions}}' 2>/dev/null \
+                    | grep -q '"name=rootless"'; then
+                is_rootless=true
+            fi
+            ;;
+        podman)
+            if [ "$(podman info --format '{{.Host.Security.Rootless}}' 2>/dev/null)" = "true" ]; then
+                is_rootless=true
+            fi
+            ;;
+    esac
+
     local user_flag
-    user_flag="$(id -u):$(id -g)"
+    if [ "$is_rootless" = true ]; then
+        user_flag="0:0"
+        if [ "$VERBOSE_COUNT" -gt 0 ]; then
+            echo "Detected rootless ${CONTAINER_CMD}; running container as UID 0 so the output file is owned by $(id -un) on the host."
+        fi
+    else
+        user_flag="$(id -u):$(id -g)"
+    fi
+
+    # Capture the container's exit code instead of letting `set -e` abort
+    # on a non-zero exit. The CLI returns 1 when individual queries failed
+    # but it has still written a useful (partial) output file via the bind
+    # mount; we want to keep showing the user where that file is.
+    local container_exit=0
+    local out_path="${OUTPUT_DIR}/${OUTPUT_FILE}"
 
     if [ -n "$USERNAME" ] && [ -n "$PASSWORD" ]; then
         # Stream both username and password into the container's stdin behind
         # --auth-stdin so neither value lands in argv, env (visible to
         # `docker inspect`), or shell history. The bytes only live in the
         # kernel pipe and the container process memory.
+        # SCRIPT_VERSION is not a secret; the CLI records it in the output's
+        # diagnostics so support can tell which script produced a file.
         printf '%s\n%s\n' "$USERNAME" "$PASSWORD" | ${CONTAINER_CMD} run --rm -i \
             --user "$user_flag" \
             --network host \
+            -e "SCRIPT_VERSION=${SCRIPT_VERSION}" \
             -v "${OUTPUT_DIR}:/output" \
             "$SCRAPER_IMAGE" \
             --url "$PROMETHEUS_URL" \
             --output "/output/${OUTPUT_FILE}" \
             --auth-stdin \
-            ${extra_flags[@]+"${extra_flags[@]}"}
+            ${extra_flags[@]+"${extra_flags[@]}"} \
+            || container_exit=${PIPESTATUS[1]}
     else
         ${CONTAINER_CMD} run --rm \
             --user "$user_flag" \
             --network host \
+            -e "SCRIPT_VERSION=${SCRIPT_VERSION}" \
             -v "${OUTPUT_DIR}:/output" \
             "$SCRAPER_IMAGE" \
             --url "$PROMETHEUS_URL" \
             --output "/output/${OUTPUT_FILE}" \
-            ${extra_flags[@]+"${extra_flags[@]}"}
+            ${extra_flags[@]+"${extra_flags[@]}"} \
+            || container_exit=$?
     fi
 
     echo ""
-    echo "Done! Results saved to:"
-    echo "  ${OUTPUT_DIR}/${OUTPUT_FILE}"
-    echo ""
-    echo "You can share this file with your ScyllaDB Support."
+    if [ -f "$out_path" ]; then
+        if [ "$container_exit" -eq 0 ]; then
+            echo "Done! Results saved to:"
+        else
+            echo "Completed with errors. Partial results saved to:"
+        fi
+        echo "  $out_path"
+        echo ""
+        echo "You can share this file with your ScyllaDB Support."
+    else
+        echo "Error: ${CONTAINER_CMD} exited with code ${container_exit} and no output file was produced."
+        if [ "$container_exit" -eq 0 ]; then
+            container_exit=1
+        fi
+    fi
+
+    exit "$container_exit"
 }
 
 main() {
