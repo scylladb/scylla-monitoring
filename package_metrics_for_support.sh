@@ -16,7 +16,8 @@
 # and you decide when and how to share it.
 #
 # Usage:
-#   ./package_metrics_for_support.sh [-v|--verbose] [--image-tag <tag>] [-h|--help]
+#   ./package_metrics_for_support.sh [-v|--verbose] [--image-tag <tag>] [--days <n>]
+#                                    [--force-daily] [--diagnostics] [-h|--help]
 #
 # Prerequisites: Docker or Podman
 
@@ -233,6 +234,7 @@ validate_and_confirm() {
             echo "Aborted."
             exit 0
         fi
+        rm -f "$full_path"
     fi
 
     if [ "$VERBOSE_COUNT" -gt 0 ]; then
