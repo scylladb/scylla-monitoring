@@ -8,6 +8,32 @@ on:
       monitor_version:
         description: 'Git tag to build from'
         required: true
+      arch:
+        description: 'Architecture to build'
+        type: choice
+        options: [all, amd64, arm64]
+        default: all
+      cloud:
+        description: 'Cloud to build on'
+        type: choice
+        options: [all, aws, gce]
+        default: all
+      gcp_zone:
+        description: 'GCE build zone (empty: template default)'
+        required: false
+      aws_ami_regions:
+        description: 'Comma separated AWS regions to copy the AMI to (empty: all production regions)'
+        required: false
+      name_tag:
+        description: 'Replaces the version part of the image name, e.g. 4.17.0-rc1-test (empty: monitor_version)'
+        required: false
+      ref:
+        description: 'Git ref to check out for packer/ (empty: the monitor_version tag)'
+        required: false
+      test:
+        description: 'Test build: no public AWS sharing, no GCE image family'
+        type: boolean
+        default: false
 
 jobs:
   build-cloud-images:
@@ -23,7 +49,8 @@ jobs:
         with:
           # Build from the tag, not from the branch head: packer/files scripts
           # must match the monitoring tarball they install.
-          ref: ${{ github.event.inputs.monitor_version }}
+          # A test build may check out a branch with `ref`.
+          ref: ${{ github.event.inputs.ref || github.event.inputs.monitor_version }}
 
       - name: Setup Packer
         uses: hashicorp/setup-packer@v3.0.0
@@ -59,11 +86,36 @@ jobs:
           echo "MONITOR_BRANCH=$MONITOR_BRANCH" >> $GITHUB_ENV
 
       - name: Build Images
+        env:
+          ARCH: ${{ github.event.inputs.arch || 'all' }}
+          CLOUD: ${{ github.event.inputs.cloud || 'all' }}
+          GCP_ZONE: ${{ github.event.inputs.gcp_zone }}
+          AWS_AMI_REGIONS: ${{ github.event.inputs.aws_ami_regions }}
+          NAME_TAG: ${{ github.event.inputs.name_tag }}
+          TEST: ${{ github.event.inputs.test || 'false' }}
         run: |
           packer plugins install github.com/hashicorp/googlecompute
           packer plugins install github.com/hashicorp/amazon
-          packer build -var monitor_version="$MONITOR_VERSION" -var monitor_branch="$MONITOR_BRANCH" -var arch="amd64" scylla-monitor-template.json
-          packer build -var monitor_version="$MONITOR_VERSION" -var monitor_branch="$MONITOR_BRANCH" -var arch=arm64 scylla-monitor-template.json
+          args=(-var monitor_version="$MONITOR_VERSION" -var monitor_branch="$MONITOR_BRANCH")
+          case "$CLOUD" in
+            aws) args+=(-only=amazon-ebs) ;;
+            gce) args+=(-only=googlecompute) ;;
+          esac
+          if [ -n "$GCP_ZONE" ]; then args+=(-var gcp_zone="$GCP_ZONE"); fi
+          if [ -n "$AWS_AMI_REGIONS" ]; then args+=(-var aws_ami_regions="$AWS_AMI_REGIONS"); fi
+          if [ -n "$NAME_TAG" ]; then args+=(-var monitor_name_tag="$NAME_TAG"); fi
+          tpl=scylla-monitor-template.json
+          if [ "$TEST" = true ]; then
+            # Test images: not public on AWS, not in a GCE image family
+            jq '(.builders[] | select(.type=="amazon-ebs")) |= del(.ami_groups, .snapshot_groups)
+              | (.builders[] | select(.type=="googlecompute")) |= del(.image_family)' "$tpl" > test-template.json
+            tpl=test-template.json
+          fi
+          archs="amd64 arm64"
+          if [ "$ARCH" != all ]; then archs="$ARCH"; fi
+          for a in $archs; do
+            packer build "${args[@]}" -var arch="$a" "$tpl"
+          done
         working-directory: packer
 
       - name: List images in the job summary
