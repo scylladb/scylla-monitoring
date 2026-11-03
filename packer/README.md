@@ -46,7 +46,8 @@ packer build -var-file=variables.json scylla-monitor-template.json
 
 ### Architecture
 
-By default the image is built for `amd64`. To build an ARM image, pass `--arch arm64`:
+By default the image is built for `amd64`. To build an ARM image (AWS and GCP), pass `-var arch=arm64`.
+On GCP, arm64 uses a C4A machine with a hyperdisk and is published to the `scylladb-monitor-arm64` image family:
 
 ```shell
 packer build -var monitor_version="4.6.1" -var arch=arm64 scylla-monitor-template.json
