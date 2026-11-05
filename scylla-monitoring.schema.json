@@ -55,6 +55,11 @@
           "type": "boolean",
           "default": false
         },
+        "quick_startup": {
+          "description": "Start the containers without waiting for each to be ready (start-all.sh --quick-startup); the watcher's health check waits for them afterwards. A change takes effect at the next stack restart.",
+          "type": "boolean",
+          "default": false
+        },
         "bind_address": {
           "description": "The address the containers' ports are published on (start-all.sh -A). Set it to 127.0.0.1 when tls.enabled is true, so traefik is the only way in.",
           "type": "string",
@@ -123,10 +128,15 @@
           "description": "The role of anonymous users (start-all.sh -Q).",
           "enum": ["Admin", "Editor", "Viewer"]
         },
+        "thanos_datasource": {
+          "description": "Provision a Grafana datasource for the Thanos query that stack.local_thanos, or --thanos in stack.extra_flags, runs. false: start-all.sh --no-thanos-datasource, so Grafana has its Prometheus datasource only; a change to false deletes the Thanos datasource from a running Grafana and restarts Grafana, a change to true restarts the stack.",
+          "type": "boolean",
+          "default": true
+        },
         "env": {
           "description": "Any other Grafana setting, as GF_* environment variables (start-all.sh -c).",
           "type": "object",
-          "propertyNames": {"pattern": "^GF_[A-Z0-9_]+$"},
+          "propertyNames": {"pattern": "^(?!.*\\n)GF_[A-Z0-9_]+$"},
           "additionalProperties": {"type": "string"}
         },
         "admin_password": {
@@ -194,9 +204,24 @@
     "systemd": {
       "description": "systemd drop-ins for host services, by unit name. Each value is the content of /etc/systemd/system/<unit>.d/50-scylla-monitoring.conf; a changed drop-in restarts its unit, and a unit removed from here has its drop-in removed and is restarted. docker.service and the watcher's own unit are refused.",
       "type": "object",
-      "propertyNames": {"pattern": "^[A-Za-z0-9@._-]+\\.(service|socket|timer)$",
+      "propertyNames": {"pattern": "^(?!.*\\n)[A-Za-z0-9@._-]+\\.(service|socket|timer)$",
                         "not": {"enum": ["docker.service", "scylla-monitoring-config.service"]}},
       "additionalProperties": {"type": "string"}
+    },
+    "docker": {
+      "description": "The host's docker daemon. The proxy URLs go in /etc/systemd/system/docker.service.d/50-scylla-monitoring.env, readable by root only, which the drop-in 50-scylla-monitoring.conf next to it reads (EnvironmentFile=). Missing: docker is left as it is; removed after it was set: both files are removed. Holds http_proxy, https_proxy or both, so a misspelled field does not remove the proxy. A change restarts docker, which restarts the watcher and the stack too; the watcher completes the apply once it is back. A revert keeps the proxy as it is.",
+      "type": "object",
+      "anyOf": [{"required": ["http_proxy"]}, {"required": ["https_proxy"]}],
+      "properties": {
+        "http_proxy": {
+          "description": "The proxy URL docker uses for HTTP, such as http://10.0.0.5:3128, or http://user:password@10.0.0.5:3128 with credentials (HTTP_PROXY). Missing: none.",
+          "$ref": "#/definitions/proxy_url"
+        },
+        "https_proxy": {
+          "description": "The proxy URL docker uses for HTTPS (HTTPS_PROXY). Missing: none. An HTTP proxy is given with http:// here too.",
+          "$ref": "#/definitions/proxy_url"
+        }
+      }
     },
     "tls": {
       "description": "The traefik mTLS proxy in front of the stack. Missing or enabled false: no traefik.",
@@ -211,6 +236,13 @@
           "description": "The host address traefik listens on (PRIVATE_IP of start-traefik.sh).",
           "type": "string",
           "minLength": 1
+        },
+        "thanos_port": {
+          "description": "The local port traefik's 10911 entry point forwards to (THANOS_PORT of start-traefik.sh): 10911, the Thanos sidecar, or 10903, the Thanos query of stack.local_thanos. A change reloads traefik.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 10911
         },
         "ca_crt": {
           "description": "PEM. Clients must present a certificate signed by it (rootCA.crt).",
@@ -242,6 +274,10 @@
     "pem": {
       "type": "string",
       "pattern": "-----BEGIN [A-Z ]+-----"
+    },
+    "proxy_url": {
+      "type": "string",
+      "pattern": "^(?![\\s\\S]*[\\x00-\\x1f\\x7f])[A-Za-z][A-Za-z0-9+.-]*://([^\\s\"\\\\/?#@]*@)?[^\\s\"\\\\/?#@:][^\\s\"\\\\/?#@]*([/?#][^\\s\"\\\\]*)?$"
     },
     "file_sd": {
       "description": "Prometheus file_sd entries.",

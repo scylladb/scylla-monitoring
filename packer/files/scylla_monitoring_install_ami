@@ -228,10 +228,13 @@ def install_config_watcher():
         return
     run('install -m 755 -o root -g root {_HOME}/scylla-grafana-monitoring-scylla-monitoring/scylla-monitoring-root.sh /usr/local/sbin/')
     run('install -m 755 -o root -g root {_HOME}/scylla-monitoring-sync.sh /usr/local/sbin/')
-    for unit in ['scylla-monitoring-config.service', 'scylla-monitoring-sync.path', 'scylla-monitoring-sync.service']:
+    # scylla-monitoring-config.path starts a stopped watcher when the config file is written
+    units = ['scylla-monitoring-config.service', 'scylla-monitoring-config.path', 'scylla-monitoring-sync.path',
+             'scylla-monitoring-sync.service']
+    for unit in units:
         run('install -m 644 {_HOME}/' + unit + ' /etc/systemd/system/')
     run('systemctl daemon-reload')
-    run('systemctl enable scylla-monitoring-config.service scylla-monitoring-sync.path scylla-monitoring-sync.service')
+    run('systemctl enable ' + ' '.join(units))
 
 if __name__ == '__main__':
     if os.getuid() > 0:

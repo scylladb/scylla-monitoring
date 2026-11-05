@@ -10,6 +10,7 @@ import io
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -433,6 +434,22 @@ def test_plan():
     assert actions(lambda c: c["tls"].update(server_key="k")) == {"install_certs", "reload_traefik"}
     assert actions(lambda c: c["tls"].update(listen_ip="10.0.0.11")) == {"start_traefik"}
     assert actions(lambda c: c["systemd"].clear()) == {"systemd_dropins"}
+    assert actions(lambda c: c["tls"].update(thanos_port=10903)) == {"reload_traefik"}
+    # start-all.sh reads it on the next restart
+    assert actions(lambda c: c["stack"].update(quick_startup=True)) == set()
+    # to false, Grafana deletes the data source; to true, start-all.sh writes it
+    assert actions(lambda c: c["grafana"].update(thanos_datasource=False)) == {"thanos_datasource"}
+    old["grafana"]["thanos_datasource"] = False
+    assert actions(lambda c: c["grafana"].update(thanos_datasource=True)) == {"restart_stack"}
+    assert actions(lambda c: c["grafana"].pop("thanos_datasource")) == {"restart_stack"}
+    old["grafana"]["thanos_datasource"] = True
+    # true is the default: adding or removing it changes nothing
+    assert actions(lambda c: c["grafana"].pop("thanos_datasource")) == set()
+    old["grafana"].pop("thanos_datasource")
+    assert actions(lambda c: c["grafana"].update(thanos_datasource=True)) == set()
+    old["grafana"]["thanos_datasource"] = True
+    assert actions(lambda c: c.update(docker={"http_proxy": "http://10.0.0.5:3128"})) == \
+        {"docker_proxy", "restart_stack"}
     # a restart covers the reloads, not the password or the certificates
     assert actions(lambda c: (c["storage"].update(retention_days=60), c.update(cluster="c2"),
                               c["grafana"].update(admin_password="x"), c["tls"].update(server_key="k"))) == \
@@ -445,6 +462,7 @@ class FakeHost:
 
     def __init__(self, fail=()):
         self.commands = []
+        self.envs = []
         self.fail = set(fail)
 
     def run(self, cmd, **kwargs):
@@ -460,6 +478,7 @@ class FakeHost:
             # the render validate checks; test_validate_prometheus_config covers it
             return SimpleNamespace(returncode=0, stdout="")
         self.commands.append((cmd, kwargs.get("input")))
+        self.envs.append(kwargs.get("env") or {})
         return SimpleNamespace(returncode=1 if os.path.basename(cmd[0]) in self.fail else 0, stdout="")
 
 
@@ -710,6 +729,7 @@ def test_apply_compose():
         argv, environ = builds[-1]
         assert "--traefik" in argv and environ["PRIVATE_IP"] == cfg["tls"]["listen_ip"]
         assert environ["CERT_DIR"] == "/certs" and environ["TRAEFIK_GENERATION"] == cfg["generation"]
+        assert environ["THANOS_PORT"] == "10911"
         assert os.stat(os.path.join(tmp, ".env")).st_mode & 0o777 == 0o600
         assert os.path.exists(os.path.join(tmp, "docker-compose.yml"))
         # the cluster label: make_compose.py's prometheus-config.sh command, then a reload
@@ -731,6 +751,371 @@ def test_apply_compose():
         assert apply(args, stack, host, cfg) == 0
         assert names(host) == ["prometheus-config.sh -m", "grafana-datasource.sh", "docker compose"]
         assert "--traefik" not in builds[-1][0]
+
+
+def test_stack_flags():
+    """stack.quick_startup and grafana.thanos_datasource are start-all.sh
+    flags; their defaults add none."""
+    cfg = example()
+    argv, _ = smc.normalize(cfg, DIRS)
+    assert "--quick-startup" not in argv and "--no-thanos-datasource" not in argv
+    cfg["stack"]["quick_startup"] = True
+    cfg["grafana"]["thanos_datasource"] = False
+    with tempfile.TemporaryDirectory() as tmp:
+        smc.load(write_config(tmp, cfg))
+    argv, _ = smc.normalize(cfg, DIRS)
+    assert "--quick-startup" in argv and "--no-thanos-datasource" in argv
+
+
+def test_docker_proxy():
+    """docker's proxy environment file: one quoted line per proxy, 0600 since
+    a URL can hold credentials, and no value that could add a line or another
+    variable."""
+    cfg = example()
+    cfg["docker"] = {"http_proxy": "http://10.0.0.5:3128", "https_proxy": "http://u:p%40$s@10.0.0.5:3128"}
+    with tempfile.TemporaryDirectory() as tmp:
+        smc.load(write_config(tmp, cfg))
+        smc.render(cfg, tmp)
+        path = os.path.join(tmp, "docker/proxy.env")
+        assert open(path).read() == 'HTTP_PROXY="http://10.0.0.5:3128"\nHTTPS_PROXY="http://u:p%40$s@10.0.0.5:3128"\n'
+        assert os.stat(path).st_mode & 0o777 == 0o600
+        cfg["docker"] = {}
+        smc.render(cfg, tmp)
+        assert not os.path.exists(os.path.join(tmp, "docker"))
+        for bad in ('http://a" "LD_PRELOAD=/x', "http://a\nExecStartPre=/x", "10.0.0.5:3128", "http://a\\b",
+                    "http:///x", "http://?q", "http://#f", "http://user@", "http://:3128", "http://a:3128\n",
+                    "http://a\x01b:3128", "http://a\x7f:3128"):
+            cfg["docker"] = {"http_proxy": bad}
+            assert rejected(smc.load, write_config(tmp, cfg)).startswith("docker.http_proxy: must match")
+        # a section without a proxy, a misspelled one, is rejected, not
+        # taken as the proxy removed
+        for bad in ({}, {"htp_proxy": "http://10.0.0.5:3128"}):
+            cfg["docker"] = bad
+            assert rejected(smc.load, write_config(tmp, cfg)).startswith("docker")
+        cfg["docker"] = {"https_proxy": "http://10.0.0.5:3128"}
+        smc.load(write_config(tmp, cfg))
+
+
+def test_thanos_datasource():
+    """--no-thanos-datasource, from grafana.thanos_datasource or
+    stack.extra_flags, writes thanos.yaml as a file that deletes the data
+    source, also when the file is gone, since Grafana keeps the data source.
+    Grafana restarts once: on its own, with the stack, or with
+    grafana_datasource."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        cfg = example()
+        assert apply(args, stack, host, cfg) == 0
+        path = os.path.join(tmp, "grafana/provisioning/datasources/thanos.yaml")
+        smc.write_file(path, "apiVersion: 1\ndatasources:\n- name: thanos\n")
+        host.commands.clear()
+        cfg["generation"] = "g2"
+        cfg["grafana"]["thanos_datasource"] = False
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host) == ["docker restart"]
+        assert yaml.safe_load(open(path)) == {"apiVersion": 1, "deleteDatasources": [{"name": "thanos", "orgId": 1}]}
+        # a first apply finds it deleted already
+        host.commands.clear()
+        args.force = True
+        assert apply(args, stack, host, cfg) == 0
+        assert "docker restart" not in names(host)
+        # with a stack restart, Grafana is not restarted on its own
+        smc.write_file(path, "apiVersion: 1\ndatasources:\n- name: thanos\n")
+        host.commands.clear()
+        assert apply(args, stack, host, cfg) == 0
+        assert "docker restart" not in names(host) and "start-all.sh -v" in names(host)
+        assert open(path).read() == smc.DELETE_THANOS_DATASOURCE
+        args.force = False
+        # back to true: the stack restarts, the delete file goes, and
+        # start-all.sh writes the data source
+        host.commands.clear()
+        cfg["generation"] = "g3"
+        cfg["grafana"]["thanos_datasource"] = True
+        assert apply(args, stack, host, cfg) == 0
+        assert "start-all.sh -v" in names(host) and "docker restart" not in names(host)
+        assert not os.path.exists(path)
+        # with the file gone, the delete file is written all the same; with
+        # the Scylla data source changed too, Grafana restarts once
+        cfg["generation"] = "g4"
+        cfg["grafana"]["thanos_datasource"] = False
+        cfg["grafana"]["datasource"]["scylla_password"] = "other"
+        host.commands.clear()
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host) == ["docker restart"] and open(path).read() == smc.DELETE_THANOS_DATASOURCE
+        # the flag in stack.extra_flags restarts the stack and deletes it too
+        cfg["grafana"]["thanos_datasource"] = True
+        cfg["generation"] = "g5"
+        assert apply(args, stack, host, cfg) == 0
+        smc.write_file(path, "apiVersion: 1\ndatasources:\n- name: thanos\n")
+        cfg["stack"]["extra_flags"] = ["--no-thanos-datasource"]
+        cfg["generation"] = "g6"
+        host.commands.clear()
+        assert apply(args, stack, host, cfg) == 0
+        assert "start-all.sh -v" in names(host) and "docker restart" not in names(host)
+        assert open(path).read() == smc.DELETE_THANOS_DATASOURCE
+        # a named stack changes its own Grafana's file, not the main stack's
+        main = "apiVersion: 1\ndatasources:\n- name: thanos\n"
+        named = os.path.join(tmp, "grafana/stack/2/provisioning/datasources/thanos.yaml")
+        smc.write_file(path, main)
+        smc.write_file(named, main)
+        assert stack.thanos_datasource(["--stack", "2"], True) is None
+        assert open(path).read() == main and open(named).read() == smc.DELETE_THANOS_DATASOURCE
+        # back to true, a stack restart removes the named stack's delete
+        # file, which start-thanos.sh does not replace; other files stay
+        stack.thanos_datasource(["--stack", "2"], False)
+        assert not os.path.exists(named) and open(path).read() == main
+        stack.thanos_datasource(["--stack", "2"], False)
+        cfg["stack"]["extra_flags"] = ["--stack", "2"]
+        cfg["grafana"]["thanos_datasource"] = False
+        cfg["generation"] = "g7"
+        assert apply(args, stack, host, cfg) == 0
+        assert open(named).read() == smc.DELETE_THANOS_DATASOURCE
+        cfg["grafana"]["thanos_datasource"] = True
+        cfg["generation"] = "g8"
+        host.commands.clear()
+        assert apply(args, stack, host, cfg) == 0
+        assert "start-all.sh -v" in names(host) and not os.path.exists(named)
+
+
+def test_pattern_trailing_newline():
+    """jsonschema matches a pattern with re.search, where $ also matches before
+    a final newline: unit names and Grafana settings reject one too."""
+    with tempfile.TemporaryDirectory() as tmp:
+        for change in (lambda c: c["systemd"].update({"node-exporter.service\n": "[Service]\n"}),
+                       lambda c: c["grafana"]["env"].update({"GF_X\n": "1"})):
+            cfg = example()
+            change(cfg)
+            assert rejected(smc.load, write_config(tmp, cfg))
+            cfg = example()
+            smc.load(write_config(tmp, cfg))
+
+
+def test_apply_docker_proxy():
+    """docker's proxy is set first. Its docker restart restarts the watcher,
+    and the next pass, finding the proxy in place, completes the apply.
+    Without the section on either side docker is left alone, and a revert
+    keeps the proxy."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        cfg = example()
+        assert apply(args, stack, host, cfg) == 0
+        assert "helper docker-proxy" not in names(host)
+        host.commands.clear()
+        cfg["generation"] = "g2"
+        cfg["docker"] = {"http_proxy": "http://10.0.0.5:3128", "https_proxy": "http://10.0.0.5:3128"}
+
+        def restarts_docker(cmd, **kwargs):
+            if cmd[0] == "sudo" and cmd[3] == "docker-proxy":
+                stack.run = host.run  # docker is back, with the proxy in place
+                raise SystemExit("the watcher is restarted with docker")
+            return host.run(cmd, **kwargs)
+        stack.run = restarts_docker
+        try:
+            apply(args, stack, host, cfg)
+            raise AssertionError("the pass was not interrupted")
+        except SystemExit:
+            pass
+        assert host.commands == [] and "g2" not in open(os.path.join(tmp, "config-state/applied.yaml")).read()
+        # the next pass: the helper finds the proxy unchanged, then the stack starts
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host) == ["helper docker-proxy", "kill-all.sh --traefik", "start-all.sh -v", "start-traefik.sh"]
+        assert host.commands[0][0][-1] == tmp + "/config-build/staging/docker/proxy.env"
+        assert json.load(open(os.path.join(tmp, "config-state/status.json")))["generation"] == "g2"
+        # a first apply sets it again; the helper restarts docker only on a change
+        host.commands.clear()
+        args.force = True
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host)[0] == "helper docker-proxy"
+        args.force = False
+        # a failed apply is reverted without touching docker
+        host.commands.clear()
+        args.auto_revert = True
+        g2 = copy.deepcopy(cfg)
+        cfg["generation"] = "g3"
+        cfg["docker"]["http_proxy"] = "http://10.0.0.6:3128"
+        checks = []
+
+        def ready_once(argv, c, timeout=None):
+            checks.append(c["generation"])
+            if len(checks) == 1:
+                raise smc.ApplyError("grafana: not ready")
+        stack.health = ready_once
+        assert apply(args, stack, host, cfg) == 1
+        assert json.load(open(os.path.join(tmp, "config-state/status.json")))["state"] == "reverted"
+        assert names(host).count("helper docker-proxy") == 1
+        args.auto_revert = False
+        stack.health = lambda argv, c, timeout=None: None
+        # docker kept g3's proxy: writing g2's file again, though it is the
+        # applied one, sets g2's proxy, and only once
+        stale = os.path.join(tmp, "config-state/proxy.stale")
+        assert os.path.exists(stale)
+        host.commands.clear()
+        assert apply(args, stack, host, g2) == 0
+        assert names(host)[0] == "helper docker-proxy" and "start-all.sh -v" in names(host)
+        assert names(host).count("helper docker-proxy") == 1 and not os.path.exists(stale)
+        host.commands.clear()
+        assert apply(args, stack, host, g2) == 0 and host.commands == []
+        # a revert to a configuration without the section removes the proxy
+        cfg = copy.deepcopy(g2)
+        cfg.pop("docker")
+        assert apply(args, stack, host, cfg) == 0
+        cfg["generation"] = "g3"
+        cfg["docker"] = {"http_proxy": "http://10.0.0.6:3128"}
+        checks.clear()
+        stack.health = ready_once
+        args.auto_revert = True
+        assert apply(args, stack, host, cfg) == 1 and os.path.exists(stale)
+        args.auto_revert = False
+        stack.health = lambda argv, c, timeout=None: None
+        cfg.pop("docker")
+        cfg["generation"] = "g3b"
+        host.commands.clear()
+        assert apply(args, stack, host, cfg) == 0
+        assert host.commands[0][0][3:] == ["docker-proxy", "--remove"] and not os.path.exists(stale)
+        assert apply(args, stack, host, g2) == 0
+        cfg = g2
+        # the section removed: the proxy goes, and the stack starts again
+        host.commands.clear()
+        cfg["generation"] = "g4"
+        cfg.pop("docker")
+        assert apply(args, stack, host, cfg) == 0
+        assert host.commands[0][0][3:] == ["docker-proxy", "--remove"]
+        assert "start-all.sh -v" in names(host)
+        # with no section before or after, a first apply leaves docker alone
+        host.commands.clear()
+        args.force = True
+        assert apply(args, stack, host, cfg) == 0
+        assert "helper docker-proxy" not in names(host)
+
+
+def test_root_helper_docker_proxy():
+    """The helper installs docker's proxy as a root-only environment file
+    with a drop-in that reads it, restarts docker only when either changes
+    or when a restart it started did not happen, and refuses a file with
+    any other line."""
+    with tempfile.TemporaryDirectory() as tmp:
+        etc, bin_dir, log = os.path.join(tmp, "etc"), os.path.join(tmp, "bin"), os.path.join(tmp, "systemctl.log")
+        os.makedirs(bin_dir)
+        # docker's invocation id changes on each restart; "down" makes docker
+        # inactive, "fail" makes the restart fail without running
+        q = lambda name: shlex.quote(os.path.join(tmp, name))
+        smc.write_file(os.path.join(tmp, "id"), "1\n")
+        smc.write_file(os.path.join(bin_dir, "systemctl"), """#!/bin/sh
+case "$1" in
+is-active) [ ! -e {down} ] ;;
+show) cat {id} ;;
+restart) [ ! -e {fail} ] || exit 1; echo "$*" >> {log}; echo $(( $(cat {id}) + 1 )) > {id} ;;
+*) echo "$*" >> {log} ;;
+esac
+""".format(down=q("down"), fail=q("fail"), id=q("id"), log=shlex.quote(log)), 0o755)
+        helper = os.path.join(tmp, "root.sh")
+        pending = os.path.join(tmp, "pending")
+        text = open("scylla-monitoring-root.sh").read()
+        for old, new in (("SYSTEMD_DIR=/etc/systemd/system\n", "SYSTEMD_DIR=%s\n" % etc),
+                         ("PENDING=/run/scylla-monitoring-docker-proxy\n", "PENDING=%s\n" % pending)):
+            assert old in text
+            text = text.replace(old, new)
+        smc.write_file(helper, text, 0o755)
+        env = dict(os.environ, PATH=bin_dir + ":" + os.environ["PATH"])
+        src = os.path.join(tmp, "proxy.env")
+        dropin = os.path.join(etc, "docker.service.d/50-scylla-monitoring.conf")
+        envfile = os.path.join(etc, "docker.service.d/50-scylla-monitoring.env")
+        unit = "[Service]\nEnvironmentFile=%s\n" % envfile
+
+        def run_helper(arg, content=None):
+            if content is not None:
+                smc.write_file(src, content)
+            res = subprocess.run([helper, "docker-proxy", arg], env=env, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT, universal_newlines=True)
+            calls = open(log).read().splitlines() if os.path.exists(log) else []
+            if calls:
+                os.remove(log)
+            return res.returncode, calls
+
+        good = 'HTTP_PROXY="http://10.0.0.5:3128"\nHTTPS_PROXY="http://u:p@10.0.0.5:3128"\n'
+        restart = (0, ["daemon-reload", "restart docker.service"])
+        assert run_helper(src, good) == restart
+        assert open(envfile).read() == good and os.stat(envfile).st_mode & 0o777 == 0o600
+        assert open(dropin).read() == unit
+        assert run_helper(src) == (0, [])
+        # a drop-in changed by hand is written again
+        smc.write_file(dropin, "[Service]\nExecStartPre=/bin/true\n")
+        assert run_helper(src) == restart and open(dropin).read() == unit
+        for bad in ('ExecStartPre=/bin/sh -c id\n', '[Service]\nHTTP_PROXY="http://a"\n', 'LD_PRELOAD="/x"\n',
+                    'HTTP_PROXY="a" LD_PRELOAD="/x"\n', 'NO_PROXY="x"\n', 'HTTP_PROXY=http://a\n',
+                    'HTTP_PROXY="http://a\x01b"\n'):
+            rc, calls = run_helper(src, bad)
+            assert rc != 0 and calls == []
+        assert open(envfile).read() == good
+        assert run_helper("--remove") == restart
+        assert not os.path.exists(os.path.dirname(dropin))
+        assert run_helper("--remove") == (0, [])
+        assert not os.path.exists(pending)
+        # a restart that did not happen runs again, once
+        fail = os.path.join(tmp, "fail")
+        smc.write_file(fail, "")
+        assert run_helper(src, good)[0] != 0 and os.path.exists(pending)
+        os.remove(fail)
+        assert run_helper(src) == restart and not os.path.exists(pending)
+        assert run_helper(src) == (0, [])
+        # so does a removal
+        smc.write_file(fail, "")
+        assert run_helper("--remove")[0] != 0
+        os.remove(fail)
+        assert run_helper("--remove") == restart and not os.path.exists(pending)
+        # a docker that failed to start reads the proxy when it starts: no restart
+        smc.write_file(fail, "")
+        assert run_helper(src, good)[0] != 0
+        os.remove(fail)
+        smc.write_file(os.path.join(tmp, "down"), "")
+        assert run_helper(src) == (0, []) and not os.path.exists(pending)
+
+
+def test_traefik_thanos_port():
+    """traefik's 10911 entry point forwards to THANOS_PORT, by default the
+    sidecar; the watcher passes tls.thanos_port, and a change reloads traefik."""
+    with tempfile.TemporaryDirectory() as tmp:
+        for f in ("start-traefik.sh", "versions.sh"):
+            shutil.copy2(f, tmp)
+
+        def url(**env):
+            res = subprocess.run(["./start-traefik.sh", "--config-only"], cwd=tmp, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT, universal_newlines=True,
+                                 env=dict(os.environ, PRIVATE_IP="10.0.0.10", **env))
+            if res.returncode != 0:
+                return None
+            conf = yaml.safe_load(open(os.path.join(tmp, "traefik/build/confs/traefik-conf.yml")))
+            return conf["http"]["services"]["sidecar1"]["loadBalancer"]["servers"][0]["url"]
+        assert url() == "h2c://127.0.0.1:10911"
+        assert url(THANOS_PORT="10903") == "h2c://127.0.0.1:10903"
+        assert url(THANOS_PORT="70000") is None and url(THANOS_PORT="1;x") is None
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        cfg = example()
+        assert apply(args, stack, host, cfg) == 0
+        assert host.envs[names(host).index("start-traefik.sh")]["THANOS_PORT"] == "10911"
+        host.commands.clear()
+        host.envs.clear()
+        cfg["generation"] = "g2"
+        cfg["tls"]["thanos_port"] = 10903
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host) == ["start-traefik.sh --reload"] and host.envs[0]["THANOS_PORT"] == "10903"
+
+
+def test_path_unit():
+    """The path unit watches each --config-file of the watcher's unit and
+    starts it, and the image installs it."""
+    service = open("packer/files/scylla-monitoring-config.service").read()
+    path_unit = open("packer/files/scylla-monitoring-config.path").read()
+    words = re.search(r"^ExecStart=(.*)$", service, re.M).group(1).split()
+    config_files = [words[i + 1] for i, w in enumerate(words[:-1]) if w == "--config-file"]
+    assert config_files and re.findall(r"^PathChanged=(.*)$", path_unit, re.M) == config_files
+    assert re.findall(r"^Unit=(.*)$", path_unit, re.M) == ["scylla-monitoring-config.service"]
+    installer = open("packer/files/scylla_monitoring_install_ami").read()
+    assert "'scylla-monitoring-config.path'" in installer and "run('systemctl enable ' + ' '.join(units))" in installer
 
 
 def quiet(fn, *args):
@@ -807,7 +1192,8 @@ def test_run_loop():
             path = write_config(directory, cfg)
             os.utime(path, (mtime, mtime))
 
-        stack.apply = lambda old, new, argv, env, previous=None, ran_traefik=False: generations.append(new["generation"]) or set()
+        stack.apply = lambda old, new, argv, env, previous=None, ran_traefik=False, proxy_stale=False: \
+            generations.append(new["generation"]) or set()
         stack.sleep = step
         # nothing there yet: the loop waits; then a writes, then b, then a again
         steps += [lambda: None, lambda: write(a, "a1", 100), lambda: write(b, "b1", 200),
@@ -837,7 +1223,7 @@ def test_run_loop_start():
         stack.health = down
         olds = []
 
-        def fake_apply(old, new, argv, env, previous=None, ran_traefik=False):
+        def fake_apply(old, new, argv, env, previous=None, ran_traefik=False, proxy_stale=False):
             olds.append(old)
             if len(olds) == 1:
                 raise RuntimeError("boom")
