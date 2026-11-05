@@ -5,10 +5,12 @@
 # Run: python3 tests/test_scylla_monitoring_config.py
 import contextlib
 import copy
+import glob
 import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -212,26 +214,62 @@ def test_start_all_values():
     assert values(argv, "--cluster-label") == ["#1234"]
     # prometheus-config.sh renders the label quoted, and promtool accepts it
     with tempfile.TemporaryDirectory() as tmp:
-        os.makedirs(os.path.join(tmp, "prometheus"))
-        for f in ("prometheus-config.sh", "versions.sh", "network-lib.sh"):
-            subprocess.run(["cp", f, tmp], check=True)
-        subprocess.run("cp prometheus/*.template " + os.path.join(tmp, "prometheus"), shell=True, check=True)
-        subprocess.run(["./prometheus-config.sh", "-m", "aalert:9093", "-G", "agraf:3000", "--cluster-label", "#1234"],
-                       cwd=tmp, check=True, stdout=subprocess.DEVNULL)
-        build = os.path.join(tmp, "prometheus", "build")
-        prom = yaml.safe_load(open(os.path.join(build, "prometheus.yml")))
+        staging = render_and_check(tmp, argv)
+        prom = yaml.safe_load(open(os.path.join(staging, "prometheus", "prometheus.yml")))
         assert prom["global"]["external_labels"]["cluster"] == "#1234"
         jobs = {j["job_name"]: j for j in prom["scrape_configs"]}
         for job in ("prometheus", "grafana"):
             assert jobs[job]["static_configs"][0]["labels"]["cluster"] == "#1234"
-        image = "prom/prometheus:" + subprocess.run(["bash", "-c", ". ./versions.sh; echo $PROMETHEUS_VERSION"],
-                                                    capture_output=True, text=True).stdout.strip()
-        if subprocess.run(["docker", "image", "inspect", image], capture_output=True).returncode == 0:
-            res = subprocess.run(["docker", "run", "--rm", "-v", build + ":/c:z", "--entrypoint", "promtool", image,
-                                  "check", "config", "--syntax-only", "/c/prometheus.yml"], capture_output=True, text=True)
-            assert res.returncode == 0, res.stdout + res.stderr
-        else:
-            print("skipped promtool: %s is not pulled" % image)
+
+
+def stack_copy(tmp):
+    """The files prometheus-config.sh needs, in a monitoring directory of its own."""
+    os.makedirs(os.path.join(tmp, "prometheus"))
+    for f in ["prometheus-config.sh", "versions.sh", "network-lib.sh"] + glob.glob("prometheus/*.template"):
+        shutil.copy2(f, os.path.join(tmp, f))
+    return tmp
+
+
+def render_and_check(tmp, argv):
+    """Renders prometheus.yml into a staging directory as prepare does, and
+    checks it with promtool when the image is pulled. Returns the staging directory."""
+    monitoring = stack_copy(os.path.join(tmp, "m"))
+    # a space in the path checks that prometheus-config.sh quotes --output-dir
+    staging = os.path.join(tmp, "staging dir")
+    smc.render_prometheus_config(argv, staging, monitoring)
+    assert not os.path.exists(os.path.join(monitoring, "prometheus", "build"))
+    versions = smc.stack_versions(monitoring)
+    if shutil.which("docker") and subprocess.run(["docker", "image", "inspect", "prom/prometheus:" + versions[0]],
+                                                 capture_output=True).returncode == 0:
+        smc.validate(staging, versions)
+    else:
+        print("skipped promtool: docker or prom/prometheus:%s is not available" % versions[0])
+    return staging
+
+
+def test_validate_prometheus_config():
+    """prepare renders prometheus.yml into staging; promtool's error rejects the file."""
+    argv, _ = smc.normalize(example(), DIRS)
+    assert smc.prometheus_config_cmd(argv) == ["./prometheus-config.sh", "--cluster-label", "cluster1", "-D",
+                                               "--restart=unless-stopped", "-A", "127.0.0.1", "--vector-search"]
+    with tempfile.TemporaryDirectory() as tmp:
+        staging = render_and_check(tmp, argv)
+        calls = []
+
+        def fake(cmd, **kwargs):
+            calls.append(cmd)
+            return SimpleNamespace(returncode=1, stdout="Checking /c/prometheus.yml\n  FAILED: parsing YAML file\n")
+        assert rejected(smc.validate, staging, ("v1", "v2"), fake) == "prometheus config: FAILED: parsing YAML file"
+        assert calls[0][-4:] == ["check", "config", "--syntax-only", "/c/prometheus.yml"]
+        fail = lambda cmd, **kwargs: SimpleNamespace(returncode=1, stdout="illegal option: -x\n")
+        assert rejected(smc.render_prometheus_config, argv, staging, tmp, fail) == \
+            "prometheus config: prometheus-config.sh failed: illegal option: -x"
+        # a last option without its value fails, and leaves prometheus/build alone
+        monitoring = os.path.join(tmp, "m")
+        res = subprocess.run(["./prometheus-config.sh", "-m", "aalert:9093", "--output-dir"], cwd=monitoring,
+                             capture_output=True, text=True)
+        assert res.returncode == 1 and "No value given to --output-dir" in res.stderr
+        assert not os.path.exists(os.path.join(monitoring, "prometheus", "build"))
 
 
 def test_validate():
@@ -384,6 +422,9 @@ class FakeHost:
         if cmd[0] == "bash":
             return SimpleNamespace(returncode=0, stdout="agraf\n")
         if cmd[0] == "docker" and cmd[1] == "run":
+            return SimpleNamespace(returncode=0, stdout="")
+        if cmd[0] == "./prometheus-config.sh" and "--output-dir" in cmd:
+            # the render validate checks; test_validate_prometheus_config covers it
             return SimpleNamespace(returncode=0, stdout="")
         self.commands.append((cmd, kwargs.get("input")))
         return SimpleNamespace(returncode=1 if os.path.basename(cmd[0]) in self.fail else 0, stdout="")

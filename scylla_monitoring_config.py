@@ -334,7 +334,7 @@ def write_file(path, text, mode=0o644):
 
 def render(cfg, staging):
     """Writes every derived file into the staging directory."""
-    for sub in ("targets", "rules", "alertmanager", "certs", "systemd"):
+    for sub in ("targets", "rules", "alertmanager", "certs", "systemd", "prometheus"):
         shutil.rmtree(os.path.join(staging, sub), ignore_errors=True)
     targets = cfg["targets"]
     scylla = dump_yaml(targets["scylla"])
@@ -380,11 +380,43 @@ def tool_output(text):
     return text[:500] or "failed"
 
 
+def prometheus_config_cmd(argv):
+    """The prometheus-config.sh command for the start-all.sh arguments, with
+    the Alertmanager and Grafana addresses worked out as start-all.sh does."""
+    cmd = ["./prometheus-config.sh"]
+    for opt, to in (("-L", "-L"), ("-T", "-T"), ("--evaluation-interval", "-E"), ("--scrap", "--scrap"),
+                    ("--cluster-label", "--cluster-label"), ("--stack", "-s"), ("-D", "-D"), ("-A", "-A"),
+                    ("-m", "--alertmanager-port"), ("-g", "--grafana-port")):
+        for value in option_values(argv, opt):
+            cmd += [to, value]
+    for flag in ("--no-cas", "--no-cdc", "--no-cas-cdc", "--native-histogram", "--vector-search",
+                 "--no-alertmanager"):
+        if flag in argv:
+            cmd.append(flag)
+    if "-l" in argv:
+        cmd += ["-D", "--net=host"]
+    return cmd
+
+
+def render_prometheus_config(argv, staging, monitoring_dir, run=subprocess.run):
+    """Renders prometheus.yml into the staging directory, so validate checks it
+    before anything restarts."""
+    out = os.path.join(staging, "prometheus")
+    res = run(prometheus_config_cmd(argv) + ["--output-dir", out], cwd=monitoring_dir,
+              stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    if res.returncode != 0:
+        raise ConfigError("prometheus config: prometheus-config.sh failed: %s" % tool_output(res.stdout))
+
+
 def validate(staging, versions, run=subprocess.run):
-    """Checks the staged rules and Alertmanager config with the stack's own tools."""
+    """Checks the staged Prometheus config, rules and Alertmanager config with
+    the stack's own tools."""
     prometheus, alertmanager = versions
     user = "%d:%d" % (os.getuid(), os.getgid())
     checks = [
+        # the rules and target files are checked on their own, or written by the apply
+        ("prometheus config", "prometheus", "prom/prometheus:" + prometheus, "promtool",
+         ["check", "config", "--syntax-only", "/c/prometheus.yml"]),
         ("alert_rules", "rules", "prom/prometheus:" + prometheus, "promtool", ["check", "rules", "/c/prometheus.rules.yml"]),
         ("alertmanager_config", "alertmanager", "prom/alertmanager:" + alertmanager, "amtool", ["check-config", "/c/config.yml"]),
     ]
@@ -517,6 +549,7 @@ def prepare(args, dirs, path, run=subprocess.run):
         os.makedirs(build, exist_ok=True)
         os.chmod(build, 0o700)
         render(cfg, dirs.staging)
+        render_prometheus_config(argv, dirs.staging, dirs.monitoring, run)
         validate(dirs.staging, stack_versions(dirs.monitoring), run)
     except ConfigError as e:
         raise ConfigError(e.args[0], cfg["generation"])
@@ -769,19 +802,7 @@ class Stack:
             stack, environ = self.compose_stack(argv, env or {}, cfg or {})
             self.sh(next(c for c in stack.commands if c[0] == "./prometheus-config.sh"), environ)
             return
-        cmd = ["./prometheus-config.sh"]
-        for opt, to in (("-L", "-L"), ("-T", "-T"), ("--evaluation-interval", "-E"), ("--scrap", "--scrap"),
-                        ("--cluster-label", "--cluster-label"), ("--stack", "-s"), ("-D", "-D"), ("-A", "-A"),
-                        ("-m", "--alertmanager-port"), ("-g", "--grafana-port")):
-            for value in option_values(argv, opt):
-                cmd += [to, value]
-        for flag in ("--no-cas", "--no-cdc", "--no-cas-cdc", "--native-histogram", "--vector-search",
-                     "--no-alertmanager"):
-            if flag in argv:
-                cmd.append(flag)
-        if "-l" in argv:
-            cmd += ["-D", "--net=host"]
-        self.sh(cmd)
+        self.sh(prometheus_config_cmd(argv))
 
     def reload(self, argv, name):
         url = "http://%s:%s/-/reload" % (self.host(argv), self.ports(argv)[name])
