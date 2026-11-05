@@ -176,6 +176,64 @@ def test_rules():
         assert yaml.safe_load(open(os.path.join(tmp, "targets/scylla_manager_servers.yml"))) == []
 
 
+def test_manager_agent_targets():
+    """targets.manager_agent replaces the copy of scylla; the rest stays as the golden files."""
+    golden = tree(os.path.join(GOLDEN, "staging"))
+    cfg = example()
+    cfg["targets"]["manager_agent"] = [{"targets": ["10.0.0.1:26090", "10.0.0.2"], "labels": {"cluster": "cluster1"}}]
+    with tempfile.TemporaryDirectory() as tmp:
+        smc.render(cfg, tmp)
+        rendered = tree(tmp)
+    assert yaml.safe_load(rendered.pop("targets/scylla_manager_agents.yml")) == cfg["targets"]["manager_agent"]
+    assert golden.pop("targets/scylla_manager_agents.yml") == golden["targets/scylla_servers.yml"]
+    assert rendered == golden
+    # the manager_agent job adds 5090 only to a target without a port
+    job = [j for j in yaml.safe_load(open("prometheus/prometheus.yml.template"))["scrape_configs"]
+           if j["job_name"] == "manager_agent"][0]
+    port, address = job["relabel_configs"][:2]
+    assert re.fullmatch(port["regex"], "10.0.0.1:26090") and not re.fullmatch(port["regex"], "10.0.0.2")
+    assert address["replacement"] == "${1}:5090" and not re.fullmatch(address["regex"], "10.0.0.1:26090;::")
+
+
+def test_start_all_values():
+    """Values a writer sends as start-all.sh flags today reach start-all.sh unchanged."""
+    cfg = example()
+    cfg["stack"]["manager_version"] = "none"
+    cfg["storage"] = {"prometheus_dir": "/data/prometheus", "alertmanager_dir": "/data/alertmanager",
+                      "retention_days": 30}
+    cfg["cluster"] = "#1234"
+    with tempfile.TemporaryDirectory() as tmp:
+        smc.load(write_config(tmp, cfg))
+    argv, _ = smc.normalize(cfg, DIRS)
+    assert values(argv, "-M") == ["none"]
+    assert values(argv, "-d") == ["/data/prometheus"] and values(argv, "-f") == ["/data/alertmanager"]
+    assert "-G" not in argv
+    assert "--storage.tsdb.retention.time=30d" in values(argv, "-b")
+    assert values(argv, "--cluster-label") == ["#1234"]
+    # prometheus-config.sh renders the label quoted, and promtool accepts it
+    with tempfile.TemporaryDirectory() as tmp:
+        os.makedirs(os.path.join(tmp, "prometheus"))
+        for f in ("prometheus-config.sh", "versions.sh", "network-lib.sh"):
+            subprocess.run(["cp", f, tmp], check=True)
+        subprocess.run("cp prometheus/*.template " + os.path.join(tmp, "prometheus"), shell=True, check=True)
+        subprocess.run(["./prometheus-config.sh", "-m", "aalert:9093", "-G", "agraf:3000", "--cluster-label", "#1234"],
+                       cwd=tmp, check=True, stdout=subprocess.DEVNULL)
+        build = os.path.join(tmp, "prometheus", "build")
+        prom = yaml.safe_load(open(os.path.join(build, "prometheus.yml")))
+        assert prom["global"]["external_labels"]["cluster"] == "#1234"
+        jobs = {j["job_name"]: j for j in prom["scrape_configs"]}
+        for job in ("prometheus", "grafana"):
+            assert jobs[job]["static_configs"][0]["labels"]["cluster"] == "#1234"
+        image = "prom/prometheus:" + subprocess.run(["bash", "-c", ". ./versions.sh; echo $PROMETHEUS_VERSION"],
+                                                    capture_output=True, text=True).stdout.strip()
+        if subprocess.run(["docker", "image", "inspect", image], capture_output=True).returncode == 0:
+            res = subprocess.run(["docker", "run", "--rm", "-v", build + ":/c:z", "--entrypoint", "promtool", image,
+                                  "check", "config", "--syntax-only", "/c/prometheus.yml"], capture_output=True, text=True)
+            assert res.returncode == 0, res.stdout + res.stderr
+        else:
+            print("skipped promtool: %s is not pulled" % image)
+
+
 def test_validate():
     calls = []
 
@@ -290,6 +348,7 @@ def test_plan():
     assert smc.plan(None, old) == smc.FIRST_APPLY
     assert actions(lambda c: c["targets"]["scylla"][0]["targets"].append("10.0.0.9")) == set()
     assert actions(lambda c: c["targets"]["vector_search"][0]["targets"].append("10.0.0.9")) == set()
+    assert actions(lambda c: c["targets"].update(manager_agent=[{"targets": ["10.0.0.1:26090"]}])) == set()
     assert actions(lambda c: c["targets"].pop("vector_search")) == {"restart_stack"}
     assert actions(lambda c: c["alert_rules"]["groups"].append({"name": "x", "rules": []})) == {"reload_prometheus"}
     assert actions(lambda c: c.pop("alert_rules")) == {"restart_stack"}
@@ -592,6 +651,23 @@ def test_several_config_files():
             assert os.stat(path).st_mode & 0o777 == 0o600
         assert not os.path.exists(os.path.join(tmp, "missing"))
         assert os.path.exists(os.path.join(args.state_dir, "applied.yaml"))
+
+
+def test_status_in_new_config_dir():
+    """A config directory the writer just created, 0700: the status appears beside the file after the first apply."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        config_dir = os.path.join(tmp, "home", "scylla-monitoring")
+        os.makedirs(config_dir, mode=0o700)
+        os.chmod(config_dir, 0o700)
+        path = write_config(config_dir, example())
+        os.chmod(path, 0o600)
+        args.config_file = [path]
+        rc, _ = quiet(smc.apply_once, args, stack, host.run)
+        status = os.path.join(config_dir, "scylla-monitoring.status.json")
+        assert rc == 0 and json.load(open(status))["state"] == "applied"
+        assert os.stat(status).st_mode & 0o777 == 0o600
 
 
 def test_run_loop():

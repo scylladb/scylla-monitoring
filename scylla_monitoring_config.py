@@ -341,7 +341,7 @@ def render(cfg, staging):
     files = {
         "targets/scylla_servers.yml": scylla,
         "targets/node_exporter_servers.yml": dump_yaml(targets["node_exporter"]) if "node_exporter" in targets else scylla,
-        "targets/scylla_manager_agents.yml": scylla,
+        "targets/scylla_manager_agents.yml": dump_yaml(targets["manager_agent"]) if "manager_agent" in targets else scylla,
         # An empty list, so Prometheus has a file to read without a manager.
         "targets/scylla_manager_servers.yml": dump_yaml(targets.get("manager", [])),
     }

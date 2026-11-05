@@ -31,7 +31,7 @@
           "minLength": 1
         },
         "manager_version": {
-          "description": "The Scylla Manager version of the dashboards (start-all.sh -M). Missing: the default manager version of the release.",
+          "description": "The Scylla Manager version of the dashboards (start-all.sh -M). \"none\": no manager dashboards. Missing: the default manager version of the release.",
           "type": "string",
           "minLength": 1
         },
@@ -156,11 +156,15 @@
       "required": ["scylla"],
       "properties": {
         "scylla": {
-          "description": "The ScyllaDB nodes, as hosts without a port. Written as scylla_servers.yml, node_exporter_servers.yml and scylla_manager_agents.yml; each job adds its own port (9180, 9100, 5090).",
+          "description": "The ScyllaDB nodes, as hosts without a port. Written as scylla_servers.yml, node_exporter_servers.yml and scylla_manager_agents.yml; each job adds its own port (9180, 9100, 5090). targets.node_exporter and targets.manager_agent, when set, replace their copy.",
           "$ref": "#/definitions/file_sd"
         },
         "node_exporter": {
           "description": "node_exporter targets, written as node_exporter_servers.yml in place of the copy of scylla. A target keeps its port; 9100 is added to one without. instance is the address without its port; an entry whose address differs from its ScyllaDB node sets instance in its labels.",
+          "$ref": "#/definitions/file_sd"
+        },
+        "manager_agent": {
+          "description": "Scylla Manager agent targets, written as scylla_manager_agents.yml in place of the copy of scylla. A target keeps its port; 5090 is added to one without.",
           "$ref": "#/definitions/file_sd"
         },
         "manager": {
