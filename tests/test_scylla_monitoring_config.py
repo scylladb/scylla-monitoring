@@ -647,6 +647,45 @@ def test_force_removes_dropins():
 
 
 
+def test_compose_checked_before_apply():
+    """In compose mode, make_compose.py builds the stack while the file is prepared:
+    its error rejects the file before anything runs, and prometheus.yml is
+    rendered with its prometheus-config.sh command."""
+    import make_compose
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        stack.compose = True
+        renders = []
+        recorded = host.run
+
+        def run(cmd, **kwargs):
+            if cmd[0] == "./prometheus-config.sh" and "--output-dir" in cmd:
+                renders.append((cmd, kwargs.get("env")))
+            return recorded(cmd, **kwargs)
+        host.run = run
+        command = ["./prometheus-config.sh", "-m", "aalert:9093", "-G", "agraf:3000"]
+
+        def build(argv, environ, cwd):
+            if "-l" in argv:
+                raise smc.ConfigError("Port mapping is not supported with host network")
+            result = make_compose.Stack()
+            result.commands = [command]
+            return result
+        stack.compose_build = build
+        cfg = example()
+        cfg["stack"]["extra_flags"] = ["-l", "-m 9094"]
+        assert apply(args, stack, host, cfg) == 1
+        status = json.load(open(os.path.join(tmp, "config-state/status.json")))
+        assert status["state"] == "rejected" and status["error"].startswith("make_compose.py: Port mapping")
+        assert host.commands == [] and not os.path.exists(os.path.join(tmp, "config-state/applied.yaml"))
+        cfg["stack"]["extra_flags"] = []
+        renders.clear()
+        smc.prepare(args, smc.make_dirs(args), write_config(tmp, cfg), host.run, stack)
+        cmd, env = renders[0]
+        assert cmd[:-2] == command and cmd[-2] == "--output-dir" and env["PRIVATE_IP"] == cfg["tls"]["listen_ip"]
+
+
 def test_apply_compose():
     import make_compose
     with tempfile.TemporaryDirectory() as tmp:
