@@ -5,10 +5,12 @@
 # Run: python3 tests/test_scylla_monitoring_config.py
 import contextlib
 import copy
+import glob
 import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -176,6 +178,133 @@ def test_rules():
         assert yaml.safe_load(open(os.path.join(tmp, "targets/scylla_manager_servers.yml"))) == []
 
 
+def test_manager_agent_targets():
+    """targets.manager_agent replaces the copy of scylla; the rest stays as the golden files."""
+    golden = tree(os.path.join(GOLDEN, "staging"))
+    cfg = example()
+    cfg["targets"]["manager_agent"] = [{"targets": ["10.0.0.1:26090", "10.0.0.2"], "labels": {"cluster": "cluster1"}}]
+    with tempfile.TemporaryDirectory() as tmp:
+        smc.render(cfg, tmp)
+        rendered = tree(tmp)
+    assert yaml.safe_load(rendered.pop("targets/scylla_manager_agents.yml")) == cfg["targets"]["manager_agent"]
+    assert golden.pop("targets/scylla_manager_agents.yml") == golden["targets/scylla_servers.yml"]
+    assert rendered == golden
+    # the manager_agent job adds 5090 only to a target without a port
+    job = [j for j in yaml.safe_load(open("prometheus/prometheus.yml.template"))["scrape_configs"]
+           if j["job_name"] == "manager_agent"][0]
+    port, address = job["relabel_configs"][:2]
+    assert re.fullmatch(port["regex"], "10.0.0.1:26090") and not re.fullmatch(port["regex"], "10.0.0.2")
+    assert address["replacement"] == "${1}:5090" and not re.fullmatch(address["regex"], "10.0.0.1:26090;::")
+
+
+def test_start_all_values():
+    """Values a writer sends as start-all.sh flags today reach start-all.sh unchanged."""
+    cfg = example()
+    cfg["stack"]["manager_version"] = "none"
+    cfg["storage"] = {"prometheus_dir": "/data/prometheus", "alertmanager_dir": "/data/alertmanager",
+                      "retention_days": 30}
+    cfg["cluster"] = "#1234"
+    with tempfile.TemporaryDirectory() as tmp:
+        smc.load(write_config(tmp, cfg))
+    argv, _ = smc.normalize(cfg, DIRS)
+    assert values(argv, "-M") == ["none"]
+    assert values(argv, "-d") == ["/data/prometheus"] and values(argv, "-f") == ["/data/alertmanager"]
+    assert "-G" not in argv
+    assert "--storage.tsdb.retention.time=30d" in values(argv, "-b")
+    assert values(argv, "--cluster-label") == ["#1234"]
+    # prometheus-config.sh renders the label quoted, and promtool accepts it
+    with tempfile.TemporaryDirectory() as tmp:
+        staging = render_and_check(tmp, argv)
+        prom = yaml.safe_load(open(os.path.join(staging, "prometheus", "prometheus.yml")))
+        assert prom["global"]["external_labels"]["cluster"] == "#1234"
+        jobs = {j["job_name"]: j for j in prom["scrape_configs"]}
+        for job in ("prometheus", "grafana"):
+            assert jobs[job]["static_configs"][0]["labels"]["cluster"] == "#1234"
+
+
+def stack_copy(tmp):
+    """The files prometheus-config.sh needs, in a monitoring directory of its own."""
+    os.makedirs(os.path.join(tmp, "prometheus"))
+    for f in ["prometheus-config.sh", "versions.sh", "network-lib.sh"] + glob.glob("prometheus/*.template"):
+        shutil.copy2(f, os.path.join(tmp, f))
+    return tmp
+
+
+def render_and_check(tmp, argv):
+    """Renders prometheus.yml into a staging directory as prepare does, and
+    checks it with promtool when the image is pulled. Returns the staging directory."""
+    monitoring = stack_copy(os.path.join(tmp, "m"))
+    # a space in the path checks that prometheus-config.sh quotes --output-dir
+    staging = os.path.join(tmp, "staging dir")
+    smc.render_prometheus_config(argv, staging, monitoring)
+    assert not os.path.exists(os.path.join(monitoring, "prometheus", "build"))
+    versions = smc.stack_versions(monitoring)
+    if shutil.which("docker") and subprocess.run(["docker", "image", "inspect", "prom/prometheus:" + versions[0]],
+                                                 capture_output=True).returncode == 0:
+        smc.validate(staging, versions)
+    else:
+        print("skipped promtool: docker or prom/prometheus:%s is not available" % versions[0])
+    return staging
+
+
+def test_validate_prometheus_config():
+    """prepare renders prometheus.yml into staging; promtool's error rejects the file."""
+    argv, _ = smc.normalize(example(), DIRS)
+    assert smc.prometheus_config_cmd(argv) == ["./prometheus-config.sh", "--cluster-label", "cluster1", "-D",
+                                               "--restart=unless-stopped", "-A", "127.0.0.1", "--vector-search"]
+    with tempfile.TemporaryDirectory() as tmp:
+        staging = render_and_check(tmp, argv)
+        calls = []
+
+        def fake(cmd, **kwargs):
+            calls.append(cmd)
+            return SimpleNamespace(returncode=1, stdout="Checking /c/prometheus.yml\n  FAILED: parsing YAML file\n")
+        assert rejected(smc.validate, staging, ("v1", "v2"), fake) == "prometheus config: FAILED: parsing YAML file"
+        assert calls[0][-4:] == ["check", "config", "--syntax-only", "/c/prometheus.yml"]
+        fail = lambda cmd, **kwargs: SimpleNamespace(returncode=1, stdout="illegal option: -x\n")
+        assert rejected(smc.render_prometheus_config, argv, staging, tmp, fail) == \
+            "prometheus config: prometheus-config.sh failed: illegal option: -x"
+        # a last option without its value fails, and leaves prometheus/build alone
+        monitoring = os.path.join(tmp, "m")
+        res = subprocess.run(["./prometheus-config.sh", "-m", "aalert:9093", "--output-dir"], cwd=monitoring,
+                             capture_output=True, text=True)
+        assert res.returncode == 1 and "No value given to --output-dir" in res.stderr
+        assert not os.path.exists(os.path.join(monitoring, "prometheus", "build"))
+
+
+def test_no_manager():
+    """manager_version none and --no-manager reach start-all.sh as -M none; Prometheus
+    then scrapes neither the manager nor its agents, and no manager dashboards load."""
+    cfg = example()
+    cfg["stack"]["manager_version"] = "none"
+    argv, _ = smc.normalize(cfg, DIRS)
+    assert values(argv, "-M") == ["none"] and "--no-manager" in smc.prometheus_config_cmd(argv)
+    argv, _ = with_extra("--no-manager")
+    assert values(argv, "-M") == ["none"] and "--no-manager" not in argv
+    # no manager or agent target files reach the live target directory
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        assert apply(args, stack, host, example()) == 0
+        live = os.path.join(tmp, "config-build/live/targets")
+        assert "scylla_manager_servers.yml" in os.listdir(live)
+        assert apply(args, stack, host, cfg) == 0
+        assert sorted(os.listdir(live)) == ["node_exporter_servers.yml", "scylla_servers.yml", "vector_search_servers.yml"]
+    with tempfile.TemporaryDirectory() as tmp:
+        jobs = lambda staging: {j["job_name"] for j in yaml.safe_load(
+            open(os.path.join(staging, "prometheus", "prometheus.yml")))["scrape_configs"]}
+        assert {"manager_agent", "scylla_manager"} <= jobs(render_and_check(os.path.join(tmp, "with"), ["-M", "3.5"]))
+        without = jobs(render_and_check(os.path.join(tmp, "without"), argv))
+        assert not {"manager_agent", "scylla_manager"} & without and {"scylla", "node_exporter"} <= without
+        # generate-dashboards.sh -t writes the dashboard loaders only
+        for manager, loaders in (("3.5", ["load.2025.3.yaml", "load.manager_3.yaml"]), ("none", ["load.2025.3.yaml"])):
+            out = os.path.join(tmp, "dashboards-" + manager)
+            os.makedirs(out)
+            subprocess.run(["./generate-dashboards.sh", "-t", "-v", "2025.3", "-M", manager, "-B", out],
+                           check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            assert sorted(os.listdir(out)) == loaders, (manager, os.listdir(out))
+
+
 def test_validate():
     calls = []
 
@@ -290,6 +419,7 @@ def test_plan():
     assert smc.plan(None, old) == smc.FIRST_APPLY
     assert actions(lambda c: c["targets"]["scylla"][0]["targets"].append("10.0.0.9")) == set()
     assert actions(lambda c: c["targets"]["vector_search"][0]["targets"].append("10.0.0.9")) == set()
+    assert actions(lambda c: c["targets"].update(manager_agent=[{"targets": ["10.0.0.1:26090"]}])) == set()
     assert actions(lambda c: c["targets"].pop("vector_search")) == {"restart_stack"}
     assert actions(lambda c: c["alert_rules"]["groups"].append({"name": "x", "rules": []})) == {"reload_prometheus"}
     assert actions(lambda c: c.pop("alert_rules")) == {"restart_stack"}
@@ -325,6 +455,9 @@ class FakeHost:
         if cmd[0] == "bash":
             return SimpleNamespace(returncode=0, stdout="agraf\n")
         if cmd[0] == "docker" and cmd[1] == "run":
+            return SimpleNamespace(returncode=0, stdout="")
+        if cmd[0] == "./prometheus-config.sh" and "--output-dir" in cmd:
+            # the render validate checks; test_validate_prometheus_config covers it
             return SimpleNamespace(returncode=0, stdout="")
         self.commands.append((cmd, kwargs.get("input")))
         return SimpleNamespace(returncode=1 if os.path.basename(cmd[0]) in self.fail else 0, stdout="")
@@ -514,6 +647,45 @@ def test_force_removes_dropins():
 
 
 
+def test_compose_checked_before_apply():
+    """In compose mode, make_compose.py builds the stack while the file is prepared:
+    its error rejects the file before anything runs, and prometheus.yml is
+    rendered with its prometheus-config.sh command."""
+    import make_compose
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        stack.compose = True
+        renders = []
+        recorded = host.run
+
+        def run(cmd, **kwargs):
+            if cmd[0] == "./prometheus-config.sh" and "--output-dir" in cmd:
+                renders.append((cmd, kwargs.get("env")))
+            return recorded(cmd, **kwargs)
+        host.run = run
+        command = ["./prometheus-config.sh", "-m", "aalert:9093", "-G", "agraf:3000"]
+
+        def build(argv, environ, cwd):
+            if "-l" in argv:
+                raise smc.ConfigError("Port mapping is not supported with host network")
+            result = make_compose.Stack()
+            result.commands = [command]
+            return result
+        stack.compose_build = build
+        cfg = example()
+        cfg["stack"]["extra_flags"] = ["-l", "-m 9094"]
+        assert apply(args, stack, host, cfg) == 1
+        status = json.load(open(os.path.join(tmp, "config-state/status.json")))
+        assert status["state"] == "rejected" and status["error"].startswith("make_compose.py: Port mapping")
+        assert host.commands == [] and not os.path.exists(os.path.join(tmp, "config-state/applied.yaml"))
+        cfg["stack"]["extra_flags"] = []
+        renders.clear()
+        smc.prepare(args, smc.make_dirs(args), write_config(tmp, cfg), host.run, stack)
+        cmd, env = renders[0]
+        assert cmd[:-2] == command and cmd[-2] == "--output-dir" and env["PRIVATE_IP"] == cfg["tls"]["listen_ip"]
+
+
 def test_apply_compose():
     import make_compose
     with tempfile.TemporaryDirectory() as tmp:
@@ -592,6 +764,23 @@ def test_several_config_files():
             assert os.stat(path).st_mode & 0o777 == 0o600
         assert not os.path.exists(os.path.join(tmp, "missing"))
         assert os.path.exists(os.path.join(args.state_dir, "applied.yaml"))
+
+
+def test_status_in_new_config_dir():
+    """A config directory the writer just created, 0700: the status appears beside the file after the first apply."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        config_dir = os.path.join(tmp, "home", "scylla-monitoring")
+        os.makedirs(config_dir, mode=0o700)
+        os.chmod(config_dir, 0o700)
+        path = write_config(config_dir, example())
+        os.chmod(path, 0o600)
+        args.config_file = [path]
+        rc, _ = quiet(smc.apply_once, args, stack, host.run)
+        status = os.path.join(config_dir, "scylla-monitoring.status.json")
+        assert rc == 0 and json.load(open(status))["state"] == "applied"
+        assert os.stat(status).st_mode & 0o777 == 0o600
 
 
 def test_run_loop():

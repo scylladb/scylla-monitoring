@@ -183,6 +183,10 @@ done
 
 IFS=','
 for oring_v in $MANAGER_VERSION; do
+	# none: no Scylla Manager, so no manager dashboards
+	if [ "$oring_v" = "none" ]; then
+		continue
+	fi
 	if [ -e grafana/scylla-manager.template.json ]; then
 	    v=$(echo $oring_v | cut -d'.' -f1)
 		VERDIR="grafana/build/manager_$v"

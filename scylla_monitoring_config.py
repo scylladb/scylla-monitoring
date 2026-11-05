@@ -67,6 +67,7 @@ OPTIONS = {
     "--archive": (True, "stack"), "--cluster-label": (True, "prometheus"),
     "--verbose": (False, "stack"), "--no-loki": (False, "loki"), "--no-log-collector": (False, "loki"),
     "--no-alertmanager": (False, "alertmanager"), "--quick-startup": (False, "stack"),
+    "--no-manager": (False, "stack"),
     "--no-renderer": (False, "grafana"), "--thanos-sc": (False, "thanos-sc"),
     "--thanos": (False, "thanos"), "--local-thanos": (False, "thanos"),
     "--no-thanos-datasource": (False, "grafana"), "--auto-restart": (False, "stack"),
@@ -84,8 +85,10 @@ WATCHER_OWNED = {"-s", "-n", "-N", "-R", "-r", "--manager-agents", "--servers",
                  "--target-directory", "--vector-store", "--vector-search", "--cluster-label",
                  "--archive", "--compose", "-h", "--help"}
 
-# Options written another way: --no-loki is --log-collector none.
-CANONICAL = {"--no-loki": ("--log-collector", "none"), "--no-log-collector": ("--log-collector", "none")}
+# Options written another way: --no-loki is --log-collector none, and
+# --no-manager is -M none.
+CANONICAL = {"--no-loki": ("--log-collector", "none"), "--no-log-collector": ("--log-collector", "none"),
+             "--no-manager": ("-M", "none")}
 
 # Options whose value is a secret go to the start scripts in the environment.
 SECRET_OPTIONS = {"-a": "GRAFANA_ADMIN_PASSWORD"}
@@ -332,19 +335,22 @@ def write_file(path, text, mode=0o644):
     os.chmod(path, mode)
 
 
-def render(cfg, staging):
-    """Writes every derived file into the staging directory."""
-    for sub in ("targets", "rules", "alertmanager", "certs", "systemd"):
+def render(cfg, staging, no_manager=False):
+    """Writes every derived file into the staging directory; without Scylla
+    Manager (no_manager), no manager or agent targets."""
+    for sub in ("targets", "rules", "alertmanager", "certs", "systemd", "prometheus"):
         shutil.rmtree(os.path.join(staging, sub), ignore_errors=True)
     targets = cfg["targets"]
     scylla = dump_yaml(targets["scylla"])
     files = {
         "targets/scylla_servers.yml": scylla,
         "targets/node_exporter_servers.yml": dump_yaml(targets["node_exporter"]) if "node_exporter" in targets else scylla,
-        "targets/scylla_manager_agents.yml": scylla,
-        # An empty list, so Prometheus has a file to read without a manager.
-        "targets/scylla_manager_servers.yml": dump_yaml(targets.get("manager", [])),
     }
+    if not no_manager:
+        files["targets/scylla_manager_agents.yml"] = \
+            dump_yaml(targets["manager_agent"]) if "manager_agent" in targets else scylla
+        # An empty list, so Prometheus has a file to read without targets.manager.
+        files["targets/scylla_manager_servers.yml"] = dump_yaml(targets.get("manager", []))
     if "vector_search" in targets:
         files["targets/vector_search_servers.yml"] = dump_yaml(targets["vector_search"])
     if "alert_rules" in cfg:
@@ -380,11 +386,46 @@ def tool_output(text):
     return text[:500] or "failed"
 
 
+def prometheus_config_cmd(argv):
+    """The prometheus-config.sh command for the start-all.sh arguments, with
+    the Alertmanager and Grafana addresses worked out as start-all.sh does."""
+    cmd = ["./prometheus-config.sh"]
+    for opt, to in (("-L", "-L"), ("-T", "-T"), ("--evaluation-interval", "-E"), ("--scrap", "--scrap"),
+                    ("--cluster-label", "--cluster-label"), ("--stack", "-s"), ("-D", "-D"), ("-A", "-A"),
+                    ("-m", "--alertmanager-port"), ("-g", "--grafana-port")):
+        for value in option_values(argv, opt):
+            cmd += [to, value]
+    for flag in ("--no-cas", "--no-cdc", "--no-cas-cdc", "--native-histogram", "--vector-search",
+                 "--no-alertmanager"):
+        if flag in argv:
+            cmd.append(flag)
+    if option(argv, "-M") == "none":
+        cmd.append("--no-manager")
+    if "-l" in argv:
+        cmd += ["-D", "--net=host"]
+    return cmd
+
+
+def render_prometheus_config(argv, staging, monitoring_dir, run=subprocess.run, cmd=None, env=None):
+    """Renders prometheus.yml into the staging directory, so validate checks it
+    before anything restarts. cmd is the prometheus-config.sh command, by
+    default the one start-all.sh runs for argv; env its environment."""
+    out = os.path.join(staging, "prometheus")
+    res = run((cmd or prometheus_config_cmd(argv)) + ["--output-dir", out], cwd=monitoring_dir, env=env,
+              stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    if res.returncode != 0:
+        raise ConfigError("prometheus config: prometheus-config.sh failed: %s" % tool_output(res.stdout))
+
+
 def validate(staging, versions, run=subprocess.run):
-    """Checks the staged rules and Alertmanager config with the stack's own tools."""
+    """Checks the staged Prometheus config, rules and Alertmanager config with
+    the stack's own tools."""
     prometheus, alertmanager = versions
     user = "%d:%d" % (os.getuid(), os.getgid())
     checks = [
+        # the rules and target files are checked on their own, or written by the apply
+        ("prometheus config", "prometheus", "prom/prometheus:" + prometheus, "promtool",
+         ["check", "config", "--syntax-only", "/c/prometheus.yml"]),
         ("alert_rules", "rules", "prom/prometheus:" + prometheus, "promtool", ["check", "rules", "/c/prometheus.rules.yml"]),
         ("alertmanager_config", "alertmanager", "prom/alertmanager:" + alertmanager, "amtool", ["check-config", "/c/config.yml"]),
     ]
@@ -499,8 +540,10 @@ def now():
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def prepare(args, dirs, path, run=subprocess.run):
-    """Loads, normalizes, renders and validates the file.
+def prepare(args, dirs, path, run=subprocess.run, stack=None):
+    """Loads, normalizes, renders and validates the file. In compose mode
+    (stack.compose), make_compose.py builds the stack too, so its checks
+    reject the file, and prometheus.yml is rendered with its command.
 
     Returns (cfg, argv, env); raises ConfigError with the generation, when the
     file has one, as its second argument."""
@@ -516,7 +559,15 @@ def prepare(args, dirs, path, run=subprocess.run):
         build = os.path.dirname(dirs.staging)
         os.makedirs(build, exist_ok=True)
         os.chmod(build, 0o700)
-        render(cfg, dirs.staging)
+        render(cfg, dirs.staging, option(argv, "-M") == "none")
+        cmd = environ = None
+        if stack is not None and stack.compose:
+            try:
+                built, environ = stack.compose_config(argv, env, cfg)
+            except ConfigError as e:
+                raise ConfigError("make_compose.py: %s" % e.args[0])
+            cmd = next(c for c in built.commands if c[0] == "./prometheus-config.sh")
+        render_prometheus_config(argv, dirs.staging, dirs.monitoring, run, cmd, environ)
         validate(dirs.staging, stack_versions(dirs.monitoring), run)
     except ConfigError as e:
         raise ConfigError(e.args[0], cfg["generation"])
@@ -747,8 +798,14 @@ class Stack:
                            run=lambda cmd, cwd=None, env=None, check=True: self.sh(cmd, env))
 
     def compose_stack(self, argv, env, cfg):
+        try:
+            return self.compose_config(argv, env, cfg)
+        except ConfigError as e:
+            raise ApplyError("make_compose.py: %s" % e)
+
+    def compose_config(self, argv, env, cfg):
         """make_compose.py's stack for argv, and the environment it runs in;
-        traefik is one of its services when TLS is on."""
+        traefik is one of its services when TLS is on. Raises ConfigError."""
         if self.compose_build is None:
             import make_compose
             self.compose_build = make_compose.build
@@ -758,10 +815,7 @@ class Stack:
             argv = argv + ["--traefik"]
             environ.update(PRIVATE_IP=tls["listen_ip"], CERT_DIR=self.args.cert_dir,
                            TRAEFIK_GENERATION=str(cfg["generation"]))
-        try:
-            return self.compose_build(argv, environ=environ, cwd=self.dirs.monitoring), environ
-        except ConfigError as e:
-            raise ApplyError("make_compose.py: %s" % e)
+        return self.compose_build(argv, environ=environ, cwd=self.dirs.monitoring), environ
 
     def render_prometheus_config(self, argv, env=None, cfg=None):
         if self.compose:
@@ -769,19 +823,7 @@ class Stack:
             stack, environ = self.compose_stack(argv, env or {}, cfg or {})
             self.sh(next(c for c in stack.commands if c[0] == "./prometheus-config.sh"), environ)
             return
-        cmd = ["./prometheus-config.sh"]
-        for opt, to in (("-L", "-L"), ("-T", "-T"), ("--evaluation-interval", "-E"), ("--scrap", "--scrap"),
-                        ("--cluster-label", "--cluster-label"), ("--stack", "-s"), ("-D", "-D"), ("-A", "-A"),
-                        ("-m", "--alertmanager-port"), ("-g", "--grafana-port")):
-            for value in option_values(argv, opt):
-                cmd += [to, value]
-        for flag in ("--no-cas", "--no-cdc", "--no-cas-cdc", "--native-histogram", "--vector-search",
-                     "--no-alertmanager"):
-            if flag in argv:
-                cmd.append(flag)
-        if "-l" in argv:
-            cmd += ["-D", "--net=host"]
-        self.sh(cmd)
+        self.sh(prometheus_config_cmd(argv))
 
     def reload(self, argv, name):
         url = "http://%s:%s/-/reload" % (self.host(argv), self.ports(argv)[name])
@@ -986,7 +1028,7 @@ def apply_once(args, stack=None, run=subprocess.run, path=None):
     if text == applied_text and not force:
         return 0
     try:
-        new, argv, env = prepare(args, dirs, path, run)
+        new, argv, env = prepare(args, dirs, path, run, stack)
     except ConfigError as e:
         return rejected(dirs, e)
     previous = yaml.safe_load(applied_text) if applied_text else None
@@ -1001,7 +1043,7 @@ def apply_once(args, stack=None, run=subprocess.run, path=None):
         # back to the previous configuration, still in applied.yaml; a first
         # apply, since the failed one may have stopped anywhere
         try:
-            old_cfg, old_argv, old_env = prepare(args, dirs, applied_path(dirs), run)
+            old_cfg, old_argv, old_env = prepare(args, dirs, applied_path(dirs), run, stack)
             stack.apply(None, old_cfg, old_argv, old_env, new)
         except (ApplyError, ConfigError) as e:
             return failed(dirs, text, new, "%s; revert failed: %s" % (error, e.args[0]), ran_traefik)

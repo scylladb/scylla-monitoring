@@ -110,6 +110,37 @@ def test_every_option_handled():
     assert not missing, missing
 
 
+def test_no_manager():
+    """--no-manager, -M none and NO_MANAGER=1: no manager dashboards or scrapes; --no-manager wins
+    over -M in any order, and -M over NO_MANAGER."""
+    def commands(argv, **environ):
+        cmds = build(["-v", "2025.3"] + argv + TARGETS, **environ).commands
+        prom = next(c for c in cmds if c[0] == "./prometheus-config.sh")
+        managers = [c[c.index("-M") + 1] for c in cmds if c[0] == "./generate-dashboards.sh"]
+        return "--no-manager" in prom, managers
+    for argv, environ in ((["--no-manager"], {}), (["-M", "none"], {}), ([], {"NO_MANAGER": "1"}),
+                          (["-M", "3.5", "--no-manager"], {}), (["--no-manager", "-M", "3.5"], {})):
+        no_manager, managers = commands(argv, **environ)
+        assert no_manager and managers and set(managers) == {"none"}, (argv, environ)
+    no_manager, managers = commands(["-M", "3.5"], NO_MANAGER="1")
+    assert not no_manager and set(managers) == {"3.5"}
+    assert not commands([])[0]
+    # no manager or agent target files, not even a missing -N
+    mounts = lambda argv: [m for m in build(["-v", "2025.3", "-s", os.path.join(DATA, "scylla_servers.yml")] + argv)
+                           .compose["services"]["aprom"]["volumes"] if "/targets/" in m]
+    assert any(m.endswith("scylla_manager_servers.yml") for m in mounts([]))
+    without = mounts(["--no-manager", "-N", "/nonexistent/scylla_manager_servers.yml"])
+    assert [m.rsplit("/", 1)[1] for m in without] == ["scylla_servers.yml", "node_exporter_servers.yml"], without
+    # an archive keeps the manager version its scylla.txt recorded, unless --no-manager
+    with tempfile.TemporaryDirectory() as tmp:
+        with open(os.path.join(tmp, "scylla.txt"), "w") as f:
+            f.write('VERSIONS="2025.3"\nMANAGER_VERSION="3.5"\n')
+        for argv, manager in (([], "3.5"), (["--no-manager"], "none")):
+            cmds = build(["--archive", tmp] + argv + TARGETS).commands
+            assert ("--no-manager" in next(c for c in cmds if c[0] == "./prometheus-config.sh")) == (manager == "none")
+            assert {c[c.index("-M") + 1] for c in cmds if c[0] == "./generate-dashboards.sh"} == {manager}, argv
+
+
 def test_secrets_stay_out_of_compose():
     stack = build(CASES["grafana"] + ["--datadog-api-keys", "dd-key"])
     text = yaml.safe_dump(stack.compose)
