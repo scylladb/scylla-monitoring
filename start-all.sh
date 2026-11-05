@@ -718,6 +718,11 @@ none)
 	exit 1
 	;;
 esac
+# -M none and NO_MANAGER=1 are --no-manager, which an archive's scylla.txt
+# does not override
+if [ "$MANAGER_VERSION" = "none" ]; then
+	NO_MANAGER_ARG=1
+fi
 if [ "$ARCHIVE" == "1" ]; then
 	PROMETHEUS_COMMAND_LINE_OPTIONS_ARRAY+=(--storage.tsdb.retention.time=100y)
 	RUN_LOKI=0
@@ -740,8 +745,8 @@ if [ "$ARCHIVE" == "1" ]; then
 	fi
 fi
 
-# --no-manager wins over -M, whatever their order, and over the version an
-# archive's scylla.txt recorded
+# --no-manager wins over -M, whatever their order; --no-manager, -M none and
+# NO_MANAGER=1 win over the version an archive's scylla.txt recorded
 if [ "$NO_MANAGER_ARG" = "1" ]; then
 	MANAGER_VERSION="none"
 fi

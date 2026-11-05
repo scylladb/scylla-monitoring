@@ -131,12 +131,14 @@ def test_no_manager():
     assert any(m.endswith("scylla_manager_servers.yml") for m in mounts([]))
     without = mounts(["--no-manager", "-N", "/nonexistent/scylla_manager_servers.yml"])
     assert [m.rsplit("/", 1)[1] for m in without] == ["scylla_servers.yml", "node_exporter_servers.yml"], without
-    # an archive keeps the manager version its scylla.txt recorded, unless --no-manager
+    # an archive keeps the manager version its scylla.txt recorded, unless
+    # --no-manager, -M none or NO_MANAGER=1
     with tempfile.TemporaryDirectory() as tmp:
         with open(os.path.join(tmp, "scylla.txt"), "w") as f:
             f.write('VERSIONS="2025.3"\nMANAGER_VERSION="3.5"\n')
-        for argv, manager in (([], "3.5"), (["--no-manager"], "none")):
-            cmds = build(["--archive", tmp] + argv + TARGETS).commands
+        for argv, manager, env in (([], "3.5", {}), (["--no-manager"], "none", {}), (["-M", "none"], "none", {}),
+                                   ([], "none", {"NO_MANAGER": "1"})):
+            cmds = build(["--archive", tmp] + argv + TARGETS, **env).commands
             assert ("--no-manager" in next(c for c in cmds if c[0] == "./prometheus-config.sh")) == (manager == "none")
             assert {c[c.index("-M") + 1] for c in cmds if c[0] == "./generate-dashboards.sh"} == {manager}, argv
 
