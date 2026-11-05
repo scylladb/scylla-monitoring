@@ -272,6 +272,39 @@ def test_validate_prometheus_config():
         assert not os.path.exists(os.path.join(monitoring, "prometheus", "build"))
 
 
+def test_no_manager():
+    """manager_version none and --no-manager reach start-all.sh as -M none; Prometheus
+    then scrapes neither the manager nor its agents, and no manager dashboards load."""
+    cfg = example()
+    cfg["stack"]["manager_version"] = "none"
+    argv, _ = smc.normalize(cfg, DIRS)
+    assert values(argv, "-M") == ["none"] and "--no-manager" in smc.prometheus_config_cmd(argv)
+    argv, _ = with_extra("--no-manager")
+    assert values(argv, "-M") == ["none"] and "--no-manager" not in argv
+    # no manager or agent target files reach the live target directory
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        assert apply(args, stack, host, example()) == 0
+        live = os.path.join(tmp, "config-build/live/targets")
+        assert "scylla_manager_servers.yml" in os.listdir(live)
+        assert apply(args, stack, host, cfg) == 0
+        assert sorted(os.listdir(live)) == ["node_exporter_servers.yml", "scylla_servers.yml", "vector_search_servers.yml"]
+    with tempfile.TemporaryDirectory() as tmp:
+        jobs = lambda staging: {j["job_name"] for j in yaml.safe_load(
+            open(os.path.join(staging, "prometheus", "prometheus.yml")))["scrape_configs"]}
+        assert {"manager_agent", "scylla_manager"} <= jobs(render_and_check(os.path.join(tmp, "with"), ["-M", "3.5"]))
+        without = jobs(render_and_check(os.path.join(tmp, "without"), argv))
+        assert not {"manager_agent", "scylla_manager"} & without and {"scylla", "node_exporter"} <= without
+        # generate-dashboards.sh -t writes the dashboard loaders only
+        for manager, loaders in (("3.5", ["load.2025.3.yaml", "load.manager_3.yaml"]), ("none", ["load.2025.3.yaml"])):
+            out = os.path.join(tmp, "dashboards-" + manager)
+            os.makedirs(out)
+            subprocess.run(["./generate-dashboards.sh", "-t", "-v", "2025.3", "-M", manager, "-B", out],
+                           check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            assert sorted(os.listdir(out)) == loaders, (manager, os.listdir(out))
+
+
 def test_validate():
     calls = []
 

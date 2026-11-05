@@ -67,6 +67,7 @@ OPTIONS = {
     "--archive": (True, "stack"), "--cluster-label": (True, "prometheus"),
     "--verbose": (False, "stack"), "--no-loki": (False, "loki"), "--no-log-collector": (False, "loki"),
     "--no-alertmanager": (False, "alertmanager"), "--quick-startup": (False, "stack"),
+    "--no-manager": (False, "stack"),
     "--no-renderer": (False, "grafana"), "--thanos-sc": (False, "thanos-sc"),
     "--thanos": (False, "thanos"), "--local-thanos": (False, "thanos"),
     "--no-thanos-datasource": (False, "grafana"), "--auto-restart": (False, "stack"),
@@ -84,8 +85,10 @@ WATCHER_OWNED = {"-s", "-n", "-N", "-R", "-r", "--manager-agents", "--servers",
                  "--target-directory", "--vector-store", "--vector-search", "--cluster-label",
                  "--archive", "--compose", "-h", "--help"}
 
-# Options written another way: --no-loki is --log-collector none.
-CANONICAL = {"--no-loki": ("--log-collector", "none"), "--no-log-collector": ("--log-collector", "none")}
+# Options written another way: --no-loki is --log-collector none, and
+# --no-manager is -M none.
+CANONICAL = {"--no-loki": ("--log-collector", "none"), "--no-log-collector": ("--log-collector", "none"),
+             "--no-manager": ("-M", "none")}
 
 # Options whose value is a secret go to the start scripts in the environment.
 SECRET_OPTIONS = {"-a": "GRAFANA_ADMIN_PASSWORD"}
@@ -332,8 +335,9 @@ def write_file(path, text, mode=0o644):
     os.chmod(path, mode)
 
 
-def render(cfg, staging):
-    """Writes every derived file into the staging directory."""
+def render(cfg, staging, no_manager=False):
+    """Writes every derived file into the staging directory; without Scylla
+    Manager (no_manager), no manager or agent targets."""
     for sub in ("targets", "rules", "alertmanager", "certs", "systemd", "prometheus"):
         shutil.rmtree(os.path.join(staging, sub), ignore_errors=True)
     targets = cfg["targets"]
@@ -341,10 +345,12 @@ def render(cfg, staging):
     files = {
         "targets/scylla_servers.yml": scylla,
         "targets/node_exporter_servers.yml": dump_yaml(targets["node_exporter"]) if "node_exporter" in targets else scylla,
-        "targets/scylla_manager_agents.yml": dump_yaml(targets["manager_agent"]) if "manager_agent" in targets else scylla,
-        # An empty list, so Prometheus has a file to read without a manager.
-        "targets/scylla_manager_servers.yml": dump_yaml(targets.get("manager", [])),
     }
+    if not no_manager:
+        files["targets/scylla_manager_agents.yml"] = \
+            dump_yaml(targets["manager_agent"]) if "manager_agent" in targets else scylla
+        # An empty list, so Prometheus has a file to read without targets.manager.
+        files["targets/scylla_manager_servers.yml"] = dump_yaml(targets.get("manager", []))
     if "vector_search" in targets:
         files["targets/vector_search_servers.yml"] = dump_yaml(targets["vector_search"])
     if "alert_rules" in cfg:
@@ -393,6 +399,8 @@ def prometheus_config_cmd(argv):
                  "--no-alertmanager"):
         if flag in argv:
             cmd.append(flag)
+    if option(argv, "-M") == "none":
+        cmd.append("--no-manager")
     if "-l" in argv:
         cmd += ["-D", "--net=host"]
     return cmd
@@ -548,7 +556,7 @@ def prepare(args, dirs, path, run=subprocess.run):
         build = os.path.dirname(dirs.staging)
         os.makedirs(build, exist_ok=True)
         os.chmod(build, 0o700)
-        render(cfg, dirs.staging)
+        render(cfg, dirs.staging, option(argv, "-M") == "none")
         render_prometheus_config(argv, dirs.staging, dirs.monitoring, run)
         validate(dirs.staging, stack_versions(dirs.monitoring), run)
     except ConfigError as e:

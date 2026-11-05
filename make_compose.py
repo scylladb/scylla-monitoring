@@ -264,7 +264,9 @@ def listed(v, name):
 def options(argv, v, paths):
     """start-all.sh's option handling, over the variables from env.sh."""
     o = {
-        "versions": v.get("VERSIONS", ""), "manager_version": v.get("MANAGER_VERSION", ""),
+        "versions": v.get("VERSIONS", ""),
+        # NO_MANAGER=1 is --no-manager; -M on the command line overrides it
+        "manager_version": "none" if v.get("NO_MANAGER") == "1" else v.get("MANAGER_VERSION", ""),
         "data_dir": v.get("DATA_DIR", ""), "grafana_dir": "", "bind": v.get("BIND_ADDRESS", ""),
         "am_rules": "", "prom_rules": v.get("PROMETHEUS_RULES", ""),
         # start-all.sh keeps GRAFANA_PORT as its flag, "-g <port>"
@@ -292,7 +294,7 @@ def options(argv, v, paths):
         "limits": {k: val for k, val in v.get("DOCKER_LIMITS", {}).items()},
         "params": {k: val for k, val in v.get("DOCKER_PARAMS", {}).items()},
         "docker_param": v.get("DOCKER_PARAM", ""), "docker_param_from_file": bool(v.get("DOCKER_PARAM")),
-        "traefik": False, "up": False, "enterprise": argv[:1] == ["-e"],
+        "traefik": False, "up": False, "enterprise": argv[:1] == ["-e"], "no_manager": False,
     }
     # env.sh can set start-all.sh's option variables, which hold the option
     # with its value ("-L <address>"); the command line comes after them
@@ -311,6 +313,8 @@ def options(argv, v, paths):
         else:
             words.append(word)
     for opt, value in parse_flags(words, owned=(), what="make_compose.py"):
+        # --no-manager wins over -M, whatever their order, as in start-all.sh
+        o["no_manager"] = o["no_manager"] or opt == "--no-manager"
         opt, value = CANONICAL.get(opt, (opt, value))
         if opt in ("-h", "--help"):
             print(USAGE)
@@ -509,6 +513,9 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
         o["versions"] = txt.get("VERSIONS", o["versions"])
         o["manager_version"] = txt.get("MANAGER_VERSION", o["manager_version"])
         o["alternator"] = o["alternator"] or txt.get("RUN_ALTERNATOR") == "1"
+    # --no-manager also wins over the version an archive's scylla.txt recorded
+    if o["no_manager"]:
+        o["manager_version"] = "none"
     if o["versions"] == "latest":
         if branch in ("", "master"):
             raise ConfigError("-v latest is not supported on the master branch, use a specific version")
@@ -666,31 +673,34 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
         if not node:
             prom_targets.append("--no-node-exporter-file")
             node = scylla
-        agents = o["manager_agents"]
-        if not agents:
-            prom_targets.append("--no-manager-agent-file")
-            agents = scylla
         if not os.path.isfile(paths.abs(node)) and node not in stack.files:
             raise ConfigError("Node target file '%s' does not exist" % node)
-        managers = o["manager_files"] or ["prometheus/scylla_manager_servers.yml", "scylla_manager_servers.yml",
-                                          "prometheus/scylla_manager_servers.example.yml"]
-        found = [f for f in managers if os.path.isfile(paths.abs(f))]
-        if not found:
-            raise ConfigError("Scylla-Manager target file '%s' does not exist, you can use "
-                              "prometheus/scylla_manager_servers.example.yml as an example." % managers[0])
         target_mounts = [paths(scylla) + ":" + target + "scylla_servers.yml",
-                         paths(found[0]) + ":" + target + "scylla_manager_servers.yml",
                          paths(node) + ":" + target + "node_exporter_servers.yml"]
         if o["vector_search"]:
             target_mounts.append(paths(o["vector_search"]) + ":" + target + "vector_search_servers.yml")
-        target_mounts.append(paths(agents) + ":" + target + "scylla_manager_agents.yml")
+        # without Scylla Manager, Prometheus has no manager or agent targets
+        if o["manager_version"] != "none":
+            agents = o["manager_agents"]
+            if not agents:
+                prom_targets.append("--no-manager-agent-file")
+                agents = scylla
+            managers = o["manager_files"] or ["prometheus/scylla_manager_servers.yml", "scylla_manager_servers.yml",
+                                              "prometheus/scylla_manager_servers.example.yml"]
+            found = [f for f in managers if os.path.isfile(paths.abs(f))]
+            if not found:
+                raise ConfigError("Scylla-Manager target file '%s' does not exist, you can use "
+                                  "prometheus/scylla_manager_servers.example.yml as an example." % managers[0])
+            target_mounts.insert(1, paths(found[0]) + ":" + target + "scylla_manager_servers.yml")
+            target_mounts.append(paths(agents) + ":" + target + "scylla_manager_agents.yml")
     elif o["vector_search"] and o["vector_search"] != "vector_search_servers.yml":
         stack.warnings.append("With a target directory the vector-search file is called vector_search_servers.yml "
                               "and should be inside the target directory")
     if o["target_directory"]:
         target_mounts = [paths(o["target_directory"], slash=True) + ":" + target + ":z"]
-        for f in ("scylla_servers.yml", "node_exporter_servers.yml", "scylla_manager_agents.yml",
-                  "scylla_manager_servers.yml"):
+        manager_files = ("scylla_manager_agents.yml", "scylla_manager_servers.yml") \
+            if o["manager_version"] != "none" else ()
+        for f in ("scylla_servers.yml", "node_exporter_servers.yml") + manager_files:
             if not os.path.isfile(os.path.join(paths.abs(o["target_directory"]), f)):
                 stack.warnings.append("Using %s for Prometheus target directory, %s is missing"
                                       % (o["target_directory"], f))
@@ -754,6 +764,8 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
     cmd += prom_targets
     if o["vector_search"]:
         cmd.append("--vector-search")
+    if o["manager_version"] == "none":
+        cmd.append("--no-manager")
     if o["cluster_label"] is not None:
         cmd += ["--cluster-label", o["cluster_label"]]
     stack.commands.append(cmd)

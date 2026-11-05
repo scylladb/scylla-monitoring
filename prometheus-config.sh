@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [-G grafana address] [--compose] [--cluster-label label] [-D docker param] [-A bind address] [--alertmanager-port port] [--grafana-port port] [--no-alertmanager] [--output-dir dir] -- Generate Prometheus's configuration file
+usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [-G grafana address] [--compose] [--cluster-label label] [-D docker param] [-A bind address] [--alertmanager-port port] [--grafana-port port] [--no-alertmanager] [--no-manager] [--output-dir dir] -- Generate Prometheus's configuration file
 Without -m and -G, the Alertmanager and Grafana addresses are worked out the way start-all.sh does, from -D, -A, -s and the ports.
+--no-manager leaves out the scylla_manager and manager_agent jobs; start-all.sh passes it for NO_MANAGER=1.
 --output-dir writes prometheus.yml into the given directory instead of prometheus/build, for checking it."
 CONSUL_ADDRESS=""
 COMPOSE=0
@@ -10,6 +11,8 @@ if [ -f env.sh ]; then
 	. env.sh
 fi
 . network-lib.sh
+# only --no-manager; start-all.sh resolves NO_MANAGER=1 against its -M
+NO_MANAGER=""
 DOCKER_PARAM_FROM_FILE=""
 if [ "$DOCKER_PARAM" != "" ]; then
 	DOCKER_PARAM_FROM_FILE="1"
@@ -54,6 +57,9 @@ for arg; do
 			;;
 		--no-alertmanager)
 			NO_ALERTMANAGER="1"
+			;;
+		--no-manager)
+			NO_MANAGER="1"
 			;;
 		--vector-store)
 			VECTOR_SEARCH="1"
@@ -200,6 +206,12 @@ else
 		CONSUL_ADDRESS="$CONSUL_ADDRESS:5090"
 	fi
 	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template | sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" | sed "s/GRAFANA_ADDRESS/$GRAFANA_ADDRESS/" >"$BASE_DIR"/prometheus.yml
+fi
+
+# Without Scylla Manager, neither the manager nor its agents are scraped
+if [ "$NO_MANAGER" = "1" ]; then
+	awk '/^- job_name: / { skip = ($3 == "manager_agent" || $3 == "scylla_manager") } !skip' \
+		"$BASE_DIR"/prometheus.yml >"$BASE_DIR"/prometheus.yml.new && mv "$BASE_DIR"/prometheus.yml.new "$BASE_DIR"/prometheus.yml
 fi
 
 # The cluster label of the jobs that scrape the monitoring stack itself, and an
