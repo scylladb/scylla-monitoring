@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [-G grafana address] [--compose] [--cluster-label label] [-D docker param] [-A bind address] [--alertmanager-port port] [--grafana-port port] [--no-alertmanager] -- Generate Prometheus's configuration file
-Without -m and -G, the Alertmanager and Grafana addresses are worked out the way start-all.sh does, from -D, -A, -s and the ports."
+usage="$(basename "$0") [-h] [-m alert_manager address]  [-L] [-T additional-prometheus-targets] [-G grafana address] [--compose] [--cluster-label label] [-D docker param] [-A bind address] [--alertmanager-port port] [--grafana-port port] [--no-alertmanager] [--output-dir dir] -- Generate Prometheus's configuration file
+Without -m and -G, the Alertmanager and Grafana addresses are worked out the way start-all.sh does, from -D, -A, -s and the ports.
+--output-dir writes prometheus.yml into the given directory instead of prometheus/build, for checking it."
 CONSUL_ADDRESS=""
 COMPOSE=0
 
@@ -48,6 +49,9 @@ for arg; do
 		--grafana-port)
 			PARAM="grafana-port"
 			;;
+		--output-dir)
+			PARAM="output-dir"
+			;;
 		--no-alertmanager)
 			NO_ALERTMANAGER="1"
 			;;
@@ -92,9 +96,19 @@ for arg; do
 		if [ "$PARAM" = "grafana-port" ]; then
 			GRAFANA_BARE_PORT="$arg"
 		fi
+		if [ "$PARAM" = "output-dir" ]; then
+			OUTPUT_DIR="$arg"
+		fi
 		unset PARAM
 	fi
 done
+# an option left waiting for its value, such as a last --output-dir, would
+# otherwise be ignored, and the live prometheus/build written
+if [ -n "$PARAM" ]; then
+	echo "Error: No value given to --$PARAM" >&2
+	echo "$usage" >&2
+	exit 1
+fi
 
 while getopts ':hL:m:T:E:G:s:D:A:' option; do
 	case "$option" in
@@ -144,6 +158,9 @@ while getopts ':hL:m:T:E:G:s:D:A:' option; do
 	esac
 done
 
+if [ -n "$OUTPUT_DIR" ]; then
+	BASE_DIR="$OUTPUT_DIR"
+fi
 # Without -D naming a network, start-all.sh attaches the containers to the one
 # it creates.
 if [ -z "$(network_param)" ]; then
@@ -175,14 +192,14 @@ if [ "$GRAFANA_ADDRESS" = "" ]; then
     GRAFANA_ADDRESS="agraf:3000"
 fi
 
-mkdir -p $BASE_DIR/
+mkdir -p "$BASE_DIR"/
 if [ -z $CONSUL_ADDRESS ]; then
-	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template| sed "s/GRAFANA_ADDRESS/$GRAFANA_ADDRESS/" >$BASE_DIR/prometheus.yml
+	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.yml.template| sed "s/GRAFANA_ADDRESS/$GRAFANA_ADDRESS/" >"$BASE_DIR"/prometheus.yml
 else
 	if [[ ! $CONSUL_ADDRESS = *":"* ]]; then
 		CONSUL_ADDRESS="$CONSUL_ADDRESS:5090"
 	fi
-	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template | sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" | sed "s/GRAFANA_ADDRESS/$GRAFANA_ADDRESS/" >$BASE_DIR/prometheus.yml
+	sed "s/AM_ADDRESS/$AM_ADDRESS/" $PWD/prometheus/prometheus.consul.yml.template | sed "s/MANAGER_ADDRESS/$CONSUL_ADDRESS/" | sed "s/GRAFANA_ADDRESS/$GRAFANA_ADDRESS/" >"$BASE_DIR"/prometheus.yml
 fi
 
 # The cluster label of the jobs that scrape the monitoring stack itself, and an
@@ -193,33 +210,33 @@ if [ -n "$CLUSTER_LABEL" ]; then
 	CLUSTER_LABEL_YAML="'${CLUSTER_LABEL//\'/\'\'}'" awk '
 		/^ *# CLUSTER_LABEL$/ { print "      labels:"; print "        cluster: " ENVIRON["CLUSTER_LABEL_YAML"]; next }
 		/^    monitor: .scylla-monitor.$/ { v = ENVIRON["CLUSTER_LABEL_YAML"]; gsub(/\$/, "$$", v); print; print "    cluster: " v; next }
-		{ print }' $BASE_DIR/prometheus.yml >$BASE_DIR/prometheus.yml.new && mv $BASE_DIR/prometheus.yml.new $BASE_DIR/prometheus.yml
+		{ print }' "$BASE_DIR"/prometheus.yml >"$BASE_DIR"/prometheus.yml.new && mv "$BASE_DIR"/prometheus.yml.new "$BASE_DIR"/prometheus.yml
 fi
 
 if [[ "$EVALUATION_INTERVAL" != "" ]]; then
-	sed -i "s/  evaluation_interval: [[:digit:]]*.*/  evaluation_interval: ${EVALUATION_INTERVAL}/g" $BASE_DIR/prometheus.yml
+	sed -i "s/  evaluation_interval: [[:digit:]]*.*/  evaluation_interval: ${EVALUATION_INTERVAL}/g" "$BASE_DIR"/prometheus.yml
 fi
 
 if [ "$NATIVE_HISTOGRAM" = "1" ]; then
-	sed -i "s/  scrape_native_histograms:.*/  scrape_native_histograms: true/g" $BASE_DIR/prometheus.yml
+	sed -i "s/  scrape_native_histograms:.*/  scrape_native_histograms: true/g" "$BASE_DIR"/prometheus.yml
 fi
 if [[ "$SCRAP_INTERVAL" != "" ]]; then
-	sed -i "s/  scrape_interval: [[:digit:]]*.*# *Default.*/  scrape_interval: ${SCRAP_INTERVAL}s/g" $BASE_DIR/prometheus.yml
+	sed -i "s/  scrape_interval: [[:digit:]]*.*# *Default.*/  scrape_interval: ${SCRAP_INTERVAL}s/g" "$BASE_DIR"/prometheus.yml
 	TIMEOUT=$(($SCRAP_INTERVAL - 5))
-	sed -i "s/  scrape_timeout: [[:digit:]]*.*# *Default.*/  scrape_timeout: ${TIMEOUT}s/g" $BASE_DIR/prometheus.yml
+	sed -i "s/  scrape_timeout: [[:digit:]]*.*# *Default.*/  scrape_timeout: ${TIMEOUT}s/g" "$BASE_DIR"/prometheus.yml
 fi
 if [ "$NO_CAS" = "1" ] && [ "$NO_CDC" = "1" ]; then
-	sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cdc_.*|.*_cas.*)'\\n      action: drop/g" $BASE_DIR/prometheus.yml
+	sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cdc_.*|.*_cas.*)'\\n      action: drop/g" "$BASE_DIR"/prometheus.yml
 elif [ "$NO_CAS" = "1" ]; then
-	sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cas.*)'\\n      action: drop/g" $BASE_DIR/prometheus.yml
+	sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cas.*)'\\n      action: drop/g" "$BASE_DIR"/prometheus.yml
 elif [ "$NO_CDC" = "1" ]; then
-	sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cdc_.*)'\\n      action: drop/g" $BASE_DIR/prometheus.yml
+	sed -i "s/ *# FILTER_METRICS.*/    - source_labels: [__name__]\\n      regex: '(.*_cdc_.*)'\\n      action: drop/g" "$BASE_DIR"/prometheus.yml
 fi
 if [ "$NO_NODE_EXPORTER_FILE" = "1" ]; then
-	sed -i "s/ *# NODE_EXPORTER_PORT_MAPPING.*/    - source_labels: [__address__]\\n      regex:  '(.*):\\\\d+'\\n      target_label: __address__\\n      replacement: '\$\{1\}'\\n/g" $BASE_DIR/prometheus.yml
+	sed -i "s/ *# NODE_EXPORTER_PORT_MAPPING.*/    - source_labels: [__address__]\\n      regex:  '(.*):\\\\d+'\\n      target_label: __address__\\n      replacement: '\$\{1\}'\\n/g" "$BASE_DIR"/prometheus.yml
 fi
 if [ "$NO_MANAGER_AGENT_FILE" = "1" ]; then
-	sed -i "s/ *# MANAGER_AGENT_PORT_MAPPING.*/    - source_labels: [__address__]\\n      regex:  '(.*):\\\\d+'\\n      target_label: __address__\\n      replacement: \'\$\{1\}\'\\n/g" $BASE_DIR/prometheus.yml
+	sed -i "s/ *# MANAGER_AGENT_PORT_MAPPING.*/    - source_labels: [__address__]\\n      regex:  '(.*):\\\\d+'\\n      target_label: __address__\\n      replacement: \'\$\{1\}\'\\n/g" "$BASE_DIR"/prometheus.yml
 fi
 
 for val in "${PROMETHEUS_TARGETS[@]}"; do
@@ -227,7 +244,7 @@ for val in "${PROMETHEUS_TARGETS[@]}"; do
 		echo "Target file $val does not exists"
 		exit 1
 	fi
-	cat $val >>$BASE_DIR/prometheus.yml
+	cat $val >>"$BASE_DIR"/prometheus.yml
 done
 
 if [ ! -z "$VECTOR_SEARCH" ]; then
@@ -270,5 +287,5 @@ if [ ! -z "$VECTOR_SEARCH" ]; then
       target_label: instance
       replacement: '\${1}'
       "
-	echo "$__target" >>$BASE_DIR/prometheus.yml
+	echo "$__target" >>"$BASE_DIR"/prometheus.yml
 fi
