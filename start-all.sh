@@ -67,6 +67,10 @@ if [ "$1" = "-e" ]; then
 	DEFAULT_VERSION=${DEFAULT_ENTERPRISE_VERSION[$BRANCH_VERSION]}
 fi
 
+# NO_MANAGER=1 in env.sh or the environment is --no-manager; -M overrides it
+if [ "$NO_MANAGER" = "1" ]; then
+	MANAGER_VERSION="none"
+fi
 if [ -z "$MANAGER_VERSION" ]; then
 	MANAGER_VERSION=${MANAGER_DEFAULT_VERSION[$BRANCH_VERSION]}
 fi
@@ -102,7 +106,7 @@ elif [[ $(uname) == "Darwin" ]]; then
 fi
 
 function usage {
-	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [--servers comma separated server list] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--log-collector alloy|promtail] [--no-log-collector] [--no-alertmanager] [--loki-port port] [--promtail-port port] [--alloy-port port] [--alloy-syslog-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir] [--grafana-render-token token] [--grafana-render-token-to-file path]
+	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [--servers comma separated server list] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--log-collector alloy|promtail] [--no-log-collector] [--no-alertmanager] [--no-manager] [--loki-port port] [--promtail-port port] [--alloy-port port] [--alloy-syslog-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir] [--grafana-render-token token] [--grafana-render-token-to-file path]
 
 Options:
   -h print this help and exit
@@ -126,7 +130,7 @@ Options:
   -p prometheus port             - Override the default Prometheus port.
   -a admin password              - Set Grafana's Admin password.
   -m alertmanager port           - Override the default Prometheus port.
-  -M scylla-manager version      - Override the default Scylla Manager version to use.
+  -M scylla-manager version      - Override the default Scylla Manager version to use; none is --no-manager.
   -D docker param                - Encapsulate docker param, the parameter will be used by all containers.
   -r alert-manager-config        - Override the default alert-manager configuration file, or a directory holding config.yml.
   -f path/to/alertmanager/data   - If set, the alertmanager would store its data in the given directory.
@@ -145,6 +149,9 @@ Options:
                                    Can also be set with LOG_COLLECTOR=none in env.sh/environment.
   --no-loki                      - [Deprecated] see --no-log-collector
   --no-alertmanager              - If set, do not run the Alertmanager.
+  --no-manager                   - If set, there is no Scylla Manager: no manager dashboards, and Prometheus
+                                   scrapes neither the manager nor its agents. Same as -M none.
+                                   Can also be set with NO_MANAGER=1 in env.sh/environment.
   --loki-port port               - If set, loki would use the given port number
   --promtail-port port           - If set, promtail would use the given port number
   --promtail-binary-port port    - If set, promtail would use the given port number for the binary protocol
@@ -288,6 +295,7 @@ CLUSTER_LABEL_ARGS=()
 LIMITS=""
 VOLUMES=""
 PARAMS=""
+NO_MANAGER_ARG=""
 for arg; do
 	if [ "$arg" = "--compose" ]; then
 		log INFO "Using compose"
@@ -326,6 +334,9 @@ for arg; do
 			;;
 		--no-alertmanager)
 			SKIP_ALERTMANAGER=1
+			;;
+		--no-manager)
+			NO_MANAGER_ARG=1
 			;;
         --quick-startup)
             QUICK_STARTUP=1
@@ -729,6 +740,15 @@ if [ "$ARCHIVE" == "1" ]; then
 	fi
 fi
 
+# --no-manager wins over -M, whatever their order, and over the version an
+# archive's scylla.txt recorded
+if [ "$NO_MANAGER_ARG" = "1" ]; then
+	MANAGER_VERSION="none"
+fi
+NO_MANAGER_CMD=""
+if [ "$MANAGER_VERSION" = "none" ]; then
+	NO_MANAGER_CMD="--no-manager"
+fi
 if [ -z "$VERSIONS" ]; then
 	log ERROR "Scylla-version was not not found, add the -v command-line with a specific version (i.e. -v 2021.1)"
 	exit 1
@@ -819,7 +839,10 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
 		NODE_TARGET_FILE=$SCYLLA_TARGET_FILE
 	fi
 
-	if [ -z $SCYLLA_MANGER_AGENT_TARGET_FILE ]; then
+	# without Scylla Manager, Prometheus has no manager or agent targets
+	if [ "$MANAGER_VERSION" = "none" ]; then
+		SCYLLA_MANGER_AGENT_TARGET_FILE=""
+	elif [ -z $SCYLLA_MANGER_AGENT_TARGET_FILE ]; then
 		PROMETHEUS_TARGETS="$PROMETHEUS_TARGETS --no-manager-agent-file"
 		SCYLLA_MANGER_AGENT_TARGET_FILE=$SCYLLA_TARGET_FILE
 	fi
@@ -828,15 +851,17 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
 		exit 1
 	fi
 
-	for f in ${SCYLLA_MANGER_TARGET_FILES[@]}; do
-		if [ -f $f ]; then
-			SCYLLA_MANGER_TARGET_FILE=$f
-			break
+	if [ "$MANAGER_VERSION" != "none" ]; then
+		for f in ${SCYLLA_MANGER_TARGET_FILES[@]}; do
+			if [ -f $f ]; then
+				SCYLLA_MANGER_TARGET_FILE=$f
+				break
+			fi
+		done
+		if [ -z $SCYLLA_MANGER_TARGET_FILE ]; then
+			log ERROR "Scylla-Manager target file '${SCYLLA_MANGER_TARGET_FILES}' does not exist, you can use prometheus/scylla_manager_servers.example.yml as an example."
+			exit 1
 		fi
-	done
-	if [ -z $SCYLLA_MANGER_TARGET_FILE ]; then
-		log ERROR "Scylla-Manager target file '${SCYLLA_MANGER_TARGET_FILES}' does not exist, you can use prometheus/scylla_manager_servers.example.yml as an example."
-		exit 1
 	fi
 	if [ -z "$HOST_NETWORK" ]; then
 		if is_local $SCYLLA_TARGET_FILE $SCYLLA_MANGER_TARGET_FILE $NODE_TARGET_FILE; then
@@ -852,9 +877,11 @@ if [ -z "$TARGET_DIRECTORY" ] && [ -z "$CONSUL_ADDRESS" ]; then
 		VECTOR_SEARCH="-v "$($readlink_command $VECTOR_SEARCH)":/etc/scylla.d/prometheus/targets/vector_search_servers.yml"
 	fi
 	SCYLLA_TARGET_FILE="-v "$($readlink_command $SCYLLA_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_servers.yml"
-	SCYLLA_MANGER_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_servers.yml"
 	NODE_TARGET_FILE="-v "$($readlink_command $NODE_TARGET_FILE)":/etc/scylla.d/prometheus/targets/node_exporter_servers.yml"
-	SCYLLA_MANGER_AGENT_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_AGENT_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_agents.yml"
+	if [ "$MANAGER_VERSION" != "none" ]; then
+		SCYLLA_MANGER_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_servers.yml"
+		SCYLLA_MANGER_AGENT_TARGET_FILE="-v "$($readlink_command $SCYLLA_MANGER_AGENT_TARGET_FILE)":/etc/scylla.d/prometheus/targets/scylla_manager_agents.yml"
+	fi
 else
     if [ ! -z "$VECTOR_SEARCH" ]; then
         if [ "$VECTOR_SEARCH" != "vector_search_servers.yml" ]; then
@@ -1038,7 +1065,7 @@ if [ -z "$GRAFANA_ADDRESS" ] && stack_network >/dev/null; then
 	GRAFANA_ADDRESS="-G $(grafana_container_name "$GRAFANA_BARE_PORT"):3000"
 fi
 
-./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $NATIVE_HISTOGRAM $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD "${CLUSTER_LABEL_ARGS[@]}"
+./prometheus-config.sh -m $AM_ADDRESS $STACK_CMD $GRAFANA_ADDRESS $NATIVE_HISTOGRAM $SCRAP_CMD $CONSUL_ADDRESS $PROMETHEUS_TARGETS $VECTOR_SEARCH_CMD $NO_MANAGER_CMD "${CLUSTER_LABEL_ARGS[@]}"
 if [ "$DATA_DIR" != "" ] && [ "$ARCHIVE" != "1" ]; then
 	DATE=$(date +"%Y-%m-%d_%H_%M_%S")
 	if [ -f $DATA_DIR/scylla.txt ]; then
