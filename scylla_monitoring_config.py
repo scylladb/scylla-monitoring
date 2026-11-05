@@ -406,11 +406,12 @@ def prometheus_config_cmd(argv):
     return cmd
 
 
-def render_prometheus_config(argv, staging, monitoring_dir, run=subprocess.run):
+def render_prometheus_config(argv, staging, monitoring_dir, run=subprocess.run, cmd=None, env=None):
     """Renders prometheus.yml into the staging directory, so validate checks it
-    before anything restarts."""
+    before anything restarts. cmd is the prometheus-config.sh command, by
+    default the one start-all.sh runs for argv; env its environment."""
     out = os.path.join(staging, "prometheus")
-    res = run(prometheus_config_cmd(argv) + ["--output-dir", out], cwd=monitoring_dir,
+    res = run((cmd or prometheus_config_cmd(argv)) + ["--output-dir", out], cwd=monitoring_dir, env=env,
               stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     if res.returncode != 0:
         raise ConfigError("prometheus config: prometheus-config.sh failed: %s" % tool_output(res.stdout))
@@ -539,8 +540,10 @@ def now():
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def prepare(args, dirs, path, run=subprocess.run):
-    """Loads, normalizes, renders and validates the file.
+def prepare(args, dirs, path, run=subprocess.run, stack=None):
+    """Loads, normalizes, renders and validates the file. In compose mode
+    (stack.compose), make_compose.py builds the stack too, so its checks
+    reject the file, and prometheus.yml is rendered with its command.
 
     Returns (cfg, argv, env); raises ConfigError with the generation, when the
     file has one, as its second argument."""
@@ -557,7 +560,14 @@ def prepare(args, dirs, path, run=subprocess.run):
         os.makedirs(build, exist_ok=True)
         os.chmod(build, 0o700)
         render(cfg, dirs.staging, option(argv, "-M") == "none")
-        render_prometheus_config(argv, dirs.staging, dirs.monitoring, run)
+        cmd = environ = None
+        if stack is not None and stack.compose:
+            try:
+                built, environ = stack.compose_config(argv, env, cfg)
+            except ConfigError as e:
+                raise ConfigError("make_compose.py: %s" % e.args[0])
+            cmd = next(c for c in built.commands if c[0] == "./prometheus-config.sh")
+        render_prometheus_config(argv, dirs.staging, dirs.monitoring, run, cmd, environ)
         validate(dirs.staging, stack_versions(dirs.monitoring), run)
     except ConfigError as e:
         raise ConfigError(e.args[0], cfg["generation"])
@@ -788,8 +798,14 @@ class Stack:
                            run=lambda cmd, cwd=None, env=None, check=True: self.sh(cmd, env))
 
     def compose_stack(self, argv, env, cfg):
+        try:
+            return self.compose_config(argv, env, cfg)
+        except ConfigError as e:
+            raise ApplyError("make_compose.py: %s" % e)
+
+    def compose_config(self, argv, env, cfg):
         """make_compose.py's stack for argv, and the environment it runs in;
-        traefik is one of its services when TLS is on."""
+        traefik is one of its services when TLS is on. Raises ConfigError."""
         if self.compose_build is None:
             import make_compose
             self.compose_build = make_compose.build
@@ -799,10 +815,7 @@ class Stack:
             argv = argv + ["--traefik"]
             environ.update(PRIVATE_IP=tls["listen_ip"], CERT_DIR=self.args.cert_dir,
                            TRAEFIK_GENERATION=str(cfg["generation"]))
-        try:
-            return self.compose_build(argv, environ=environ, cwd=self.dirs.monitoring), environ
-        except ConfigError as e:
-            raise ApplyError("make_compose.py: %s" % e)
+        return self.compose_build(argv, environ=environ, cwd=self.dirs.monitoring), environ
 
     def render_prometheus_config(self, argv, env=None, cfg=None):
         if self.compose:
@@ -1015,7 +1028,7 @@ def apply_once(args, stack=None, run=subprocess.run, path=None):
     if text == applied_text and not force:
         return 0
     try:
-        new, argv, env = prepare(args, dirs, path, run)
+        new, argv, env = prepare(args, dirs, path, run, stack)
     except ConfigError as e:
         return rejected(dirs, e)
     previous = yaml.safe_load(applied_text) if applied_text else None
@@ -1030,7 +1043,7 @@ def apply_once(args, stack=None, run=subprocess.run, path=None):
         # back to the previous configuration, still in applied.yaml; a first
         # apply, since the failed one may have stopped anywhere
         try:
-            old_cfg, old_argv, old_env = prepare(args, dirs, applied_path(dirs), run)
+            old_cfg, old_argv, old_env = prepare(args, dirs, applied_path(dirs), run, stack)
             stack.apply(None, old_cfg, old_argv, old_env, new)
         except (ApplyError, ConfigError) as e:
             return failed(dirs, text, new, "%s; revert failed: %s" % (error, e.args[0]), ran_traefik)
