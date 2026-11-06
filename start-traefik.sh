@@ -9,6 +9,8 @@
 #              CERT_DIR    absolute path holding server.crt server.key rootCA.crt
 # optional (env): TAG overrides TRAEFIK_VERSION
 #                 TRAEFIK_GENERATION, written as a comment in the dynamic config
+#                 THANOS_PORT, the local port the 10911 entry point forwards to:
+#                 10911 (the default), the sidecar, or 10903, the Thanos query
 #
 # --reload only rewrites the dynamic config, so the running traefik reads the
 # certificates in CERT_DIR again; it needs neither PRIVATE_IP nor CERT_DIR.
@@ -23,8 +25,8 @@
 #
 # Traefik listens on PRIVATE_IP ports 3000 (Grafana), 9090 (Prometheus), 9093
 # (Alertmanager), 9100 (node_exporter), 10911 (sidecar) and 10903 (Thanos
-# query), and forwards each to 127.0.0.1 on the same port, so those services
-# must listen on 127.0.0.1 only
+# query), and forwards each to 127.0.0.1 on the same port (10911 to
+# THANOS_PORT), so those services must listen on 127.0.0.1 only
 # (start-all.sh -A 127.0.0.1, node_exporter --web.listen-address=127.0.0.1:9100).
 # Its ping endpoint is on localhost:8080. Generated config goes to traefik/build:
 # static/ holds traefik.yml and confs/ holds traefik-conf.yml; both are mounted
@@ -37,6 +39,9 @@ cd "$(dirname "$0")" || exit 1
 set -euo pipefail
 
 die() { echo "$@" >&2; exit 1; }
+
+THANOS_PORT="${THANOS_PORT:-10911}"
+[[ "$THANOS_PORT" =~ ^[1-9][0-9]{0,4}$ ]] && ((THANOS_PORT <= 65535)) || die "error: THANOS_PORT must be a port number"
 
 # The dynamic config. traefik's file provider reloads it, and the certificates
 # with it, whenever it changes; the generation comment makes each rewrite a
@@ -102,7 +107,7 @@ http:
     sidecar1:
       loadBalancer:
         servers:
-          - url: "h2c://127.0.0.1:10911"
+          - url: "h2c://127.0.0.1:${THANOS_PORT}"
     thanos-query:
       loadBalancer:
         servers:

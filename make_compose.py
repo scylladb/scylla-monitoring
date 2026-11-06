@@ -508,13 +508,15 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
         o["manager_version"] = v.get("MANAGER_DEFAULT_VERSION", {}).get(branch, "")
     if not o["versions"]:
         o["versions"] = default_version.get(branch, "")
+    # -M none and NO_MANAGER=1 are --no-manager, which an archive does not override
+    no_manager = o["no_manager"] or o["manager_version"] == "none"
     if o["archive"]:
         txt = read_scylla_txt(os.path.join(paths.abs(o["data_dir"]), "scylla.txt"))
         o["versions"] = txt.get("VERSIONS", o["versions"])
         o["manager_version"] = txt.get("MANAGER_VERSION", o["manager_version"])
         o["alternator"] = o["alternator"] or txt.get("RUN_ALTERNATOR") == "1"
     # --no-manager also wins over the version an archive's scylla.txt recorded
-    if o["no_manager"]:
+    if no_manager:
         o["manager_version"] = "none"
     if o["versions"] == "latest":
         if branch in ("", "master"):

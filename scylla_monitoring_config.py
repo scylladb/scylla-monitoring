@@ -260,6 +260,8 @@ def derive(cfg, dirs):
         opts.append(("--thanos-sc", None))
     if stack.get("local_thanos"):
         opts.append(("--local-thanos", None))
+    if stack.get("quick_startup"):
+        opts.append(("--quick-startup", None))
     if "bind_address" in stack:
         opts.append(("-A", stack["bind_address"]))
     opts += [("-D", d) for d in stack.get("docker_args", [])]
@@ -278,6 +280,8 @@ def derive(cfg, dirs):
     opts += [("-c", "%s=%s" % kv) for kv in grafana.get("env", {}).items()]
     if "anonymous_role" in grafana:
         opts.append(("-Q", grafana["anonymous_role"]))
+    if grafana.get("thanos_datasource") is False:
+        opts.append(("--no-thanos-datasource", None))
     if "cluster" in cfg:
         opts.append(("--cluster-label", cfg["cluster"]))
     opts.append(("--target-directory", os.path.join(dirs.live, "targets")))
@@ -338,7 +342,7 @@ def write_file(path, text, mode=0o644):
 def render(cfg, staging, no_manager=False):
     """Writes every derived file into the staging directory; without Scylla
     Manager (no_manager), no manager or agent targets."""
-    for sub in ("targets", "rules", "alertmanager", "certs", "systemd", "prometheus"):
+    for sub in ("targets", "rules", "alertmanager", "certs", "systemd", "docker", "prometheus"):
         shutil.rmtree(os.path.join(staging, sub), ignore_errors=True)
     targets = cfg["targets"]
     scylla = dump_yaml(targets["scylla"])
@@ -367,6 +371,13 @@ def render(cfg, staging, no_manager=False):
         write_file(os.path.join(staging, name), text)
     if tls.get("enabled"):
         write_file(os.path.join(staging, "certs/server.key"), tls["server_key"], 0o600)
+    # docker's EnvironmentFile=, which takes a quoted value as is; the URLs
+    # can hold credentials
+    docker = cfg.get("docker", {})
+    proxy = "".join('%s="%s"\n' % (var, docker[field])
+                    for field, var in (("http_proxy", "HTTP_PROXY"), ("https_proxy", "HTTPS_PROXY")) if field in docker)
+    if proxy:
+        write_file(os.path.join(staging, "docker/proxy.env"), proxy, 0o600)
 
 
 def stack_versions(monitoring_dir):
@@ -642,15 +653,22 @@ ACTIONS = {
     "prometheus": [RESTART],
     "storage": [RESTART],
     "stack": [RESTART],
+    # start-all.sh reads it when it next starts the stack
+    "stack.quick_startup": [],
     "grafana": [RESTART],
     "grafana.admin_password": ["grafana_password"],
     "grafana.datasource": ["grafana_datasource"],
+    # from true to false; to true, the stack restarts (see plan)
+    "grafana.thanos_datasource": ["thanos_datasource"],
     "tls.ca_crt": ["install_certs", "reload_traefik"],
     "tls.server_crt": ["install_certs", "reload_traefik"],
     "tls.server_key": ["install_certs", "reload_traefik"],
     "tls.enabled": ["install_certs", "start_traefik"],
     "tls.listen_ip": ["start_traefik"],
+    "tls.thanos_port": ["reload_traefik"],
     "systemd": ["systemd_dropins"],
+    # restarting docker stops the containers, so the stack is started again
+    "docker": ["docker_proxy", RESTART],
 }
 # Adding or removing these changes start-all.sh's arguments (-R, -r, and
 # --vector-search, which changes prometheus.yml and the dashboards), so it
@@ -659,7 +677,10 @@ PRESENCE = {"alert_rules", "alertmanager_config", "targets.vector_search"}
 # The actions a stack restart already covers.
 COVERED_BY_RESTART = {"render_prometheus_config", "reload_prometheus", "reload_alertmanager",
                       "grafana_datasource", "reload_traefik", "start_traefik"}
-FIRST_APPLY = {RESTART, "systemd_dropins", "install_certs", "grafana_password"}
+FIRST_APPLY = {RESTART, "systemd_dropins", "install_certs", "grafana_password", "docker_proxy", "thanos_datasource"}
+# start-all.sh --no-thanos-datasource only stops writing thanos.yaml, and
+# Grafana keeps a data source it stored; this file tells Grafana to delete it.
+DELETE_THANOS_DATASOURCE = "apiVersion: 1\ndeleteDatasources:\n- name: thanos\n  orgId: 1\n"
 
 
 def section(cfg, path):
@@ -688,6 +709,12 @@ def plan(old, new):
             actions.add(RESTART)
         else:
             actions.update(path_actions)
+    # to true, start-thanos.sh writes the data source with the Thanos query's
+    # address; between true and missing, the default, nothing changes
+    if "thanos_datasource" in actions and new.get("grafana", {}).get("thanos_datasource") is not False:
+        actions.discard("thanos_datasource")
+        if section(old, "grafana.thanos_datasource") is False:
+            actions.add(RESTART)
     if RESTART in actions:
         actions -= COVERED_BY_RESTART
     return actions
@@ -814,7 +841,7 @@ class Stack:
         if tls.get("enabled"):
             argv = argv + ["--traefik"]
             environ.update(PRIVATE_IP=tls["listen_ip"], CERT_DIR=self.args.cert_dir,
-                           TRAEFIK_GENERATION=str(cfg["generation"]))
+                           TRAEFIK_GENERATION=str(cfg["generation"]), THANOS_PORT=thanos_port(cfg))
         return self.compose_build(argv, environ=environ, cwd=self.dirs.monitoring), environ
 
     def render_prometheus_config(self, argv, env=None, cfg=None):
@@ -850,6 +877,25 @@ class Stack:
         write_file(path, text, 0o600)
         self.sh(["docker", "restart", self.grafana_name(argv)])
 
+    def thanos_datasource(self, argv, delete, restart=False):
+        """With delete, writes thanos.yaml as a file that deletes the Thanos
+        data source, in place of the one start-all.sh wrote or of none, since
+        Grafana keeps a data source whose file is gone; restarts Grafana when
+        asked. Without, removes that file: start-thanos.sh writes only the
+        main stack's thanos.yaml. A named stack's Grafana reads its own
+        provisioning directory."""
+        path = os.path.join(self.stack_dir(argv, "grafana"), "provisioning", "datasources", "thanos.yaml")
+        deleting = os.path.exists(path) and open(path).read() == DELETE_THANOS_DATASOURCE
+        if not delete:
+            if deleting:
+                os.remove(path)
+            return
+        if deleting:
+            return
+        write_file(path, DELETE_THANOS_DATASOURCE)
+        if restart:
+            self.sh(["docker", "restart", self.grafana_name(argv)])
+
     def grafana_password(self, argv, cfg):
         password = cfg.get("grafana", {}).get("admin_password")
         if password:
@@ -873,9 +919,21 @@ class Stack:
             if before.get(unit) != after[unit]:
                 self.root("dropin", unit, os.path.join(self.dirs.staging, "systemd", unit + ".conf"))
 
+    def docker_proxy(self, old, new, previous=None, stale=False):
+        """Sets docker's proxy, or removes it when the section is gone;
+        without the section on either side, docker is left alone, unless a
+        revert left docker with another proxy (stale). The helper restarts
+        docker only when the proxy changes. That restarts the watcher too
+        (PartOf=docker.service), and its next pass, finding the proxy in
+        place, completes the apply."""
+        if not stale and "docker" not in new and "docker" not in (old or previous or {}):
+            return
+        staged = os.path.join(self.dirs.staging, "docker", "proxy.env")
+        self.root("docker-proxy", staged if os.path.exists(staged) else "--remove")
+
     def traefik(self, cfg, reload_only=False):
         tls = cfg.get("tls", {})
-        env = {"TRAEFIK_GENERATION": cfg["generation"]}
+        env = {"TRAEFIK_GENERATION": cfg["generation"], "THANOS_PORT": thanos_port(cfg)}
         if reload_only:
             self.sh(["./start-traefik.sh", "--reload"], env)
         elif tls.get("enabled"):
@@ -900,17 +958,33 @@ class Stack:
                 raise ApplyError("%s: not ready" % ", ".join(sorted(pending)))
             self.sleep(2)
 
-    def apply(self, old, new, argv, env, previous=None, ran_traefik=False):
+    def apply(self, old, new, argv, env, previous=None, ran_traefik=False, revert=False, proxy_stale=False):
         """Applies the actions that take the stack from old to new; with no
         old, a first apply, which also removes the drop-ins previous had.
-        ran_traefik: a failed apply may have left traefik running."""
+        ran_traefik: a failed apply may have left traefik running. A revert
+        keeps docker's proxy as it is, so it runs without restarting docker;
+        proxy_stale: docker runs a proxy a revert kept, so it is set again."""
         actions = plan(old, new)
+        if proxy_stale and not revert:
+            # as for a docker change: docker's restart stops the containers
+            actions = (actions | {RESTART}) - COVERED_BY_RESTART
         traefik = ran_traefik or any(tls_on(c) for c in (old, new, previous))
+        # first, so a docker restart, which restarts the watcher, interrupts
+        # the apply before anything else changed
+        if ("docker_proxy" in actions or proxy_stale) and not revert:
+            self.docker_proxy(old, new, previous, stale=proxy_stale)
         self.move_staged()
         if "systemd_dropins" in actions:
             self.systemd_dropins(old, new, previous)
         if "install_certs" in actions:
             self.install_certs(new)
+        # the flag comes from grafana.thanos_datasource or stack.extra_flags;
+        # a stack restart, or grafana_datasource, restarts Grafana anyway
+        if "--no-thanos-datasource" in argv:
+            if {"thanos_datasource", RESTART} & actions:
+                self.thanos_datasource(argv, True, restart=not ({RESTART, "grafana_datasource"} & actions))
+        elif RESTART in actions:
+            self.thanos_datasource(argv, False)
         if RESTART in actions:
             self.restart_stack(argv, env, new, first=old is None, traefik=traefik)
         else:
@@ -971,6 +1045,11 @@ def tls_on(cfg):
     return bool(cfg and cfg.get("tls", {}).get("enabled"))
 
 
+def thanos_port(cfg):
+    """The local port traefik's 10911 entry point forwards to."""
+    return str(cfg.get("tls", {}).get("thanos_port", 10911))
+
+
 def incomplete_path(dirs):
     """Marks applied.yaml as only partly applied: the next apply is a first
     apply. It holds "traefik" when traefik may still be running, since
@@ -1002,10 +1081,17 @@ def failed(dirs, text, cfg, error, traefik=False):
     return 1
 
 
+def proxy_stale_path(dirs):
+    """Marks docker's proxy as another than applied.yaml's: a revert kept the
+    proxy of the failed apply, so the next apply sets it again."""
+    return os.path.join(dirs.state, "proxy.stale")
+
+
 def done(dirs, text):
     store_applied(dirs, text)
-    if os.path.exists(incomplete_path(dirs)):
-        os.remove(incomplete_path(dirs))
+    for path in (incomplete_path(dirs), proxy_stale_path(dirs)):
+        if os.path.exists(path):
+            os.remove(path)
 
 
 def apply_once(args, stack=None, run=subprocess.run, path=None):
@@ -1025,7 +1111,8 @@ def apply_once(args, stack=None, run=subprocess.run, path=None):
     applied_text = read_applied(dirs)
     incomplete = os.path.exists(incomplete_path(dirs))
     force = getattr(args, "force", False) or incomplete
-    if text == applied_text and not force:
+    proxy_stale = os.path.exists(proxy_stale_path(dirs))
+    if text == applied_text and not force and not proxy_stale:
         return 0
     try:
         new, argv, env = prepare(args, dirs, path, run, stack)
@@ -1035,7 +1122,8 @@ def apply_once(args, stack=None, run=subprocess.run, path=None):
     old = None if force else previous
     ran_traefik = traefik_may_run(dirs) or tls_on(previous) or tls_on(new)
     try:
-        actions = stack.apply(old, new, argv, env, previous, ran_traefik=traefik_may_run(dirs))
+        actions = stack.apply(old, new, argv, env, previous, ran_traefik=traefik_may_run(dirs),
+                              proxy_stale=proxy_stale)
     except ApplyError as failure:
         error = str(failure)
         if not (args.auto_revert and previous is not None and not incomplete):
@@ -1044,9 +1132,11 @@ def apply_once(args, stack=None, run=subprocess.run, path=None):
         # apply, since the failed one may have stopped anywhere
         try:
             old_cfg, old_argv, old_env = prepare(args, dirs, applied_path(dirs), run, stack)
-            stack.apply(None, old_cfg, old_argv, old_env, new)
+            stack.apply(None, old_cfg, old_argv, old_env, new, revert=True)
         except (ApplyError, ConfigError) as e:
             return failed(dirs, text, new, "%s; revert failed: %s" % (error, e.args[0]), ran_traefik)
+        if new.get("docker") != old_cfg.get("docker"):
+            write_private(proxy_stale_path(dirs), "")
         write_status(dirs, {"generation": new["generation"], "state": "reverted", "error": error,
                             "applied_generation": old_cfg["generation"], "time": now()})
         print("reverted: " + error, file=sys.stderr)

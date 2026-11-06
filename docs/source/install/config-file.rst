@@ -23,7 +23,7 @@ Requirements
      sudo install -o root -g root -m 755 scylla-monitoring-root.sh /usr/local/sbin/
      echo 'scylla ALL=(root) NOPASSWD: /usr/local/sbin/scylla-monitoring-root.sh' | sudo tee /etc/sudoers.d/scylla-monitoring
 
-  Replace ``scylla`` with the watcher's user. Without the ``tls`` and ``systemd`` sections, the watcher does not need root.
+  Replace ``scylla`` with the watcher's user. Without the ``tls``, ``systemd`` and ``docker`` sections, the watcher does not need root.
 
 The Configuration File
 ----------------------
@@ -36,7 +36,8 @@ The description of each field names the ``start-all.sh`` flag it replaces and it
    :language: yaml
 
 ``version``, ``generation``, ``stack`` and ``targets`` are required. A missing optional section keeps the
-``start-all.sh`` default: without ``tls`` no traefik runs, and without ``systemd`` the host's units are left as they are.
+``start-all.sh`` default: without ``tls`` no traefik runs, without ``systemd`` the host's units are left as they are,
+and without ``docker`` the host's Docker daemon is left as it is.
 
 ``stack.extra_flags`` takes any other ``start-all.sh`` flag, in ``start-all.sh`` syntax. A flag there takes
 precedence over the same option derived from the rest of the file. The options the watcher sets from the file itself
@@ -105,8 +106,23 @@ Run the watcher as a service, for example with ``/etc/systemd/system/scylla-moni
    [Service]
    User=scylla
    WorkingDirectory=/opt/scylla-monitoring
-   ExecStart=/usr/bin/python3 /opt/scylla-monitoring/scylla_monitoring_config.py run --monitoring-dir /opt/scylla-monitoring --config-file /etc/scylla-monitoring/scylla-monitoring.yaml --root-helper /usr/local/sbin/scylla-monitoring-root.sh
+   ExecStart=/usr/bin/python3 /opt/scylla-monitoring/scylla_monitoring_config.py run --monitoring-dir /opt/scylla-monitoring --config-file /etc/scylla-monitoring/scylla-monitoring.yaml --root-helper /usr/local/sbin/scylla-monitoring-root.sh --auto-revert
    Restart=on-failure
+
+   [Install]
+   WantedBy=multi-user.target
+
+To start a stopped watcher whenever the file is written, add a path unit, ``/etc/systemd/system/scylla-monitoring-config.path``,
+with one ``PathChanged=`` for each ``--config-file``, and enable it:
+
+.. code-block:: ini
+
+   [Unit]
+   Description=Start the monitoring config watcher when its config file is written
+
+   [Path]
+   PathChanged=/etc/scylla-monitoring/scylla-monitoring.yaml
+   Unit=scylla-monitoring-config.service
 
    [Install]
    WantedBy=multi-user.target
@@ -116,6 +132,7 @@ and always in the state directory. When the data directories are on a separate d
 
 * ``systemctl stop scylla-monitoring-config`` stops the watcher; ``./kill-all.sh --traefik`` (or ``docker compose down``) then stops the containers, traefik included.
 * ``systemctl start scylla-monitoring-config`` starts the watcher, which brings the stack up.
+* With the path unit, writing the file starts a stopped watcher too. A stop without a new file keeps the watcher and the stack down.
 
 How Changes Are Applied
 -----------------------
@@ -133,9 +150,13 @@ Change                                                     What runs
 ``cluster``                                                the Prometheus configuration is generated again, then reloaded
 ``grafana.admin_password``                                 the password is set in Grafana
 ``grafana.datasource``                                     the data source is written, then Grafana restarts
+``grafana.thanos_datasource`` to false                     Grafana deletes the Thanos data source, then restarts
 ``tls`` certificates                                       the certificates are installed, then traefik reloads them
+``tls.thanos_port``                                        traefik reloads its configuration
 ``tls.enabled``, ``tls.listen_ip``                         traefik starts, restarts or is removed
 ``systemd``                                                the unit's drop-in is written or removed, then the unit restarts
+``docker``                                                 Docker's proxy is written or removed, then Docker and the stack restart
+``stack.quick_startup``                                    nothing; ``start-all.sh`` uses it at the next restart
 ``stack``, ``storage``, ``prometheus``, other ``grafana``  the stack restarts
 ========================================================== ==================================================
 
@@ -156,6 +177,25 @@ so a drop-in can set its arguments:
 
 With ``tls.enabled``, traefik serves the stack on ``tls.listen_ip`` with mutual TLS.
 Set ``stack.bind_address`` to ``127.0.0.1`` as well, so traefik is the only way in.
+Its port 10911 forwards to ``tls.thanos_port``: 10911, the Thanos sidecar, by default, or 10903, the Thanos query that
+``stack.local_thanos`` runs, so a central Thanos querier connecting to port 10911 reaches the local query.
+
+The ``docker`` section sets the proxy the Docker daemon uses, for example to pull images on a host without direct
+Internet access:
+
+.. code-block:: yaml
+
+   docker:
+     http_proxy: http://10.0.0.5:3128
+     https_proxy: http://10.0.0.5:3128
+
+The values are URLs; an HTTP proxy is given with ``http://`` for ``https_proxy`` too. A URL can hold the proxy's
+credentials, such as ``http://user:password@10.0.0.5:3128``. The watcher writes them as ``HTTP_PROXY`` and
+``HTTPS_PROXY`` in ``/etc/systemd/system/docker.service.d/50-scylla-monitoring.env``, readable by root only, and adds the
+drop-in ``50-scylla-monitoring.conf`` next to it, which reads that file with ``EnvironmentFile=``, so systemd does not
+show the values to other users. Both files stay in place across reboots and upgrades, and the watcher restarts Docker
+only when they change, or when an earlier restart did not happen. Restarting Docker also restarts a watcher that runs with ``PartOf=docker.service``;
+the watcher then applies the file again and completes the apply. Removing the section removes both files.
 
 The Status File
 ---------------
@@ -172,6 +212,8 @@ next to each config file:
 * ``rejected``: the file is invalid; the stack still runs ``applied_generation``.
 * ``failed``: the apply failed; the stack is left as the failed apply left it, for inspection. The next apply runs every action, as a first apply does.
 * ``reverted``: the apply failed and, with ``--auto-revert``, the previous configuration was applied again.
+  Docker's proxy stays as the failed apply set it, so the revert runs without restarting Docker;
+  the next apply sets the proxy again and restarts the stack, even when it writes the file that is already applied.
 
 Error messages name the section and position, without the values, since the file holds secrets.
 

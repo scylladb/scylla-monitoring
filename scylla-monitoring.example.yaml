@@ -15,6 +15,7 @@ stack:
   log_collector: alloy                # --log-collector alloy|promtail|none
   thanos_sidecar: true                # --thanos-sc
   local_thanos: false                 # --local-thanos
+  quick_startup: false                # --quick-startup
   bind_address: 127.0.0.1             # -A; 127.0.0.1 when tls.enabled is true
   docker_args: ["--restart=unless-stopped"]   # -D
   extra_flags: []                     # start-all.sh syntax; takes precedence over the rest
@@ -32,6 +33,7 @@ grafana:
   root_url: https://example.com/grafana  # GF_SERVER_ROOT_URL
   default_theme: light                   # GF_USERS_DEFAULT_THEME
   anonymous_role: Viewer                 # -Q
+  thanos_datasource: true                # false: --no-thanos-datasource
   env:                                   # -c, any other Grafana setting
     GF_SECURITY_COOKIE_SECURE: "true"
   admin_password: "change-me"            # GRAFANA_ADMIN_PASSWORD
@@ -82,9 +84,14 @@ systemd:                                 # drop-ins for host services, by unit
     [Service]
     Environment=NODE_EXPORTER_ARGS=--web.listen-address=127.0.0.1:9100
 
+# docker:                                # the docker daemon's proxy; missing: docker is left as it is
+#   http_proxy: http://10.0.0.5:3128     # HTTP_PROXY
+#   https_proxy: http://10.0.0.5:3128    # HTTPS_PROXY
+
 tls:
   enabled: true                          # run traefik
   listen_ip: 10.0.0.10                   # PRIVATE_IP of start-traefik.sh
+  thanos_port: 10911                     # behind :10911; 10911 the sidecar, 10903 the Thanos query
   ca_crt: |                              # rootCA.crt
     -----BEGIN CERTIFICATE-----
     ...
