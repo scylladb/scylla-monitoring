@@ -466,6 +466,9 @@ class FakeHost:
         self.fail = set(fail)
 
     def run(self, cmd, **kwargs):
+        if cmd[0] == "bash" and "LOG_COLLECTOR" in cmd[2]:
+            # sources env.sh in the test's monitoring directory
+            return subprocess.run(cmd, **kwargs)
         if cmd[0] == "bash" and "STACK_PROMETHEUS" in cmd[2]:
             return SimpleNamespace(returncode=0, stdout="9052 3002 9042\n")
         if cmd[0] == "bash" and "versions.sh" in cmd[2]:
@@ -492,7 +495,7 @@ def make_stack(tmp, host):
                            cert_dir="/certs", root_helper="/helper", health_timeout=0, config_file=[], state_dir=None)
     dirs = smc.make_dirs(args)
     http = lambda method, url: 200
-    return args, smc.Stack(dirs, args, host.run, http, sleep=lambda s: None)
+    return args, smc.Stack(dirs, args, host.run, http, sleep=lambda s: None, listening=lambda h, port: True)
 
 
 def apply(args, stack, host, cfg):
@@ -751,6 +754,141 @@ def test_apply_compose():
         assert apply(args, stack, host, cfg) == 0
         assert names(host) == ["prometheus-config.sh -m", "grafana-datasource.sh", "docker compose"]
         assert "--traefik" not in builds[-1][0]
+
+
+def test_full_apply_when_down():
+    """A container that went down, whose port refuses connections, is started
+    by a stack restart, also when the file's changes start nothing, in
+    start-all.sh and in compose mode; the privileged actions that did not
+    change do not run again. A component that takes connections is up,
+    however slow; ports that cannot be worked out are not a component down;
+    a forced apply and a rejected file are not checked."""
+    import make_compose
+    for compose in (False, True):
+        with tempfile.TemporaryDirectory() as tmp:
+            host = FakeHost()
+            args, stack = make_stack(tmp, host)
+            args.auto_revert = True
+            if compose:
+                stack.compose = True
+
+                def build(argv, environ, cwd):
+                    result = make_compose.Stack()
+                    result.compose = {"services": {}}
+                    result.commands = [["./prometheus-config.sh", "-m", "aalert:9093"]]
+                    return result
+                stack.compose_build = build
+            cfg = example()
+            assert apply(args, stack, host, cfg) == 0
+            restart = "docker compose" if compose else "start-all.sh -v"
+            ports = []
+
+            # Grafana crashed: its port refuses connections, and it is not
+            # ready, until the stack restarts
+            def listening(h, port):
+                ports.append((h, port))
+                return port != "3000" or restart in names(host)
+
+            def health(argv, c, timeout=None):
+                if restart not in names(host):
+                    raise smc.ApplyError("grafana: not ready")
+            stack.listening, stack.health = listening, health
+            host.commands.clear()
+            cfg["generation"] = "g2"
+            assert apply(args, stack, host, cfg) == 0
+            status = json.load(open(os.path.join(tmp, "config-state/status.json")))
+            assert status["state"] == "applied" and status["generation"] == "g2"
+            assert yaml.safe_load(open(os.path.join(tmp, "config-state/applied.yaml")))["generation"] == "g2"
+            assert ("127.0.0.1", "3000") in ports and restart in names(host)
+            # compose up starts the exited container; drop-ins, certificates
+            # and the password are left as they are
+            assert not [n for n in names(host) if n.startswith("helper") or n == "docker exec"]
+            assert ("kill-all.sh --traefik" in names(host)) != compose
+            # every port takes connections: the same change starts nothing
+            stack.listening = lambda h, port: ports.append(port) or True
+            stack.health = lambda argv, c, timeout=None: None
+            ports.clear()
+            host.commands.clear()
+            cfg["generation"] = "g3"
+            assert apply(args, stack, host, cfg) == 0
+            # Alloy, the Thanos sidecar and, with TLS, traefik's ping port too
+            assert set(ports) == {"9090", "3000", "9093", "3100", "12345", "10911", "8080"}
+            assert restart not in names(host)
+            # Promtail, on its port, when it is the collector
+            cfg["stack"]["log_collector"] = "promtail"
+            cfg["generation"] = "g3a"
+            assert apply(args, stack, host, cfg) == 0
+            ports.clear()
+            cfg["generation"] = "g3a2"
+            assert apply(args, stack, host, cfg) == 0 and "9080" in ports and "12345" not in ports
+            # the collector's port from env.sh, as start-all.sh takes it
+            cfg["stack"]["log_collector"] = "alloy"
+            cfg["generation"] = "g3e"
+            assert apply(args, stack, host, cfg) == 0
+            # and the sidecar's, which compose publishes on 10911 anyway
+            smc.write_file(os.path.join(tmp, "env.sh"), "ALLOY_PORT=12346\nTHANOS_SC_PORT=10921\n")
+            ports.clear()
+            cfg["generation"] = "g3e2"
+            assert apply(args, stack, host, cfg) == 0 and "12346" in ports and "12345" not in ports
+            assert ("10911" in ports, "10921" in ports) == (compose, not compose)
+            # an override that is not a port: a warning, and nothing is known to be down
+            smc.write_file(os.path.join(tmp, "env.sh"), "ALLOY_PORT=abc\n")
+            assert quiet(smc.container_down, smc.make_dirs(args), stack) == (
+                False, "warning: cannot check the stack's ports: ValueError\n")
+            smc.write_file(os.path.join(tmp, "env.sh"), "ALLOY_PORT=70000\n")
+            assert quiet(smc.container_down, smc.make_dirs(args), stack) == (
+                False, "warning: cannot check the stack's ports: ValueError\n")
+            os.remove(os.path.join(tmp, "env.sh"))
+            # the Thanos query, when the stack runs it
+            cfg["stack"]["local_thanos"] = True
+            cfg["generation"] = "g3b"
+            assert apply(args, stack, host, cfg) == 0
+            stack.listening = lambda h, port: port != "10903"
+            host.commands.clear()
+            cfg["generation"] = "g3c"
+            assert apply(args, stack, host, cfg) == 0 and restart in names(host)
+            # ports that cannot be worked out: nothing is known to be down
+            stack.listening = lambda h, port: False
+            components = stack.components
+
+            def no_ports(argv):
+                raise smc.ApplyError("--stack 2: versions.sh assigns it no ports")
+            stack.components = no_ports
+            host.commands.clear()
+            cfg["generation"] = "g3d"
+            assert apply(args, stack, host, cfg) == 0 and restart not in names(host)
+            stack.components = components
+            # nor is a malformed applied.yaml
+            applied = os.path.join(tmp, "config-state/applied.yaml")
+            text = open(applied).read()
+            smc.write_file(applied, "stack: 1\n", 0o600)
+            # the warning names the error, not the file's values
+            assert quiet(smc.container_down, smc.make_dirs(args), stack) == (
+                False, "warning: cannot check the stack's ports: AttributeError\n")
+            smc.write_file(applied, text, 0o600)
+            # a forced apply runs everything anyway, and a rejected file runs nothing
+            stack.listening = lambda h, port: ports.append(port) or True
+            ports.clear()
+            args.force = True
+            cfg["generation"] = "g4"
+            assert apply(args, stack, host, cfg) == 0 and ports == []
+            args.force = False
+            cfg["generation"] = "g5"
+            cfg["tls"]["listen_ip"] = ""
+            assert apply(args, stack, host, cfg) == 1 and ports == []
+            assert json.load(open(os.path.join(tmp, "config-state/status.json")))["state"] == "rejected"
+
+
+def test_port_listening():
+    """Only a refused connection is a port nobody listens on."""
+    import socket
+    server = socket.socket()
+    server.bind(("127.0.0.1", 0))
+    server.listen()
+    port = server.getsockname()[1]
+    assert smc.port_listening("127.0.0.1", port)
+    server.close()
+    assert not smc.port_listening("127.0.0.1", port)
 
 
 def test_stack_flags():
@@ -1192,7 +1330,7 @@ def test_run_loop():
             path = write_config(directory, cfg)
             os.utime(path, (mtime, mtime))
 
-        stack.apply = lambda old, new, argv, env, previous=None, ran_traefik=False, proxy_stale=False: \
+        stack.apply = lambda old, new, argv, env, previous=None, ran_traefik=False, proxy_stale=False, restart=False: \
             generations.append(new["generation"]) or set()
         stack.sleep = step
         # nothing there yet: the loop waits; then a writes, then b, then a again
@@ -1223,7 +1361,7 @@ def test_run_loop_start():
         stack.health = down
         olds = []
 
-        def fake_apply(old, new, argv, env, previous=None, ran_traefik=False, proxy_stale=False):
+        def fake_apply(old, new, argv, env, previous=None, ran_traefik=False, proxy_stale=False, restart=False):
             olds.append(old)
             if len(olds) == 1:
                 raise RuntimeError("boom")
