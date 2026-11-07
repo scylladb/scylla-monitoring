@@ -162,6 +162,11 @@ Change                                                     What runs
 
 Adding or removing ``alert_rules``, ``alertmanager_config`` or ``targets.vector_search`` also restarts the stack.
 
+Before it applies the changes, the watcher checks that every component takes connections on its port, the log collector, the
+Thanos sidecar and query and traefik included when they run. When one refuses them, as when its container crashed, the stack restarts along with
+the changes, so the next file the watcher accepts brings the stack back. A component that is starting or busy takes connections,
+so it is not restarted for it.
+
 A ``systemd`` entry maps a unit name to the content of a drop-in, written as
 ``/etc/systemd/system/<unit>.d/50-scylla-monitoring.conf``. The watcher owns only that file.
 Keep secrets out of drop-ins: systemd shows a unit's settings, ``Environment=`` included, to every user on the host.
