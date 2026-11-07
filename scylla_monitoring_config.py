@@ -22,6 +22,7 @@ import os
 import re
 import shlex
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -732,11 +733,12 @@ def option(argv, opt, default=None):
 class Stack:
     """Runs the actions against the stack in the monitoring directory."""
 
-    def __init__(self, dirs, args, run=subprocess.run, http=None, sleep=time.sleep):
+    def __init__(self, dirs, args, run=subprocess.run, http=None, sleep=time.sleep, listening=None):
         self.dirs = dirs
         self.args = args
         self.run = run
         self.http = http or http_status
+        self.listening = listening or port_listening
         self.sleep = sleep
         self.compose = getattr(args, "compose", False)
         self.compose_build = None  # make_compose.build, set on first use; tests replace it
@@ -779,6 +781,35 @@ class Stack:
         if option(argv, "--log-collector", "alloy") != "none" and not option(argv, "--stack"):
             result.append(("loki", ports["loki"], "/ready"))
         return result
+
+    def extra_ports(self, argv, loki):
+        """The ports of the log collector, which runs with Loki, of the
+        Grafana renderer and of the Thanos sidecar and query, with env.sh's
+        overrides: make_compose.py takes start-all.sh's options over env.sh
+        as start-all.sh does."""
+        import make_compose
+        cwd = self.dirs.monitoring
+        v = make_compose.shell_vars(cwd, dict(os.environ), os.path.join(cwd, "env.sh"))
+        o = make_compose.options(argv, v, make_compose.Paths(cwd))
+        ports = []
+        if loki and o["log_collector"] == "alloy":
+            ports.append(o["alloy_port"] or "12345")
+        # start-loki.sh skips Promtail with NO_PROMTAIL=1; compose does not
+        elif loki and o["log_collector"] == "promtail" and (self.compose or v.get("NO_PROMTAIL") != "1"):
+            # under host networking Promtail listens on 9080, whatever its
+            # port; start-loki.sh takes PROMTAIL_PORT too, compose does not
+            host_net = make_compose.HOST_NET.search(o["docker_param"])
+            ports.append("9080" if host_net else o["promtail_port"] or
+                         (not self.compose and v.get("PROMTAIL_PORT")) or "9080")
+        # a secondary stack runs no renderer
+        if o["renderer"] and not o["stack"]:
+            ports.append("8081")
+        if o["thanos_sc"] and o["data_dir"]:
+            # start-thanos-sc.sh takes THANOS_SC_PORT; compose publishes 10911
+            ports.append((not self.compose and v.get("THANOS_SC_PORT")) or "10911")
+        if o["thanos"] or o["local_thanos"]:
+            ports.append("10903")
+        return ports
 
     def move_staged(self):
         """Renames each staged file into its live directory; the directories
@@ -958,14 +989,16 @@ class Stack:
                 raise ApplyError("%s: not ready" % ", ".join(sorted(pending)))
             self.sleep(2)
 
-    def apply(self, old, new, argv, env, previous=None, ran_traefik=False, revert=False, proxy_stale=False):
+    def apply(self, old, new, argv, env, previous=None, ran_traefik=False, revert=False, proxy_stale=False,
+              restart=False):
         """Applies the actions that take the stack from old to new; with no
         old, a first apply, which also removes the drop-ins previous had.
         ran_traefik: a failed apply may have left traefik running. A revert
         keeps docker's proxy as it is, so it runs without restarting docker;
-        proxy_stale: docker runs a proxy a revert kept, so it is set again."""
+        proxy_stale: docker runs a proxy a revert kept, so it is set again.
+        restart: the stack restarts too, as for a container that went down."""
         actions = plan(old, new)
-        if proxy_stale and not revert:
+        if (proxy_stale and not revert) or restart:
             # as for a docker change: docker's restart stops the containers
             actions = (actions | {RESTART}) - COVERED_BY_RESTART
         traefik = ran_traefik or any(tls_on(c) for c in (old, new, previous))
@@ -1022,6 +1055,18 @@ def http_status(method, url):
         return e.code
     except (urllib.error.URLError, OSError):
         return None
+
+
+def port_listening(host, port):
+    """Whether host:port takes a connection. Only a refused one counts: a
+    busy service that is slow to answer is listening."""
+    try:
+        socket.create_connection((host, int(port)), timeout=5).close()
+    except ConnectionRefusedError:
+        return False
+    except OSError:
+        pass
+    return True
 
 
 def applied_path(dirs):
@@ -1120,10 +1165,16 @@ def apply_once(args, stack=None, run=subprocess.run, path=None):
         return rejected(dirs, e)
     previous = yaml.safe_load(applied_text) if applied_text else None
     old = None if force else previous
+    # Only a stack restart starts a container that went down (one that
+    # crashed): without it, a file whose changes start nothing fails the
+    # health check and is reverted. The changes' other actions run as planned.
+    restart = old is not None and container_down(dirs, stack)
+    if restart:
+        print("a component is down: the stack restarts", file=sys.stderr)
     ran_traefik = traefik_may_run(dirs) or tls_on(previous) or tls_on(new)
     try:
         actions = stack.apply(old, new, argv, env, previous, ran_traefik=traefik_may_run(dirs),
-                              proxy_stale=proxy_stale)
+                              proxy_stale=proxy_stale, restart=restart)
     except ApplyError as failure:
         error = str(failure)
         if not (args.auto_revert and previous is not None and not incomplete):
@@ -1153,6 +1204,38 @@ def signature(path):
     except FileNotFoundError:
         return None
     return (st.st_ino, st.st_mtime_ns, st.st_size)
+
+
+def container_down(dirs, stack):
+    """Whether a component of the applied file's stack refuses connections on
+    its port, as when its container exited (it crashed). A component that is
+    starting or busy takes the connection, so it is not restarted for it.
+    When the ports cannot be worked out, nothing is known to be down."""
+    applied = read_applied(dirs)
+    if applied is None:
+        return False
+    try:
+        cfg = yaml.safe_load(applied)
+        argv, _ = normalize(cfg, dirs)
+        host = stack.host(argv)
+        components = stack.components(argv)
+        ports = [(host, port) for _, port, _ in components]
+        loki = "loki" in [c[0] for c in components]
+        ports += [(host, port) for port in stack.extra_ports(argv, loki)]
+        if tls_on(cfg):
+            ports.append(("localhost", "8080"))  # traefik's ping
+        for _, port in ports:
+            if not 0 < int(port) < 65536:
+                raise ValueError("port out of range")
+    except (ApplyError, ConfigError) as e:
+        print("warning: cannot check the stack's ports: %s" % e.args[0], file=sys.stderr)
+        return False
+    # a malformed applied.yaml or port, or -h in env.sh, on which make_compose.py
+    # exits; the values may be secrets
+    except (Exception, SystemExit) as e:
+        print("warning: cannot check the stack's ports: %s" % type(e).__name__, file=sys.stderr)
+        return False
+    return not all(stack.listening(host, port) for host, port in ports)
 
 
 def stack_up(dirs, stack):
