@@ -184,6 +184,9 @@ so a drop-in can set its arguments:
 
 With ``tls.enabled``, traefik serves the stack on ``tls.listen_ip`` with mutual TLS.
 Set ``stack.bind_address`` to ``127.0.0.1`` as well, so traefik is the only way in.
+When the stack restarts, traefik starts at the same time as the other containers.
+With ``stack.quick_startup``, ``start-traefik.sh --quick-startup`` does not wait until traefik routes a request;
+the watcher's health check waits for traefik's ping endpoint with the other components instead.
 Its port 10911 forwards to ``tls.thanos_port``: 10911, the Thanos sidecar, by default, or 10903, the Thanos query that
 ``stack.local_thanos`` runs, so a central Thanos querier connecting to port 10911 reaches the local query.
 

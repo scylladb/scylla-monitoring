@@ -16,6 +16,7 @@
 # since the file carries secrets.
 
 import argparse
+import concurrent.futures
 import contextlib
 import datetime
 import json
@@ -380,6 +381,11 @@ def render(cfg, staging, no_manager=False):
                     for field, var in (("http_proxy", "HTTP_PROXY"), ("https_proxy", "HTTPS_PROXY")) if field in docker)
     if proxy:
         write_file(os.path.join(staging, "docker/proxy.env"), proxy, 0o600)
+
+
+def loopback(address):
+    """Whether -A binds to loopback only; without it, start-all.sh publishes on every address."""
+    return bool(address) and (address.startswith("127.") or address in ("::1", "localhost"))
 
 
 def took(start):
@@ -831,6 +837,24 @@ class Stack:
             ports.append("10903")
         return ports
 
+    def host_network(self, argv):
+        """Whether the containers run on the host network (-l, or --net=host
+        in -D or env.sh's DOCKER_PARAM), as start-all.sh works it out; when
+        env.sh cannot be read, as if they did, which keeps traefik's start
+        after the stack, the order that is safe either way."""
+        import make_compose
+        cwd = self.dirs.monitoring
+        try:
+            v = make_compose.shell_vars(cwd, dict(os.environ), os.path.join(cwd, "env.sh"))
+            o = make_compose.options(argv, v, make_compose.Paths(cwd))
+        # options() exits on -h in env.sh, as start-all.sh does
+        except (Exception, SystemExit) as e:
+            # values may be secrets: the type only
+            print("warning: cannot read env.sh: %s; traefik starts after the stack" % type(e).__name__,
+                  file=sys.stderr)
+            return True
+        return bool(make_compose.HOST_NET.search(o["docker_param"]))
+
     def move_staged(self):
         """Renames each staged file into its live directory; the directories
         stay in place, since the containers' bind mounts hold them."""
@@ -861,10 +885,34 @@ class Stack:
 
     def restart_stack(self, argv, env, cfg, first=False, traefik=False):
         if not self.compose:
+            tls = cfg.get("tls", {}).get("enabled")
+            quick = "--quick-startup" in argv
+            # worked out before the stack stops, so an error leaves it running
+            serial = tls and (not loopback(option(argv, "-A")) or self.host_network(argv))
             self.kill_all(argv, traefik)
-            self.sh(["./start-all.sh"] + argv, env)
-            if cfg.get("tls", {}).get("enabled"):
-                self.traefik(cfg)
+            if serial:
+                # services published outside loopback, or on the host network,
+                # where -A does not apply, would race traefik for its ports;
+                # started after them, start-traefik.sh reports it
+                self.sh(["./start-all.sh"] + argv, env)
+                self.traefik(cfg, quick=quick)
+                return
+            # traefik routes to services that may not be up yet; it starts
+            # while start-all.sh runs, and the apply waits for both
+            proxy = None
+            if tls:
+                proxy = concurrent.futures.ThreadPoolExecutor(1).submit(self.traefik, cfg, quick=quick)
+            try:
+                self.sh(["./start-all.sh"] + argv, env)
+            except BaseException:
+                if proxy:
+                    proxy.exception()  # waits; start-all.sh's error is the one reported
+                raise
+            if proxy:
+                proxy.result()
+                # start-traefik.sh checked the ports before the services
+                # listened on them; check again, as compose does
+                self.traefik(cfg, check_only=True)
             return
         import make_compose
         stack, environ = self.compose_stack(argv, env, cfg)
@@ -982,14 +1030,19 @@ class Stack:
         staged = os.path.join(self.dirs.staging, "docker", "proxy.env")
         self.root("docker-proxy", staged if os.path.exists(staged) else "--remove")
 
-    def traefik(self, cfg, reload_only=False):
+    def traefik(self, cfg, reload_only=False, quick=False, check_only=False):
+        """quick: as start-all.sh --quick-startup, traefik starts without a
+        wait until it routes; health waits for its ping. check_only: only
+        checks that no proxied port is reachable outside loopback."""
         tls = cfg.get("tls", {})
         env = {"TRAEFIK_GENERATION": cfg["generation"], "THANOS_PORT": thanos_port(cfg)}
         if reload_only:
             self.sh(["./start-traefik.sh", "--reload"], env)
+        elif check_only:
+            self.sh(["./start-traefik.sh", "--check"], dict(env, PRIVATE_IP=tls["listen_ip"]))
         elif tls.get("enabled"):
             env.update(PRIVATE_IP=tls["listen_ip"], CERT_DIR=self.args.cert_dir)
-            self.sh(["./start-traefik.sh"], env)
+            self.sh(["./start-traefik.sh"] + (["--quick-startup"] if quick else []), env)
         else:
             self.run(["docker", "rm", "-f", "traefik"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -1077,7 +1130,7 @@ class Stack:
                     self.restart_stack(argv, env, new, traefik=traefik)
             elif "start_traefik" in actions:
                 with timed("apply: start_traefik"):
-                    self.traefik(new)
+                    self.traefik(new, quick="--quick-startup" in argv)
             elif "reload_traefik" in actions:
                 with timed("apply: reload_traefik"):
                     self.traefik(new, reload_only=True)

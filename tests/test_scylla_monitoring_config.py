@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 from types import SimpleNamespace
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -513,14 +514,27 @@ def names(host):
     return out
 
 
+def traefik_beside(seq):
+    """names() with start-traefik.sh, which runs beside start-all.sh, right
+    after kill-all.sh, whichever of the two the thread ran first."""
+    seq = list(seq)
+    if "kill-all.sh --traefik" in seq and "start-traefik.sh" in seq:
+        assert seq.index("kill-all.sh --traefik") < seq.index("start-traefik.sh"), seq
+    if "start-traefik.sh" in seq and "start-all.sh -v" in seq:
+        seq.remove("start-traefik.sh")
+        seq.insert(seq.index("start-all.sh -v"), "start-traefik.sh")
+    return seq
+
+
 def test_apply():
     with tempfile.TemporaryDirectory() as tmp:
         host = FakeHost()
         args, stack = make_stack(tmp, host)
         cfg = example()
         assert apply(args, stack, host, cfg) == 0
-        assert names(host) == ["helper dropin", "helper certs", "kill-all.sh --traefik", "start-all.sh -v",
-                               "start-traefik.sh", "docker exec"]
+        assert traefik_beside(names(host)) == ["helper dropin", "helper certs", "kill-all.sh --traefik",
+                                               "start-traefik.sh", "start-all.sh -v", "start-traefik.sh --check",
+                                               "docker exec"]
         assert host.commands[0][0][-2:] == ["node-exporter.service",
                                             tmp + "/config-build/staging/systemd/node-exporter.service.conf"]
         assert host.commands[-1][1] == cfg["grafana"]["admin_password"]
@@ -539,7 +553,8 @@ def test_apply():
         cfg["targets"].pop("vector_search")
         assert apply(args, stack, host, cfg) == 0
         assert not os.path.exists(os.path.join(tmp, "config-build/live/targets/vector_search_servers.yml"))
-        assert names(host) == ["kill-all.sh --traefik", "start-all.sh -v", "start-traefik.sh"]
+        assert traefik_beside(names(host)) == ["kill-all.sh --traefik", "start-traefik.sh", "start-all.sh -v",
+                                               "start-traefik.sh --check"]
 
 
 def test_apply_traefik_kept_without_tls():
@@ -1090,7 +1105,8 @@ def test_apply_docker_proxy():
         assert host.commands == [] and "g2" not in open(os.path.join(tmp, "config-state/applied.yaml")).read()
         # the next pass: the helper finds the proxy unchanged, then the stack starts
         assert apply(args, stack, host, cfg) == 0
-        assert names(host) == ["helper docker-proxy", "kill-all.sh --traefik", "start-all.sh -v", "start-traefik.sh"]
+        assert traefik_beside(names(host)) == ["helper docker-proxy", "kill-all.sh --traefik", "start-traefik.sh",
+                                               "start-all.sh -v", "start-traefik.sh --check"]
         assert host.commands[0][0][-1] == tmp + "/config-build/staging/docker/proxy.env"
         assert json.load(open(os.path.join(tmp, "config-state/status.json")))["generation"] == "g2"
         # a first apply sets it again; the helper restarts docker only on a change
@@ -1602,6 +1618,168 @@ def test_apply_once_summary():
         assert "apply: restart_stack failed after 0s" in lines, lines
         assert lines[-2].startswith("failed: ")
         assert lines[-1] == "failed generation %s in 0s (full)" % cfg["generation"], lines
+
+
+def test_traefik_parallel():
+    """traefik starts while start-all.sh runs, and restart_stack waits for
+    both; under quick startup it starts without its wait; a traefik that
+    fails fails the restart."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        traefik_started, start_all_started = threading.Event(), threading.Event()
+        log = []
+
+        def run(cmd, **kwargs):
+            if cmd == ["./start-traefik.sh", "--check"]:
+                log.append("check")
+            elif cmd[0] == "./start-traefik.sh":
+                traefik_started.set()
+                # start-all.sh starts before traefik is done
+                log.append("traefik overlaps start-all" if start_all_started.wait(5) else "traefik alone")
+                log.append("traefik done")
+            if cmd[0] == "./start-all.sh":
+                start_all_started.set()
+                assert traefik_started.wait(5)
+                log.append("start-all done")
+            return host.run(cmd, **kwargs)
+        stack.run = run
+        cfg = example()
+        cfg["stack"]["quick_startup"] = True
+        argv, env = smc.normalize(cfg, stack.dirs)
+        stack.restart_stack(argv, env, cfg, first=True, traefik=True)
+        # the exposure check runs again once both are done
+        assert sorted(log[:-1]) == ["start-all done", "traefik done", "traefik overlaps start-all"] and \
+            log[-1] == "check", log
+        # the exposure check runs again once start-all.sh is done
+        assert [c for c, _ in host.commands if c[0] == "./start-traefik.sh"] == [
+            ["./start-traefik.sh", "--quick-startup"], ["./start-traefik.sh", "--check"]]
+        check = next(e for (c, _), e in zip(host.commands, host.envs) if c[-1] == "--check")
+        assert check["PRIVATE_IP"] == cfg["tls"]["listen_ip"]
+        # without quick startup, start-traefik.sh waits for traefik
+        host.commands.clear()
+        cfg["stack"]["quick_startup"] = False
+        argv, env = smc.normalize(cfg, stack.dirs)
+        stack.run = host.run
+        stack.restart_stack(argv, env, cfg, first=True, traefik=True)
+        assert [c for c, _ in host.commands if c[0] == "./start-traefik.sh"] == [
+            ["./start-traefik.sh"], ["./start-traefik.sh", "--check"]]
+        # services published outside loopback, or on the host network where
+        # -A does not apply: traefik starts after them, so start-traefik.sh
+        # reports the exposure instead of racing for the ports
+        for bind, flags in ((None, []), ("0.0.0.0", []), ("127.0.0.1", ["-l"]),
+                            ("127.0.0.1", ["-D", "--net=host"])):
+            host.commands.clear()
+            c = copy.deepcopy(cfg)
+            c["stack"].pop("bind_address", None)
+            if bind:
+                c["stack"]["bind_address"] = bind
+            c["stack"]["extra_flags"] = flags
+            argv, env = smc.normalize(c, stack.dirs)
+            stack.restart_stack(argv, env, c, first=True, traefik=True)
+            assert [n for n in names(host) if n != "kill-all.sh --traefik"] == ["start-all.sh -v", "start-traefik.sh"], \
+                (bind, flags, names(host))
+        # the same with --net=host from env.sh's DOCKER_PARAM, which a -D
+        # replaces, as in start-all.sh: no docker_args
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write('DOCKER_PARAM="--net=host"\n')
+        host.commands.clear()
+        c = copy.deepcopy(cfg)
+        c["stack"].pop("docker_args", None)
+        argv, env = smc.normalize(c, stack.dirs)
+        stack.restart_stack(argv, env, c, first=True, traefik=True)
+        assert [n for n in names(host) if n != "kill-all.sh --traefik"] == ["start-all.sh -v", "start-traefik.sh"], \
+            names(host)
+        # an env.sh that cannot be read: the order that is safe either way,
+        # worked out before kill-all.sh stops anything
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write("echo hi\ncompgen() { echo DOCKER_PARAM; }\nDOCKER_PARAM=x\n")
+        host.commands.clear()
+        argv, env = smc.normalize(cfg, stack.dirs)
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            stack.restart_stack(argv, env, cfg, first=True, traefik=True)
+        assert names(host) == ["kill-all.sh --traefik", "start-all.sh -v", "start-traefik.sh"], names(host)
+        assert "warning: cannot read env.sh: IndexError; traefik starts after the stack" in err.getvalue(), err.getvalue()
+        # -h among env.sh's option words, on which make_compose.options exits
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write('SPECIFIC_SOLUTION="-h"\n')
+        host.commands.clear()
+        c = copy.deepcopy(cfg)
+        c["stack"].pop("docker_args", None)
+        argv, env = smc.normalize(c, stack.dirs)
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            stack.restart_stack(argv, env, c, first=True, traefik=True)
+        assert names(host) == ["kill-all.sh --traefik", "start-all.sh -v", "start-traefik.sh"], names(host)
+        os.remove(os.path.join(tmp, "env.sh"))
+        cfg["stack"]["bind_address"] = "127.0.0.1"
+        argv, env = smc.normalize(cfg, stack.dirs)
+        # a failed traefik fails the restart; start-all.sh's failure wins
+        for fail, error in ((("start-traefik.sh",), "start-traefik.sh failed"),
+                            (("start-traefik.sh", "start-all.sh"), "start-all.sh failed")):
+            stack.run = FakeHost(fail=fail).run
+            try:
+                stack.restart_stack(argv, env, cfg, first=True, traefik=True)
+                raise AssertionError("no failure")
+            except smc.ApplyError as e:
+                assert e.args[0] == error, e.args
+
+
+def test_health_traefik():
+    """health waits for traefik's ping beside the others, and a traefik that
+    never answers fails it with traefik pending."""
+    with tempfile.TemporaryDirectory() as tmp:
+        args, stack = make_stack(tmp, FakeHost())
+        cfg = {"tls": {"enabled": True}}
+        stack.http = ready_after({"traefik": ("8080", 3)})
+        with fake_clock(stack) as err:
+            stack.health([], cfg, timeout=100)
+        lines = err.getvalue().splitlines()
+        assert lines[0] == "health: waiting for prometheus, grafana, alertmanager, loki, traefik", lines
+        assert lines[-2:] == ["health: traefik ready after 4s", "health: ready after 4s"], lines
+        stack.http = ready_after({"traefik": ("8080", 1000)})
+        with fake_clock(stack) as err:
+            try:
+                stack.health([], cfg, timeout=5)
+                raise AssertionError("no timeout")
+            except smc.ApplyError as e:
+                assert e.args[0] == "traefik: not ready"
+        assert err.getvalue().splitlines()[-1] == "health: not ready after 6s: traefik"
+
+
+def test_start_traefik_quick_startup():
+    """start-traefik.sh --quick-startup starts traefik and runs no probe;
+    without it, the probe runs."""
+    with tempfile.TemporaryDirectory() as tmp:
+        for f in ("start-traefik.sh", "versions.sh"):
+            shutil.copy2(f, tmp)
+        stubs, certs = os.path.join(tmp, "stubs"), os.path.join(tmp, "certs")
+        os.makedirs(stubs)
+        os.makedirs(certs)
+        for f in ("server.crt", "server.key", "rootCA.crt"):
+            open(os.path.join(certs, f), "w").close()
+        calls = os.path.join(tmp, "calls")
+        for name, body in (("ip", 'echo "2: eth0    inet 10.0.0.10/24 scope global eth0"'),
+                           ("ss", 'echo "State Recv-Q Send-Q Local Address:Port Peer Address:Port"'),
+                           ("docker", '[ "$1 $2" = "info --format" ] && echo json-file; exit 0'),
+                           ("curl", 'echo curl >> "%s"; printf 200' % calls)):
+            path = os.path.join(stubs, name)
+            with open(path, "w") as f:
+                f.write("#!/bin/bash\n" + body + "\n")
+            os.chmod(path, 0o755)
+        env = dict(os.environ, PATH=stubs + ":" + os.environ["PATH"], PRIVATE_IP="10.0.0.10", CERT_DIR=certs)
+
+        def start(*flags):
+            if os.path.exists(calls):
+                os.remove(calls)
+            res = subprocess.run(["./start-traefik.sh"] + list(flags), cwd=tmp, env=env, stdin=subprocess.DEVNULL,
+                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+            assert res.returncode == 0, res.stdout
+            return open(calls).read().split() if os.path.exists(calls) else []
+        assert start("--quick-startup") == []
+        assert start() == ["curl"]
+
 
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):

@@ -18,6 +18,9 @@
 # PRIVATE_IP only.
 # --check checks only that no proxied port is reachable outside loopback; it
 # needs PRIVATE_IP only.
+# --quick-startup, first, as start-all.sh's, starts traefik without waiting
+# until it routes a request; the config watcher's health check waits for its
+# ping endpoint instead.
 #
 # Clients must present a certificate signed by rootCA.crt. The readiness probe
 # presents server.crt, so that certificate must also allow client auth, and it
@@ -164,6 +167,12 @@ ping:
   entryPoint: "ping"
 EOF
 }
+
+QUICK_STARTUP=0
+if [ "${1:-}" = "--quick-startup" ]; then
+	QUICK_STARTUP=1
+	shift
+fi
 
 CONF_DIR="$PWD/traefik/build"
 STATIC_DIR="$CONF_DIR/static"
@@ -347,4 +356,4 @@ wait_for_traefik_ready() {
 	die "error: traefik did not become ready in time (last status: ${code:-none})"
 }
 
-wait_for_traefik_ready
+((QUICK_STARTUP)) || wait_for_traefik_ready
