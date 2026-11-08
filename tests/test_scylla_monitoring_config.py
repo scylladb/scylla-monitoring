@@ -1416,6 +1416,76 @@ def test_run_loop_start():
         assert json.load(open(os.path.join(tmp, "config-state/status.json")))["state"] == "applied"
 
 
+def test_run_loop_internal_error():
+    """An unexpected error names the generation of the file being applied,
+    once it is known; the loop goes on, and the next file is applied whole."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        args.poll_interval = 1
+        cfg = example()
+        assert apply(args, stack, host, cfg) == 0
+        state = os.path.join(tmp, "config-state")
+        applied = open(os.path.join(state, "applied.yaml")).read()
+        olds = []
+
+        def fake_apply(old, new, argv, env, previous=None, ran_traefik=False, proxy_stale=False, restart=False):
+            olds.append(old)
+            if new["generation"] == "g2":
+                raise RuntimeError("secret value")
+            return set()
+        stack.apply = fake_apply
+        statuses = []
+
+        def status():
+            statuses.append(json.load(open(os.path.join(state, "status.json"))))
+            assert open(os.path.join(state, "applied.yaml")).read() == applied
+            assert os.path.exists(os.path.join(state, "applied.incomplete"))
+        load, render = smc.load, smc.render
+
+        def fail(error):
+            def raise_(*a, **kw):
+                raise error
+            return raise_
+        steps = [status,
+                 # before the file is loaded, its generation is not known
+                 lambda: setattr(smc, "load", fail(KeyError("x"))),
+                 lambda: write_config(args.monitoring_dir, dict(cfg, generation="g3")),
+                 status,
+                 lambda: setattr(smc, "load", load),
+                 # after it is loaded, an error while preparing it names it
+                 lambda: setattr(smc, "render", fail(RuntimeError("secret value"))),
+                 lambda: write_config(args.monitoring_dir, dict(cfg, generation="g4")),
+                 status,
+                 lambda: setattr(smc, "render", render),
+                 lambda: write_config(args.monitoring_dir, dict(cfg, generation="g5"))]
+
+        def step(seconds):
+            if not steps:
+                raise StopIteration
+            steps.pop(0)()
+        stack.sleep = step
+        write_config(args.monitoring_dir, dict(cfg, generation="g2"))
+        try:
+            quiet(smc.run_loop, args, stack, host.run)
+        except StopIteration:
+            pass
+        finally:
+            smc.load, smc.render = load, render
+        g2, g3, g4 = statuses
+        assert g2["state"] == "failed" and g2["generation"] == g2["applied_generation"] == "g2", g2
+        assert g2["error"] == "internal error: RuntimeError", g2
+        assert g3["state"] == "failed" and g3["generation"] is None and g3["applied_generation"] is None, g3
+        assert g3["error"] == "internal error: KeyError", g3
+        assert g4["state"] == "failed" and g4["generation"] == g4["applied_generation"] == "g4", g4
+        assert g4["error"] == "internal error: RuntimeError", g4
+        final = json.load(open(os.path.join(state, "status.json")))
+        assert final["state"] == "applied" and final["generation"] == "g5", final
+        assert not os.path.exists(os.path.join(state, "applied.incomplete"))
+        # g5 is a first apply, since g2's failed apply left the stack incomplete
+        assert len(olds) == 2 and olds[1] is None, olds
+
+
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):
