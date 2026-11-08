@@ -8,6 +8,15 @@ on:
       monitor_version:
         description: 'Git tag to build from'
         required: true
+      archs:
+        description: 'Archs to build, space separated (amd64 arm64). Empty = all'
+        required: false
+      clouds:
+        description: 'Clouds to build, space separated (aws gcp). Empty = all'
+        required: false
+      aws_regions:
+        description: 'AWS regions to copy the AMI to, comma separated. Empty = template default'
+        required: false
 
 jobs:
   build-cloud-images:
@@ -59,11 +68,52 @@ jobs:
           echo "MONITOR_BRANCH=$MONITOR_BRANCH" >> $GITHUB_ENV
 
       - name: Build Images
+        env:
+          ARCHS: ${{ github.event.inputs.archs }}
+          CLOUDS: ${{ github.event.inputs.clouds }}
+          AWS_REGIONS: ${{ github.event.inputs.aws_regions }}
         run: |
           packer plugins install github.com/hashicorp/googlecompute
           packer plugins install github.com/hashicorp/amazon
-          packer build -var monitor_version="$MONITOR_VERSION" -var monitor_branch="$MONITOR_BRANCH" -var arch="amd64" scylla-monitor-template.json
-          packer build -only=amazon-ebs -var monitor_version="$MONITOR_VERSION" -var monitor_branch="$MONITOR_BRANCH" -var arch=arm64 scylla-monitor-template.json
+          # Inputs are word split below; do not expand globs like '*'
+          set -f
+          AWS_REGIONS="${AWS_REGIONS// /}"
+          case ",$AWS_REGIONS," in
+            ,,) ;;
+            *,,*) echo "Empty entry in aws_regions: '$AWS_REGIONS'"; exit 1 ;;
+          esac
+          # A subset build must not be mistaken for the full release manifest
+          if [ -n "$ARCHS$CLOUDS$AWS_REGIONS" ]; then
+            echo "ARTIFACT_SUFFIX=-partial" >> "$GITHUB_ENV"
+          fi
+          # Check every arch before building anything; drop repeats
+          ARCHS=$(printf '%s\n' ${ARCHS:-amd64 arm64} | sort -u)
+          for arch in $ARCHS; do
+            case $arch in
+              amd64|arm64) ;;
+              *) echo "Unknown arch: $arch"; exit 1 ;;
+            esac
+          done
+          built=0
+          for arch in $ARCHS; do
+            only=""
+            for cloud in ${CLOUDS:-aws gcp}; do
+              case $cloud in
+                aws) only+=amazon-ebs, ;;
+                # No GCP arm64 image
+                gcp) [ "$arch" = arm64 ] || only+=googlecompute, ;;
+                *) echo "Unknown cloud: $cloud"; exit 1 ;;
+              esac
+            done
+            [ -n "$only" ] || continue
+            packer build -only="${only%,}" -var monitor_version="$MONITOR_VERSION" -var monitor_branch="$MONITOR_BRANCH" -var arch="$arch" \
+              ${AWS_REGIONS:+-var aws_ami_regions="$AWS_REGIONS"} scylla-monitor-template.json
+            built=1
+          done
+          if [ "$built" = 0 ]; then
+            echo "Nothing to build for archs='$ARCHS' clouds='$CLOUDS'"
+            exit 1
+          fi
         working-directory: packer
 
       - name: List images in the job summary
@@ -74,7 +124,7 @@ jobs:
       - name: Archive Packer manifest
         uses: actions/upload-artifact@v4
         with:
-          name: scylla-monitor-cloud-images-${{ env.MONITOR_VERSION }}
+          name: scylla-monitor-cloud-images-${{ env.MONITOR_VERSION }}${{ env.ARTIFACT_SUFFIX }}
           path: packer/packer-manifest.json
 
       - name: Upload Packer manifest to the release
