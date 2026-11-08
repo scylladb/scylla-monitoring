@@ -862,6 +862,9 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
            "GF_SERVER_ENABLE_GZIP=" + (v.get("SERVER_ENABLE_GZIP") or "true"),
            "GF_SECURITY_ALLOW_EMBEDDING=" + allow, "GF_SECURITY_COOKIE_SECURE=" + secure,
            "GF_SECURITY_COOKIE_SAMESITE=" + samesite]
+    # as start-grafana.sh: only when env.sh sets it
+    if v.get("PLUGINS_PREINSTALL_DISABLED"):
+        env.append("GF_PLUGINS_PREINSTALL_DISABLED=" + v["PLUGINS_PREINSTALL_DISABLED"])
     extra = list(o["grafana_env"])
     if o["ldap"]:
         extra += ["GF_AUTH_LDAP_ENABLED=true", "GF_AUTH_LDAP_CONFIG_FILE=/etc/grafana/ldap.toml",

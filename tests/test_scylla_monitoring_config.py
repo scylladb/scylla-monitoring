@@ -1260,6 +1260,33 @@ esac
         assert run_helper(src) == (0, []) and not os.path.exists(pending)
 
 
+def test_preinstall_set():
+    """start-grafana.sh adds env.sh's PLUGINS_PREINSTALL_DISABLED only when no
+    -c value, and no -e/--env in -D or --limit grafana, sets it: docker keeps
+    the last -e, and compose lets those win. Only real options count, not
+    text inside another value."""
+    text = open("start-grafana.sh").read()
+    func = text[text.index("preinstall_set() {"):text.index("\n}\n", text.index("preinstall_set() {")) + 3]
+
+    def explicit(env=(), docker="", limits=""):
+        script = 'declare -A DOCKER_LIMITS; DOCKER_LIMITS[grafana]="$3"; DOCKER_PARAM="$2"\n' \
+                 'GRAFANA_ENV_COMMAND=(); for v in $1; do GRAFANA_ENV_COMMAND+=(-e "$v"); done\n' + func + \
+                 'preinstall_set'
+        return subprocess.run(["bash", "-c", script, "_", " ".join(env), docker, limits]).returncode == 0
+    name = "GF_PLUGINS_PREINSTALL_DISABLED"
+    for docker in ("-e %s=false" % name, "--env %s" % name, "--env=%s=false" % name, "-e%s=false" % name,
+                   "-e=%s=false" % name, "-te %s=false" % name, "-te%s=false" % name, "-te=%s=false" % name,
+                   "--restart=always -e %s" % name):
+        assert explicit(docker=docker), docker
+        assert explicit(limits=docker), docker
+    assert explicit(env=["%s=false" % name])
+    for docker in ("", "--label note=%s=false" % name, "-e FOO=%s=false" % name, "-e %s_X=1" % name,
+                   "--name %s" % name):
+        assert not explicit(docker=docker), docker
+    # a -c value holding the text of an option is one value
+    assert not explicit(env=["FOO=-e"]) and not explicit(env=["%s_X=1" % name])
+
+
 def test_traefik_thanos_port():
     """traefik's 10911 entry point forwards to THANOS_PORT, by default the
     sidecar; the watcher passes tls.thanos_port, and a change reloads traefik."""
