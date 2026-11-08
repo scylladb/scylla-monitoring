@@ -133,6 +133,8 @@ and always in the state directory. When the data directories are on a separate d
 * ``systemctl stop scylla-monitoring-config`` stops the watcher; ``./kill-all.sh --traefik`` (or ``docker compose down``) then stops the containers, traefik included.
 * ``systemctl start scylla-monitoring-config`` starts the watcher, which brings the stack up.
 * With the path unit, writing the file starts a stopped watcher too. A stop without a new file keeps the watcher and the stack down.
+* ``journalctl -u scylla-monitoring-config`` shows how long each apply took: the time of each step, the health check's
+  progress per component, and a summary line with the outcome and the total time.
 
 How Changes Are Applied
 -----------------------

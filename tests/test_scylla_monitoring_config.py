@@ -1311,7 +1311,7 @@ def test_several_config_files():
         os.utime(path_a, (1, 1))
         args.config_file = [path_a, path_b, os.path.join(tmp, "missing", "config.yaml")]
         rc, out = quiet(smc.apply_once, args, stack, host.run)
-        assert rc == 0 and "several config files exist" in out and "applied from-b" in out
+        assert rc == 0 and "several config files exist" in out and "applied generation from-b" in out
         for status_dir in (args.state_dir, a, b):
             name = "status.json" if status_dir == args.state_dir else "scylla-monitoring.status.json"
             path = os.path.join(status_dir, name)
@@ -1485,6 +1485,123 @@ def test_run_loop_internal_error():
         # g5 is a first apply, since g2's failed apply left the stack incomplete
         assert len(olds) == 2 and olds[1] is None, olds
 
+
+
+@contextlib.contextmanager
+def fake_clock(stack):
+    """time.monotonic follows a clock that only stack.sleep advances, so the
+    logged durations are exact; yields a buffer with stderr."""
+    t = [0.0]
+    monotonic, smc.time.monotonic = smc.time.monotonic, lambda: t[0]
+    stack.sleep = lambda s: t.__setitem__(0, t[0] + s)
+    err = io.StringIO()
+    try:
+        with contextlib.redirect_stderr(err):
+            yield err
+    finally:
+        smc.time.monotonic = monotonic
+
+
+def ready_after(polls):
+    """An http that answers 200, and for each component in polls only from that poll on."""
+    seen = {}
+
+    def http(method, url):
+        name = next((n for n in polls if (":%s/" % polls[n][0]) in url), None)
+        if name is None:
+            return 200
+        seen[name] = seen.get(name, 0) + 1
+        return 200 if seen[name] >= polls[name][1] else None
+    return http
+
+
+def test_health_logs():
+    with tempfile.TemporaryDirectory() as tmp:
+        args, stack = make_stack(tmp, FakeHost())
+        # grafana answers on its fourth poll, at 6s
+        stack.http = ready_after({"grafana": ("3000", 4)})
+        with fake_clock(stack) as err:
+            stack.health([], {}, timeout=100)
+        assert err.getvalue().splitlines() == [
+            "health: waiting for prometheus, grafana, alertmanager, loki",
+            "health: prometheus ready after 0s",
+            "health: alertmanager ready after 0s",
+            "health: loki ready after 0s",
+            "health: grafana ready after 6s",
+            "health: ready after 6s",
+        ]
+
+
+def test_health_logs_pending():
+    with tempfile.TemporaryDirectory() as tmp:
+        args, stack = make_stack(tmp, FakeHost())
+        # loki answers at 40s: one line at 30s, none at every poll
+        stack.http = ready_after({"loki": ("3100", 21)})
+        with fake_clock(stack) as err:
+            stack.health([], {}, timeout=100)
+        lines = err.getvalue().splitlines()
+        assert [l for l in lines if "still waiting" in l] == ["health: still waiting after 30s for loki"], lines
+        assert lines[-2:] == ["health: loki ready after 40s", "health: ready after 40s"]
+        # a timeout prints the pending list and raises as before
+        stack.http = ready_after({"loki": ("3100", 1000), "grafana": ("3000", 1000)})
+        with fake_clock(stack) as err:
+            try:
+                stack.health([], {}, timeout=5)
+            except smc.ApplyError as e:
+                assert e.args[0] == "grafana, loki: not ready"
+            else:
+                raise AssertionError("no timeout")
+        assert err.getvalue().splitlines()[-1] == "health: not ready after 6s: grafana, loki"
+
+
+def steps(text):
+    return [l.split()[1] for l in text.splitlines() if l.startswith("apply: ")]
+
+
+def test_apply_logs_steps():
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        cfg = example()
+        args.config_file = [write_config(tmp, cfg)]
+        with fake_clock(stack) as err, contextlib.redirect_stdout(io.StringIO()):
+            assert smc.apply_once(args, stack, host.run) == 0
+        assert steps(err.getvalue()) == ["prepare", "docker_proxy", "move_staged", "systemd_dropins", "install_certs",
+                                         "thanos_datasource", "restart_stack", "health", "grafana_password"], err.getvalue()
+        # a certificate rotation: only the steps that run
+        cfg["generation"] = "g2"
+        cfg["tls"]["server_key"] = "-----BEGIN PRIVATE KEY-----\nnew\n-----END PRIVATE KEY-----\n"
+        write_config(tmp, cfg)
+        with fake_clock(stack) as err, contextlib.redirect_stdout(io.StringIO()):
+            assert smc.apply_once(args, stack, host.run) == 0
+        assert steps(err.getvalue()) == ["prepare", "move_staged", "install_certs", "reload_traefik", "health"], err.getvalue()
+
+
+def test_apply_once_summary():
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        cfg = example()
+        args.health_timeout = 100
+        args.config_file = [write_config(tmp, cfg)]
+        stack.http = ready_after({"grafana": ("3000", 2)})
+        with fake_clock(stack) as err, contextlib.redirect_stdout(io.StringIO()):
+            assert smc.apply_once(args, stack, host.run) == 0
+        lines = err.getvalue().splitlines()
+        assert lines[0].startswith("picked up %s " % args.config_file[0]) and lines[0].endswith("s after it was written")
+        assert lines[-1] == "applied generation %s in 2s (full; actions: docker_proxy, grafana_password, install_certs, " \
+                            "restart_stack, systemd_dropins, thanos_datasource)" % cfg["generation"], lines
+        # a failed apply
+        host = FakeHost(fail=("start-all.sh",))
+        os.makedirs(tmp + "/b")
+        args, stack = make_stack(tmp + "/b", host)
+        args.config_file = [write_config(args.monitoring_dir, cfg)]
+        with fake_clock(stack) as err, contextlib.redirect_stdout(io.StringIO()):
+            assert smc.apply_once(args, stack, host.run) == 1
+        lines = err.getvalue().splitlines()
+        assert "apply: restart_stack failed after 0s" in lines, lines
+        assert lines[-2].startswith("failed: ")
+        assert lines[-1] == "failed generation %s in 0s (full)" % cfg["generation"], lines
 
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):

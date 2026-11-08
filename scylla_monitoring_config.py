@@ -16,6 +16,7 @@
 # since the file carries secrets.
 
 import argparse
+import contextlib
 import datetime
 import json
 import os
@@ -379,6 +380,22 @@ def render(cfg, staging, no_manager=False):
                     for field, var in (("http_proxy", "HTTP_PROXY"), ("https_proxy", "HTTPS_PROXY")) if field in docker)
     if proxy:
         write_file(os.path.join(staging, "docker/proxy.env"), proxy, 0o600)
+
+
+def took(start):
+    return "%.0fs" % (time.monotonic() - start)
+
+
+@contextlib.contextmanager
+def timed(what):
+    """Logs how long the block took, or how long it ran before it failed."""
+    start = time.monotonic()
+    try:
+        yield
+    except BaseException:
+        print("%s failed after %s" % (what, took(start)), file=sys.stderr)
+        raise
+    print("%s took %s" % (what, took(start)), file=sys.stderr)
 
 
 def stack_versions(monitoring_dir):
@@ -981,15 +998,26 @@ class Stack:
         pending = {name: "http://%s:%s%s" % (self.host(argv), port, path) for name, port, path in self.components(argv)}
         if cfg.get("tls", {}).get("enabled"):
             pending["traefik"] = "http://localhost:8080/ping"
-        deadline = time.monotonic() + (self.args.health_timeout if timeout is None else timeout)
+        start = time.monotonic()
+        deadline = start + (self.args.health_timeout if timeout is None else timeout)
+        report = start + 30
+        print("health: waiting for " + ", ".join(pending), file=sys.stderr)
         while pending:
             for name, url in list(pending.items()):
                 if self.http("GET", url) == 200:
                     del pending[name]
+                    print("health: %s ready after %s" % (name, took(start)), file=sys.stderr)
             if not pending:
+                print("health: ready after " + took(start), file=sys.stderr)
                 return
-            if time.monotonic() >= deadline:
+            now = time.monotonic()
+            if now >= deadline:
+                print("health: not ready after %s: %s" % (took(start), ", ".join(pending)), file=sys.stderr)
                 raise ApplyError("%s: not ready" % ", ".join(sorted(pending)))
+            if now >= report:
+                print("health: still waiting after %s for %s" % (took(start), ", ".join(pending)), file=sys.stderr)
+                while report <= now:
+                    report += 30
             self.sleep(2)
 
     def apply(self, old, new, argv, env, previous=None, ran_traefik=False, revert=False, proxy_stale=False,
@@ -1008,40 +1036,56 @@ class Stack:
         # first, so a docker restart, which restarts the watcher, interrupts
         # the apply before anything else changed
         if ("docker_proxy" in actions or proxy_stale) and not revert:
-            self.docker_proxy(old, new, previous, stale=proxy_stale)
-        self.move_staged()
+            with timed("apply: docker_proxy"):
+                self.docker_proxy(old, new, previous, stale=proxy_stale)
+        with timed("apply: move_staged"):
+            self.move_staged()
         if "systemd_dropins" in actions:
-            self.systemd_dropins(old, new, previous)
+            with timed("apply: systemd_dropins"):
+                self.systemd_dropins(old, new, previous)
         if "install_certs" in actions:
-            self.install_certs(new)
+            with timed("apply: install_certs"):
+                self.install_certs(new)
         # the flag comes from grafana.thanos_datasource or stack.extra_flags;
         # a stack restart, or grafana_datasource, restarts Grafana anyway
         if "--no-thanos-datasource" in argv:
             if {"thanos_datasource", RESTART} & actions:
-                self.thanos_datasource(argv, True, restart=not ({RESTART, "grafana_datasource"} & actions))
+                with timed("apply: thanos_datasource"):
+                    self.thanos_datasource(argv, True, restart=not ({RESTART, "grafana_datasource"} & actions))
         elif RESTART in actions:
-            self.thanos_datasource(argv, False)
+            with timed("apply: thanos_datasource"):
+                self.thanos_datasource(argv, False)
         if RESTART in actions:
-            self.restart_stack(argv, env, new, first=old is None, traefik=traefik)
+            with timed("apply: " + RESTART):
+                self.restart_stack(argv, env, new, first=old is None, traefik=traefik)
         else:
             if "render_prometheus_config" in actions:
-                self.render_prometheus_config(argv, env, new)
+                with timed("apply: render_prometheus_config"):
+                    self.render_prometheus_config(argv, env, new)
             if "reload_prometheus" in actions:
-                self.reload(argv, "prometheus")
+                with timed("apply: reload_prometheus"):
+                    self.reload(argv, "prometheus")
             if "reload_alertmanager" in actions and "--no-alertmanager" not in argv:
-                self.reload(argv, "alertmanager")
+                with timed("apply: reload_alertmanager"):
+                    self.reload(argv, "alertmanager")
             if "grafana_datasource" in actions:
-                self.grafana_datasource(argv, new)
+                with timed("apply: grafana_datasource"):
+                    self.grafana_datasource(argv, new)
             if "start_traefik" in actions and self.compose:
                 # traefik is a compose service; up recreates only what changed
-                self.restart_stack(argv, env, new, traefik=traefik)
+                with timed("apply: start_traefik"):
+                    self.restart_stack(argv, env, new, traefik=traefik)
             elif "start_traefik" in actions:
-                self.traefik(new)
+                with timed("apply: start_traefik"):
+                    self.traefik(new)
             elif "reload_traefik" in actions:
-                self.traefik(new, reload_only=True)
-        self.health(argv, new)
+                with timed("apply: reload_traefik"):
+                    self.traefik(new, reload_only=True)
+        with timed("apply: health"):
+            self.health(argv, new)
         if "grafana_password" in actions:
-            self.grafana_password(argv, new)
+            with timed("apply: grafana_password"):
+                self.grafana_password(argv, new)
         return actions
 
 
@@ -1151,7 +1195,9 @@ def apply_once(args, stack=None, run=subprocess.run, path=None, applying=None):
     if path is None:
         print("error: no config file exists", file=sys.stderr)
         return 1
+    start = time.monotonic()
     try:
+        written = os.stat(path).st_mtime
         with open(path) as f:
             text = f.read()
     except OSError as e:
@@ -1162,10 +1208,24 @@ def apply_once(args, stack=None, run=subprocess.run, path=None, applying=None):
     proxy_stale = os.path.exists(proxy_stale_path(dirs))
     if text == applied_text and not force and not proxy_stale:
         return 0
+    if text != applied_text:
+        # a forced apply of an old file would show the file's age instead
+        print("picked up %s %.0fs after it was written" % (path, max(0, time.time() - written)), file=sys.stderr)
+
+    def summary(outcome, generation, full=None, actions=None):
+        details = [] if full is None else ["full" if full else "partial"]
+        if actions is not None:
+            details.append("actions: " + (", ".join(sorted(actions)) or "files only"))
+        print("%s generation %s in %s%s" % (outcome, generation, took(start),
+                                            " (%s)" % "; ".join(details) if details else ""), file=sys.stderr)
+
     try:
-        new, argv, env = prepare(args, dirs, path, run, stack, applying)
+        with timed("apply: prepare"):
+            new, argv, env = prepare(args, dirs, path, run, stack, applying)
     except ConfigError as e:
-        return rejected(dirs, e)
+        rc = rejected(dirs, e)
+        summary("rejected", e.args[1] if len(e.args) > 1 and isinstance(e.args[1], str) else None)
+        return rc
     previous = yaml.safe_load(applied_text) if applied_text else None
     old = None if force else previous
     # Only a stack restart starts a container that went down (one that
@@ -1181,23 +1241,28 @@ def apply_once(args, stack=None, run=subprocess.run, path=None, applying=None):
     except ApplyError as failure:
         error = str(failure)
         if not (args.auto_revert and previous is not None and not incomplete):
-            return failed(dirs, text, new, error, ran_traefik)
+            rc = failed(dirs, text, new, error, ran_traefik)
+            summary("failed", new["generation"], old is None)
+            return rc
         # back to the previous configuration, still in applied.yaml; a first
         # apply, since the failed one may have stopped anywhere
         try:
             old_cfg, old_argv, old_env = prepare(args, dirs, applied_path(dirs), run, stack)
             stack.apply(None, old_cfg, old_argv, old_env, new, revert=True)
         except (ApplyError, ConfigError) as e:
-            return failed(dirs, text, new, "%s; revert failed: %s" % (error, e.args[0]), ran_traefik)
+            rc = failed(dirs, text, new, "%s; revert failed: %s" % (error, e.args[0]), ran_traefik)
+            summary("failed", new["generation"], old is None)
+            return rc
         if new.get("docker") != old_cfg.get("docker"):
             write_private(proxy_stale_path(dirs), "")
         write_status(dirs, {"generation": new["generation"], "state": "reverted", "error": error,
                             "applied_generation": old_cfg["generation"], "time": now()})
         print("reverted: " + error, file=sys.stderr)
+        summary("reverted", new["generation"], old is None)
         return 1
     done(dirs, text)
     write_status(dirs, {"generation": new["generation"], "state": "applied", "time": now()})
-    print("applied %s: %s" % (new["generation"], ", ".join(sorted(actions)) or "files only"))
+    summary("applied", new["generation"], old is None, actions)
     return 0
 
 
