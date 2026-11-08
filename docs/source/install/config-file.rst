@@ -62,7 +62,7 @@ Running the Watcher
 * ``check`` validates the file, renders the derived files into a temporary directory and prints the ``start-all.sh`` command line,
   with the secrets masked. It changes nothing, so it is safe to run next to a running watcher.
 * ``apply`` applies the file once. ``--force`` applies it as a first apply, restarting the whole stack.
-* ``run`` applies the file on start, then checks it every ``--poll-interval`` seconds (30) and applies it when it changes.
+* ``run`` applies the file on start, then checks it every ``--poll-interval`` seconds and applies it when it changes.
   On start, it checks that the stack is up; when it is not (for example, after a reboot), the file is applied whole.
   Until the file exists, it waits and changes nothing.
 
@@ -88,7 +88,24 @@ Options:
 
 **--health-timeout seconds** How long to wait for the components to become ready after an apply (default: 180).
 
-**--poll-interval seconds** How often ``run`` checks the file (default: 30).
+**--poll-interval seconds** How often ``run`` checks the file (default: ``WATCHER_POLL_INTERVAL`` in ``env.sh``, else 30).
+A check only reads the file's size and modification time, so a short interval, such as 5, costs nothing and
+picks up a write within seconds.
+
+Settings in ``env.sh``
+^^^^^^^^^^^^^^^^^^^^^^
+
+``run`` reads two settings from ``env.sh`` in the monitoring directory. The machine images built from ``packer/`` set both.
+
+**WATCHER_POLL_INTERVAL** How often ``run`` checks the file, in seconds, when ``--poll-interval`` is not given (default: 30).
+
+**WARM_ON_BOOT** With ``WARM_ON_BOOT=1``, a watcher that starts on a fresh host, with nothing applied and no file yet,
+reads what the first apply needs while it waits for the file. It starts a throwaway container of each image of the
+stack, named ``warm-<container>`` and labeled ``scylla-monitoring.warm=1``, without a network, ports or volumes,
+and runs ``check`` on ``scylla-monitoring.example.yaml``. This helps on a disk restored from a snapshot, such as a
+cloud instance's root volume, where the first read of each block is slow. The containers are removed after 90 seconds,
+or as soon as the first file arrives, before it is applied; the apply does not wait for the rest of the warm-up.
+The journal shows each part's duration in the ``warm:`` lines.
 
 As a systemd Service
 ^^^^^^^^^^^^^^^^^^^^
