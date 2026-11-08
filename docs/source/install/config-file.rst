@@ -216,6 +216,7 @@ next to each config file:
 * ``applied``: the stack runs the configuration of ``generation``.
 * ``rejected``: the file is invalid; the stack still runs ``applied_generation``.
 * ``failed``: the apply failed; the stack is left as the failed apply left it, for inspection. The next apply runs every action, as a first apply does.
+  An internal error of the watcher reports the generation of the file being applied when it is known, and a null generation otherwise.
 * ``reverted``: the apply failed and, with ``--auto-revert``, the previous configuration was applied again.
   Docker's proxy stays as the failed apply set it, so the revert runs without restarting Docker;
   the next apply sets the proxy again and restarts the stack, even when it writes the file that is already applied.

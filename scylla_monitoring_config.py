@@ -552,17 +552,20 @@ def now():
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def prepare(args, dirs, path, run=subprocess.run, stack=None):
+def prepare(args, dirs, path, run=subprocess.run, stack=None, applying=None):
     """Loads, normalizes, renders and validates the file. In compose mode
     (stack.compose), make_compose.py builds the stack too, so its checks
     reject the file, and prometheus.yml is rendered with its command.
 
     Returns (cfg, argv, env); raises ConfigError with the generation, when the
-    file has one, as its second argument."""
+    file has one, as its second argument. applying: a dict that gets the
+    generation once the file is loaded, for the status of an unexpected error."""
     if os.path.exists(os.path.join(dirs.monitoring, "env.sh")):
         print("warning: %s/env.sh is sourced by the start scripts and can override the file" % dirs.monitoring,
               file=sys.stderr)
     cfg = load(path, args.strict)
+    if applying is not None:
+        applying["generation"] = cfg["generation"]
     try:
         argv, env = normalize(cfg, dirs)
         # The derived files hold secrets (the Alertmanager config, the TLS
@@ -1139,9 +1142,9 @@ def done(dirs, text):
             os.remove(path)
 
 
-def apply_once(args, stack=None, run=subprocess.run, path=None):
+def apply_once(args, stack=None, run=subprocess.run, path=None, applying=None):
     """Applies a config file once, by default the newest; returns 0 when it is
-    applied or already was."""
+    applied or already was. applying: as for prepare."""
     dirs = make_dirs(args)
     stack = stack or Stack(dirs, args, run)
     path = path or newest(dirs.config_files)
@@ -1160,7 +1163,7 @@ def apply_once(args, stack=None, run=subprocess.run, path=None):
     if text == applied_text and not force and not proxy_stale:
         return 0
     try:
-        new, argv, env = prepare(args, dirs, path, run, stack)
+        new, argv, env = prepare(args, dirs, path, run, stack, applying)
     except ConfigError as e:
         return rejected(dirs, e)
     previous = yaml.safe_load(applied_text) if applied_text else None
@@ -1266,15 +1269,18 @@ def run_loop(args, stack=None, run=subprocess.run):
         if changed:
             # on start, and when several changed in one poll, the newest wins
             path = newest(dirs.config_files if first else changed)
+            applying = {}
             try:
                 # On start the stack may be down, after a reboot or a docker
                 # restart; then the file is applied whole.
                 args.force = first and not stack_up(dirs, stack)
-                apply_once(args, stack, run, path)
+                apply_once(args, stack, run, path, applying)
             except Exception as e:
-                # one bad pass must not stop the watcher; the next change retries
+                # one bad pass must not stop the watcher; the next change retries.
+                # The status names the file being applied, once known, so its
+                # writer sees the error.
                 traceback.print_exc()
-                failed(dirs, None, None, "internal error: %s" % type(e).__name__)
+                failed(dirs, None, applying or None, "internal error: %s" % type(e).__name__)
             first = False
         stack.sleep(args.poll_interval)
 
