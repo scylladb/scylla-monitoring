@@ -46,7 +46,8 @@ packer build -var-file=variables.json scylla-monitor-template.json
 
 ### Architecture
 
-By default the image is built for `amd64`. To build an ARM image, pass `--arch arm64`:
+By default the image is built for `amd64`. To build an ARM image (AWS and GCP), pass `-var arch=arm64`.
+On GCP, arm64 uses a C4A machine with a hyperdisk and is published to the `scylladb-monitor-arm64` image family:
 
 ```shell
 packer build -var monitor_version="4.6.1" -var arch=arm64 scylla-monitor-template.json
@@ -65,6 +66,23 @@ packer build -var monitor_version="4.6.1" -var aws_ami_regions=us-east-1 scylla-
 packer build -var monitor_version="4.6.1" -var aws_ami_regions=us-east-1,eu-west-1 scylla-monitor-template.json
 ```
 
+
+### Test builds in CI
+
+The **Build Cloud Images** workflow can be run manually with the CI credentials.
+Push the branch to the main repository and run the workflow from it. Optional inputs:
+
+- `arch`: `all`, `amd64` or `arm64`.
+- `cloud`: `all`, `aws` or `gce`.
+- `gcp_zone`: GCE build zone.
+- `aws_ami_regions`: regions to copy the AMI to, e.g. `us-east-1`.
+- `name_tag`: replaces the version in the image name, e.g. `4.17.0-rc1-test` gives
+  `scylladb-monitor-4-17-0-rc1-test-arm64-<time>`. The version labels keep `monitor_version`.
+- `ref`: git ref to check out for `packer/`, e.g. the branch under test (default: the `monitor_version` tag).
+- `test`: the AMI is not made public and the GCE image is not added to an image family.
+
+Remove test images with `delete_cloud_images.sh` (or the **Delete Cloud Images** workflow)
+using the name prefix, e.g. `--name 'scylladb-monitor-4-17-0-rc1-test*'`.
 
 ## Authentication
 
