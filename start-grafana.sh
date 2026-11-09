@@ -361,6 +361,40 @@ done
 if [[ $DEFAULT_THEME != "" ]]; then
 	GRAFANA_ENV_COMMAND+=(-e "GF_USERS_DEFAULT_THEME=$DEFAULT_THEME")
 fi
+# PLUGINS_PREINSTALL_DISABLED=true in env.sh: Grafana starts with the plugins
+# in grafana/plugins, without installing or updating any from grafana.com.
+# A -c value, or an -e/--env in -D or --limit grafana that sets it, wins, as
+# with compose. The arguments are walked one by one, as docker reads them;
+# case patterns only, so it works with any bash, on Linux and macOS.
+preinstall_set() {
+	local prev="" w
+	# -D and --limit values are split into words, as on the docker run line
+	# shellcheck disable=SC2086
+	for w in "${GRAFANA_ENV_COMMAND[@]}" $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]}; do
+		case "$prev" in
+		# -e, alone or last in a group of short options (-te), or --env
+		-e | -[!-]*e | --env)
+			case "$w" in
+			GF_PLUGINS_PREINSTALL_DISABLED | GF_PLUGINS_PREINSTALL_DISABLED=*) return 0 ;;
+			esac
+			;;
+		esac
+		case "$w" in
+		-eGF_PLUGINS_PREINSTALL_DISABLED | -eGF_PLUGINS_PREINSTALL_DISABLED=* | \
+			-e=GF_PLUGINS_PREINSTALL_DISABLED | -e=GF_PLUGINS_PREINSTALL_DISABLED=* | \
+			-[!-]*eGF_PLUGINS_PREINSTALL_DISABLED | -[!-]*eGF_PLUGINS_PREINSTALL_DISABLED=* | \
+			-[!-]*e=GF_PLUGINS_PREINSTALL_DISABLED | -[!-]*e=GF_PLUGINS_PREINSTALL_DISABLED=* | \
+			--env=GF_PLUGINS_PREINSTALL_DISABLED | --env=GF_PLUGINS_PREINSTALL_DISABLED=*)
+			return 0
+			;;
+		esac
+		prev="$w"
+	done
+	return 1
+}
+if [ -n "$PLUGINS_PREINSTALL_DISABLED" ] && ! preinstall_set; then
+	GRAFANA_ENV_COMMAND+=(-e "GF_PLUGINS_PREINSTALL_DISABLED=$PLUGINS_PREINSTALL_DISABLED")
+fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
 	GRAFANA_DASHBOARD_COMMAND="$GRAFANA_DASHBOARD_COMMAND -j $val"

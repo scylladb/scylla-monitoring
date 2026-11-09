@@ -16,6 +16,7 @@
 # since the file carries secrets.
 
 import argparse
+import concurrent.futures
 import contextlib
 import datetime
 import json
@@ -27,6 +28,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import traceback
 import urllib.error
@@ -380,6 +382,11 @@ def render(cfg, staging, no_manager=False):
                     for field, var in (("http_proxy", "HTTP_PROXY"), ("https_proxy", "HTTPS_PROXY")) if field in docker)
     if proxy:
         write_file(os.path.join(staging, "docker/proxy.env"), proxy, 0o600)
+
+
+def loopback(address):
+    """Whether -A binds to loopback only; without it, start-all.sh publishes on every address."""
+    return bool(address) and (address.startswith("127.") or address in ("::1", "localhost"))
 
 
 def took(start):
@@ -831,6 +838,24 @@ class Stack:
             ports.append("10903")
         return ports
 
+    def host_network(self, argv):
+        """Whether the containers run on the host network (-l, or --net=host
+        in -D or env.sh's DOCKER_PARAM), as start-all.sh works it out; when
+        env.sh cannot be read, as if they did, which keeps traefik's start
+        after the stack, the order that is safe either way."""
+        import make_compose
+        cwd = self.dirs.monitoring
+        try:
+            v = make_compose.shell_vars(cwd, dict(os.environ), os.path.join(cwd, "env.sh"))
+            o = make_compose.options(argv, v, make_compose.Paths(cwd))
+        # options() exits on -h in env.sh, as start-all.sh does
+        except (Exception, SystemExit) as e:
+            # values may be secrets: the type only
+            print("warning: cannot read env.sh: %s; traefik starts after the stack" % type(e).__name__,
+                  file=sys.stderr)
+            return True
+        return bool(make_compose.HOST_NET.search(o["docker_param"]))
+
     def move_staged(self):
         """Renames each staged file into its live directory; the directories
         stay in place, since the containers' bind mounts hold them."""
@@ -861,10 +886,34 @@ class Stack:
 
     def restart_stack(self, argv, env, cfg, first=False, traefik=False):
         if not self.compose:
+            tls = cfg.get("tls", {}).get("enabled")
+            quick = "--quick-startup" in argv
+            # worked out before the stack stops, so an error leaves it running
+            serial = tls and (not loopback(option(argv, "-A")) or self.host_network(argv))
             self.kill_all(argv, traefik)
-            self.sh(["./start-all.sh"] + argv, env)
-            if cfg.get("tls", {}).get("enabled"):
-                self.traefik(cfg)
+            if serial:
+                # services published outside loopback, or on the host network,
+                # where -A does not apply, would race traefik for its ports;
+                # started after them, start-traefik.sh reports it
+                self.sh(["./start-all.sh"] + argv, env)
+                self.traefik(cfg, quick=quick)
+                return
+            # traefik routes to services that may not be up yet; it starts
+            # while start-all.sh runs, and the apply waits for both
+            proxy = None
+            if tls:
+                proxy = concurrent.futures.ThreadPoolExecutor(1).submit(self.traefik, cfg, quick=quick)
+            try:
+                self.sh(["./start-all.sh"] + argv, env)
+            except BaseException:
+                if proxy:
+                    proxy.exception()  # waits; start-all.sh's error is the one reported
+                raise
+            if proxy:
+                proxy.result()
+                # start-traefik.sh checked the ports before the services
+                # listened on them; check again, as compose does
+                self.traefik(cfg, check_only=True)
             return
         import make_compose
         stack, environ = self.compose_stack(argv, env, cfg)
@@ -982,14 +1031,19 @@ class Stack:
         staged = os.path.join(self.dirs.staging, "docker", "proxy.env")
         self.root("docker-proxy", staged if os.path.exists(staged) else "--remove")
 
-    def traefik(self, cfg, reload_only=False):
+    def traefik(self, cfg, reload_only=False, quick=False, check_only=False):
+        """quick: as start-all.sh --quick-startup, traefik starts without a
+        wait until it routes; health waits for its ping. check_only: only
+        checks that no proxied port is reachable outside loopback."""
         tls = cfg.get("tls", {})
         env = {"TRAEFIK_GENERATION": cfg["generation"], "THANOS_PORT": thanos_port(cfg)}
         if reload_only:
             self.sh(["./start-traefik.sh", "--reload"], env)
+        elif check_only:
+            self.sh(["./start-traefik.sh", "--check"], dict(env, PRIVATE_IP=tls["listen_ip"]))
         elif tls.get("enabled"):
             env.update(PRIVATE_IP=tls["listen_ip"], CERT_DIR=self.args.cert_dir)
-            self.sh(["./start-traefik.sh"], env)
+            self.sh(["./start-traefik.sh"] + (["--quick-startup"] if quick else []), env)
         else:
             self.run(["docker", "rm", "-f", "traefik"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -1077,7 +1131,7 @@ class Stack:
                     self.restart_stack(argv, env, new, traefik=traefik)
             elif "start_traefik" in actions:
                 with timed("apply: start_traefik"):
-                    self.traefik(new)
+                    self.traefik(new, quick="--quick-startup" in argv)
             elif "reload_traefik" in actions:
                 with timed("apply: reload_traefik"):
                     self.traefik(new, reload_only=True)
@@ -1320,11 +1374,159 @@ def stack_up(dirs, stack):
     return True
 
 
+def env_settings(monitoring_dir):
+    """The variables env.sh sets, as the start scripts see them; none when
+    it cannot be read, as when it prints something, which garbles the list."""
+    import make_compose
+    try:
+        return make_compose.shell_vars(monitoring_dir, dict(os.environ), os.path.join(monitoring_dir, "env.sh"))
+    except Exception as e:
+        # values may be secrets: the type only
+        print("warning: cannot read env.sh: %s" % type(e).__name__, file=sys.stderr)
+        return {}
+
+
+def poll_interval(args, settings):
+    """--poll-interval, else env.sh's WATCHER_POLL_INTERVAL, else 30."""
+    if args.poll_interval:
+        return args.poll_interval
+    try:
+        value = int(settings.get("WATCHER_POLL_INTERVAL") or "30")
+    except (TypeError, ValueError):
+        value = 0
+    if value <= 0:
+        print("warning: WATCHER_POLL_INTERVAL is not a positive number; polling every 30s", file=sys.stderr)
+        return 30
+    return value
+
+
+WARM_LABEL = "scylla-monitoring.warm=1"
+WARM_EXAMPLE = "scylla-monitoring.example.yaml"
+
+
+def last_line(text, limit=200):
+    """The last non-empty line of a command's output, shortened, for a log line."""
+    lines = [l for l in (text or "").splitlines() if l.strip()]
+    return lines[-1].strip()[:limit] if lines else "no output"
+
+
+class Warmup(threading.Thread):
+    """With WARM_ON_BOOT=1 in env.sh, reads what the first apply needs while
+    the watcher waits for its first config file, since on a disk restored
+    from a snapshot the first read of each block is slow. Starts a throwaway
+    container of each image of the stack the example file stands for, at
+    once, then runs check on that file, which reads the watcher's code, the
+    schema and the start scripts. It is never part of an apply: stop()
+    removes the containers and does not wait for the rest."""
+
+    def __init__(self, stack, timeout=90):
+        super().__init__(daemon=True)
+        self.stack = stack
+        self.timeout = timeout
+        self.stopped = threading.Event()
+
+    def run(self):
+        start = time.monotonic()
+        try:
+            self.warm(start)
+        except Exception as e:
+            # the example file holds no secrets
+            print("warm: failed after %s: %s: %s" % (took(start), type(e).__name__, e), file=sys.stderr)
+            self.remove()
+
+    def warm(self, start):
+        stack = self.stack
+        # one deadline for the launches, the check and the containers;
+        # nothing starts after it
+        left = lambda: self.timeout - (time.monotonic() - start)
+        example = os.path.join(stack.dirs.monitoring, WARM_EXAMPLE)
+        cfg = load(example)
+        argv, env = normalize(cfg, stack.dirs)
+        services = stack.compose_config(argv, env, cfg)[0].compose["services"]
+        print("warm: starting " + ", ".join(sorted(services)), file=sys.stderr)
+        for name in sorted(services):
+            if self.stopped.is_set() or left() <= 0:
+                break
+            # Each image's own entrypoint and command: the program loads its
+            # binary and libraries, and reads what it reads on start, which
+            # is less than the image (Grafana's is 2 GB). Without a network,
+            # ports or volumes it cannot clash with the stack; one that exits
+            # early, like thanos without a subcommand, has loaded its binary.
+            res = stack.run(["docker", "run", "-d", "--rm", "--pull", "never", "--network", "none",
+                             "--label", WARM_LABEL, "--name", "warm-" + name, services[name]["image"]],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, universal_newlines=True,
+                            timeout=max(0.1, left()))
+            if res.returncode != 0:
+                print("warm: %s did not start: %s" % (name, last_line(res.stderr)), file=sys.stderr)
+        if self.stopped.is_set():
+            self.remove()  # one may have started after stop() removed the others
+            return
+        print("warm: containers started after " + took(start), file=sys.stderr)
+        if left() <= 0:
+            self.remove()
+            print("warm: done after " + took(start), file=sys.stderr)
+            return
+        # check renders into a temporary directory; staging, live and state
+        # stay as they are
+        res = stack.run([sys.executable, os.path.abspath(__file__), "check", "--config-file", example,
+                         "--monitoring-dir", stack.dirs.monitoring],
+                        cwd=stack.dirs.monitoring, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                        universal_newlines=True, timeout=max(0.1, left()))
+        # the example file holds no secrets
+        print("warm: check %s after %s" % ("done" if res.returncode == 0 else "failed: " + last_line(res.stderr),
+                                           took(start)), file=sys.stderr)
+        if not self.stopped.wait(max(0, self.timeout - (time.monotonic() - start))):
+            self.remove()
+            print("warm: done after " + took(start), file=sys.stderr)
+
+    def stop(self):
+        """Removes the containers; the first apply goes ahead whatever still runs."""
+        self.stopped.set()
+        self.remove()
+        print("warm: containers removed for the first apply", file=sys.stderr)
+
+    def remove(self, timeout=30):
+        """Removes every warm container, those a watcher that stopped
+        mid-way left included; a docker that does not answer within
+        timeout seconds, or cannot run, is left to the apply."""
+        deadline = time.monotonic() + timeout
+        left = lambda: max(1, deadline - time.monotonic())
+        try:
+            res = self.stack.run(["docker", "ps", "-aq", "--filter", "label=" + WARM_LABEL],
+                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True,
+                                 timeout=left())
+            ids = res.stdout.split()
+            if res.returncode == 0 and ids:
+                # -v: the anonymous volumes of images that declare them
+                res = self.stack.run(["docker", "rm", "-f", "-v"] + ids, stdout=subprocess.DEVNULL,
+                                     stderr=subprocess.DEVNULL, timeout=left())
+            if res.returncode != 0:
+                print("warning: warm: docker could not remove the warm containers", file=sys.stderr)
+        except subprocess.TimeoutExpired:
+            print("warning: warm: docker did not remove the warm containers in %ds" % timeout, file=sys.stderr)
+        except OSError as e:
+            print("warning: warm: cannot run docker: %s" % e, file=sys.stderr)
+
+
 def run_loop(args, stack=None, run=subprocess.run):
     """Applies the newest config file on start, and then whichever one
     changes, polling them; on a fresh host it waits for the first one."""
     dirs = make_dirs(args)
     stack = stack or Stack(dirs, args, run)
+    settings = env_settings(dirs.monitoring)
+    interval = poll_interval(args, settings)
+    warmup = None
+    if settings.get("WARM_ON_BOOT") == "1":
+        # warm containers a watcher that stopped while warming left
+        warmup = Warmup(stack)
+        # a fresh host: nothing applied, so the stack is not running, and no file yet
+        if read_applied(dirs) is None and not any(signature(p) for p in dirs.config_files):
+            warmup.remove()  # first, so their names are free
+            warmup.start()
+        else:
+            # beside the first apply, which does not wait for it
+            threading.Thread(target=warmup.remove, daemon=True).start()
+            warmup = None
     seen = {}
     first = True
     while True:
@@ -1332,6 +1534,9 @@ def run_loop(args, stack=None, run=subprocess.run):
         changed = [p for p, sig in current.items() if sig is not None and sig != seen.get(p)]
         seen = current
         if changed:
+            if warmup:
+                warmup.stop()
+                warmup = None
             # on start, and when several changed in one poll, the newest wins
             path = newest(dirs.config_files if first else changed)
             applying = {}
@@ -1347,7 +1552,7 @@ def run_loop(args, stack=None, run=subprocess.run):
                 traceback.print_exc()
                 failed(dirs, None, applying or None, "internal error: %s" % type(e).__name__)
             first = False
-        stack.sleep(args.poll_interval)
+        stack.sleep(interval)
 
 
 def main(argv=None):
@@ -1383,8 +1588,9 @@ def main(argv=None):
             p.add_argument("--force", action="store_true",
                            help="apply the whole file, as on a first apply, even if it was applied")
         if name == "run":
-            p.add_argument("--poll-interval", type=int, default=30,
-                           help="seconds between checks of the file (default: %(default)s)")
+            p.add_argument("--poll-interval", type=int,
+                           help="seconds between checks of the file "
+                                "(default: WATCHER_POLL_INTERVAL in env.sh, else 30)")
     args = parser.parse_args(argv)
     if args.command is None:
         parser.error("a command is required")

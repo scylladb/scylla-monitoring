@@ -15,6 +15,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 from types import SimpleNamespace
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -513,14 +515,27 @@ def names(host):
     return out
 
 
+def traefik_beside(seq):
+    """names() with start-traefik.sh, which runs beside start-all.sh, right
+    after kill-all.sh, whichever of the two the thread ran first."""
+    seq = list(seq)
+    if "kill-all.sh --traefik" in seq and "start-traefik.sh" in seq:
+        assert seq.index("kill-all.sh --traefik") < seq.index("start-traefik.sh"), seq
+    if "start-traefik.sh" in seq and "start-all.sh -v" in seq:
+        seq.remove("start-traefik.sh")
+        seq.insert(seq.index("start-all.sh -v"), "start-traefik.sh")
+    return seq
+
+
 def test_apply():
     with tempfile.TemporaryDirectory() as tmp:
         host = FakeHost()
         args, stack = make_stack(tmp, host)
         cfg = example()
         assert apply(args, stack, host, cfg) == 0
-        assert names(host) == ["helper dropin", "helper certs", "kill-all.sh --traefik", "start-all.sh -v",
-                               "start-traefik.sh", "docker exec"]
+        assert traefik_beside(names(host)) == ["helper dropin", "helper certs", "kill-all.sh --traefik",
+                                               "start-traefik.sh", "start-all.sh -v", "start-traefik.sh --check",
+                                               "docker exec"]
         assert host.commands[0][0][-2:] == ["node-exporter.service",
                                             tmp + "/config-build/staging/systemd/node-exporter.service.conf"]
         assert host.commands[-1][1] == cfg["grafana"]["admin_password"]
@@ -539,7 +554,8 @@ def test_apply():
         cfg["targets"].pop("vector_search")
         assert apply(args, stack, host, cfg) == 0
         assert not os.path.exists(os.path.join(tmp, "config-build/live/targets/vector_search_servers.yml"))
-        assert names(host) == ["kill-all.sh --traefik", "start-all.sh -v", "start-traefik.sh"]
+        assert traefik_beside(names(host)) == ["kill-all.sh --traefik", "start-traefik.sh", "start-all.sh -v",
+                                               "start-traefik.sh --check"]
 
 
 def test_apply_traefik_kept_without_tls():
@@ -1090,7 +1106,8 @@ def test_apply_docker_proxy():
         assert host.commands == [] and "g2" not in open(os.path.join(tmp, "config-state/applied.yaml")).read()
         # the next pass: the helper finds the proxy unchanged, then the stack starts
         assert apply(args, stack, host, cfg) == 0
-        assert names(host) == ["helper docker-proxy", "kill-all.sh --traefik", "start-all.sh -v", "start-traefik.sh"]
+        assert traefik_beside(names(host)) == ["helper docker-proxy", "kill-all.sh --traefik", "start-traefik.sh",
+                                               "start-all.sh -v", "start-traefik.sh --check"]
         assert host.commands[0][0][-1] == tmp + "/config-build/staging/docker/proxy.env"
         assert json.load(open(os.path.join(tmp, "config-state/status.json")))["generation"] == "g2"
         # a first apply sets it again; the helper restarts docker only on a change
@@ -1241,6 +1258,33 @@ esac
         os.remove(fail)
         smc.write_file(os.path.join(tmp, "down"), "")
         assert run_helper(src) == (0, []) and not os.path.exists(pending)
+
+
+def test_preinstall_set():
+    """start-grafana.sh adds env.sh's PLUGINS_PREINSTALL_DISABLED only when no
+    -c value, and no -e/--env in -D or --limit grafana, sets it: docker keeps
+    the last -e, and compose lets those win. Only real options count, not
+    text inside another value."""
+    text = open("start-grafana.sh").read()
+    func = text[text.index("preinstall_set() {"):text.index("\n}\n", text.index("preinstall_set() {")) + 3]
+
+    def explicit(env=(), docker="", limits=""):
+        script = 'declare -A DOCKER_LIMITS; DOCKER_LIMITS[grafana]="$3"; DOCKER_PARAM="$2"\n' \
+                 'GRAFANA_ENV_COMMAND=(); for v in $1; do GRAFANA_ENV_COMMAND+=(-e "$v"); done\n' + func + \
+                 'preinstall_set'
+        return subprocess.run(["bash", "-c", script, "_", " ".join(env), docker, limits]).returncode == 0
+    name = "GF_PLUGINS_PREINSTALL_DISABLED"
+    for docker in ("-e %s=false" % name, "--env %s" % name, "--env=%s=false" % name, "-e%s=false" % name,
+                   "-e=%s=false" % name, "-te %s=false" % name, "-te%s=false" % name, "-te=%s=false" % name,
+                   "--restart=always -e %s" % name):
+        assert explicit(docker=docker), docker
+        assert explicit(limits=docker), docker
+    assert explicit(env=["%s=false" % name])
+    for docker in ("", "--label note=%s=false" % name, "-e FOO=%s=false" % name, "-e %s_X=1" % name,
+                   "--name %s" % name):
+        assert not explicit(docker=docker), docker
+    # a -c value holding the text of an option is one value
+    assert not explicit(env=["FOO=-e"]) and not explicit(env=["%s_X=1" % name])
 
 
 def test_traefik_thanos_port():
@@ -1602,6 +1646,406 @@ def test_apply_once_summary():
         assert "apply: restart_stack failed after 0s" in lines, lines
         assert lines[-2].startswith("failed: ")
         assert lines[-1] == "failed generation %s in 0s (full)" % cfg["generation"], lines
+
+
+class WarmHost(FakeHost):
+    """A FakeHost that records the warm-up's commands too, in one list, in
+    order: docker run and ps, and the check; docker ps lists two containers.
+    check_started is set when the check starts, which then waits for release."""
+
+    def __init__(self):
+        super().__init__()
+        self.log = []
+        self.check_started = threading.Event()
+        self.release = threading.Event()
+        self.release.set()
+
+    def run(self, cmd, **kwargs):
+        if cmd[0] == sys.executable:
+            self.log.append(cmd)
+            self.check_started.set()
+            assert self.release.wait(5)
+            return SimpleNamespace(returncode=0, stdout="")
+        if cmd[:2] in (["docker", "ps"], ["docker", "rm"]) or (cmd[:2] == ["docker", "run"] and "--label" in cmd):
+            self.log.append(cmd)
+            return SimpleNamespace(returncode=0, stdout="id1\nid2\n" if cmd[1] == "ps" else "")
+        return super().run(cmd, **kwargs)
+
+
+def warm_stack(tmp, host, env_sh):
+    args, stack = make_stack(tmp, host)
+    if env_sh is not None:
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write(env_sh)
+    shutil.copy2(EXAMPLE, tmp)
+    args.config_file = [os.path.join(tmp, "config", "config.yaml")]
+    args.poll_interval = None
+    images = {"agraf": "grafana/grafana:1", "aprom": "prom/prometheus:2"}
+    stack.compose_build = lambda argv, environ=None, cwd=None: SimpleNamespace(
+        compose={"services": {n: {"container_name": n, "image": i} for n, i in images.items()}})
+    return args, stack
+
+
+@contextlib.contextmanager
+def warmups(timeout):
+    """The Warmups run_loop makes, with the given timeout. The clock stands
+    still, so no deadline passes during the launches or the check and every
+    logged duration is 0s; only the final wait for the deadline takes real
+    time."""
+    made = []
+
+    class Captured(smc.Warmup):
+        def __init__(self, stack):
+            super().__init__(stack, timeout=timeout)
+            made.append(self)
+    real, smc.Warmup = smc.Warmup, Captured
+    monotonic, smc.time.monotonic = smc.time.monotonic, lambda: 0.0
+    try:
+        yield made
+    finally:
+        smc.Warmup = real
+        smc.time.monotonic = monotonic
+
+
+def loop_until(args, stack, host, steps):
+    """run_loop, each sleep running the next step; stops when none is left."""
+    def step(seconds):
+        if not steps:
+            raise StopIteration
+        steps.pop(0)()
+    stack.sleep = step
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+        try:
+            smc.run_loop(args, stack, host.run)
+        except StopIteration:
+            pass
+    return out
+
+
+WARM_RUN = ["docker", "run", "-d", "--rm", "--pull", "never", "--network", "none", "--label", "scylla-monitoring.warm=1", "--name"]
+
+
+def test_warmup():
+    """With WARM_ON_BOOT=1, a fresh host starts one container per image, no
+    network, no ports, then checks the example file; on time it removes them."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = WarmHost()
+        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
+        with warmups(timeout=0.3) as made:
+            out = loop_until(args, stack, host, [lambda: made[0].join(5)])
+        assert len(made) == 1 and not made[0].is_alive()
+        assert host.log == [
+            # first, the containers a watcher that stopped while warming left
+            ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"],
+            ["docker", "rm", "-f", "-v", "id1", "id2"],
+            WARM_RUN + ["warm-agraf", "grafana/grafana:1"],
+            WARM_RUN + ["warm-aprom", "prom/prometheus:2"],
+            [sys.executable, os.path.abspath(smc.__file__), "check", "--config-file",
+             os.path.join(tmp, smc.WARM_EXAMPLE), "--monitoring-dir", tmp],
+            ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"],
+            ["docker", "rm", "-f", "-v", "id1", "id2"],
+        ], host.log
+        warm = [l for l in out.getvalue().splitlines() if l.startswith("warm: ")]
+        assert warm == ["warm: starting agraf, aprom", "warm: containers started after 0s",
+                        "warm: check done after 0s", "warm: done after 0s"], warm
+        # nothing touched the staging, live or state directories
+        assert not os.path.exists(os.path.join(tmp, "config-build")) and \
+            not os.path.exists(os.path.join(tmp, "config-state"))
+
+
+def test_warmup_off():
+    """Without WARM_ON_BOOT=1, or with something to apply, nothing warms;
+    with it, the warm containers a watcher left are removed on start."""
+    for env_sh, applied in ((None, False), ("WARM_ON_BOOT=0\n", False), ("WARM_ON_BOOT=1\n", True)):
+        with tempfile.TemporaryDirectory() as tmp:
+            host = WarmHost()
+            args, stack = warm_stack(tmp, host, env_sh)
+            if applied:
+                os.makedirs(os.path.join(tmp, "config-state"))
+                open(os.path.join(tmp, "config-state", "applied.yaml"), "w").close()
+            with warmups(timeout=0) as made:
+                loop_until(args, stack, host, [])
+            left = [["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"],
+                    ["docker", "rm", "-f", "-v", "id1", "id2"]] if env_sh == "WARM_ON_BOOT=1\n" else []
+            # with a config to apply, the cleanup runs beside it, in a thread
+            deadline = time.monotonic() + 5
+            while len(host.log) < len(left) and time.monotonic() < deadline:
+                time.sleep(0.01)
+            assert all(m.ident is None for m in made) and host.log == left, (env_sh, applied, host.log)
+
+
+def test_warmup_launch_failure():
+    """An image that does not start is logged; the rest warm as usual."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = WarmHost()
+        run = host.run
+        host.run = lambda cmd, **kw: SimpleNamespace(returncode=125, stdout="", stderr="docker: No such image: g:1\n") \
+            if cmd[:2] == ["docker", "run"] and "warm-agraf" in cmd else run(cmd, **kw)
+        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
+        with warmups(timeout=0.3) as made:
+            out = loop_until(args, stack, host, [lambda: made[0].join(5)])
+        warm = [l for l in out.getvalue().splitlines() if l.startswith("warm: ")]
+        assert warm[:3] == ["warm: starting agraf, aprom", "warm: agraf did not start: docker: No such image: g:1",
+                            "warm: containers started after 0s"], warm
+
+
+def test_warmup_deadline():
+    """Nothing starts once the deadline is past: no launch and no check."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = WarmHost()
+        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
+        with warmups(timeout=0) as made:
+            out = loop_until(args, stack, host, [lambda: made[0].join(5)])
+        ps = ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"]
+        rm = ["docker", "rm", "-f", "-v", "id1", "id2"]
+        assert host.log == [ps, rm, ps, rm], host.log
+        warm = [l for l in out.getvalue().splitlines() if l.startswith("warm: ")]
+        assert warm == ["warm: starting agraf, aprom", "warm: containers started after 0s", "warm: done after 0s"], warm
+
+
+def test_warmup_remove_timeout():
+    """A docker that does not answer leaves the warm containers to the apply,
+    with a warning, instead of holding it."""
+    with tempfile.TemporaryDirectory() as tmp:
+        args, stack = warm_stack(tmp, FakeHost(), None)
+
+        def hung(cmd, **kwargs):
+            assert 29 < kwargs.get("timeout") <= 30
+            raise subprocess.TimeoutExpired(cmd, kwargs["timeout"])
+
+        def missing(cmd, **kwargs):
+            raise FileNotFoundError(2, "No such file or directory", "docker")
+
+        def failing(cmd, **kwargs):
+            return SimpleNamespace(returncode=1 if cmd[1] == "rm" else 0, stdout="id1\n")
+        for run, warning in ((failing, "warning: warm: docker could not remove the warm containers\n"),
+                             (hung, "warning: warm: docker did not remove the warm containers in 30s\n"),
+                             (missing, "warning: warm: cannot run docker: [Errno 2] No such file or directory: 'docker'\n")):
+            stack.run = run
+            err = io.StringIO()
+            with contextlib.redirect_stderr(err):
+                smc.Warmup(stack).remove()
+            assert err.getvalue() == warning, err.getvalue()
+
+
+def test_warmup_first_config():
+    """The first file removes the warm containers before the apply, while
+    the warm-up's check still runs."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = WarmHost()
+        host.release.clear()
+        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
+        stack.apply = lambda old, new, argv, env, previous=None, ran_traefik=False, proxy_stale=False, \
+            restart=False: host.log.append("apply") or set()
+        stack.health = lambda argv, cfg, timeout=None: None
+
+        def first_config():
+            assert host.check_started.wait(5)
+            os.makedirs(os.path.dirname(args.config_file[0]))
+            write_config(os.path.dirname(args.config_file[0]), example())
+        with warmups(timeout=90) as made:
+            out = loop_until(args, stack, host, [first_config])
+            assert made[0].is_alive()  # the check still runs
+            with contextlib.redirect_stderr(out):
+                host.release.set()
+                made[0].join(5)
+        ps = ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"]
+        assert host.log[4:] == [host.log[4], ps, ["docker", "rm", "-f", "-v", "id1", "id2"], "apply"], host.log
+        assert host.log[4][2] == "check"
+        lines = out.getvalue().splitlines()
+        assert "warm: containers removed for the first apply" in lines
+        assert lines.index("warm: containers removed for the first apply") < \
+            next(i for i, l in enumerate(lines) if l.startswith("apply: prepare"))
+        # stopped: the thread does not remove again or log done
+        assert not any(l.startswith("warm: done") for l in lines), lines
+
+
+def test_poll_interval():
+    """--poll-interval, else env.sh's WATCHER_POLL_INTERVAL, else 30."""
+    for env_sh, option, expected in ((None, None, 30), ("WATCHER_POLL_INTERVAL=5\n", None, 5),
+                                     ("WATCHER_POLL_INTERVAL=5\n", 7, 7), ("WATCHER_POLL_INTERVAL=x\n", None, 30),
+                                     ("WATCHER_POLL_INTERVAL=\u00b2\n", None, 30), ("WATCHER_POLL_INTERVAL=0\n", None, 30),
+                                     # env.sh output that garbles the variable list: defaults, not an exit
+                                     ("echo hi\ncompgen() { echo WATCHER_POLL_INTERVAL; }\nWATCHER_POLL_INTERVAL=5\n",
+                                      None, 30)):
+        with tempfile.TemporaryDirectory() as tmp:
+            host = WarmHost()
+            args, stack = warm_stack(tmp, host, env_sh)
+            args.poll_interval = option
+            slept = []
+
+            def sleep(seconds):
+                slept.append(seconds)
+                raise StopIteration
+            stack.sleep = sleep
+            try:
+                quiet(smc.run_loop, args, stack, host.run)
+            except StopIteration:
+                pass
+            assert slept == [expected], (env_sh, option, slept)
+
+
+def test_traefik_parallel():
+    """traefik starts while start-all.sh runs, and restart_stack waits for
+    both; under quick startup it starts without its wait; a traefik that
+    fails fails the restart."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        traefik_started, start_all_started = threading.Event(), threading.Event()
+        log = []
+
+        def run(cmd, **kwargs):
+            if cmd == ["./start-traefik.sh", "--check"]:
+                log.append("check")
+            elif cmd[0] == "./start-traefik.sh":
+                traefik_started.set()
+                # start-all.sh starts before traefik is done
+                log.append("traefik overlaps start-all" if start_all_started.wait(5) else "traefik alone")
+                log.append("traefik done")
+            if cmd[0] == "./start-all.sh":
+                start_all_started.set()
+                assert traefik_started.wait(5)
+                log.append("start-all done")
+            return host.run(cmd, **kwargs)
+        stack.run = run
+        cfg = example()
+        cfg["stack"]["quick_startup"] = True
+        argv, env = smc.normalize(cfg, stack.dirs)
+        stack.restart_stack(argv, env, cfg, first=True, traefik=True)
+        # the exposure check runs again once both are done
+        assert sorted(log[:-1]) == ["start-all done", "traefik done", "traefik overlaps start-all"] and \
+            log[-1] == "check", log
+        # the exposure check runs again once start-all.sh is done
+        assert [c for c, _ in host.commands if c[0] == "./start-traefik.sh"] == [
+            ["./start-traefik.sh", "--quick-startup"], ["./start-traefik.sh", "--check"]]
+        check = next(e for (c, _), e in zip(host.commands, host.envs) if c[-1] == "--check")
+        assert check["PRIVATE_IP"] == cfg["tls"]["listen_ip"]
+        # without quick startup, start-traefik.sh waits for traefik
+        host.commands.clear()
+        cfg["stack"]["quick_startup"] = False
+        argv, env = smc.normalize(cfg, stack.dirs)
+        stack.run = host.run
+        stack.restart_stack(argv, env, cfg, first=True, traefik=True)
+        assert [c for c, _ in host.commands if c[0] == "./start-traefik.sh"] == [
+            ["./start-traefik.sh"], ["./start-traefik.sh", "--check"]]
+        # services published outside loopback, or on the host network where
+        # -A does not apply: traefik starts after them, so start-traefik.sh
+        # reports the exposure instead of racing for the ports
+        for bind, flags in ((None, []), ("0.0.0.0", []), ("127.0.0.1", ["-l"]),
+                            ("127.0.0.1", ["-D", "--net=host"])):
+            host.commands.clear()
+            c = copy.deepcopy(cfg)
+            c["stack"].pop("bind_address", None)
+            if bind:
+                c["stack"]["bind_address"] = bind
+            c["stack"]["extra_flags"] = flags
+            argv, env = smc.normalize(c, stack.dirs)
+            stack.restart_stack(argv, env, c, first=True, traefik=True)
+            assert [n for n in names(host) if n != "kill-all.sh --traefik"] == ["start-all.sh -v", "start-traefik.sh"], \
+                (bind, flags, names(host))
+        # the same with --net=host from env.sh's DOCKER_PARAM, which a -D
+        # replaces, as in start-all.sh: no docker_args
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write('DOCKER_PARAM="--net=host"\n')
+        host.commands.clear()
+        c = copy.deepcopy(cfg)
+        c["stack"].pop("docker_args", None)
+        argv, env = smc.normalize(c, stack.dirs)
+        stack.restart_stack(argv, env, c, first=True, traefik=True)
+        assert [n for n in names(host) if n != "kill-all.sh --traefik"] == ["start-all.sh -v", "start-traefik.sh"], \
+            names(host)
+        # an env.sh that cannot be read: the order that is safe either way,
+        # worked out before kill-all.sh stops anything
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write("echo hi\ncompgen() { echo DOCKER_PARAM; }\nDOCKER_PARAM=x\n")
+        host.commands.clear()
+        argv, env = smc.normalize(cfg, stack.dirs)
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            stack.restart_stack(argv, env, cfg, first=True, traefik=True)
+        assert names(host) == ["kill-all.sh --traefik", "start-all.sh -v", "start-traefik.sh"], names(host)
+        assert "warning: cannot read env.sh: IndexError; traefik starts after the stack" in err.getvalue(), err.getvalue()
+        # -h among env.sh's option words, on which make_compose.options exits
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write('SPECIFIC_SOLUTION="-h"\n')
+        host.commands.clear()
+        c = copy.deepcopy(cfg)
+        c["stack"].pop("docker_args", None)
+        argv, env = smc.normalize(c, stack.dirs)
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            stack.restart_stack(argv, env, c, first=True, traefik=True)
+        assert names(host) == ["kill-all.sh --traefik", "start-all.sh -v", "start-traefik.sh"], names(host)
+        os.remove(os.path.join(tmp, "env.sh"))
+        cfg["stack"]["bind_address"] = "127.0.0.1"
+        argv, env = smc.normalize(cfg, stack.dirs)
+        # a failed traefik fails the restart; start-all.sh's failure wins
+        for fail, error in ((("start-traefik.sh",), "start-traefik.sh failed"),
+                            (("start-traefik.sh", "start-all.sh"), "start-all.sh failed")):
+            stack.run = FakeHost(fail=fail).run
+            try:
+                stack.restart_stack(argv, env, cfg, first=True, traefik=True)
+                raise AssertionError("no failure")
+            except smc.ApplyError as e:
+                assert e.args[0] == error, e.args
+
+
+def test_health_traefik():
+    """health waits for traefik's ping beside the others, and a traefik that
+    never answers fails it with traefik pending."""
+    with tempfile.TemporaryDirectory() as tmp:
+        args, stack = make_stack(tmp, FakeHost())
+        cfg = {"tls": {"enabled": True}}
+        stack.http = ready_after({"traefik": ("8080", 3)})
+        with fake_clock(stack) as err:
+            stack.health([], cfg, timeout=100)
+        lines = err.getvalue().splitlines()
+        assert lines[0] == "health: waiting for prometheus, grafana, alertmanager, loki, traefik", lines
+        assert lines[-2:] == ["health: traefik ready after 4s", "health: ready after 4s"], lines
+        stack.http = ready_after({"traefik": ("8080", 1000)})
+        with fake_clock(stack) as err:
+            try:
+                stack.health([], cfg, timeout=5)
+                raise AssertionError("no timeout")
+            except smc.ApplyError as e:
+                assert e.args[0] == "traefik: not ready"
+        assert err.getvalue().splitlines()[-1] == "health: not ready after 6s: traefik"
+
+
+def test_start_traefik_quick_startup():
+    """start-traefik.sh --quick-startup starts traefik and runs no probe;
+    without it, the probe runs."""
+    with tempfile.TemporaryDirectory() as tmp:
+        for f in ("start-traefik.sh", "versions.sh"):
+            shutil.copy2(f, tmp)
+        stubs, certs = os.path.join(tmp, "stubs"), os.path.join(tmp, "certs")
+        os.makedirs(stubs)
+        os.makedirs(certs)
+        for f in ("server.crt", "server.key", "rootCA.crt"):
+            open(os.path.join(certs, f), "w").close()
+        calls = os.path.join(tmp, "calls")
+        for name, body in (("ip", 'echo "2: eth0    inet 10.0.0.10/24 scope global eth0"'),
+                           ("ss", 'echo "State Recv-Q Send-Q Local Address:Port Peer Address:Port"'),
+                           ("docker", '[ "$1 $2" = "info --format" ] && echo json-file; exit 0'),
+                           ("curl", 'echo curl >> "%s"; printf 200' % calls)):
+            path = os.path.join(stubs, name)
+            with open(path, "w") as f:
+                f.write("#!/bin/bash\n" + body + "\n")
+            os.chmod(path, 0o755)
+        env = dict(os.environ, PATH=stubs + ":" + os.environ["PATH"], PRIVATE_IP="10.0.0.10", CERT_DIR=certs)
+
+        def start(*flags):
+            if os.path.exists(calls):
+                os.remove(calls)
+            res = subprocess.run(["./start-traefik.sh"] + list(flags), cwd=tmp, env=env, stdin=subprocess.DEVNULL,
+                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+            assert res.returncode == 0, res.stdout
+            return open(calls).read().split() if os.path.exists(calls) else []
+        assert start("--quick-startup") == []
+        assert start() == ["curl"]
+
 
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
