@@ -577,9 +577,10 @@ def now():
 
 
 def prepare(args, dirs, path, run=subprocess.run, stack=None, applying=None):
-    """Loads, normalizes, renders and validates the file. In compose mode
-    (stack.compose), make_compose.py builds the stack too, so its checks
-    reject the file, and prometheus.yml is rendered with its command.
+    """Loads, normalizes, renders and validates the file. With a stack, sets
+    its mode for the file; in compose mode make_compose.py builds the stack
+    too, so its checks reject the file, and prometheus.yml is rendered with
+    its command.
 
     Returns (cfg, argv, env); raises ConfigError with the generation, when the
     file has one, as its second argument. applying: a dict that gets the
@@ -588,6 +589,8 @@ def prepare(args, dirs, path, run=subprocess.run, stack=None, applying=None):
         print("warning: %s/env.sh is sourced by the start scripts and can override the file" % dirs.monitoring,
               file=sys.stderr)
     cfg = load(path, args.strict)
+    if stack is not None:
+        stack.compose = stack.mode(cfg)
     if applying is not None:
         applying["generation"] = cfg["generation"]
     try:
@@ -683,6 +686,9 @@ ACTIONS = {
     "stack": [RESTART],
     # start-all.sh reads it when it next starts the stack
     "stack.quick_startup": [],
+    # apply restarts the stack when the mode changes, which a field set to
+    # the default does not
+    "stack.compose": [],
     "grafana": [RESTART],
     "grafana.admin_password": ["grafana_password"],
     "grafana.datasource": ["grafana_datasource"],
@@ -767,8 +773,20 @@ class Stack:
         self.http = http or http_status
         self.listening = listening or port_listening
         self.sleep = sleep
-        self.compose = getattr(args, "compose", False)
+        self.compose = False  # the mode of the file being applied, which prepare sets
+        self.default_compose = None  # read on first use, by mode
         self.compose_build = None  # make_compose.build, set on first use; tests replace it
+
+    def mode(self, cfg):
+        """Whether cfg's stack runs with docker compose: stack.compose, else
+        --compose or env.sh's WATCHER_COMPOSE=1, else not."""
+        compose = (cfg or {}).get("stack", {}).get("compose")
+        if compose is not None:
+            return compose
+        if self.default_compose is None:
+            self.default_compose = (getattr(self.args, "compose", False) or
+                                    env_settings(self.dirs.monitoring).get("WATCHER_COMPOSE") == "1")
+        return self.default_compose
 
     def sh(self, cmd, env=None, input=None):
         res = self.run(cmd, cwd=self.dirs.monitoring, env=dict(os.environ, **(env or {})), input=input,
@@ -809,11 +827,11 @@ class Stack:
             result.append(("loki", ports["loki"], "/ready"))
         return result
 
-    def extra_ports(self, argv, loki):
+    def extra_ports(self, argv, loki, compose):
         """The ports of the log collector, which runs with Loki, of the
         Grafana renderer and of the Thanos sidecar and query, with env.sh's
         overrides: make_compose.py takes start-all.sh's options over env.sh
-        as start-all.sh does."""
+        as start-all.sh does. compose: the stack runs with docker compose."""
         import make_compose
         cwd = self.dirs.monitoring
         v = make_compose.shell_vars(cwd, dict(os.environ), os.path.join(cwd, "env.sh"))
@@ -822,18 +840,18 @@ class Stack:
         if loki and o["log_collector"] == "alloy":
             ports.append(o["alloy_port"] or "12345")
         # start-loki.sh skips Promtail with NO_PROMTAIL=1; compose does not
-        elif loki and o["log_collector"] == "promtail" and (self.compose or v.get("NO_PROMTAIL") != "1"):
+        elif loki and o["log_collector"] == "promtail" and (compose or v.get("NO_PROMTAIL") != "1"):
             # under host networking Promtail listens on 9080, whatever its
             # port; start-loki.sh takes PROMTAIL_PORT too, compose does not
             host_net = make_compose.HOST_NET.search(o["docker_param"])
             ports.append("9080" if host_net else o["promtail_port"] or
-                         (not self.compose and v.get("PROMTAIL_PORT")) or "9080")
+                         (not compose and v.get("PROMTAIL_PORT")) or "9080")
         # a secondary stack runs no renderer
         if o["renderer"] and not o["stack"]:
             ports.append("8081")
         if o["thanos_sc"] and o["data_dir"]:
             # start-thanos-sc.sh takes THANOS_SC_PORT; compose publishes 10911
-            ports.append((not self.compose and v.get("THANOS_SC_PORT")) or "10911")
+            ports.append((not compose and v.get("THANOS_SC_PORT")) or "10911")
         if o["thanos"] or o["local_thanos"]:
             ports.append("10903")
         return ports
@@ -884,12 +902,28 @@ class Stack:
         # when this configuration runs it, or ran it before
         self.sh(cmd + (["--traefik"] if traefik else []))
 
-    def restart_stack(self, argv, env, cfg, first=False, traefik=False):
+    def compose_down(self, argv):
+        """Removes the stack docker compose ran for argv, its network
+        included, from the files make_compose.write wrote for its --stack;
+        nothing when they are gone."""
+        stack = option(argv, "--stack")
+        files = ("docker-compose.stack%s.yml" % stack, ".env.stack" + stack) if stack else ("docker-compose.yml", ".env")
+        if not os.path.exists(os.path.join(self.dirs.monitoring, files[0])):
+            return
+        self.sh(["docker", "compose"] + (["-f", files[0], "--env-file", files[1]] if stack else []) +
+                ["down", "--remove-orphans"])
+
+    def restart_stack(self, argv, env, cfg, first=False, traefik=False, was_compose=None, old_argv=None):
+        """was_compose: the mode the stack ran in before, when known, with
+        old_argv its arguments; a switch removes the stack of the other mode
+        first."""
         if not self.compose:
             tls = cfg.get("tls", {}).get("enabled")
             quick = "--quick-startup" in argv
             # worked out before the stack stops, so an error leaves it running
             serial = tls and (not loopback(option(argv, "-A")) or self.host_network(argv))
+            if was_compose:
+                self.compose_down(old_argv)
             self.kill_all(argv, traefik)
             if serial:
                 # services published outside loopback, or on the host network,
@@ -918,7 +952,9 @@ class Stack:
         import make_compose
         stack, environ = self.compose_stack(argv, env, cfg)
         # the containers a start-all.sh run left have the same names
-        if first:
+        if was_compose is False:
+            self.kill_all(old_argv, traefik)
+        elif first:
             self.kill_all(argv, traefik)
         stack.up = True
         make_compose.write(stack, self.dirs.monitoring, environ,
@@ -1083,7 +1119,7 @@ class Stack:
         proxy_stale: docker runs a proxy a revert kept, so it is set again.
         restart: the stack restarts too, as for a container that went down."""
         actions = plan(old, new)
-        if (proxy_stale and not revert) or restart:
+        if (proxy_stale and not revert) or restart or (old is not None and self.mode(old) != self.compose):
             # as for a docker change: docker's restart stops the containers
             actions = (actions | {RESTART}) - COVERED_BY_RESTART
         traefik = ran_traefik or any(tls_on(c) for c in (old, new, previous))
@@ -1111,7 +1147,9 @@ class Stack:
                 self.thanos_datasource(argv, False)
         if RESTART in actions:
             with timed("apply: " + RESTART):
-                self.restart_stack(argv, env, new, first=old is None, traefik=traefik)
+                self.restart_stack(argv, env, new, first=old is None, traefik=traefik,
+                                   was_compose=self.mode(previous) if previous else None,
+                                   old_argv=normalize(previous, self.dirs)[0] if previous else None)
         else:
             if "render_prometheus_config" in actions:
                 with timed("apply: render_prometheus_config"):
@@ -1343,7 +1381,7 @@ def container_down(dirs, stack):
         components = stack.components(argv)
         ports = [(host, port) for _, port, _ in components]
         loki = "loki" in [c[0] for c in components]
-        ports += [(host, port) for port in stack.extra_ports(argv, loki)]
+        ports += [(host, port) for port in stack.extra_ports(argv, loki, stack.mode(cfg))]
         if tls_on(cfg):
             ports.append(("localhost", "8080"))  # traefik's ping
         for _, port in ports:
@@ -1583,7 +1621,8 @@ def main(argv=None):
         p.add_argument("--health-timeout", type=int, default=180,
                        help="seconds to wait for the components to be ready (default: %(default)s)")
         p.add_argument("--compose", action="store_true",
-                       help="run the stack with docker compose, through make_compose.py")
+                       help="run the stack with docker compose, through make_compose.py, "
+                            "unless the file's stack.compose says otherwise")
         if name == "apply":
             p.add_argument("--force", action="store_true",
                            help="apply the whole file, as on a first apply, even if it was applied")

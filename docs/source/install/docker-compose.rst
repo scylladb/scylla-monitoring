@@ -84,7 +84,8 @@ To start it again, run ``docker compose up -d``.
 The Configuration File
 ----------------------
 
-``scylla_monitoring_config.py --compose`` applies a configuration file to a stack run with Docker Compose.
+``scylla_monitoring_config.py --compose``, or ``stack.compose: true`` in the file, applies a configuration file to a stack
+run with Docker Compose. A change of ``stack.compose`` stops a running stack and starts it in the other mode.
 See :doc:`Configure the Stack from One File <config-file>`.
 
 .. note::
