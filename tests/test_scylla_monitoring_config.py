@@ -1701,217 +1701,34 @@ def test_apply_once_summary():
         assert lines[-1] == "failed generation %s in 0s (full)" % cfg["generation"], lines
 
 
-class WarmHost(FakeHost):
-    """A FakeHost that records the warm-up's commands too, in one list, in
-    order: docker run and ps, and the check; docker ps lists two containers.
-    check_started is set when the check starts, which then waits for release."""
-
-    def __init__(self):
-        super().__init__()
-        self.log = []
-        self.check_started = threading.Event()
-        self.release = threading.Event()
-        self.release.set()
-
-    def run(self, cmd, **kwargs):
-        if cmd[0] == sys.executable:
-            self.log.append(cmd)
-            self.check_started.set()
-            assert self.release.wait(5)
-            return SimpleNamespace(returncode=0, stdout="")
-        if cmd[:2] in (["docker", "ps"], ["docker", "rm"]) or (cmd[:2] == ["docker", "run"] and "--label" in cmd):
-            self.log.append(cmd)
-            return SimpleNamespace(returncode=0, stdout="id1\nid2\n" if cmd[1] == "ps" else "")
-        return super().run(cmd, **kwargs)
-
-
-def warm_stack(tmp, host, env_sh):
+def env_stack(tmp, host, env_sh):
+    """make_stack for run_loop, with env_sh as env.sh, or none, and no config file yet."""
     args, stack = make_stack(tmp, host)
     if env_sh is not None:
         with open(os.path.join(tmp, "env.sh"), "w") as f:
             f.write(env_sh)
-    shutil.copy2(EXAMPLE, tmp)
     args.config_file = [os.path.join(tmp, "config", "config.yaml")]
     args.poll_interval = None
-    images = {"agraf": "grafana/grafana:1", "aprom": "prom/prometheus:2"}
-    stack.compose_build = lambda argv, environ=None, cwd=None: SimpleNamespace(
-        compose={"services": {n: {"container_name": n, "image": i} for n, i in images.items()}})
     return args, stack
 
 
-@contextlib.contextmanager
-def warmups(timeout):
-    """The Warmups run_loop makes, with the given timeout. The clock stands
-    still, so no deadline passes during the launches or the check and every
-    logged duration is 0s; only the final wait for the deadline takes real
-    time."""
-    made = []
+def test_warm_on_boot_ignored():
+    """WARM_ON_BOOT=1 in an existing env.sh is ignored: a watcher on a fresh
+    host starts no container and runs no check while it waits for the file."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        ran = []
+        args, stack = env_stack(tmp, host, "WARM_ON_BOOT=1\n")
+        stack.run = lambda cmd, **kw: ran.append(cmd) or host.run(cmd, **kw)
 
-    class Captured(smc.Warmup):
-        def __init__(self, stack):
-            super().__init__(stack, timeout=timeout)
-            made.append(self)
-    real, smc.Warmup = smc.Warmup, Captured
-    monotonic, smc.time.monotonic = smc.time.monotonic, lambda: 0.0
-    try:
-        yield made
-    finally:
-        smc.Warmup = real
-        smc.time.monotonic = monotonic
-
-
-def loop_until(args, stack, host, steps):
-    """run_loop, each sleep running the next step; stops when none is left."""
-    def step(seconds):
-        if not steps:
-            raise StopIteration
-        steps.pop(0)()
-    stack.sleep = step
-    out = io.StringIO()
-    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+        def sleep(seconds):
+            raise StopIteration  # after the first poll, which finds no file
+        stack.sleep = sleep
         try:
-            smc.run_loop(args, stack, host.run)
+            quiet(smc.run_loop, args, stack, stack.run)
         except StopIteration:
             pass
-    return out
-
-
-WARM_RUN = ["docker", "run", "-d", "--rm", "--pull", "never", "--network", "none", "--label", "scylla-monitoring.warm=1", "--name"]
-
-
-def test_warmup():
-    """With WARM_ON_BOOT=1, a fresh host starts one container per image, no
-    network, no ports, then checks the example file; on time it removes them."""
-    with tempfile.TemporaryDirectory() as tmp:
-        host = WarmHost()
-        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
-        with warmups(timeout=0.3) as made:
-            out = loop_until(args, stack, host, [lambda: made[0].join(5)])
-        assert len(made) == 1 and not made[0].is_alive()
-        assert host.log == [
-            # first, the containers a watcher that stopped while warming left
-            ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"],
-            ["docker", "rm", "-f", "-v", "id1", "id2"],
-            WARM_RUN + ["warm-agraf", "grafana/grafana:1"],
-            WARM_RUN + ["warm-aprom", "prom/prometheus:2"],
-            [sys.executable, os.path.abspath(smc.__file__), "check", "--config-file",
-             os.path.join(tmp, smc.WARM_EXAMPLE), "--monitoring-dir", tmp],
-            ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"],
-            ["docker", "rm", "-f", "-v", "id1", "id2"],
-        ], host.log
-        warm = [l for l in out.getvalue().splitlines() if l.startswith("warm: ")]
-        assert warm == ["warm: starting agraf, aprom", "warm: containers started after 0s",
-                        "warm: check done after 0s", "warm: done after 0s"], warm
-        # nothing touched the staging, live or state directories
-        assert not os.path.exists(os.path.join(tmp, "config-build")) and \
-            not os.path.exists(os.path.join(tmp, "config-state"))
-
-
-def test_warmup_off():
-    """Without WARM_ON_BOOT=1, or with something to apply, nothing warms;
-    with it, the warm containers a watcher left are removed on start."""
-    for env_sh, applied in ((None, False), ("WARM_ON_BOOT=0\n", False), ("WARM_ON_BOOT=1\n", True)):
-        with tempfile.TemporaryDirectory() as tmp:
-            host = WarmHost()
-            args, stack = warm_stack(tmp, host, env_sh)
-            if applied:
-                os.makedirs(os.path.join(tmp, "config-state"))
-                open(os.path.join(tmp, "config-state", "applied.yaml"), "w").close()
-            with warmups(timeout=0) as made:
-                loop_until(args, stack, host, [])
-            left = [["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"],
-                    ["docker", "rm", "-f", "-v", "id1", "id2"]] if env_sh == "WARM_ON_BOOT=1\n" else []
-            # with a config to apply, the cleanup runs beside it, in a thread
-            deadline = time.monotonic() + 5
-            while len(host.log) < len(left) and time.monotonic() < deadline:
-                time.sleep(0.01)
-            assert all(m.ident is None for m in made) and host.log == left, (env_sh, applied, host.log)
-
-
-def test_warmup_launch_failure():
-    """An image that does not start is logged; the rest warm as usual."""
-    with tempfile.TemporaryDirectory() as tmp:
-        host = WarmHost()
-        run = host.run
-        host.run = lambda cmd, **kw: SimpleNamespace(returncode=125, stdout="", stderr="docker: No such image: g:1\n") \
-            if cmd[:2] == ["docker", "run"] and "warm-agraf" in cmd else run(cmd, **kw)
-        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
-        with warmups(timeout=0.3) as made:
-            out = loop_until(args, stack, host, [lambda: made[0].join(5)])
-        warm = [l for l in out.getvalue().splitlines() if l.startswith("warm: ")]
-        assert warm[:3] == ["warm: starting agraf, aprom", "warm: agraf did not start: docker: No such image: g:1",
-                            "warm: containers started after 0s"], warm
-
-
-def test_warmup_deadline():
-    """Nothing starts once the deadline is past: no launch and no check."""
-    with tempfile.TemporaryDirectory() as tmp:
-        host = WarmHost()
-        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
-        with warmups(timeout=0) as made:
-            out = loop_until(args, stack, host, [lambda: made[0].join(5)])
-        ps = ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"]
-        rm = ["docker", "rm", "-f", "-v", "id1", "id2"]
-        assert host.log == [ps, rm, ps, rm], host.log
-        warm = [l for l in out.getvalue().splitlines() if l.startswith("warm: ")]
-        assert warm == ["warm: starting agraf, aprom", "warm: containers started after 0s", "warm: done after 0s"], warm
-
-
-def test_warmup_remove_timeout():
-    """A docker that does not answer leaves the warm containers to the apply,
-    with a warning, instead of holding it."""
-    with tempfile.TemporaryDirectory() as tmp:
-        args, stack = warm_stack(tmp, FakeHost(), None)
-
-        def hung(cmd, **kwargs):
-            assert 29 < kwargs.get("timeout") <= 30
-            raise subprocess.TimeoutExpired(cmd, kwargs["timeout"])
-
-        def missing(cmd, **kwargs):
-            raise FileNotFoundError(2, "No such file or directory", "docker")
-
-        def failing(cmd, **kwargs):
-            return SimpleNamespace(returncode=1 if cmd[1] == "rm" else 0, stdout="id1\n")
-        for run, warning in ((failing, "warning: warm: docker could not remove the warm containers\n"),
-                             (hung, "warning: warm: docker did not remove the warm containers in 30s\n"),
-                             (missing, "warning: warm: cannot run docker: [Errno 2] No such file or directory: 'docker'\n")):
-            stack.run = run
-            err = io.StringIO()
-            with contextlib.redirect_stderr(err):
-                smc.Warmup(stack).remove()
-            assert err.getvalue() == warning, err.getvalue()
-
-
-def test_warmup_first_config():
-    """The first file removes the warm containers before the apply, while
-    the warm-up's check still runs."""
-    with tempfile.TemporaryDirectory() as tmp:
-        host = WarmHost()
-        host.release.clear()
-        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
-        stack.apply = lambda old, new, argv, env, previous=None, ran_traefik=False, proxy_stale=False, \
-            restart=False: host.log.append("apply") or set()
-        stack.health = lambda argv, cfg, timeout=None: None
-
-        def first_config():
-            assert host.check_started.wait(5)
-            os.makedirs(os.path.dirname(args.config_file[0]))
-            write_config(os.path.dirname(args.config_file[0]), example())
-        with warmups(timeout=90) as made:
-            out = loop_until(args, stack, host, [first_config])
-            assert made[0].is_alive()  # the check still runs
-            with contextlib.redirect_stderr(out):
-                host.release.set()
-                made[0].join(5)
-        ps = ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"]
-        assert host.log[4:] == [host.log[4], ps, ["docker", "rm", "-f", "-v", "id1", "id2"], "apply"], host.log
-        assert host.log[4][2] == "check"
-        lines = out.getvalue().splitlines()
-        assert "warm: containers removed for the first apply" in lines
-        assert lines.index("warm: containers removed for the first apply") < \
-            next(i for i, l in enumerate(lines) if l.startswith("apply: prepare"))
-        # stopped: the thread does not remove again or log done
-        assert not any(l.startswith("warm: done") for l in lines), lines
+        assert [c for c in ran if c[0] in ("docker", sys.executable)] == [], ran
 
 
 def test_poll_interval():
@@ -1923,8 +1740,8 @@ def test_poll_interval():
                                      ("echo hi\ncompgen() { echo WATCHER_POLL_INTERVAL; }\nWATCHER_POLL_INTERVAL=5\n",
                                       None, 30)):
         with tempfile.TemporaryDirectory() as tmp:
-            host = WarmHost()
-            args, stack = warm_stack(tmp, host, env_sh)
+            host = FakeHost()
+            args, stack = env_stack(tmp, host, env_sh)
             args.poll_interval = option
             slept = []
 

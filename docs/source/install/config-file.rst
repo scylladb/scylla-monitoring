@@ -97,7 +97,7 @@ Settings in ``env.sh``
 ^^^^^^^^^^^^^^^^^^^^^^
 
 ``run`` reads these settings from ``env.sh`` in the monitoring directory. The machine images built from ``packer/`` set
-``WATCHER_POLL_INTERVAL`` and ``WARM_ON_BOOT``.
+``WATCHER_POLL_INTERVAL``.
 
 **WATCHER_POLL_INTERVAL** How often ``run`` checks the file, in seconds, when ``--poll-interval`` is not given (default: 30).
 
@@ -105,14 +105,6 @@ Settings in ``env.sh``
 ``stack.compose``, as with ``--compose``. The file's ``stack.compose`` takes precedence; without either, the stack runs
 one container at a time with ``start-all.sh``. A change of ``stack.compose`` stops the stack (``docker compose down``,
 or ``kill-all.sh``) and starts it in the other mode.
-
-**WARM_ON_BOOT** With ``WARM_ON_BOOT=1``, a watcher that starts on a fresh host, with nothing applied and no file yet,
-reads what the first apply needs while it waits for the file. It starts a throwaway container of each image of the
-stack, named ``warm-<container>`` and labeled ``scylla-monitoring.warm=1``, without a network, ports or volumes,
-and runs ``check`` on ``scylla-monitoring.example.yaml``. This helps on a disk restored from a snapshot, such as a
-cloud instance's root volume, where the first read of each block is slow. The containers are removed after 90 seconds,
-or as soon as the first file arrives, before it is applied; the apply does not wait for the rest of the warm-up.
-The journal shows each part's duration in the ``warm:`` lines.
 
 As a systemd Service
 ^^^^^^^^^^^^^^^^^^^^
