@@ -358,16 +358,16 @@ for val in "${GRAFANA_ENV_ARRAY[@]}"; do
 		DEFAULT_THEME=""
 	fi
 done
-if [[ $DEFAULT_THEME != "" ]]; then
-	GRAFANA_ENV_COMMAND+=(-e "GF_USERS_DEFAULT_THEME=$DEFAULT_THEME")
-fi
-# PLUGINS_PREINSTALL_DISABLED=true in env.sh: Grafana starts with the plugins
-# in grafana/plugins, without installing or updating any from grafana.com.
-# A -c value, or an -e/--env in -D or --limit grafana that sets it, wins, as
-# with compose. The arguments are walked one by one, as docker reads them;
-# case patterns only, so it works with any bash, on Linux and macOS.
-preinstall_set() {
-	local prev="" w
+# Every GF_* variable env.sh, or the environment, sets goes to Grafana, for
+# example GF_PLUGINS_PREINSTALL_DISABLED=true, in place of this script's
+# default for it. A -c value, or an -e/--env in -D or --limit grafana, that
+# sets the same variable wins, as with compose. Each one goes by name, from
+# the environment docker runs in, so a secret stays off the command line;
+# the admin password goes by name below.
+# env_set walks the arguments one by one, as docker reads them; case patterns
+# only, so it works with any bash, on Linux and macOS.
+env_set() {
+	local name="$1" prev="" w
 	# -D and --limit values are split into words, as on the docker run line
 	# shellcheck disable=SC2086
 	for w in "${GRAFANA_ENV_COMMAND[@]}" $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]}; do
@@ -375,16 +375,14 @@ preinstall_set() {
 		# -e, alone or last in a group of short options (-te), or --env
 		-e | -[!-]*e | --env)
 			case "$w" in
-			GF_PLUGINS_PREINSTALL_DISABLED | GF_PLUGINS_PREINSTALL_DISABLED=*) return 0 ;;
+			"$name" | "$name"=*) return 0 ;;
 			esac
 			;;
 		esac
 		case "$w" in
-		-eGF_PLUGINS_PREINSTALL_DISABLED | -eGF_PLUGINS_PREINSTALL_DISABLED=* | \
-			-e=GF_PLUGINS_PREINSTALL_DISABLED | -e=GF_PLUGINS_PREINSTALL_DISABLED=* | \
-			-[!-]*eGF_PLUGINS_PREINSTALL_DISABLED | -[!-]*eGF_PLUGINS_PREINSTALL_DISABLED=* | \
-			-[!-]*e=GF_PLUGINS_PREINSTALL_DISABLED | -[!-]*e=GF_PLUGINS_PREINSTALL_DISABLED=* | \
-			--env=GF_PLUGINS_PREINSTALL_DISABLED | --env=GF_PLUGINS_PREINSTALL_DISABLED=*)
+		-e"$name" | -e"$name"=* | -e="$name" | -e="$name"=* | \
+			-[!-]*e"$name" | -[!-]*e"$name"=* | -[!-]*e="$name" | -[!-]*e="$name"=* | \
+			--env="$name" | --env="$name"=*)
 			return 0
 			;;
 		esac
@@ -392,8 +390,24 @@ preinstall_set() {
 	done
 	return 1
 }
-if [ -n "$PLUGINS_PREINSTALL_DISABLED" ] && ! preinstall_set; then
-	GRAFANA_ENV_COMMAND+=(-e "GF_PLUGINS_PREINSTALL_DISABLED=$PLUGINS_PREINSTALL_DISABLED")
+GF_FROM_ENV=()
+for __gf in $(compgen -v GF_); do
+	# exported in any case, for a name-only -e NAME in -D
+	export "${__gf?}"
+	case "$__gf" in
+	# read above, where --allow-embedding and --disable-embedding win
+	GF_SECURITY_ADMIN_PASSWORD | GF_SECURITY_ALLOW_EMBEDDING | GF_SECURITY_COOKIE_SECURE | GF_SECURITY_COOKIE_SAMESITE) ;;
+	*) env_set "$__gf" || GF_FROM_ENV+=(-e "$__gf") ;;
+	esac
+done
+GRAFANA_ENV_COMMAND=("${GF_FROM_ENV[@]}" "${GRAFANA_ENV_COMMAND[@]}")
+# this script's defaults, for what nothing above sets
+if [[ $DEFAULT_THEME != "" ]] && ! env_set GF_USERS_DEFAULT_THEME; then
+	GRAFANA_ENV_COMMAND+=(-e "GF_USERS_DEFAULT_THEME=$DEFAULT_THEME")
+fi
+FEATURE_TOGGLES=(-e "GF_FEATURE_TOGGLES_ENABLE=dashboardSectionVariables")
+if env_set GF_FEATURE_TOGGLES_ENABLE; then
+	FEATURE_TOGGLES=()
 fi
 
 for val in "${GRAFANA_DASHBOARD_ARRAY[@]}"; do
@@ -475,8 +489,15 @@ if [ ! -z $RUN_RENDERER ]; then
 		# Extract GF_SERVER_ROOT_URL if set to include in callback URL
 		# This ensures the renderer accesses Grafana at the same path the JavaScript expects
 		SERVER_ROOT_PATH=""
+		# a -c value, else env.sh's when it goes to Grafana, by name
+		SERVER_ROOT_URL_VALUE=""
+		if [[ " ${GF_FROM_ENV[*]} " == *" GF_SERVER_ROOT_URL "* ]]; then
+			SERVER_ROOT_URL_VALUE="$GF_SERVER_ROOT_URL"
+		fi
 		if [[ " ${GRAFANA_ENV_COMMAND[@]} " =~ " -e GF_SERVER_ROOT_URL="([^[:space:]]+) ]]; then
 			SERVER_ROOT_URL_VALUE="${BASH_REMATCH[1]}"
+		fi
+		if [ -n "$SERVER_ROOT_URL_VALUE" ]; then
 			# Only use as path if it doesn't start with http:// or https://
 			if [[ ! $SERVER_ROOT_URL_VALUE =~ ^https?:// ]]; then
 				# Extract path from URL (remove trailing slash if present)
@@ -529,7 +550,7 @@ docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["grafana"]} -i $USER_PERMISSIONS $PO
 	-e "GF_SECURITY_COOKIE_SECURE=$GRAFANA_COOKIE_SECURE" \
 	-e "GF_SECURITY_COOKIE_SAMESITE=$GRAFANA_COOKIE_SAMESITE" \
 	"${GRAFANA_ENV_COMMAND[@]}" \
-	-e "GF_FEATURE_TOGGLES_ENABLE=dashboardSectionVariables" \
+	"${FEATURE_TOGGLES[@]}" \
 	"${proxy_args[@]}" \
 	--name $GRAFANA_NAME docker.io/grafana/grafana:$GRAFANA_VERSION ${DOCKER_PARAMS["grafana"]}
 

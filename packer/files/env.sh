@@ -1,10 +1,11 @@
 RUN_THANOS_SC=1
 RUN_LOCAL_THANOS=1
 # The config watcher (scylla_monitoring_config.py): seconds between checks of
-# its config file, and, on a fresh instance, reading the stack's images and
-# code from disk while it waits for the first file
+# its config file
 WATCHER_POLL_INTERVAL=5
-WARM_ON_BOOT=1
-# Grafana uses the plugins the image build installed, and fetches none at
-# start; the build sets it to false to install them
-PLUGINS_PREINSTALL_DISABLED=${PLUGINS_PREINSTALL_DISABLED:-true}
+# Grafana settings: the start scripts pass every GF_* variable to Grafana.
+# Grafana installs no plugin at start, so grafana/plugins holds only the ones
+# monitoring ships, and loads none of the data sources the dashboards do not use.
+GF_PLUGINS_PREINSTALL_DISABLED=${GF_PLUGINS_PREINSTALL_DISABLED:-true}
+GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=${GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS:-scylladb-scylla-datasource}
+GF_PLUGINS_DISABLE_PLUGINS=${GF_PLUGINS_DISABLE_PLUGINS:-cloudwatch,elasticsearch,mssql,grafana-postgresql-datasource,influxdb,mysql,grafana-pyroscope-datasource,stackdriver,zipkin,opentsdb,jaeger,tempo}

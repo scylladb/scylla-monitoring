@@ -26,6 +26,7 @@ import json
 import argparse
 import subprocess
 import time
+import urllib.request
 HOME_DIR='/home/centos/'
 USER='centos'
 COPY_OR_MOVE='mv'
@@ -108,7 +109,7 @@ def install_docker(arch='amd64'):
 
 def setup_monitoring():
     run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/env.sh {_HOME}/scylla-grafana-monitoring-scylla-monitoring/')
-    run_monitoring(install_plugins=True)
+    run_monitoring(wait_grafana=True)
     run('sudo -u {_USER} cp {_HOME}/scylla-grafana-monitoring-scylla-monitoring/docs/source/procedures/datadog/datadog.rules.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/prom_rules/')
     run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/prometheus.rules.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/prom_rules/')
     run('sudo -u {_USER} {_COPY_OR_MOVE} {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/rule_config.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/rule_config.original.yml')
@@ -178,43 +179,28 @@ def set_scylla_datasource_json_data(settings=None):
         with open(path, 'w') as f:
             f.writelines(out)
 
-def wait_for_grafana_plugins(name='agraf', timeout=300, quiet=20):
-    """Grafana installs its preinstalled plugins into grafana/plugins in the
-    background, after it is ready; wait until it is done, so the image holds
-    them all for a monitor with PLUGINS_PREINSTALL_DISABLED=true, which
-    fetches none. Done: Grafana serves HTTP, every plugin it started to
-    install has an outcome, and the installer has logged nothing for quiet
-    seconds; a Grafana version that installs none logs nothing.
-    It logs nothing either for a plugin it bundles."""
+def wait_for_grafana(url='http://localhost:3000/api/health', timeout=300):
+    """start-all.sh gives Grafana about a minute and goes on either way; on a
+    cold disk its first start, which creates its database, can take longer.
+    The stack stops only once Grafana has started, so that work is in the
+    image."""
     if dry_run:
         return
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     deadline = time.time() + timeout
-    seen, since = -1, time.time()
-    failed = []
     while time.time() < deadline:
-        res = subprocess.run(['docker', 'logs', name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                             universal_newlines=True, timeout=max(1, deadline - time.time()))
-        if res.returncode != 0:
-            raise RuntimeError('Cannot read the Grafana logs: ' + res.stdout.strip())
-        serving = 'msg="HTTP Server Listen"' in res.stdout
-        lines = [l for l in res.stdout.splitlines() if 'logger=plugin.backgroundinstaller' in l]
-        started = sum('msg="Installing plugin"' in l for l in lines)
-        failed = [l for l in lines if 'pluginId=' in l and 'level=error' in l]
-        ended = sum('pluginId=' in l and 'successfully installed' in l for l in lines) + len(failed)
-        if len(lines) != seen:
-            seen, since = len(lines), time.time()
-        if serving and started == ended and time.time() - since >= quiet:
-            break
+        try:
+            with opener.open(url, timeout=10) as res:
+                if res.status == 200:
+                    print('Grafana started')
+                    return
+        except (OSError, ValueError):
+            pass
         time.sleep(2)
-    else:
-        # the machine fetches no plugin itself, so the image must hold them all
-        raise RuntimeError('Grafana did not finish installing its plugins in %ds' % timeout)
-    if failed:
-        raise RuntimeError('Grafana failed to install plugins:\n' + '\n'.join(failed))
-    print('Grafana installed %d plugins' % ended)
+    raise RuntimeError('Grafana did not start in %ds' % timeout)
 
 
-def run_monitoring(install_plugins=False):
+def run_monitoring(wait_grafana=False):
     if os.path.exists('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_servers.example.yml'.format(_HOME=HOME_DIR, )):
         run('sudo -u {_USER} cp {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_servers.example.yml {_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_servers.yml')
     if os.path.exists('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/prometheus/scylla_manager_servers.example.yml'.format(_HOME=HOME_DIR, )):
@@ -222,14 +208,13 @@ def run_monitoring(install_plugins=False):
     run('sudo -u {_USER} mkdir -p {_HOME}/scylla-grafana-monitoring-scylla-monitoring/data')
     chdir('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/')
     try:
-        # install_plugins: env.sh disables Grafana's plugin installation, except
-        # for this run, which installs them into the image
-        run('sudo -u {_USER} ' + ('env PLUGINS_PREINSTALL_DISABLED=false ' if install_plugins else '') +
-            './start-all.sh -d {_HOME}/scylla-grafana-monitoring-scylla-monitoring/data -v master')
+        # with env.sh's GF_PLUGINS_PREINSTALL_DISABLED, Grafana installs no plugin,
+        # so grafana/plugins holds only the ones monitoring ships
+        run('sudo -u {_USER} ./start-all.sh -d {_HOME}/scylla-grafana-monitoring-scylla-monitoring/data -v master')
     except Exception as e:
         print("First call to start-all failed, maybe the second one will succeed" + str(e))
-    if install_plugins:
-        wait_for_grafana_plugins()
+    if wait_grafana:
+        wait_for_grafana()
     try:
         run('sudo -u {_USER} ./kill-all.sh')
     except Exception as e:

@@ -1313,20 +1313,20 @@ esac
         assert run_helper(src) == (0, []) and not os.path.exists(pending)
 
 
-def test_preinstall_set():
-    """start-grafana.sh adds env.sh's PLUGINS_PREINSTALL_DISABLED only when no
-    -c value, and no -e/--env in -D or --limit grafana, sets it: docker keeps
+def test_env_set():
+    """start-grafana.sh passes a GF_* variable from env.sh only when no -c
+    value, and no -e/--env in -D or --limit grafana, sets it: docker keeps
     the last -e, and compose lets those win. Only real options count, not
     text inside another value."""
     text = open("start-grafana.sh").read()
-    func = text[text.index("preinstall_set() {"):text.index("\n}\n", text.index("preinstall_set() {")) + 3]
+    func = text[text.index("env_set() {"):text.index("\n}\n", text.index("env_set() {")) + 3]
+    name = "GF_PLUGINS_PREINSTALL_DISABLED"
 
     def explicit(env=(), docker="", limits=""):
         script = 'declare -A DOCKER_LIMITS; DOCKER_LIMITS[grafana]="$3"; DOCKER_PARAM="$2"\n' \
                  'GRAFANA_ENV_COMMAND=(); for v in $1; do GRAFANA_ENV_COMMAND+=(-e "$v"); done\n' + func + \
-                 'preinstall_set'
+                 'env_set ' + name
         return subprocess.run(["bash", "-c", script, "_", " ".join(env), docker, limits]).returncode == 0
-    name = "GF_PLUGINS_PREINSTALL_DISABLED"
     for docker in ("-e %s=false" % name, "--env %s" % name, "--env=%s=false" % name, "-e%s=false" % name,
                    "-e=%s=false" % name, "-te %s=false" % name, "-te%s=false" % name, "-te=%s=false" % name,
                    "--restart=always -e %s" % name):
@@ -1338,6 +1338,140 @@ def test_preinstall_set():
         assert not explicit(docker=docker), docker
     # a -c value holding the text of an option is one value
     assert not explicit(env=["FOO=-e"]) and not explicit(env=["%s_X=1" % name])
+
+
+GRAFANA_PLUGIN_SETTINGS = ("GF_PLUGINS_PREINSTALL_DISABLED", "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS",
+                           "GF_PLUGINS_DISABLE_PLUGINS", "GF_USERS_DEFAULT_THEME", "GF_FEATURE_TOGGLES_ENABLE",
+                           "GF_DATABASE_PASSWORD", "GF_SECURITY_ALLOW_EMBEDDING")
+DISABLED_PLUGINS = ("cloudwatch,elasticsearch,mssql,grafana-postgresql-datasource,influxdb,mysql,"
+                    "grafana-pyroscope-datasource,stackdriver,zipkin,opentsdb,jaeger,tempo")
+
+
+def effective(words, values, names=GRAFANA_PLUGIN_SETTINGS):
+    """The value of each name Grafana gets, the last one winning as with docker:
+    from NAME=value; for NAME alone, from values (the environment docker runs
+    in); for NAME=${VAR}, from values[VAR] (.env)."""
+    found = {}
+    for word in words:
+        name, sep, value = word.partition("=")
+        if name not in names:
+            continue
+        ref = re.match(r"^\$\{(\w+)\}$", value)
+        found[name] = values.get(name) if not sep else values.get(ref.group(1)) if ref else value
+    return found
+
+
+def start_grafana(tmp, env_sh, flags, environ):
+    """Runs start-grafana.sh in tmp with a docker stub; returns the docker run
+    arguments and the GF_* environment docker ran in."""
+    for f in ("start-grafana.sh", "versions.sh", "network-lib.sh", "UA.sh"):
+        shutil.copy2(f, tmp)
+    stubs = os.path.join(tmp, "stubs")
+    os.makedirs(stubs)
+    scripts = {os.path.join(stubs, "docker"): 'case "$1" in run) printf "%%s\\n" "$@" > "%s"; env | grep "^GF_" > "%s" ;; '
+                                             'ps) echo id ;; container|inspect) exit 1 ;; esac' % (
+                                                 os.path.join(tmp, "run.args"), os.path.join(tmp, "run.env")),
+               os.path.join(stubs, "curl"): "exit 0",
+               os.path.join(tmp, "generate-dashboards.sh"): "exit 0",
+               os.path.join(tmp, "grafana-datasource.sh"): "exit 0"}
+    for path, body in scripts.items():
+        with open(path, "w") as f:
+            f.write("#!/bin/bash\n" + body + "\n")
+        os.chmod(path, 0o755)
+    if env_sh is not None:
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write(env_sh)
+    subprocess.run(["./start-grafana.sh", "--quick-startup", "-v", "master", "-M", "none"] + flags, cwd=tmp,
+                   env=dict(environ, PATH=stubs + ":" + os.environ["PATH"]), stdin=subprocess.DEVNULL,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+    args = open(os.path.join(tmp, "run.args")).read().splitlines()
+    env = dict(line.partition("=")[::2] for line in open(os.path.join(tmp, "run.env")).read().splitlines())
+    return args, env
+
+
+def test_grafana_plugins():
+    """Every GF_* variable env.sh sets reaches the Grafana container, from
+    start-grafana.sh and in the compose definition, in place of the stack's
+    default, unless a -c value, a -D -e or the environment sets it: with the
+    image's env.sh, Grafana preinstalls no plugin and disables the data
+    sources the dashboards do not use. The values go by name, so a secret is
+    neither on the docker command line nor in the compose file. The plugins
+    directory it mounts holds only the plugins monitoring ships."""
+    # what git tracks; from a source archive, without git, what is there
+    res = subprocess.run(["git", "ls-files", "grafana/plugins"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                         universal_newlines=True)
+    shipped = {path.split("/")[2] for path in res.stdout.split()} if res.returncode == 0 and res.stdout else \
+        set(os.listdir("grafana/plugins"))
+    assert sorted(shipped) == ["scylla-plugin"], shipped
+    image = open("packer/files/env.sh").read()
+    defaults = {"GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS": "scylladb-scylla-datasource",
+                "GF_USERS_DEFAULT_THEME": "light", "GF_FEATURE_TOGGLES_ENABLE": "dashboardSectionVariables",
+                "GF_SECURITY_ALLOW_EMBEDDING": "false"}
+    image_settings = dict(defaults, GF_PLUGINS_PREINSTALL_DISABLED="true", GF_PLUGINS_DISABLE_PLUGINS=DISABLED_PLUGINS)
+    mine = 'GF_USERS_DEFAULT_THEME=dark\nGF_FEATURE_TOGGLES_ENABLE=mine\nGF_DATABASE_PASSWORD="s3cret"\n'
+    cases = (
+        (image, [], {}, image_settings),
+        (None, [], {}, defaults),  # no env.sh: Grafana's default, and the stack's
+        # env.sh replaces a default the scripts set themselves
+        ("GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=other-plugin\n", [], {},
+         dict(defaults, GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS="other-plugin")),
+        (image, ["-c", "GF_PLUGINS_PREINSTALL_DISABLED=false"], {},
+         dict(image_settings, GF_PLUGINS_PREINSTALL_DISABLED="false")),
+        (image, ["-D", "-e GF_PLUGINS_PREINSTALL_DISABLED=false"], {},
+         dict(image_settings, GF_PLUGINS_PREINSTALL_DISABLED="false")),
+        (image, [], {"GF_PLUGINS_PREINSTALL_DISABLED": "false"},
+         dict(image_settings, GF_PLUGINS_PREINSTALL_DISABLED="false")),
+        # env.sh replaces the stack's defaults, and a secret stays off the command line
+        (mine, [], {}, dict(defaults, GF_USERS_DEFAULT_THEME="dark", GF_FEATURE_TOGGLES_ENABLE="mine",
+                            GF_DATABASE_PASSWORD="s3cret")),
+        # settings the scripts read themselves keep their flags' precedence
+        ("GF_SECURITY_ALLOW_EMBEDDING=true\n", [], {}, dict(defaults, GF_SECURITY_ALLOW_EMBEDDING="true")),
+        ("GF_SECURITY_ALLOW_EMBEDDING=true\n", ["--disable-embedding"], {}, defaults),
+    )
+    import make_compose
+    clean_env = {k: v for k, v in os.environ.items() if not k.startswith("GF_")}
+    for env_sh, flags, environ, expected in cases:
+        with tempfile.TemporaryDirectory() as tmp:
+            shell_env = dict(clean_env, **environ)
+            args, docker_env = start_grafana(tmp, env_sh, flags, shell_env)
+            assert effective(args, docker_env) == expected, (env_sh, flags, environ, effective(args, docker_env))
+            assert os.path.join(tmp, "grafana/plugins") + ":/var/lib/grafana/plugins:z" in args, args
+            assert not any("s3cret" in a for a in args), args
+            env_file = os.path.join(tmp, "env.sh")
+            stack = make_compose.build(["-d", os.path.join(tmp, "data"), "-v", "master",
+                                        "-s", os.path.join(ROOT, "prometheus/scylla_servers.example.yml")] + flags,
+                                       cwd=ROOT, environ=shell_env,
+                                       env_file=env_file if env_sh is not None else os.path.join(tmp, "none"))
+            grafana = stack.compose["services"]["agraf"]
+            assert effective(grafana["environment"], stack.env) == expected, (flags, environ, grafana["environment"])
+            assert "s3cret" not in json.dumps(stack.compose), grafana["environment"]
+            assert "./grafana/plugins:/var/lib/grafana/plugins:z" in grafana["volumes"]
+    # a name-only -e in -D takes env.sh's value, which start-grafana.sh
+    # exports for it and compose puts in .env
+    with tempfile.TemporaryDirectory() as tmp:
+        flags = ["-D", "-e GF_DATABASE_PASSWORD"]
+        args, docker_env = start_grafana(tmp, 'GF_DATABASE_PASSWORD="s3cret"\n', flags, clean_env)
+        assert effective(args, docker_env)["GF_DATABASE_PASSWORD"] == "s3cret", (args, docker_env)
+        assert args.count("GF_DATABASE_PASSWORD") == 1 and not any("s3cret" in a for a in args), args
+        stack = make_compose.build(["-d", os.path.join(tmp, "data"), "-v", "master",
+                                    "-s", os.path.join(ROOT, "prometheus/scylla_servers.example.yml")] + flags,
+                                   cwd=ROOT, environ=clean_env, env_file=os.path.join(tmp, "env.sh"))
+        environment = stack.compose["services"]["agraf"]["environment"]
+        assert effective(environment, stack.env)["GF_DATABASE_PASSWORD"] == "s3cret", environment
+        assert [e.partition("=")[0] for e in environment].count("GF_DATABASE_PASSWORD") == 1, environment
+    # the renderer's URLs and token stay the stack's, whatever env.sh sets
+    with tempfile.TemporaryDirectory() as tmp:
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write("GF_RENDERING_RENDERER_TOKEN=mine\nGF_RENDERING_SERVER_URL=http://elsewhere/render\n")
+        stack = make_compose.build(["-d", os.path.join(tmp, "data"), "-v", "master",
+                                    "-s", os.path.join(ROOT, "prometheus/scylla_servers.example.yml")],
+                                   cwd=ROOT, environ=clean_env, env_file=os.path.join(tmp, "env.sh"))
+        environment = stack.compose["services"]["agraf"]["environment"]
+        rendering = effective(environment, stack.env, names=("GF_RENDERING_RENDERER_TOKEN", "GF_RENDERING_SERVER_URL"))
+        assert [e.partition("=")[0] for e in environment].count("GF_RENDERING_RENDERER_TOKEN") == 1, environment
+        assert "mine" not in stack.env.values(), stack.env
+        assert rendering["GF_RENDERING_RENDERER_TOKEN"] == stack.env["GRAFANA_RENDERER_TOKEN"] != "mine", rendering
+        assert rendering["GF_RENDERING_SERVER_URL"] != "http://elsewhere/render", rendering
 
 
 def test_traefik_thanos_port():
@@ -1701,217 +1835,34 @@ def test_apply_once_summary():
         assert lines[-1] == "failed generation %s in 0s (full)" % cfg["generation"], lines
 
 
-class WarmHost(FakeHost):
-    """A FakeHost that records the warm-up's commands too, in one list, in
-    order: docker run and ps, and the check; docker ps lists two containers.
-    check_started is set when the check starts, which then waits for release."""
-
-    def __init__(self):
-        super().__init__()
-        self.log = []
-        self.check_started = threading.Event()
-        self.release = threading.Event()
-        self.release.set()
-
-    def run(self, cmd, **kwargs):
-        if cmd[0] == sys.executable:
-            self.log.append(cmd)
-            self.check_started.set()
-            assert self.release.wait(5)
-            return SimpleNamespace(returncode=0, stdout="")
-        if cmd[:2] in (["docker", "ps"], ["docker", "rm"]) or (cmd[:2] == ["docker", "run"] and "--label" in cmd):
-            self.log.append(cmd)
-            return SimpleNamespace(returncode=0, stdout="id1\nid2\n" if cmd[1] == "ps" else "")
-        return super().run(cmd, **kwargs)
-
-
-def warm_stack(tmp, host, env_sh):
+def env_stack(tmp, host, env_sh):
+    """make_stack for run_loop, with env_sh as env.sh, or none, and no config file yet."""
     args, stack = make_stack(tmp, host)
     if env_sh is not None:
         with open(os.path.join(tmp, "env.sh"), "w") as f:
             f.write(env_sh)
-    shutil.copy2(EXAMPLE, tmp)
     args.config_file = [os.path.join(tmp, "config", "config.yaml")]
     args.poll_interval = None
-    images = {"agraf": "grafana/grafana:1", "aprom": "prom/prometheus:2"}
-    stack.compose_build = lambda argv, environ=None, cwd=None: SimpleNamespace(
-        compose={"services": {n: {"container_name": n, "image": i} for n, i in images.items()}})
     return args, stack
 
 
-@contextlib.contextmanager
-def warmups(timeout):
-    """The Warmups run_loop makes, with the given timeout. The clock stands
-    still, so no deadline passes during the launches or the check and every
-    logged duration is 0s; only the final wait for the deadline takes real
-    time."""
-    made = []
+def test_warm_on_boot_ignored():
+    """WARM_ON_BOOT=1 in an existing env.sh is ignored: a watcher on a fresh
+    host starts no container and runs no check while it waits for the file."""
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        ran = []
+        args, stack = env_stack(tmp, host, "WARM_ON_BOOT=1\n")
+        stack.run = lambda cmd, **kw: ran.append(cmd) or host.run(cmd, **kw)
 
-    class Captured(smc.Warmup):
-        def __init__(self, stack):
-            super().__init__(stack, timeout=timeout)
-            made.append(self)
-    real, smc.Warmup = smc.Warmup, Captured
-    monotonic, smc.time.monotonic = smc.time.monotonic, lambda: 0.0
-    try:
-        yield made
-    finally:
-        smc.Warmup = real
-        smc.time.monotonic = monotonic
-
-
-def loop_until(args, stack, host, steps):
-    """run_loop, each sleep running the next step; stops when none is left."""
-    def step(seconds):
-        if not steps:
-            raise StopIteration
-        steps.pop(0)()
-    stack.sleep = step
-    out = io.StringIO()
-    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+        def sleep(seconds):
+            raise StopIteration  # after the first poll, which finds no file
+        stack.sleep = sleep
         try:
-            smc.run_loop(args, stack, host.run)
+            quiet(smc.run_loop, args, stack, stack.run)
         except StopIteration:
             pass
-    return out
-
-
-WARM_RUN = ["docker", "run", "-d", "--rm", "--pull", "never", "--network", "none", "--label", "scylla-monitoring.warm=1", "--name"]
-
-
-def test_warmup():
-    """With WARM_ON_BOOT=1, a fresh host starts one container per image, no
-    network, no ports, then checks the example file; on time it removes them."""
-    with tempfile.TemporaryDirectory() as tmp:
-        host = WarmHost()
-        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
-        with warmups(timeout=0.3) as made:
-            out = loop_until(args, stack, host, [lambda: made[0].join(5)])
-        assert len(made) == 1 and not made[0].is_alive()
-        assert host.log == [
-            # first, the containers a watcher that stopped while warming left
-            ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"],
-            ["docker", "rm", "-f", "-v", "id1", "id2"],
-            WARM_RUN + ["warm-agraf", "grafana/grafana:1"],
-            WARM_RUN + ["warm-aprom", "prom/prometheus:2"],
-            [sys.executable, os.path.abspath(smc.__file__), "check", "--config-file",
-             os.path.join(tmp, smc.WARM_EXAMPLE), "--monitoring-dir", tmp],
-            ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"],
-            ["docker", "rm", "-f", "-v", "id1", "id2"],
-        ], host.log
-        warm = [l for l in out.getvalue().splitlines() if l.startswith("warm: ")]
-        assert warm == ["warm: starting agraf, aprom", "warm: containers started after 0s",
-                        "warm: check done after 0s", "warm: done after 0s"], warm
-        # nothing touched the staging, live or state directories
-        assert not os.path.exists(os.path.join(tmp, "config-build")) and \
-            not os.path.exists(os.path.join(tmp, "config-state"))
-
-
-def test_warmup_off():
-    """Without WARM_ON_BOOT=1, or with something to apply, nothing warms;
-    with it, the warm containers a watcher left are removed on start."""
-    for env_sh, applied in ((None, False), ("WARM_ON_BOOT=0\n", False), ("WARM_ON_BOOT=1\n", True)):
-        with tempfile.TemporaryDirectory() as tmp:
-            host = WarmHost()
-            args, stack = warm_stack(tmp, host, env_sh)
-            if applied:
-                os.makedirs(os.path.join(tmp, "config-state"))
-                open(os.path.join(tmp, "config-state", "applied.yaml"), "w").close()
-            with warmups(timeout=0) as made:
-                loop_until(args, stack, host, [])
-            left = [["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"],
-                    ["docker", "rm", "-f", "-v", "id1", "id2"]] if env_sh == "WARM_ON_BOOT=1\n" else []
-            # with a config to apply, the cleanup runs beside it, in a thread
-            deadline = time.monotonic() + 5
-            while len(host.log) < len(left) and time.monotonic() < deadline:
-                time.sleep(0.01)
-            assert all(m.ident is None for m in made) and host.log == left, (env_sh, applied, host.log)
-
-
-def test_warmup_launch_failure():
-    """An image that does not start is logged; the rest warm as usual."""
-    with tempfile.TemporaryDirectory() as tmp:
-        host = WarmHost()
-        run = host.run
-        host.run = lambda cmd, **kw: SimpleNamespace(returncode=125, stdout="", stderr="docker: No such image: g:1\n") \
-            if cmd[:2] == ["docker", "run"] and "warm-agraf" in cmd else run(cmd, **kw)
-        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
-        with warmups(timeout=0.3) as made:
-            out = loop_until(args, stack, host, [lambda: made[0].join(5)])
-        warm = [l for l in out.getvalue().splitlines() if l.startswith("warm: ")]
-        assert warm[:3] == ["warm: starting agraf, aprom", "warm: agraf did not start: docker: No such image: g:1",
-                            "warm: containers started after 0s"], warm
-
-
-def test_warmup_deadline():
-    """Nothing starts once the deadline is past: no launch and no check."""
-    with tempfile.TemporaryDirectory() as tmp:
-        host = WarmHost()
-        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
-        with warmups(timeout=0) as made:
-            out = loop_until(args, stack, host, [lambda: made[0].join(5)])
-        ps = ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"]
-        rm = ["docker", "rm", "-f", "-v", "id1", "id2"]
-        assert host.log == [ps, rm, ps, rm], host.log
-        warm = [l for l in out.getvalue().splitlines() if l.startswith("warm: ")]
-        assert warm == ["warm: starting agraf, aprom", "warm: containers started after 0s", "warm: done after 0s"], warm
-
-
-def test_warmup_remove_timeout():
-    """A docker that does not answer leaves the warm containers to the apply,
-    with a warning, instead of holding it."""
-    with tempfile.TemporaryDirectory() as tmp:
-        args, stack = warm_stack(tmp, FakeHost(), None)
-
-        def hung(cmd, **kwargs):
-            assert 29 < kwargs.get("timeout") <= 30
-            raise subprocess.TimeoutExpired(cmd, kwargs["timeout"])
-
-        def missing(cmd, **kwargs):
-            raise FileNotFoundError(2, "No such file or directory", "docker")
-
-        def failing(cmd, **kwargs):
-            return SimpleNamespace(returncode=1 if cmd[1] == "rm" else 0, stdout="id1\n")
-        for run, warning in ((failing, "warning: warm: docker could not remove the warm containers\n"),
-                             (hung, "warning: warm: docker did not remove the warm containers in 30s\n"),
-                             (missing, "warning: warm: cannot run docker: [Errno 2] No such file or directory: 'docker'\n")):
-            stack.run = run
-            err = io.StringIO()
-            with contextlib.redirect_stderr(err):
-                smc.Warmup(stack).remove()
-            assert err.getvalue() == warning, err.getvalue()
-
-
-def test_warmup_first_config():
-    """The first file removes the warm containers before the apply, while
-    the warm-up's check still runs."""
-    with tempfile.TemporaryDirectory() as tmp:
-        host = WarmHost()
-        host.release.clear()
-        args, stack = warm_stack(tmp, host, "WARM_ON_BOOT=1\n")
-        stack.apply = lambda old, new, argv, env, previous=None, ran_traefik=False, proxy_stale=False, \
-            restart=False: host.log.append("apply") or set()
-        stack.health = lambda argv, cfg, timeout=None: None
-
-        def first_config():
-            assert host.check_started.wait(5)
-            os.makedirs(os.path.dirname(args.config_file[0]))
-            write_config(os.path.dirname(args.config_file[0]), example())
-        with warmups(timeout=90) as made:
-            out = loop_until(args, stack, host, [first_config])
-            assert made[0].is_alive()  # the check still runs
-            with contextlib.redirect_stderr(out):
-                host.release.set()
-                made[0].join(5)
-        ps = ["docker", "ps", "-aq", "--filter", "label=scylla-monitoring.warm=1"]
-        assert host.log[4:] == [host.log[4], ps, ["docker", "rm", "-f", "-v", "id1", "id2"], "apply"], host.log
-        assert host.log[4][2] == "check"
-        lines = out.getvalue().splitlines()
-        assert "warm: containers removed for the first apply" in lines
-        assert lines.index("warm: containers removed for the first apply") < \
-            next(i for i, l in enumerate(lines) if l.startswith("apply: prepare"))
-        # stopped: the thread does not remove again or log done
-        assert not any(l.startswith("warm: done") for l in lines), lines
+        assert [c for c in ran if c[0] in ("docker", sys.executable)] == [], ran
 
 
 def test_poll_interval():
@@ -1923,8 +1874,8 @@ def test_poll_interval():
                                      ("echo hi\ncompgen() { echo WATCHER_POLL_INTERVAL; }\nWATCHER_POLL_INTERVAL=5\n",
                                       None, 30)):
         with tempfile.TemporaryDirectory() as tmp:
-            host = WarmHost()
-            args, stack = warm_stack(tmp, host, env_sh)
+            host = FakeHost()
+            args, stack = env_stack(tmp, host, env_sh)
             args.poll_interval = option
             slept = []
 
