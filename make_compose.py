@@ -862,15 +862,26 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
            "GF_SERVER_ENABLE_GZIP=" + (v.get("SERVER_ENABLE_GZIP") or "true"),
            "GF_SECURITY_ALLOW_EMBEDDING=" + allow, "GF_SECURITY_COOKIE_SECURE=" + secure,
            "GF_SECURITY_COOKIE_SAMESITE=" + samesite]
-    # as start-grafana.sh: only when env.sh sets it
-    if v.get("PLUGINS_PREINSTALL_DISABLED"):
-        env.append("GF_PLUGINS_PREINSTALL_DISABLED=" + v["PLUGINS_PREINSTALL_DISABLED"])
+    # as start-grafana.sh: every GF_* variable env.sh, or the environment, sets
+    # goes to Grafana, in place of the default here; a -c, -D or --limit value
+    # that sets it wins. The values go in .env, as secrets do, off the compose
+    # file; the admin password goes on its own below.
     extra = list(o["grafana_env"])
     if o["ldap"]:
         extra += ["GF_AUTH_LDAP_ENABLED=true", "GF_AUTH_LDAP_CONFIG_FILE=/etc/grafana/ldap.toml",
                   "GF_AUTH_LDAP_ALLOW_SIGN_UP=true"]
+    # a NAME=value; a NAME alone gets the value below, as start-grafana.sh exports it for one
+    explicit = {e.partition("=")[0] for e in extra + docker.get("environment", []) +
+                compose_settings(o["limits"].get("grafana", ""), "--limit grafana").get("environment", [])
+                if "=" in e}
+    # read above, where --allow-embedding and --disable-embedding win
+    own = {"GF_SECURITY_ADMIN_PASSWORD", "GF_SECURITY_ALLOW_EMBEDDING", "GF_SECURITY_COOKIE_SECURE",
+           "GF_SECURITY_COOKIE_SAMESITE"}
+    sourced = {name: value for name, value in v.items()
+               if name.startswith("GF_") and name not in own | explicit and isinstance(value, str)}
     theme = v.get("DEFAULT_THEME", "light")
-    if theme and not any(e.startswith("GF_USERS_DEFAULT_THEME=") for e in extra):
+    if theme and "GF_USERS_DEFAULT_THEME" not in sourced and not any(e.startswith("GF_USERS_DEFAULT_THEME=")
+                                                                     for e in extra):
         extra.append("GF_USERS_DEFAULT_THEME=" + theme)
     token = o["render_token"] or read_env_file(os.path.join(cwd, ".env.stack" + stack_id if stack_id else ".env")).get(
         "GRAFANA_RENDERER_TOKEN") or ""
@@ -880,7 +891,8 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
         stack.files[paths.abs(o["render_token_file"])] = (token + "\n", 0o600)
     if renderer:
         stack.env["GRAFANA_RENDERER_TOKEN"] = token
-        root = next((e.partition("=")[2] for e in extra if e.startswith("GF_SERVER_ROOT_URL=")), "")
+        root = next((e.partition("=")[2] for e in extra if e.startswith("GF_SERVER_ROOT_URL=")),
+                    sourced.get("GF_SERVER_ROOT_URL", ""))
         root = "" if re.match(r"https?://", root) else root.rstrip("/")
         svc = service("agrafrender", "grafanarender",
                       "docker.io/grafana/grafana-image-renderer:" + v["GRAFANA_RENDERER_VERSION"],
@@ -891,7 +903,10 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
                                                               root)]
     if v.get("HTTP_PROXY"):
         extra.append("http_proxy=" + v["HTTP_PROXY"])
-    env += extra + ["GF_FEATURE_TOGGLES_ENABLE=dashboardSectionVariables"]
+    toggles = "GF_FEATURE_TOGGLES_ENABLE"
+    if toggles not in sourced and not any(e.startswith(toggles + "=") for e in extra):
+        extra.append(toggles + "=dashboardSectionVariables")
+    env = [e for e in env if e.partition("=")[0] not in sourced] + extra
     volumes = ["./grafana/build:/var/lib/grafana/dashboards:z", "./grafana/plugins:/var/lib/grafana/plugins:z",
                "./grafana%s/provisioning:/var/lib/grafana/provisioning:z" % stack_dir]
     stack.config.append(paths.abs("grafana%s/provisioning" % stack_dir))
@@ -907,6 +922,15 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
     svc["secrets_env"] = ["GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}"]
     if renderer:
         svc["secrets_env"].append("GF_RENDERING_RENDERER_TOKEN=${GRAFANA_RENDERER_TOKEN}")
+    # what the stack sets itself after the defaults, such as the renderer's
+    # URLs and token, stays; a NAME alone from -D or --limit takes env.sh's
+    # value. Each value goes under a name of its own in .env: compose prefers
+    # an exported variable of the same name over .env.
+    given = {e.partition("=")[0] for e in svc.get("environment", []) + svc["secrets_env"] if "=" in e}
+    for name in sorted(set(sourced) - given):
+        svc["environment"] = [e for e in svc.get("environment", []) if e != name]
+        stack.env["GRAFANA_" + name] = sourced[name]
+        svc["secrets_env"].append("%s=${GRAFANA_%s}" % (name, name))
     stack.env["GRAFANA_ADMIN_PASSWORD"] = o["admin_password"] or "admin"
     if support:
         stack.warnings.append("--support-dashboard: set the support folder permissions in Grafana by hand")

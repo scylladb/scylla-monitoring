@@ -1313,20 +1313,20 @@ esac
         assert run_helper(src) == (0, []) and not os.path.exists(pending)
 
 
-def test_preinstall_set():
-    """start-grafana.sh adds env.sh's PLUGINS_PREINSTALL_DISABLED only when no
-    -c value, and no -e/--env in -D or --limit grafana, sets it: docker keeps
+def test_env_set():
+    """start-grafana.sh passes a GF_* variable from env.sh only when no -c
+    value, and no -e/--env in -D or --limit grafana, sets it: docker keeps
     the last -e, and compose lets those win. Only real options count, not
     text inside another value."""
     text = open("start-grafana.sh").read()
-    func = text[text.index("preinstall_set() {"):text.index("\n}\n", text.index("preinstall_set() {")) + 3]
+    func = text[text.index("env_set() {"):text.index("\n}\n", text.index("env_set() {")) + 3]
+    name = "GF_PLUGINS_PREINSTALL_DISABLED"
 
     def explicit(env=(), docker="", limits=""):
         script = 'declare -A DOCKER_LIMITS; DOCKER_LIMITS[grafana]="$3"; DOCKER_PARAM="$2"\n' \
                  'GRAFANA_ENV_COMMAND=(); for v in $1; do GRAFANA_ENV_COMMAND+=(-e "$v"); done\n' + func + \
-                 'preinstall_set'
+                 'env_set ' + name
         return subprocess.run(["bash", "-c", script, "_", " ".join(env), docker, limits]).returncode == 0
-    name = "GF_PLUGINS_PREINSTALL_DISABLED"
     for docker in ("-e %s=false" % name, "--env %s" % name, "--env=%s=false" % name, "-e%s=false" % name,
                    "-e=%s=false" % name, "-te %s=false" % name, "-te%s=false" % name, "-te=%s=false" % name,
                    "--restart=always -e %s" % name):
@@ -1340,48 +1340,138 @@ def test_preinstall_set():
     assert not explicit(env=["FOO=-e"]) and not explicit(env=["%s_X=1" % name])
 
 
+GRAFANA_PLUGIN_SETTINGS = ("GF_PLUGINS_PREINSTALL_DISABLED", "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS",
+                           "GF_PLUGINS_DISABLE_PLUGINS", "GF_USERS_DEFAULT_THEME", "GF_FEATURE_TOGGLES_ENABLE",
+                           "GF_DATABASE_PASSWORD", "GF_SECURITY_ALLOW_EMBEDDING")
+DISABLED_PLUGINS = ("cloudwatch,elasticsearch,mssql,grafana-postgresql-datasource,influxdb,mysql,"
+                    "grafana-pyroscope-datasource,stackdriver,zipkin,opentsdb,jaeger,tempo")
+
+
+def effective(words, values, names=GRAFANA_PLUGIN_SETTINGS):
+    """The value of each name Grafana gets, the last one winning as with docker:
+    from NAME=value; for NAME alone, from values (the environment docker runs
+    in); for NAME=${VAR}, from values[VAR] (.env)."""
+    found = {}
+    for word in words:
+        name, sep, value = word.partition("=")
+        if name not in names:
+            continue
+        ref = re.match(r"^\$\{(\w+)\}$", value)
+        found[name] = values.get(name) if not sep else values.get(ref.group(1)) if ref else value
+    return found
+
+
+def start_grafana(tmp, env_sh, flags, environ):
+    """Runs start-grafana.sh in tmp with a docker stub; returns the docker run
+    arguments and the GF_* environment docker ran in."""
+    for f in ("start-grafana.sh", "versions.sh", "network-lib.sh", "UA.sh"):
+        shutil.copy2(f, tmp)
+    stubs = os.path.join(tmp, "stubs")
+    os.makedirs(stubs)
+    scripts = {os.path.join(stubs, "docker"): 'case "$1" in run) printf "%%s\\n" "$@" > "%s"; env | grep "^GF_" > "%s" ;; '
+                                             'ps) echo id ;; container|inspect) exit 1 ;; esac' % (
+                                                 os.path.join(tmp, "run.args"), os.path.join(tmp, "run.env")),
+               os.path.join(stubs, "curl"): "exit 0",
+               os.path.join(tmp, "generate-dashboards.sh"): "exit 0",
+               os.path.join(tmp, "grafana-datasource.sh"): "exit 0"}
+    for path, body in scripts.items():
+        with open(path, "w") as f:
+            f.write("#!/bin/bash\n" + body + "\n")
+        os.chmod(path, 0o755)
+    if env_sh is not None:
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write(env_sh)
+    subprocess.run(["./start-grafana.sh", "--quick-startup", "-v", "master", "-M", "none"] + flags, cwd=tmp,
+                   env=dict(environ, PATH=stubs + ":" + os.environ["PATH"]), stdin=subprocess.DEVNULL,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+    args = open(os.path.join(tmp, "run.args")).read().splitlines()
+    env = dict(line.partition("=")[::2] for line in open(os.path.join(tmp, "run.env")).read().splitlines())
+    return args, env
+
+
 def test_grafana_plugins():
-    """With the image's env.sh, the Grafana container gets
-    GF_PLUGINS_PREINSTALL_DISABLED=true, from start-grafana.sh and in the
-    compose definition, and the plugins directory it mounts holds only the
-    plugins monitoring ships; without the setting, Grafana keeps its default."""
-    tracked = subprocess.run(["git", "ls-files", "grafana/plugins"], stdout=subprocess.PIPE,
-                             universal_newlines=True, check=True).stdout.split()
-    assert sorted({path.split("/")[2] for path in tracked}) == ["scylla-plugin"], tracked
-    name = "GF_PLUGINS_PREINSTALL_DISABLED"
-    for env_sh, expected in ((open("packer/files/env.sh").read(), [name + "=true"]), (None, [])):
+    """Every GF_* variable env.sh sets reaches the Grafana container, from
+    start-grafana.sh and in the compose definition, in place of the stack's
+    default, unless a -c value, a -D -e or the environment sets it: with the
+    image's env.sh, Grafana preinstalls no plugin and disables the data
+    sources the dashboards do not use. The values go by name, so a secret is
+    neither on the docker command line nor in the compose file. The plugins
+    directory it mounts holds only the plugins monitoring ships."""
+    # what git tracks; from a source archive, without git, what is there
+    res = subprocess.run(["git", "ls-files", "grafana/plugins"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                         universal_newlines=True)
+    shipped = {path.split("/")[2] for path in res.stdout.split()} if res.returncode == 0 and res.stdout else \
+        set(os.listdir("grafana/plugins"))
+    assert sorted(shipped) == ["scylla-plugin"], shipped
+    image = open("packer/files/env.sh").read()
+    defaults = {"GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS": "scylladb-scylla-datasource",
+                "GF_USERS_DEFAULT_THEME": "light", "GF_FEATURE_TOGGLES_ENABLE": "dashboardSectionVariables",
+                "GF_SECURITY_ALLOW_EMBEDDING": "false"}
+    image_settings = dict(defaults, GF_PLUGINS_PREINSTALL_DISABLED="true", GF_PLUGINS_DISABLE_PLUGINS=DISABLED_PLUGINS)
+    mine = 'GF_USERS_DEFAULT_THEME=dark\nGF_FEATURE_TOGGLES_ENABLE=mine\nGF_DATABASE_PASSWORD="s3cret"\n'
+    cases = (
+        (image, [], {}, image_settings),
+        (None, [], {}, defaults),  # no env.sh: Grafana's default, and the stack's
+        # env.sh replaces a default the scripts set themselves
+        ("GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=other-plugin\n", [], {},
+         dict(defaults, GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS="other-plugin")),
+        (image, ["-c", "GF_PLUGINS_PREINSTALL_DISABLED=false"], {},
+         dict(image_settings, GF_PLUGINS_PREINSTALL_DISABLED="false")),
+        (image, ["-D", "-e GF_PLUGINS_PREINSTALL_DISABLED=false"], {},
+         dict(image_settings, GF_PLUGINS_PREINSTALL_DISABLED="false")),
+        (image, [], {"GF_PLUGINS_PREINSTALL_DISABLED": "false"},
+         dict(image_settings, GF_PLUGINS_PREINSTALL_DISABLED="false")),
+        # env.sh replaces the stack's defaults, and a secret stays off the command line
+        (mine, [], {}, dict(defaults, GF_USERS_DEFAULT_THEME="dark", GF_FEATURE_TOGGLES_ENABLE="mine",
+                            GF_DATABASE_PASSWORD="s3cret")),
+        # settings the scripts read themselves keep their flags' precedence
+        ("GF_SECURITY_ALLOW_EMBEDDING=true\n", [], {}, dict(defaults, GF_SECURITY_ALLOW_EMBEDDING="true")),
+        ("GF_SECURITY_ALLOW_EMBEDDING=true\n", ["--disable-embedding"], {}, defaults),
+    )
+    import make_compose
+    clean_env = {k: v for k, v in os.environ.items() if not k.startswith("GF_")}
+    for env_sh, flags, environ, expected in cases:
         with tempfile.TemporaryDirectory() as tmp:
-            for f in ("start-grafana.sh", "versions.sh", "network-lib.sh", "UA.sh"):
-                shutil.copy2(f, tmp)
-            stubs = os.path.join(tmp, "stubs")
-            os.makedirs(stubs)
-            scripts = {os.path.join(stubs, "docker"): 'case "$1" in run) printf "%s\\n" "$@" > "%s" ;; '
-                                                     'ps) echo id ;; container|inspect) exit 1 ;; esac' % (
-                                                         "%s", os.path.join(tmp, "run.args")),
-                       os.path.join(stubs, "curl"): "exit 0",
-                       os.path.join(tmp, "generate-dashboards.sh"): "exit 0",
-                       os.path.join(tmp, "grafana-datasource.sh"): "exit 0"}
-            for path, body in scripts.items():
-                with open(path, "w") as f:
-                    f.write("#!/bin/bash\n" + body + "\n")
-                os.chmod(path, 0o755)
-            if env_sh is not None:
-                with open(os.path.join(tmp, "env.sh"), "w") as f:
-                    f.write(env_sh)
-            subprocess.run(["./start-grafana.sh", "--quick-startup", "-v", "master", "-M", "none"], cwd=tmp,
-                           env=dict(os.environ, PATH=stubs + ":" + os.environ["PATH"]), stdin=subprocess.DEVNULL,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
-            args = open(os.path.join(tmp, "run.args")).read().splitlines()
-            assert [a for a in args if a.startswith(name)] == expected, (env_sh is not None, args)
+            shell_env = dict(clean_env, **environ)
+            args, docker_env = start_grafana(tmp, env_sh, flags, shell_env)
+            assert effective(args, docker_env) == expected, (env_sh, flags, environ, effective(args, docker_env))
             assert os.path.join(tmp, "grafana/plugins") + ":/var/lib/grafana/plugins:z" in args, args
+            assert not any("s3cret" in a for a in args), args
             env_file = os.path.join(tmp, "env.sh")
-            import make_compose
             stack = make_compose.build(["-d", os.path.join(tmp, "data"), "-v", "master",
-                                        "-s", os.path.join(ROOT, "prometheus/scylla_servers.example.yml")], cwd=ROOT,
+                                        "-s", os.path.join(ROOT, "prometheus/scylla_servers.example.yml")] + flags,
+                                       cwd=ROOT, environ=shell_env,
                                        env_file=env_file if env_sh is not None else os.path.join(tmp, "none"))
             grafana = stack.compose["services"]["agraf"]
-            assert [e for e in grafana["environment"] if e.startswith(name)] == expected, grafana["environment"]
+            assert effective(grafana["environment"], stack.env) == expected, (flags, environ, grafana["environment"])
+            assert "s3cret" not in json.dumps(stack.compose), grafana["environment"]
             assert "./grafana/plugins:/var/lib/grafana/plugins:z" in grafana["volumes"]
+    # a name-only -e in -D takes env.sh's value, which start-grafana.sh
+    # exports for it and compose puts in .env
+    with tempfile.TemporaryDirectory() as tmp:
+        flags = ["-D", "-e GF_DATABASE_PASSWORD"]
+        args, docker_env = start_grafana(tmp, 'GF_DATABASE_PASSWORD="s3cret"\n', flags, clean_env)
+        assert effective(args, docker_env)["GF_DATABASE_PASSWORD"] == "s3cret", (args, docker_env)
+        assert args.count("GF_DATABASE_PASSWORD") == 1 and not any("s3cret" in a for a in args), args
+        stack = make_compose.build(["-d", os.path.join(tmp, "data"), "-v", "master",
+                                    "-s", os.path.join(ROOT, "prometheus/scylla_servers.example.yml")] + flags,
+                                   cwd=ROOT, environ=clean_env, env_file=os.path.join(tmp, "env.sh"))
+        environment = stack.compose["services"]["agraf"]["environment"]
+        assert effective(environment, stack.env)["GF_DATABASE_PASSWORD"] == "s3cret", environment
+        assert [e.partition("=")[0] for e in environment].count("GF_DATABASE_PASSWORD") == 1, environment
+    # the renderer's URLs and token stay the stack's, whatever env.sh sets
+    with tempfile.TemporaryDirectory() as tmp:
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write("GF_RENDERING_RENDERER_TOKEN=mine\nGF_RENDERING_SERVER_URL=http://elsewhere/render\n")
+        stack = make_compose.build(["-d", os.path.join(tmp, "data"), "-v", "master",
+                                    "-s", os.path.join(ROOT, "prometheus/scylla_servers.example.yml")],
+                                   cwd=ROOT, environ=clean_env, env_file=os.path.join(tmp, "env.sh"))
+        environment = stack.compose["services"]["agraf"]["environment"]
+        rendering = effective(environment, stack.env, names=("GF_RENDERING_RENDERER_TOKEN", "GF_RENDERING_SERVER_URL"))
+        assert [e.partition("=")[0] for e in environment].count("GF_RENDERING_RENDERER_TOKEN") == 1, environment
+        assert "mine" not in stack.env.values(), stack.env
+        assert rendering["GF_RENDERING_RENDERER_TOKEN"] == stack.env["GRAFANA_RENDERER_TOKEN"] != "mine", rendering
+        assert rendering["GF_RENDERING_SERVER_URL"] != "http://elsewhere/render", rendering
 
 
 def test_traefik_thanos_port():
