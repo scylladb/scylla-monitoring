@@ -89,6 +89,13 @@ def chdir(template_dir):
     os.chdir(dir)
 
 def install_docker(arch='amd64'):
+    # Keep every Docker network inside 172.17.0.0/16, the default bridge's range.
+    # Otherwise Docker gives monitor-net 172.18.0.0/16 or the next free range, and
+    # its local route hides any Scylla node in that range from Prometheus.
+    # 172.18.0.0/16 is only a fallback for a host whose own network covers
+    # 172.17.0.0/16, where Docker would otherwise fail to start.
+    # Installing the package starts Docker, so the file must be in place first.
+    run('install -D -m 644 {_HOME}/daemon.json /etc/docker/daemon.json')
     if is_centos():
         run('yum install -y yum-utils device-mapper-persistent-data lvm2')
         run('yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo')
