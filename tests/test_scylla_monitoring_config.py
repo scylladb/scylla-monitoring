@@ -1340,6 +1340,50 @@ def test_preinstall_set():
     assert not explicit(env=["FOO=-e"]) and not explicit(env=["%s_X=1" % name])
 
 
+def test_grafana_plugins():
+    """With the image's env.sh, the Grafana container gets
+    GF_PLUGINS_PREINSTALL_DISABLED=true, from start-grafana.sh and in the
+    compose definition, and the plugins directory it mounts holds only the
+    plugins monitoring ships; without the setting, Grafana keeps its default."""
+    tracked = subprocess.run(["git", "ls-files", "grafana/plugins"], stdout=subprocess.PIPE,
+                             universal_newlines=True, check=True).stdout.split()
+    assert sorted({path.split("/")[2] for path in tracked}) == ["scylla-plugin"], tracked
+    name = "GF_PLUGINS_PREINSTALL_DISABLED"
+    for env_sh, expected in ((open("packer/files/env.sh").read(), [name + "=true"]), (None, [])):
+        with tempfile.TemporaryDirectory() as tmp:
+            for f in ("start-grafana.sh", "versions.sh", "network-lib.sh", "UA.sh"):
+                shutil.copy2(f, tmp)
+            stubs = os.path.join(tmp, "stubs")
+            os.makedirs(stubs)
+            scripts = {os.path.join(stubs, "docker"): 'case "$1" in run) printf "%s\\n" "$@" > "%s" ;; '
+                                                     'ps) echo id ;; container|inspect) exit 1 ;; esac' % (
+                                                         "%s", os.path.join(tmp, "run.args")),
+                       os.path.join(stubs, "curl"): "exit 0",
+                       os.path.join(tmp, "generate-dashboards.sh"): "exit 0",
+                       os.path.join(tmp, "grafana-datasource.sh"): "exit 0"}
+            for path, body in scripts.items():
+                with open(path, "w") as f:
+                    f.write("#!/bin/bash\n" + body + "\n")
+                os.chmod(path, 0o755)
+            if env_sh is not None:
+                with open(os.path.join(tmp, "env.sh"), "w") as f:
+                    f.write(env_sh)
+            subprocess.run(["./start-grafana.sh", "--quick-startup", "-v", "master", "-M", "none"], cwd=tmp,
+                           env=dict(os.environ, PATH=stubs + ":" + os.environ["PATH"]), stdin=subprocess.DEVNULL,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+            args = open(os.path.join(tmp, "run.args")).read().splitlines()
+            assert [a for a in args if a.startswith(name)] == expected, (env_sh is not None, args)
+            assert os.path.join(tmp, "grafana/plugins") + ":/var/lib/grafana/plugins:z" in args, args
+            env_file = os.path.join(tmp, "env.sh")
+            import make_compose
+            stack = make_compose.build(["-d", os.path.join(tmp, "data"), "-v", "master",
+                                        "-s", os.path.join(ROOT, "prometheus/scylla_servers.example.yml")], cwd=ROOT,
+                                       env_file=env_file if env_sh is not None else os.path.join(tmp, "none"))
+            grafana = stack.compose["services"]["agraf"]
+            assert [e for e in grafana["environment"] if e.startswith(name)] == expected, grafana["environment"]
+            assert "./grafana/plugins:/var/lib/grafana/plugins:z" in grafana["volumes"]
+
+
 def test_traefik_thanos_port():
     """traefik's 10911 entry point forwards to THANOS_PORT, by default the
     sidecar; the watcher passes tls.thanos_port, and a change reloads traefik."""
