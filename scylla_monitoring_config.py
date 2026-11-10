@@ -28,7 +28,6 @@ import socket
 import subprocess
 import sys
 import tempfile
-import threading
 import time
 import traceback
 import urllib.error
@@ -1438,114 +1437,6 @@ def poll_interval(args, settings):
     return value
 
 
-WARM_LABEL = "scylla-monitoring.warm=1"
-WARM_EXAMPLE = "scylla-monitoring.example.yaml"
-
-
-def last_line(text, limit=200):
-    """The last non-empty line of a command's output, shortened, for a log line."""
-    lines = [l for l in (text or "").splitlines() if l.strip()]
-    return lines[-1].strip()[:limit] if lines else "no output"
-
-
-class Warmup(threading.Thread):
-    """With WARM_ON_BOOT=1 in env.sh, reads what the first apply needs while
-    the watcher waits for its first config file, since on a disk restored
-    from a snapshot the first read of each block is slow. Starts a throwaway
-    container of each image of the stack the example file stands for, at
-    once, then runs check on that file, which reads the watcher's code, the
-    schema and the start scripts. It is never part of an apply: stop()
-    removes the containers and does not wait for the rest."""
-
-    def __init__(self, stack, timeout=90):
-        super().__init__(daemon=True)
-        self.stack = stack
-        self.timeout = timeout
-        self.stopped = threading.Event()
-
-    def run(self):
-        start = time.monotonic()
-        try:
-            self.warm(start)
-        except Exception as e:
-            # the example file holds no secrets
-            print("warm: failed after %s: %s: %s" % (took(start), type(e).__name__, e), file=sys.stderr)
-            self.remove()
-
-    def warm(self, start):
-        stack = self.stack
-        # one deadline for the launches, the check and the containers;
-        # nothing starts after it
-        left = lambda: self.timeout - (time.monotonic() - start)
-        example = os.path.join(stack.dirs.monitoring, WARM_EXAMPLE)
-        cfg = load(example)
-        argv, env = normalize(cfg, stack.dirs)
-        services = stack.compose_config(argv, env, cfg)[0].compose["services"]
-        print("warm: starting " + ", ".join(sorted(services)), file=sys.stderr)
-        for name in sorted(services):
-            if self.stopped.is_set() or left() <= 0:
-                break
-            # Each image's own entrypoint and command: the program loads its
-            # binary and libraries, and reads what it reads on start, which
-            # is less than the image (Grafana's is 2 GB). Without a network,
-            # ports or volumes it cannot clash with the stack; one that exits
-            # early, like thanos without a subcommand, has loaded its binary.
-            res = stack.run(["docker", "run", "-d", "--rm", "--pull", "never", "--network", "none",
-                             "--label", WARM_LABEL, "--name", "warm-" + name, services[name]["image"]],
-                            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, universal_newlines=True,
-                            timeout=max(0.1, left()))
-            if res.returncode != 0:
-                print("warm: %s did not start: %s" % (name, last_line(res.stderr)), file=sys.stderr)
-        if self.stopped.is_set():
-            self.remove()  # one may have started after stop() removed the others
-            return
-        print("warm: containers started after " + took(start), file=sys.stderr)
-        if left() <= 0:
-            self.remove()
-            print("warm: done after " + took(start), file=sys.stderr)
-            return
-        # check renders into a temporary directory; staging, live and state
-        # stay as they are
-        res = stack.run([sys.executable, os.path.abspath(__file__), "check", "--config-file", example,
-                         "--monitoring-dir", stack.dirs.monitoring],
-                        cwd=stack.dirs.monitoring, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
-                        universal_newlines=True, timeout=max(0.1, left()))
-        # the example file holds no secrets
-        print("warm: check %s after %s" % ("done" if res.returncode == 0 else "failed: " + last_line(res.stderr),
-                                           took(start)), file=sys.stderr)
-        if not self.stopped.wait(max(0, self.timeout - (time.monotonic() - start))):
-            self.remove()
-            print("warm: done after " + took(start), file=sys.stderr)
-
-    def stop(self):
-        """Removes the containers; the first apply goes ahead whatever still runs."""
-        self.stopped.set()
-        self.remove()
-        print("warm: containers removed for the first apply", file=sys.stderr)
-
-    def remove(self, timeout=30):
-        """Removes every warm container, those a watcher that stopped
-        mid-way left included; a docker that does not answer within
-        timeout seconds, or cannot run, is left to the apply."""
-        deadline = time.monotonic() + timeout
-        left = lambda: max(1, deadline - time.monotonic())
-        try:
-            res = self.stack.run(["docker", "ps", "-aq", "--filter", "label=" + WARM_LABEL],
-                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True,
-                                 timeout=left())
-            ids = res.stdout.split()
-            if res.returncode == 0 and ids:
-                # -v: the anonymous volumes of images that declare them
-                res = self.stack.run(["docker", "rm", "-f", "-v"] + ids, stdout=subprocess.DEVNULL,
-                                     stderr=subprocess.DEVNULL, timeout=left())
-            if res.returncode != 0:
-                print("warning: warm: docker could not remove the warm containers", file=sys.stderr)
-        except subprocess.TimeoutExpired:
-            print("warning: warm: docker did not remove the warm containers in %ds" % timeout, file=sys.stderr)
-        except OSError as e:
-            print("warning: warm: cannot run docker: %s" % e, file=sys.stderr)
-
-
 def run_loop(args, stack=None, run=subprocess.run):
     """Applies the newest config file on start, and then whichever one
     changes, polling them; on a fresh host it waits for the first one."""
@@ -1553,18 +1444,6 @@ def run_loop(args, stack=None, run=subprocess.run):
     stack = stack or Stack(dirs, args, run)
     settings = env_settings(dirs.monitoring)
     interval = poll_interval(args, settings)
-    warmup = None
-    if settings.get("WARM_ON_BOOT") == "1":
-        # warm containers a watcher that stopped while warming left
-        warmup = Warmup(stack)
-        # a fresh host: nothing applied, so the stack is not running, and no file yet
-        if read_applied(dirs) is None and not any(signature(p) for p in dirs.config_files):
-            warmup.remove()  # first, so their names are free
-            warmup.start()
-        else:
-            # beside the first apply, which does not wait for it
-            threading.Thread(target=warmup.remove, daemon=True).start()
-            warmup = None
     seen = {}
     first = True
     while True:
@@ -1572,9 +1451,6 @@ def run_loop(args, stack=None, run=subprocess.run):
         changed = [p for p, sig in current.items() if sig is not None and sig != seen.get(p)]
         seen = current
         if changed:
-            if warmup:
-                warmup.stop()
-                warmup = None
             # on start, and when several changed in one poll, the newest wins
             path = newest(dirs.config_files if first else changed)
             applying = {}
