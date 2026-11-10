@@ -106,6 +106,12 @@ Settings in ``env.sh``
 one container at a time with ``start-all.sh``. A change of ``stack.compose`` stops the stack (``docker compose down``,
 or ``kill-all.sh``) and starts it in the other mode.
 
+The machine images also set ``PLUGINS_PREINSTALL_DISABLED=true`` in ``env.sh``, which the start scripts pass to Grafana as
+``GF_PLUGINS_PREINSTALL_DISABLED``. Grafana then installs no plugin from grafana.com when it starts: ``grafana/plugins``
+holds only the plugins monitoring ships (the ScyllaDB data source), and Grafana's own data sources and panels load from
+its image. Set it to ``false`` in ``env.sh`` or in the environment of the start scripts, or remove it, for Grafana's default. A ``-c`` value, or an ``-e``/``--env`` in ``-D``
+or ``--limit grafana``, that sets ``GF_PLUGINS_PREINSTALL_DISABLED`` takes precedence.
+
 As a systemd Service
 ^^^^^^^^^^^^^^^^^^^^
 
