@@ -627,7 +627,7 @@ def test_apply_failure():
         calls = []
         real_restart = stack.restart_stack
 
-        def restart(argv, env, cfg, first=False, traefik=False):
+        def restart(argv, env, cfg, first=False, traefik=False, was_compose=None, old_argv=None):
             calls.append([v for v in smc.option_values(argv, "-b") if "retention" in v][0])
             if len(calls) == 1:
                 real_restart(argv, env, cfg, first, traefik)
@@ -690,7 +690,7 @@ def test_compose_checked_before_apply():
     with tempfile.TemporaryDirectory() as tmp:
         host = FakeHost()
         args, stack = make_stack(tmp, host)
-        stack.compose = True
+        stack.default_compose = True
         renders = []
         recorded = host.run
 
@@ -726,7 +726,7 @@ def test_apply_compose():
     with tempfile.TemporaryDirectory() as tmp:
         host = FakeHost()
         args, stack = make_stack(tmp, host)
-        stack.compose = True
+        stack.default_compose = True
         builds = []
 
         def build(argv, environ, cwd):
@@ -769,6 +769,59 @@ def test_apply_compose():
         assert "--traefik" not in builds[-1][0]
 
 
+def test_switch_compose():
+    """stack.compose takes precedence over WATCHER_COMPOSE in env.sh; a change
+    of it removes the stack of the old mode and starts the new one."""
+    import make_compose
+    with tempfile.TemporaryDirectory() as tmp:
+        host = FakeHost()
+        args, stack = make_stack(tmp, host)
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write("WATCHER_COMPOSE=1\n")
+
+        def build(argv, environ, cwd):
+            result = make_compose.Stack()
+            result.compose = {"services": {}}
+            result.commands = [["./prometheus-config.sh", "-m", "aalert:9093"]]
+            return result
+        stack.compose_build = build
+        cfg = example()
+        cfg["tls"]["enabled"] = False
+        assert apply(args, stack, host, cfg) == 0
+        assert "docker compose" in names(host) and "start-all.sh -v" not in names(host)
+        # to one container at a time: compose down, then kill-all.sh and start-all.sh
+        host.commands.clear()
+        cfg["generation"] = "g2"
+        cfg["stack"]["compose"] = False
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host)[:3] == ["docker compose", "kill-all.sh", "start-all.sh -v"]
+        assert host.commands[0][0] == ["docker", "compose", "down", "--remove-orphans"]
+        # the field removed, with a default that is the mode already running: no restart
+        host.commands.clear()
+        cfg["generation"] = "g2b"
+        del cfg["stack"]["compose"]
+        with open(os.path.join(tmp, "env.sh"), "w") as f:
+            f.write("")
+        stack.default_compose = None
+        assert apply(args, stack, host, cfg) == 0
+        assert "start-all.sh -v" not in names(host) and "kill-all.sh" not in names(host)
+        # back to compose: kill-all.sh removes what start-all.sh ran
+        host.commands.clear()
+        cfg["generation"] = "g3"
+        cfg["stack"]["compose"] = True
+        assert apply(args, stack, host, cfg) == 0
+        assert names(host) == ["kill-all.sh", "prometheus-config.sh -m", "docker compose"]
+        assert host.commands[-1][0][2:4] == ["up", "-d"]
+        # a named stack's own compose files; none written, nothing to take down
+        host.commands.clear()
+        stack.compose_down(["--stack", "2"])
+        assert host.commands == []
+        open(os.path.join(tmp, "docker-compose.stack2.yml"), "w").close()
+        stack.compose_down(["--stack", "2"])
+        assert host.commands[0][0] == ["docker", "compose", "-f", "docker-compose.stack2.yml",
+                                       "--env-file", ".env.stack2", "down", "--remove-orphans"]
+
+
 def test_full_apply_when_down():
     """A container that went down, whose port refuses connections, is started
     by a stack restart, also when the file's changes start nothing, in
@@ -783,7 +836,7 @@ def test_full_apply_when_down():
             args, stack = make_stack(tmp, host)
             args.auto_revert = True
             if compose:
-                stack.compose = True
+                stack.default_compose = True
 
                 def build(argv, environ, cwd):
                     result = make_compose.Stack()

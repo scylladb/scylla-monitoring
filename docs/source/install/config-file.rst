@@ -72,7 +72,8 @@ Options:
 
 **--monitoring-dir path** The monitoring directory, where ``start-all.sh`` is. The watcher runs the start scripts from it.
 
-**--compose** Run the stack with Docker Compose instead of ``start-all.sh``. See :doc:`Docker Compose <docker-compose>`.
+**--compose** Run the stack with Docker Compose instead of ``start-all.sh``, unless the file's ``stack.compose`` says
+otherwise. See :doc:`Docker Compose <docker-compose>`.
 
 **--strict** Reject fields the schema does not define.
 
@@ -95,9 +96,15 @@ picks up a write within seconds.
 Settings in ``env.sh``
 ^^^^^^^^^^^^^^^^^^^^^^
 
-``run`` reads two settings from ``env.sh`` in the monitoring directory. The machine images built from ``packer/`` set both.
+``run`` reads these settings from ``env.sh`` in the monitoring directory. The machine images built from ``packer/`` set
+``WATCHER_POLL_INTERVAL`` and ``WARM_ON_BOOT``.
 
 **WATCHER_POLL_INTERVAL** How often ``run`` checks the file, in seconds, when ``--poll-interval`` is not given (default: 30).
+
+**WATCHER_COMPOSE** With ``WATCHER_COMPOSE=1``, the stack runs with Docker Compose when the file does not set
+``stack.compose``, as with ``--compose``. The file's ``stack.compose`` takes precedence; without either, the stack runs
+one container at a time with ``start-all.sh``. A change of ``stack.compose`` stops the stack (``docker compose down``,
+or ``kill-all.sh``) and starts it in the other mode.
 
 **WARM_ON_BOOT** With ``WARM_ON_BOOT=1``, a watcher that starts on a fresh host, with nothing applied and no file yet,
 reads what the first apply needs while it waits for the file. It starts a throwaway container of each image of the
@@ -176,6 +183,7 @@ Change                                                     What runs
 ``systemd``                                                the unit's drop-in is written or removed, then the unit restarts
 ``docker``                                                 Docker's proxy is written or removed, then Docker and the stack restart
 ``stack.quick_startup``                                    nothing; ``start-all.sh`` uses it at the next restart
+``stack.compose``                                          the stack stops and starts in the other mode; nothing when the mode stays the same
 ``stack``, ``storage``, ``prometheus``, other ``grafana``  the stack restarts
 ========================================================== ==================================================
 
