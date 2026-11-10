@@ -106,11 +106,23 @@ Settings in ``env.sh``
 one container at a time with ``start-all.sh``. A change of ``stack.compose`` stops the stack (``docker compose down``,
 or ``kill-all.sh``) and starts it in the other mode.
 
-The machine images also set ``PLUGINS_PREINSTALL_DISABLED=true`` in ``env.sh``, which the start scripts pass to Grafana as
-``GF_PLUGINS_PREINSTALL_DISABLED``. Grafana then installs no plugin from grafana.com when it starts: ``grafana/plugins``
-holds only the plugins monitoring ships (the ScyllaDB data source), and Grafana's own data sources and panels load from
-its image. Set it to ``false`` in ``env.sh`` or in the environment of the start scripts, or remove it, for Grafana's default. A ``-c`` value, or an ``-e``/``--env`` in ``-D``
-or ``--limit grafana``, that sets ``GF_PLUGINS_PREINSTALL_DISABLED`` takes precedence.
+Grafana settings can be set in ``env.sh`` too: the start scripts pass every ``GF_*`` variable that ``env.sh``, or the
+environment, sets to the Grafana container, in place of the stack's default for that setting. A ``-c`` value, or an
+``-e``/``--env`` in ``-D`` or ``--limit grafana``, that sets the same variable takes precedence. This works with
+``start-all.sh`` and with Docker Compose, with or without the watcher. The values go by name, so a secret such as
+``GF_DATABASE_PASSWORD`` is neither on the ``docker run`` command line nor in ``docker-compose.yml``; with Compose it is
+in ``.env``, which only its owner can read. The machine images use it to keep Grafana's first start short:
+
+.. code-block:: shell
+
+   GF_PLUGINS_PREINSTALL_DISABLED=true
+   GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=scylladb-scylla-datasource
+   GF_PLUGINS_DISABLE_PLUGINS=cloudwatch,elasticsearch,mssql,grafana-postgresql-datasource,influxdb,mysql,grafana-pyroscope-datasource,stackdriver,zipkin,opentsdb,jaeger,tempo
+
+Grafana then installs no plugin from grafana.com when it starts, so ``grafana/plugins`` holds only the plugins monitoring
+ships (the ScyllaDB data source), and it loads none of its bundled data sources that the dashboards do not use.
+Remove a line for Grafana's default. The image's ``env.sh`` writes each one as ``NAME=${NAME:-value}``, so a value
+exported in the environment of the start scripts overrides it.
 
 As a systemd Service
 ^^^^^^^^^^^^^^^^^^^^
