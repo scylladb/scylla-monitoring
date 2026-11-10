@@ -254,6 +254,12 @@ def install_node_exporter(arch='amd64'):
     # an image without node_exporter.
     run('{_HOME}/node_exporter_install --arch {arch}'.format(arch=arch, _HOME=HOME_DIR))
 
+def install_obs_agents(arch='amd64'):
+    # The Vector and vmagent binaries only, so Scylla Cloud skips uploading
+    # them; it sets up and starts the agents itself. A failed download or
+    # checksum must fail the image build.
+    run('{_HOME}/obs_agents_install.sh --arch {arch}'.format(arch=arch, _HOME=HOME_DIR))
+
 def install_config_watcher():
     # The units run the watcher from the centos copy of the stack, made by
     # add_centos_user.sh after this script.
@@ -324,3 +330,4 @@ if __name__ == '__main__':
         install_node_exporter(args.arch)
         install_config_watcher()
         install_preread()
+    install_obs_agents(args.arch)
