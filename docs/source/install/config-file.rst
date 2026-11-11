@@ -124,6 +124,33 @@ ships (the ScyllaDB data source), and it loads none of its bundled data sources 
 Remove a line for Grafana's default. The image's ``env.sh`` writes each one as ``NAME=${NAME:-value}``, so a value
 exported in the environment of the start scripts overrides it.
 
+Reading Grafana's files on boot
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A new machine loads its disk from the image on first read, which is slow, and Grafana reads a few hundred MB when it
+starts. The machine images run ``scylla-monitoring-preread.service`` on every boot: it reads Grafana's binary, its
+bundled plugins that ``GF_PLUGINS_DISABLE_PLUGINS`` does not disable, and the stack's ``grafana/plugins``,
+``grafana/provisioning`` and ``grafana/build``, while the machine waits to be configured. It starts no container, and
+nothing waits for it: the stack starts whenever ``start-all.sh`` or the watcher starts it, and finds on the disk what was
+read by then. On a later boot the files are already on the disk, and it ends in seconds.
+
+It logs one line when it ends, with the MB of files it read:
+
+.. code-block:: shell
+
+   $ journalctl -u scylla-monitoring-preread.service
+   Grafana pre-read: finished, 512 MB in 58s
+   Grafana pre-read: stopped by the 120s limit, 402 MB in 120s
+   Grafana pre-read: ended with read errors (status 123), 380 MB in 49s
+
+Its settings are in ``env.sh``:
+
+**GRAFANA_PREREAD** ``GRAFANA_PREREAD=0`` turns it off (default: on).
+
+**GRAFANA_PREREAD_TIMEOUT** It stops after this many seconds (default: 300; the images set 120).
+
+**GRAFANA_PREREAD_PARALLEL** How many files it reads at the same time (default: 4).
+
 As a systemd Service
 ^^^^^^^^^^^^^^^^^^^^
 

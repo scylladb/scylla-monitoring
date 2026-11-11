@@ -1,0 +1,11 @@
+[Unit]
+Description=Read Grafana's files from the disk ahead of its first start
+
+# Not Type=oneshot: multi-user.target, and cloud-init's last stage after it,
+# would wait for a oneshot to end. Nothing waits for this unit or orders after it.
+[Service]
+WorkingDirectory=-/home/centos/scylla-grafana-monitoring-scylla-monitoring
+ExecStart=/usr/local/sbin/scylla-monitoring-preread.sh
+
+[Install]
+WantedBy=multi-user.target
