@@ -3,6 +3,12 @@ RUN_LOCAL_THANOS=1
 # The config watcher (scylla_monitoring_config.py): seconds between checks of
 # its config file
 WATCHER_POLL_INTERVAL=5
+# The read of Grafana's files on boot (scylla-monitoring-preread.service):
+# 0 turns it off; it stops after GRAFANA_PREREAD_TIMEOUT seconds and reads
+# GRAFANA_PREREAD_PARALLEL files at the same time
+GRAFANA_PREREAD=1
+GRAFANA_PREREAD_TIMEOUT=120
+GRAFANA_PREREAD_PARALLEL=4
 # Grafana settings: the start scripts pass every GF_* variable to Grafana.
 # Grafana installs no plugin at start, so grafana/plugins holds only the ones
 # monitoring ships, and loads none of the data sources the dashboards do not use.

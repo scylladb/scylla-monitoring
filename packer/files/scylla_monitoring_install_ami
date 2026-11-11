@@ -275,6 +275,16 @@ def install_config_watcher():
     run('systemctl daemon-reload')
     run('systemctl enable ' + ' '.join(units))
 
+def install_preread():
+    # The list is made here, after the build started the stack once, so
+    # Grafana's image is on the disk; its relative paths are read from the
+    # centos copy of the stack. A build that finds no Grafana binary fails.
+    run('install -m 755 -o root -g root {_HOME}/scylla-monitoring-preread.sh /usr/local/sbin/')
+    chdir('{_HOME}/scylla-grafana-monitoring-scylla-monitoring/')
+    run('/usr/local/sbin/scylla-monitoring-preread.sh --list > /etc/scylla-monitoring-preread.list', shell=True)
+    run('install -m 644 {_HOME}/scylla-monitoring-preread.service /etc/systemd/system/')
+    run('systemctl enable scylla-monitoring-preread.service')
+
 if __name__ == '__main__':
     if os.getuid() > 0:
         print('Requires root permission.')
@@ -313,3 +323,4 @@ if __name__ == '__main__':
         setup_monitoring()
         install_node_exporter(args.arch)
         install_config_watcher()
+        install_preread()
