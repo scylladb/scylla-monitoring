@@ -111,6 +111,14 @@
                         "spec/title": "Requests by Consistency Level by [[by]]",
                         "spec/description": "Requests by Consistency Level",
                         "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_query_processor_queries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])>0) by ([[by]], consistency_level))"
+                    },
+                    {
+                        "class": "graph_panel",
+                        "span": 3,
+                        "spec/title": "Listen queue overflows by [[by]]",
+                        "spec/description": "Rate of TCP connection attempts (SYNs or handshake ACKs, retransmissions included) the kernel dropped because a listening socket's accept queue was full, for all listening sockets on the node. Clients retransmit with exponential backoff (1s, 3s, 7s with Linux defaults), so connecting takes seconds. The counter is per node, so grouping by shard shows one series per node.\n\nnode_netstat_TcpExt_ListenOverflows",
+                        "spec/data/spec/queries/0/spec/query/spec/interval": "1m",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(node_netstat_TcpExt_ListenOverflows{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]))"
                     }
                 ],
                 "title": ""
