@@ -144,6 +144,160 @@
                 "title": "Index: $ks:$index"
             },
             {
+                "class": "row",
+                "repeat": "sc_table",
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "sc_table"
+                },
+                "dashversion": [
+                    ">2027.1"
+                ],
+                "panels": [
+                    {
+                        "span": 3,
+                        "class": "wps_panel",
+                        "spec/title": "Writes $func by [[by]]",
+                        "spec/description": "Strongly consistent writes to the table per second. A request is counted on the node where it ends, not on a node that only redirects it.\n\nscylla_strong_consistency_table_write_latency_count",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_strong_consistency_table_write_latency_count{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) or $func(histogram_count(rate(scylla_strong_consistency_table_write_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval]))) by ([[by]])"
+                    },
+                    {
+                        "span": 3,
+                        "class": "us_panel",
+                        "spec/title": "Average write latency by [[by]]",
+                        "spec/description": "Average latency of strongly consistent writes to the table, measured on the node that executes them. It divides the total time by the number of requests, so unlike the percentiles it is not limited by the latency buckets.\n\nscylla_strong_consistency_table_write_latency",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(scylla_strong_consistency_table_write_latency_sum{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) / (sum(rate(scylla_strong_consistency_table_write_latency_count{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) > 0) or sum(histogram_sum(rate(scylla_strong_consistency_table_write_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval]))) by ([[by]]) / (sum(histogram_count(rate(scylla_strong_consistency_table_write_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval]))) by ([[by]]) > 0)"
+                    },
+                    {
+                        "span": 3,
+                        "class": "us_panel",
+                        "spec/title": "95th percentile write latency by [[by]]",
+                        "spec/description": "95th percentile of the latency of strongly consistent writes to the table, measured on the node that executes them. ScyllaDB sorts latencies into buckets, and the smallest bucket holds everything up to 640 \u00b5s, so any latency below 640 \u00b5s shows as a value up to 640 \u00b5s.\n\nscylla_strong_consistency_table_write_latency",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_strong_consistency_table_write_latency_bucket{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)) or histogram_quantile(0.95, sum(rate(scylla_strong_consistency_table_write_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]))"
+                    },
+                    {
+                        "span": 3,
+                        "class": "us_panel",
+                        "spec/title": "99th percentile write latency by [[by]]",
+                        "spec/description": "99th percentile of the latency of strongly consistent writes to the table, measured on the node that executes them. ScyllaDB sorts latencies into buckets, and the smallest bucket holds everything up to 640 \u00b5s, so any latency below 640 \u00b5s shows as a value up to 640 \u00b5s.\n\nscylla_strong_consistency_table_write_latency",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_strong_consistency_table_write_latency_bucket{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)) or histogram_quantile(0.99, sum(rate(scylla_strong_consistency_table_write_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]))"
+                    },
+                    {
+                        "span": 3,
+                        "class": "rps_panel",
+                        "spec/title": "Reads $func by [[by]]",
+                        "spec/description": "Strongly consistent reads from the table per second, by read type. A request is counted on the node where it ends, not on a node that only redirects it.\n\nscylla_strong_consistency_table_read_latency_count",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_strong_consistency_table_read_latency_count{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type) or $func(histogram_count(rate(scylla_strong_consistency_table_read_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval]))) by ([[by]], read_type)",
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{dc}} {{rack}} {{instance}}"
+                    },
+                    {
+                        "span": 3,
+                        "class": "us_panel",
+                        "spec/title": "Average read latency by [[by]]",
+                        "spec/description": "Average latency of strongly consistent reads from the table by read type, measured on the node that executes them. It divides the total time by the number of requests, so unlike the percentiles it is not limited by the latency buckets.\n\nscylla_strong_consistency_table_read_latency",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(scylla_strong_consistency_table_read_latency_sum{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type) / (sum(rate(scylla_strong_consistency_table_read_latency_count{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type) > 0) or sum(histogram_sum(rate(scylla_strong_consistency_table_read_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval]))) by ([[by]], read_type) / (sum(histogram_count(rate(scylla_strong_consistency_table_read_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval]))) by ([[by]], read_type) > 0)",
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{dc}} {{rack}} {{instance}}"
+                    },
+                    {
+                        "span": 3,
+                        "class": "us_panel",
+                        "spec/title": "95th percentile read latency by [[by]]",
+                        "spec/description": "95th percentile of the latency of strongly consistent reads from the table by read type, measured on the node that executes them. ScyllaDB sorts latencies into buckets, and the smallest bucket holds everything up to 640 \u00b5s, so any latency below 640 \u00b5s shows as a value up to 640 \u00b5s.\n\nscylla_strong_consistency_table_read_latency",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_strong_consistency_table_read_latency_bucket{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type, le)) or histogram_quantile(0.95, sum(rate(scylla_strong_consistency_table_read_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type))",
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{dc}} {{rack}} {{instance}}"
+                    },
+                    {
+                        "span": 3,
+                        "class": "us_panel",
+                        "spec/title": "99th percentile read latency by [[by]]",
+                        "spec/description": "99th percentile of the latency of strongly consistent reads from the table by read type, measured on the node that executes them. ScyllaDB sorts latencies into buckets, and the smallest bucket holds everything up to 640 \u00b5s, so any latency below 640 \u00b5s shows as a value up to 640 \u00b5s.\n\nscylla_strong_consistency_table_read_latency",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_strong_consistency_table_read_latency_bucket{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type, le)) or histogram_quantile(0.99, sum(rate(scylla_strong_consistency_table_read_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type))",
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{dc}} {{rack}} {{instance}}"
+                    },
+                    {
+                        "span": 3,
+                        "class": "wps_panel",
+                        "spec/title": "Write errors $func by [[by]]",
+                        "spec/description": "Strongly consistent writes to the table that failed in its Raft group, by reason: timeout, status_unknown (the write may or may not have been applied) or other. A write that fails before it reaches the Raft group, for example because the tablet has no live replica, is counted only on the Strong Consistency dashboard.\n\nscylla_strong_consistency_table_write_errors",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "max_over_time(($func(irate(scylla_strong_consistency_table_write_errors{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], reason))[$__interval:]) or on([[by]]) $func(scylla_strong_consistency_raft_leaders{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]]) * 0",
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{reason}} {{dc}} {{rack}} {{instance}}"
+                    },
+                    {
+                        "span": 3,
+                        "class": "rps_panel",
+                        "spec/title": "Read errors $func by [[by]]",
+                        "spec/description": "Strongly consistent reads from the table that failed in its Raft group, by reason: timeout or other.\n\nscylla_strong_consistency_table_read_errors",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "max_over_time(($func(irate(scylla_strong_consistency_table_read_errors{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], reason))[$__interval:]) or on([[by]]) $func(scylla_strong_consistency_raft_leaders{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]]) * 0",
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{reason}} {{dc}} {{rack}} {{instance}}"
+                    },
+                    {
+                        "span": 3,
+                        "class": "graph_panel_int",
+                        "spec/title": "Raft group leaders $func by [[by]]",
+                        "spec/description": "Tablet Raft groups of the table led by a node. Only the leader executes writes and linearizable reads, so a node that leads more groups than its peers gets more of the table's load.\n\nscylla_strong_consistency_raft_leaders",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$func(scylla_strong_consistency_raft_leaders{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]])"
+                    },
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Read barrier messages $func by [[by]]",
+                        "spec/description": "read_quorum messages the leaders of the table's Raft groups send to confirm they still lead before serving a linearizable read.\n\nscylla_strong_consistency_raft_messages_sent",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_strong_consistency_raft_messages_sent{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", message_type=\"read_quorum\"}[$__rate_interval])) by ([[by]])"
+                    },
+                    {
+                        "span": 3,
+                        "class": "graph_panel_int",
+                        "spec/title": "Uncommitted Raft entries $func by [[by]]",
+                        "spec/description": "Entries in the Raft logs of the table that are not committed yet.\n\nscylla_strong_consistency_raft_uncommitted_entries",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$func(scylla_strong_consistency_raft_uncommitted_entries{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]])"
+                    },
+                    {
+                        "span": 3,
+                        "class": "graph_panel_int",
+                        "spec/title": "Unapplied Raft entries $func by [[by]]",
+                        "spec/description": "Committed Raft log entries of the table that a node has not applied to its replica yet.\n\nscylla_strong_consistency_raft_unapplied_entries",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$func(scylla_strong_consistency_raft_unapplied_entries{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]])"
+                    },
+                    {
+                        "span": 3,
+                        "class": "graph_panel_int",
+                        "spec/title": "Full Raft logs $func by [[by]]",
+                        "spec/description": "Raft logs of the table that have no room under max_follower_log_size for the next entry from the leader, so entries from it are refused.\n\nscylla_strong_consistency_raft_full_logs",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$func(scylla_strong_consistency_raft_full_logs{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]])"
+                    },
+                    {
+                        "span": 3,
+                        "class": "graph_panel_int",
+                        "spec/title": "Blocked followers $func by [[by]]",
+                        "spec/description": "Followers the leaders of the table's Raft groups cannot send entries to, by reason: probe, pipeline_full, snapshot or log_full.\n\nscylla_strong_consistency_raft_blocked_followers",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$func(scylla_strong_consistency_raft_blocked_followers{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]], reason)",
+                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{reason}} {{dc}} {{rack}} {{instance}}"
+                    },
+                    {
+                        "span": 3,
+                        "class": "us_panel",
+                        "spec/title": "Average apply latency by [[by]]",
+                        "spec/description": "Average time a node takes to apply a write of the table from the Raft log to its replica, including resolving the schema the write was made with. It divides the total time by the number of requests, so unlike the percentiles it is not limited by the latency buckets.\n\nscylla_strong_consistency_state_machine_apply_latency",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(scylla_strong_consistency_state_machine_apply_latency_sum{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) / (sum(rate(scylla_strong_consistency_state_machine_apply_latency_count{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) > 0) or sum(histogram_sum(rate(scylla_strong_consistency_state_machine_apply_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval]))) by ([[by]]) / (sum(histogram_count(rate(scylla_strong_consistency_state_machine_apply_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval]))) by ([[by]]) > 0)"
+                    },
+                    {
+                        "span": 3,
+                        "class": "us_panel",
+                        "spec/title": "99th percentile apply latency by [[by]]",
+                        "spec/description": "99th percentile of the time a node takes to apply a write of the table from the Raft log to its replica. ScyllaDB sorts latencies into buckets, and the smallest bucket holds everything up to 640 \u00b5s, so any latency below 640 \u00b5s shows as a value up to 640 \u00b5s.\n\nscylla_strong_consistency_state_machine_apply_latency",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)) or histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]))"
+                    },
+                    {
+                        "span": 3,
+                        "class": "ops_panel",
+                        "spec/title": "Schema barrier waits $func by [[by]]",
+                        "spec/description": "Times applying the table's Raft log entries waited for a group 0 read barrier, because an entry was written with a schema the node did not know yet.\n\nscylla_strong_consistency_state_machine_schema_barrier_waits",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_strong_consistency_state_machine_schema_barrier_waits{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]) or on([[by]]) $func(scylla_strong_consistency_raft_leaders{ks=\"$ks\", cf=\"$sc_table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]]) * 0"
+                    }
+                ],
+                "title": "Strongly consistent table: $ks:$sc_table"
+            },
+            {
                 "class": "monitoring_version_row"
             }
         ],
@@ -431,6 +585,43 @@
                 },
                 "dashversion": [
                     ">2025.4"
+                ]
+            },
+            {
+                "kind": "QueryVariable",
+                "spec": {
+                    "current": {
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "hide": "hideVariable",
+                    "refresh": "onTimeRangeChanged",
+                    "skipUrlSync": false,
+                    "query": {
+                        "kind": "DataQuery",
+                        "group": "prometheus",
+                        "version": "v0",
+                        "datasource": {
+                            "name": "prometheus"
+                        },
+                        "spec": {
+                            "__legacyStringValue": "label_values(scylla_strong_consistency_raft_leaders{cluster=\"$cluster\", ks=\"$ks\", cf=~\"$table\"}, cf)"
+                        }
+                    },
+                    "regex": "",
+                    "regexApplyTo": "value",
+                    "sort": "alphabeticalAsc",
+                    "definition": "",
+                    "options": [],
+                    "multi": true,
+                    "includeAll": true,
+                    "allValue": ".*",
+                    "allowCustomValue": true,
+                    "name": "sc_table",
+                    "label": "sc_table"
+                },
+                "dashversion": [
+                    ">2027.1"
                 ]
             },
             {
