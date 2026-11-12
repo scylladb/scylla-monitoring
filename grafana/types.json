@@ -599,13 +599,13 @@
          },
          {
             "class": "small_stat_area",
-            "description": "Writes operations reaching the cluster",
+            "description": "Writes operations reaching the cluster, including writes to strongly consistent tables. The latencies leave those writes out.",
             "span": 3,
             "title": "Writes",
             "data/spec/queries": [
                {
                   "class": "panel_query",
-                  "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
+                  "spec/query/spec/expr": "(sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)) + (sum(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0))",
                   "spec/query/spec/legendFormat": "Writes/s",
                   "spec/query/spec/instant": false,
                   "spec/query/spec/range": true
@@ -655,13 +655,13 @@
          },
          {
             "class": "small_stat_area",
-            "description": "Reads operations reaching the cluster",
+            "description": "Reads operations reaching the cluster, including reads from strongly consistent tables. The latencies leave those reads out.",
             "span": 3,
             "title": "Reads",
             "data/spec/queries": [
                {
                   "class": "panel_query",
-                  "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
+                  "spec/query/spec/expr": "(sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)) + (sum(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0))",
                   "spec/query/spec/legendFormat": "Reads/s",
                   "spec/query/spec/instant": false,
                   "spec/query/spec/range": true
@@ -2456,7 +2456,7 @@
          {
             "class": "panel_query",
             "spec/refId": "B",
-            "spec/query/spec/expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
+            "spec/query/spec/expr": "round((sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group) + on(group) sum(label_replace(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group)) or sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group) or sum(label_replace(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": false,
             "spec/query/spec/range": true
@@ -2464,7 +2464,7 @@
          {
             "class": "panel_query",
             "spec/refId": "C",
-            "spec/query/spec/expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
+            "spec/query/spec/expr": "round((sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group) + on(group) sum(label_replace(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group)) or sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group) or sum(label_replace(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": false,
             "spec/query/spec/range": true
@@ -4071,7 +4071,7 @@
          {
             "class": "panel_query",
             "spec/refId": "D",
-            "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)",
+            "spec/query/spec/expr": "(sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) + on(dc) sum(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)) or sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) or sum(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)",
             "spec/query/spec/instant": true,
             "spec/query/spec/range": false,
             "spec/query/spec/format": "table",
@@ -4080,7 +4080,7 @@
          {
             "class": "panel_query",
             "spec/refId": "E",
-            "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)",
+            "spec/query/spec/expr": "(sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) + on(dc) sum(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)) or sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) or sum(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)",
             "spec/query/spec/instant": true,
             "spec/query/spec/range": false,
             "spec/query/spec/format": "table",
