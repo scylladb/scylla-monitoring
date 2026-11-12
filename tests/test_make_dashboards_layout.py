@@ -5,6 +5,7 @@ import copy
 import json
 import os
 import sys
+import tempfile
 from types import SimpleNamespace
 
 # Runs from the repository root, where make_dashboards.py and grafana/ are.
@@ -142,5 +143,21 @@ for version, kept, dropped in (("2026.4", "old", "new"), ("master", "new", "old"
 plain = copy.deepcopy(tagged)
 md.update_object(plain, TYPES, [md.MASTER_VERSION], [], {})
 assert "dashversion" not in json.dumps(plain)
+
+# a version tag on the dashboard skips it for the versions it rejects, and removes an earlier build of it
+with tempfile.TemporaryDirectory() as tmp:
+    gated = copy.deepcopy(EXAMPLE)
+    gated["dashboard"]["dashversion"] = [">2027.1"]
+    path = os.path.join(tmp, "gated.template.json")
+    with open(path, "w") as f:
+        json.dump(gated, f)
+    open(os.path.join(tmp, "gated.2026.4.json"), "w").close()
+    for version in ("2026.4", "master"):
+        args = SimpleNamespace(dash_version=version, add_row=[], product=[], grafana4=False, grafana5=False,
+                               grafana13=True, panel_as_spec=True, strip_class=True, as_file=tmp)
+        md.get_dashboard(path, TYPES, args, [], {})
+    assert not os.path.exists(os.path.join(tmp, "gated.2026.4.json"))
+    with open(os.path.join(tmp, "gated.master.json")) as f:
+        assert "dashversion" not in json.load(f)
 
 print("ok")
