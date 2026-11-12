@@ -1,0 +1,81 @@
+# Tests the alerts on strongly consistent tables (SCYLLADB-2587).
+rule_files:
+  - ../../../prometheus/prom_rules/prometheus.rules.yml
+evaluation_interval: 1m
+tests:
+  - interval: 20s
+    input_series:
+      # n1: 5% of writes and 3% of reads time out, and many writes are rejected as too large
+      - series: 'scylla_strong_consistency_coordinator_write_latency_summary_count{cluster="c", instance="n1", shard="0", scheduling_group_name="sl:default"}'
+        values: '0+1000x60'
+      - series: 'scylla_strong_consistency_coordinator_write_errors{cluster="c", instance="n1", shard="0", scheduling_group_name="sl:default", reason="timeout"}'
+        values: '0+50x60'
+      - series: 'scylla_strong_consistency_coordinator_write_errors{cluster="c", instance="n1", shard="0", scheduling_group_name="sl:default", reason="other"}'
+        values: '0+500x60'
+      - series: 'scylla_strong_consistency_coordinator_read_latency_summary_count{cluster="c", instance="n1", shard="0", scheduling_group_name="sl:default", read_type="linearizable"}'
+        values: '0+1000x60'
+      - series: 'scylla_strong_consistency_coordinator_read_errors{cluster="c", instance="n1", shard="0", scheduling_group_name="sl:default", reason="timeout"}'
+        values: '0+30x60'
+      # n2: 0.5% of writes time out, below the threshold
+      - series: 'scylla_strong_consistency_coordinator_write_latency_summary_count{cluster="c", instance="n2", shard="0", scheduling_group_name="sl:default"}'
+        values: '0+1000x60'
+      - series: 'scylla_strong_consistency_coordinator_write_errors{cluster="c", instance="n2", shard="0", scheduling_group_name="sl:default", reason="timeout"}'
+        values: '0+5x60'
+      # n3: a two minute burst of unavailable writes, as during a restart
+      - series: 'scylla_strong_consistency_coordinator_write_latency_summary_count{cluster="c", instance="n3", shard="0", scheduling_group_name="sl:default"}'
+        values: '0+1000x60'
+      - series: 'scylla_strong_consistency_coordinator_write_errors{cluster="c", instance="n3", shard="0", scheduling_group_name="sl:default", reason="unavailable"}'
+        values: '0x14 400+400x5 2400x40'
+      # n4: an almost idle node, where 10% of 0.5 writes per second time out
+      - series: 'scylla_strong_consistency_coordinator_write_latency_summary_count{cluster="c", instance="n4", shard="0", scheduling_group_name="sl:default"}'
+        values: '0+10x60'
+      - series: 'scylla_strong_consistency_coordinator_write_errors{cluster="c", instance="n4", shard="0", scheduling_group_name="sl:default", reason="timeout"}'
+        values: '0+1x60'
+      # n5: every write times out, and waiting for the timeouts keeps the node at 9 writes per second
+      - series: 'scylla_strong_consistency_coordinator_write_latency_summary_count{cluster="c", instance="n5", shard="0", scheduling_group_name="sl:default"}'
+        values: '0+180x60'
+      - series: 'scylla_strong_consistency_coordinator_write_errors{cluster="c", instance="n5", shard="0", scheduling_group_name="sl:default", reason="timeout"}'
+        values: '0+180x60'
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: scRequestErrors
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: scRequestErrors
+        exp_alerts:
+          - exp_labels: {cluster: c, instance: n1, reason: timeout, op: writes, severity: error, advisor: operationError, dashboard: strong-consistency, summary: Strongly consistent requests fail, description: 'More than 1% of the strongly consistent writes on n1 fail with reason timeout'}
+          - exp_labels: {cluster: c, instance: n1, reason: timeout, op: reads, severity: error, advisor: operationError, dashboard: strong-consistency, summary: Strongly consistent requests fail, description: 'More than 1% of the strongly consistent reads on n1 fail with reason timeout'}
+          - exp_labels: {cluster: c, instance: n5, reason: timeout, op: writes, severity: error, advisor: operationError, dashboard: strong-consistency, summary: Strongly consistent requests fail, description: 'More than 1% of the strongly consistent writes on n5 fail with reason timeout'}
+      - eval_time: 12m
+        alertname: scRequestErrors
+        exp_alerts:
+          - exp_labels: {cluster: c, instance: n1, reason: timeout, op: writes, severity: error, advisor: operationError, dashboard: strong-consistency, summary: Strongly consistent requests fail, description: 'More than 1% of the strongly consistent writes on n1 fail with reason timeout'}
+          - exp_labels: {cluster: c, instance: n1, reason: timeout, op: reads, severity: error, advisor: operationError, dashboard: strong-consistency, summary: Strongly consistent requests fail, description: 'More than 1% of the strongly consistent reads on n1 fail with reason timeout'}
+          - exp_labels: {cluster: c, instance: n5, reason: timeout, op: writes, severity: error, advisor: operationError, dashboard: strong-consistency, summary: Strongly consistent requests fail, description: 'More than 1% of the strongly consistent writes on n5 fail with reason timeout'}
+  - interval: 1m
+    input_series:
+      - series: 'scylla_strong_consistency_raft_full_logs{cluster="c", instance="n1", ks="ks", cf="t"}'
+        values: '0 1 1 1 1 1 1 1 1 1'
+      - series: 'scylla_strong_consistency_raft_full_logs{cluster="c", instance="n2", ks="ks", cf="t"}'
+        values: '0 1 1 0 0 0 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: scRaftLogFull
+        exp_alerts:
+          - exp_labels: {cluster: c, instance: n1, severity: warn, summary: Raft logs of strongly consistent tables are full, description: 'Raft logs of strongly consistent tables on n1 have been full for 5 minutes, so the node refuses new entries from their leaders'}
+  - interval: 1m
+    input_series:
+      # n1: a follower that never catches up, so its leader keeps sending snapshots
+      - series: 'scylla_strong_consistency_raft_messages_sent{cluster="c", instance="n1", ks="ks", cf="t", message_type="install_snapshot"}'
+        values: '0+60x40'
+      # n2: ten minutes of transfers while a node catches up, then none
+      - series: 'scylla_strong_consistency_raft_messages_sent{cluster="c", instance="n2", ks="ks", cf="t", message_type="install_snapshot"}'
+        values: '0+60x10 600x30'
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: scRaftSnapshotTransfers
+        exp_alerts: []
+      - eval_time: 25m
+        alertname: scRaftSnapshotTransfers
+        exp_alerts:
+          - exp_labels: {cluster: c, instance: n1, severity: warn, summary: Raft snapshot transfers of strongly consistent tables do not stop, description: 'Leaders of strongly consistent tables on n1 have been sending snapshots for 15 minutes, so a follower may be unable to catch up'}

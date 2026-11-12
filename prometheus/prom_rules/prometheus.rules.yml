@@ -93,6 +93,15 @@ groups:
       dashboard: "scylla-detailed"
       description: 'Some operation failed due to consistency level in DC {{ $labels.dc }}, not enough replicas are available'
       summary: Consistency Level error
+  - alert: scRequestErrors
+    expr: label_replace((sum(rate(scylla_strong_consistency_coordinator_write_errors{reason=~"timeout|status_unknown|unavailable"}[1m])) by (cluster, instance, reason) > 0.1) / on(cluster, instance) group_left() sum(rate(scylla_strong_consistency_coordinator_write_latency_summary_count[1m])) by (cluster, instance) > 0.01, "op", "writes", "", "") or label_replace((sum(rate(scylla_strong_consistency_coordinator_read_errors{reason=~"timeout|unavailable"}[1m])) by (cluster, instance, reason) > 0.1) / on(cluster, instance) group_left() sum(rate(scylla_strong_consistency_coordinator_read_latency_summary_count[1m])) by (cluster, instance) > 0.01, "op", "reads", "", "")
+    for: 5m
+    labels:
+      severity: "error"
+      advisor: "operationError"
+      dashboard: "strong-consistency"
+      description: 'More than 1% of the strongly consistent {{ $labels.op }} on {{ $labels.instance }} fail with reason {{ $labels.reason }}'
+      summary: Strongly consistent requests fail
   - alert: preparedCacheEviction
     expr: sum(rate(scylla_cql_prepared_cache_evictions[2m])) by (cluster) + sum(rate(scylla_cql_authorized_prepared_statements_cache_evictions[2m])) by (cluster) > 100
     for: 5m
@@ -341,3 +350,17 @@ groups:
       severity: "error"
       description: 'Non-LSA memory is over 40% of the memory in node {{ $labels.instance }}'
       summary: Non-LSA memory is close to the 50% limit, it can lead to OOM
+  - alert: scRaftLogFull
+    expr: sum(scylla_strong_consistency_raft_full_logs) by (cluster, instance) > 0
+    for: 5m
+    labels:
+      severity: "warn"
+      description: 'Raft logs of strongly consistent tables on {{ $labels.instance }} have been full for 5 minutes, so the node refuses new entries from their leaders'
+      summary: Raft logs of strongly consistent tables are full
+  - alert: scRaftSnapshotTransfers
+    expr: sum(rate(scylla_strong_consistency_raft_messages_sent{message_type="install_snapshot"}[5m])) by (cluster, instance) > 0.1
+    for: 15m
+    labels:
+      severity: "warn"
+      description: 'Leaders of strongly consistent tables on {{ $labels.instance }} have been sending snapshots for 15 minutes, so a follower may be unable to catch up'
+      summary: Raft snapshot transfers of strongly consistent tables do not stop

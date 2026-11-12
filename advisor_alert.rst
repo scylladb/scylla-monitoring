@@ -26,6 +26,7 @@ Advisor alert for selected errors in the cluster
 - nodeLocalErrors: Some operation failed at the replica side
 - nodeIOErrors: IO Errors can indicate a node with a faulty disk
 - nodeCLErrors: Some operation failed due to consistency level
+- scRequestErrors: Requests to strongly consistent tables fail
 
 Log Based Alerts
 ^^^^^^^^^^^^^^^^
