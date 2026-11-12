@@ -1,0 +1,133 @@
+# Tests the latency quantiles of strongly consistent requests, alone and together with regular ones (SCYLLADB-2587).
+rule_files:
+  - ../../../prometheus/prom_rules/prometheus.latency.rules.yml
+evaluation_interval: 1m
+tests:
+  - interval: 20s
+    input_series:
+      # sl:both has regular and strongly consistent writes, sl:regular and sl:sc only one kind
+      - series: 'scylla_storage_proxy_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="1000"}'
+        values: '0+80x30'
+      - series: 'scylla_storage_proxy_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="2000"}'
+        values: '0+100x30'
+      - series: 'scylla_storage_proxy_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="4000"}'
+        values: '0+100x30'
+      - series: 'scylla_storage_proxy_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="+Inf"}'
+        values: '0+100x30'
+      - series: 'scylla_strong_consistency_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="1000"}'
+        values: '0+0x30'
+      - series: 'scylla_strong_consistency_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="2000"}'
+        values: '0+20x30'
+      - series: 'scylla_strong_consistency_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="4000"}'
+        values: '0+100x30'
+      - series: 'scylla_strong_consistency_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="+Inf"}'
+        values: '0+100x30'
+      - series: 'scylla_storage_proxy_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:regular", le="1000"}'
+        values: '0+80x30'
+      - series: 'scylla_storage_proxy_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:regular", le="2000"}'
+        values: '0+100x30'
+      - series: 'scylla_storage_proxy_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:regular", le="4000"}'
+        values: '0+100x30'
+      - series: 'scylla_storage_proxy_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:regular", le="+Inf"}'
+        values: '0+100x30'
+      - series: 'scylla_strong_consistency_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:sc", le="1000"}'
+        values: '0+0x30'
+      - series: 'scylla_strong_consistency_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:sc", le="2000"}'
+        values: '0+20x30'
+      - series: 'scylla_strong_consistency_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:sc", le="4000"}'
+        values: '0+100x30'
+      - series: 'scylla_strong_consistency_coordinator_write_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:sc", le="+Inf"}'
+        values: '0+100x30'
+      # strongly consistent reads carry a read type, which the total does not keep
+      - series: 'scylla_storage_proxy_coordinator_read_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="1000"}'
+        values: '0+80x30'
+      - series: 'scylla_storage_proxy_coordinator_read_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="2000"}'
+        values: '0+100x30'
+      - series: 'scylla_storage_proxy_coordinator_read_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="4000"}'
+        values: '0+100x30'
+      - series: 'scylla_storage_proxy_coordinator_read_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", le="+Inf"}'
+        values: '0+100x30'
+      - series: 'scylla_strong_consistency_coordinator_read_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", read_type="linearizable", le="1000"}'
+        values: '0+0x30'
+      - series: 'scylla_strong_consistency_coordinator_read_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", read_type="linearizable", le="2000"}'
+        values: '0+20x30'
+      - series: 'scylla_strong_consistency_coordinator_read_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", read_type="linearizable", le="4000"}'
+        values: '0+100x30'
+      - series: 'scylla_strong_consistency_coordinator_read_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both", read_type="linearizable", le="+Inf"}'
+        values: '0+100x30'
+      # the same kinds of requests in native histograms, in another cluster
+      - series: 'scylla_storage_proxy_coordinator_write_latency{cluster="cn", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both"}'
+        values: '{{schema:0 sum:0 count:0}}+{{schema:0 sum:80000 count:100 offset:10 buckets:[80 20]}}x30'
+      - series: 'scylla_strong_consistency_coordinator_write_latency{cluster="cn", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:both"}'
+        values: '{{schema:0 sum:0 count:0}}+{{schema:0 sum:300000 count:100 offset:11 buckets:[20 80]}}x30'
+      - series: 'scylla_storage_proxy_coordinator_write_latency{cluster="cn", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:regular"}'
+        values: '{{schema:0 sum:0 count:0}}+{{schema:0 sum:80000 count:100 offset:10 buckets:[80 20]}}x30'
+      - series: 'scylla_strong_consistency_coordinator_write_latency{cluster="cn", dc="d", rack="r", instance="n1", shard="0", scheduling_group_name="sl:sc"}'
+        values: '{{schema:0 sum:0 count:0}}+{{schema:0 sum:300000 count:100 offset:11 buckets:[20 80]}}x30'
+    promql_expr_test:
+      - eval_time: 5m
+        expr: round(scylla_coordinator_write_latency_summary{cluster="c", by="cluster", quantile="0.5"})
+        exp_samples:
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.5", scheduling_group_name="sl:both"}'
+            value: 1500
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.5", scheduling_group_name="sl:regular"}'
+            value: 625
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.5", scheduling_group_name="sl:sc"}'
+            value: 2750
+      - eval_time: 5m
+        expr: round(scylla_coordinator_write_latency_summary{cluster="c", by="cluster", quantile="0.95"})
+        exp_samples:
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.95", scheduling_group_name="sl:both"}'
+            value: 3750
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.95", scheduling_group_name="sl:regular"}'
+            value: 1750
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.95", scheduling_group_name="sl:sc"}'
+            value: 3875
+      - eval_time: 5m
+        expr: round(scylla_coordinator_write_latency_summary{cluster="c", by="cluster", quantile="0.99"})
+        exp_samples:
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.99", scheduling_group_name="sl:both"}'
+            value: 3950
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.99", scheduling_group_name="sl:regular"}'
+            value: 1950
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.99", scheduling_group_name="sl:sc"}'
+            value: 3975
+      - eval_time: 5m
+        expr: round(scylla_coordinator_write_latency_summary{cluster="c", by="instance", quantile="0.99", scheduling_group_name="sl:both"})
+        exp_samples:
+          - labels: '{by="instance", cluster="c", dc="d", dd="1", instance="n1", quantile="0.99", rack="r", scheduling_group_name="sl:both"}'
+            value: 3950
+      - eval_time: 5m
+        expr: round(scylla_coordinator_read_latency_summary{cluster="c", by="cluster", quantile="0.99"})
+        exp_samples:
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.99", scheduling_group_name="sl:both"}'
+            value: 3950
+      - eval_time: 5m
+        expr: round(scylla_strong_consistency_coordinator_write_latency_summary{cluster="c", by="cluster", quantile="0.95"})
+        exp_samples:
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.95", scheduling_group_name="sl:both"}'
+            value: 3875
+          - labels: '{by="cluster", cluster="c", dd="1", quantile="0.95", scheduling_group_name="sl:sc"}'
+            value: 3875
+      - eval_time: 5m
+        expr: round(scylla_strong_consistency_coordinator_read_latency_summary{cluster="c", by="instance", quantile="0.99"})
+        exp_samples:
+          - labels: '{by="instance", cluster="c", dc="d", dd="1", instance="n1", quantile="0.99", rack="r", read_type="linearizable", scheduling_group_name="sl:both"}'
+            value: 3975
+      # native histograms interpolate exponentially within a bucket
+      - eval_time: 5m
+        expr: round(scylla_strong_consistency_coordinator_write_latency_summary{cluster="cn", by="cluster", quantile="0.95"})
+        exp_samples:
+          - labels: '{by="cluster", cluster="cn", dd="1", quantile="0.95", scheduling_group_name="sl:both"}'
+            value: 3922
+          - labels: '{by="cluster", cluster="cn", dd="1", quantile="0.95", scheduling_group_name="sl:sc"}'
+            value: 3922
+      - eval_time: 5m
+        expr: round(scylla_coordinator_write_latency_summary{cluster="cn", by="cluster", quantile="0.5"})
+        exp_samples:
+          - labels: '{by="cluster", cluster="cn", dd="1", quantile="0.5", scheduling_group_name="sl:both"}'
+            value: 1448
+          - labels: '{by="cluster", cluster="cn", dd="1", quantile="0.5", scheduling_group_name="sl:regular"}'
+            value: 790
+          - labels: '{by="cluster", cluster="cn", dd="1", quantile="0.5", scheduling_group_name="sl:sc"}'
+            value: 2656

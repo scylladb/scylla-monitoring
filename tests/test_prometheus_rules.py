@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Checks the alerting rules in prometheus/prom_rules/ with the promtool unit
+# Checks the rules in prometheus/prom_rules/ with the promtool unit
 # tests in tests/data/prometheus_rules/, using the Prometheus image of
 # versions.sh when it is pulled.
 # Run: python3 tests/test_prometheus_rules.py
