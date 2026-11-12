@@ -128,4 +128,19 @@ bad = copy.deepcopy(EXAMPLE)
 bad["dashboard"]["tabs"][1]["variables"].append(copy.deepcopy(bad["dashboard"]["tabs"][1]["variables"][0]))
 raises(bad, "duplicate variable names ['quantile']")
 
+# SCYLLADB-2587: version tags pick a panel's queries and are left out of the output
+tagged = copy.deepcopy(EXAMPLE)
+tagged["dashboard"]["tabs"][0]["panels"][0]["spec/data/spec/queries"] = [
+    {"class": "graph_query", "spec/query/spec/expr": "old", "dashversion": ["<2027.1"]},
+    {"class": "graph_query", "spec/query/spec/expr": "new", "dashversion": [">2027.1"]}]
+for version, kept, dropped in (("2026.4", "old", "new"), ("master", "new", "old")):
+    spec = build(tagged, version)
+    exprs = [q["spec"]["query"]["spec"]["expr"] for e in spec["elements"].values()
+             for q in e["spec"].get("data", {}).get("spec", {}).get("queries", [])]
+    assert kept in exprs and dropped not in exprs
+    assert "dashversion" not in json.dumps(spec)
+plain = copy.deepcopy(tagged)
+md.update_object(plain, TYPES, [md.MASTER_VERSION], [], {})
+assert "dashversion" not in json.dumps(plain)
+
 print("ok")
