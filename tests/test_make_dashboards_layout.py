@@ -5,6 +5,7 @@ import copy
 import json
 import os
 import sys
+import tempfile
 from types import SimpleNamespace
 
 # Runs from the repository root, where make_dashboards.py and grafana/ are.
@@ -127,5 +128,36 @@ for template in (EXAMPLE, as_rows):
 bad = copy.deepcopy(EXAMPLE)
 bad["dashboard"]["tabs"][1]["variables"].append(copy.deepcopy(bad["dashboard"]["tabs"][1]["variables"][0]))
 raises(bad, "duplicate variable names ['quantile']")
+
+# SCYLLADB-2587: version tags pick a panel's queries and are left out of the output
+tagged = copy.deepcopy(EXAMPLE)
+tagged["dashboard"]["tabs"][0]["panels"][0]["spec/data/spec/queries"] = [
+    {"class": "graph_query", "spec/query/spec/expr": "old", "dashversion": ["<2027.1"]},
+    {"class": "graph_query", "spec/query/spec/expr": "new", "dashversion": [">2027.1"]}]
+for version, kept, dropped in (("2026.4", "old", "new"), ("master", "new", "old")):
+    spec = build(tagged, version)
+    exprs = [q["spec"]["query"]["spec"]["expr"] for e in spec["elements"].values()
+             for q in e["spec"].get("data", {}).get("spec", {}).get("queries", [])]
+    assert kept in exprs and dropped not in exprs
+    assert "dashversion" not in json.dumps(spec)
+plain = copy.deepcopy(tagged)
+md.update_object(plain, TYPES, [md.MASTER_VERSION], [], {})
+assert "dashversion" not in json.dumps(plain)
+
+# a version tag on the dashboard skips it for the versions it rejects, and removes an earlier build of it
+with tempfile.TemporaryDirectory() as tmp:
+    gated = copy.deepcopy(EXAMPLE)
+    gated["dashboard"]["dashversion"] = [">2027.1"]
+    path = os.path.join(tmp, "gated.template.json")
+    with open(path, "w") as f:
+        json.dump(gated, f)
+    open(os.path.join(tmp, "gated.2026.4.json"), "w").close()
+    for version in ("2026.4", "master"):
+        args = SimpleNamespace(dash_version=version, add_row=[], product=[], grafana4=False, grafana5=False,
+                               grafana13=True, panel_as_spec=True, strip_class=True, as_file=tmp)
+        md.get_dashboard(path, TYPES, args, [], {})
+    assert not os.path.exists(os.path.join(tmp, "gated.2026.4.json"))
+    with open(os.path.join(tmp, "gated.master.json")) as f:
+        assert "dashversion" not in json.load(f)
 
 print("ok")

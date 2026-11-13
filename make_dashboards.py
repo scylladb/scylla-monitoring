@@ -87,6 +87,8 @@ Grafana 13 layout: the dashboard holds "rows" or "tabs"; each row/tab holds exac
 A row/tab may also have "repeat", "conditionalRendering" and "variables" (section variables).
 See grafana/examples/tabs-example.template.json.
 
+A "dashversion" or "dashproduct" on the dashboard itself skips the whole dashboard when it rejects the build.
+
 When creating templates, the -kt is useful to find conflicts.
     """
     )
@@ -270,6 +272,8 @@ def update_object(obj, types, version, products, exact_match_replace):
     if (version and should_version_reject(version, obj)) or should_product_reject(products, obj):
         trace("version-reject", "rejecting obj", obj)
         return None
+    for key in ("dashversion", "dashproduct", "dashproductreject"):
+        obj.pop(key, None)
     return obj
 
 def compact_obj(obj, types, args):
@@ -454,9 +458,9 @@ def make_grafana_13(results, args):
             elements[element_name] = panel
 
             # Strip template-engine keys that must not appear in Grafana output.
-            # gridPos and span are consumed for layout above; directive keys were
-            # used for filtering and must not leak into the rendered dashboard.
-            _STRIP_FROM_PANEL = ("gridPos", "span", "dashproductreject", "dashproduct", "dashproduc", "dashversion")
+            # gridPos and span are consumed for layout above; dashproduc is set by a
+            # template but read by no directive, so it must not leak either.
+            _STRIP_FROM_PANEL = ("gridPos", "span", "dashproduc")
             panel_body = panel.get("spec", panel)  # inside spec for wrapped panels
             for _k in _STRIP_FROM_PANEL:
                 panel.pop(_k, None)
@@ -613,9 +617,11 @@ def make_grafana_13(results, args):
     # Grafana v2beta1 Dashboard schema requires a `status` field.
     results["dashboard"].setdefault("status", {})
 
+def as_file_path(name_path, dir):
+    return os.path.join(dir, os.path.basename(name_path))
+
 def write_as_file(name_path, result, dir, replace_strings):
-    name = os.path.basename(name_path)
-    write_json(os.path.join(dir, name), result["dashboard"], replace_strings)
+    write_json(as_file_path(name_path, dir), result["dashboard"], replace_strings)
 
 def parse_version(v):
     if v == 'master':
@@ -639,6 +645,12 @@ def get_dashboard(name, types, args, replace_strings, exact_match_replace):
         result["dashboard"]["tabs" if "tabs" in result["dashboard"] else "rows"].insert(int(row_number), row)
 
     update_object(result, types, version, args.product, exact_match_replace)
+    if result["dashboard"] is None:
+        print(f"{name} is excluded by the version or product tags of its dashboard, skipping")
+        stale = as_file_path(new_name, args.as_file) if args.as_file else new_name
+        if os.path.exists(stale):
+            os.remove(stale)
+        return
     if not args.grafana4:
         if args.grafana13:
             make_grafana_13(result, args)
