@@ -17,6 +17,11 @@ scrape_configs:
     relabel_configs:
       - source_labels: ['__syslog_connection_ip_address']
         target_label: 'instance'
+      # A sender behind a proxy, as traefik on a TLS monitor, has the proxy's
+      # address; when the syslog hostname is an IP address, it is the instance.
+      - source_labels: ['__syslog_message_hostname']
+        regex: '(\d+\.\d+\.\d+\.\d+|[0-9a-fA-F:.]*:[0-9a-fA-F:.]*)'
+        target_label: 'instance'
       - source_labels: ['__syslog_message_app_name']
         target_label: 'app'
       - source_labels: ['__syslog_message_severity']
