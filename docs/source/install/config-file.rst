@@ -251,6 +251,17 @@ With ``stack.quick_startup``, ``start-traefik.sh --quick-startup`` does not wait
 the watcher's health check waits for traefik's ping endpoint with the other components instead.
 Its port 10911 forwards to ``tls.thanos_port``: 10911, the Thanos sidecar, by default, or 10903, the Thanos query that
 ``stack.local_thanos`` runs, so a central Thanos querier connecting to port 10911 reaches the local query.
+Its port 1514 forwards syslog to the log collector, and it is the one port that asks for no client certificate,
+so limit who can reach it with a firewall. A node that sends its logs through traefik must:
+
+* Send syslog over TLS and verify traefik's certificate with ``tls.ca_crt``. Plain TCP, as in the rsyslog example of the
+  installation guide, is rejected on this port.
+* Set the hostname of the syslog message to its own IP address. The collector sees every connection coming from traefik,
+  so it takes the ``instance`` label from that hostname when it is an IP address. With any other hostname the logs of
+  all the nodes share one ``instance``.
+
+Without traefik nothing changes: the nodes send plain syslog to port 1514 of the collector, and ``instance`` is the
+address they connect from, unless the hostname of the message is an IP address.
 
 The ``docker`` section sets the proxy the Docker daemon uses, for example to pull images on a host without direct
 Internet access:

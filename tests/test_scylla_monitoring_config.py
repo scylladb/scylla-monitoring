@@ -1506,6 +1506,29 @@ def test_traefik_thanos_port():
         assert names(host) == ["start-traefik.sh --reload"] and host.envs[0]["THANOS_PORT"] == "10903"
 
 
+def test_traefik_syslog():
+    """traefik forwards port 1514 to the log collector over TLS, and it is the
+    one router that asks for no client certificate; the port is checked with
+    the other proxied ports."""
+    with tempfile.TemporaryDirectory() as tmp:
+        for f in ("start-traefik.sh", "versions.sh"):
+            shutil.copy2(f, tmp)
+        subprocess.run(["./start-traefik.sh", "--config-only"], cwd=tmp, check=True,
+                       env=dict(os.environ, PRIVATE_IP="10.0.0.10"))
+        static = yaml.safe_load(open(os.path.join(tmp, "traefik/build/static/traefik.yml")))
+        conf = yaml.safe_load(open(os.path.join(tmp, "traefik/build/confs/traefik-conf.yml")))
+    assert static["entryPoints"]["syslog"] == {"address": "10.0.0.10:1514"}
+    router = conf["tcp"]["routers"]["to-syslog"]
+    assert router["entryPoints"] == ["syslog"] and router["rule"] == "HostSNI(`*`)"
+    assert conf["tcp"]["services"][router["service"]]["loadBalancer"]["servers"] == [{"address": "127.0.0.1:1514"}]
+    options = conf["tls"]["options"]
+    assert router["tls"] == {"options": "syslog"} and "clientAuth" not in options["syslog"]
+    # every other router keeps the default options, which require a client certificate
+    assert options["default"]["clientAuth"]["clientAuthType"] == "RequireAndVerifyClientCert"
+    assert all(r["tls"] is True for r in conf["http"]["routers"].values())
+    assert "|1514'" in open("start-traefik.sh").read().split("local PORTS=")[1].splitlines()[0]
+
+
 def test_path_unit():
     """The path unit watches each --config-file of the watcher's unit and
     starts it, and the image installs it."""

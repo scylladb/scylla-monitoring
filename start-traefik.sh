@@ -31,6 +31,9 @@
 # query), and forwards each to 127.0.0.1 on the same port (10911 to
 # THANOS_PORT), so those services must listen on 127.0.0.1 only
 # (start-all.sh -A 127.0.0.1, node_exporter --web.listen-address=127.0.0.1:9100).
+# Port 1514 (syslog over TLS, to the log collector) is the one port that asks
+# for no client certificate: the nodes that send their logs hold none, so the
+# firewall must limit who reaches it.
 # Its ping endpoint is on localhost:8080. Generated config goes to traefik/build:
 # static/ holds traefik.yml and confs/ holds traefik-conf.yml; both are mounted
 # as directories, with CERT_DIR mounted as /etc/traefik/certs.
@@ -115,6 +118,20 @@ http:
       loadBalancer:
         servers:
           - url: "h2c://127.0.0.1:10903"
+tcp:
+  routers:
+    to-syslog:
+      entryPoints:
+        - syslog
+      rule: "HostSNI(\`*\`)"
+      service: "syslog"
+      tls:
+        options: syslog
+  services:
+    syslog:
+      loadBalancer:
+        servers:
+          - address: "127.0.0.1:1514"
 tls:
   options:
     default:
@@ -123,6 +140,8 @@ tls:
         caFiles:
           - /etc/traefik/certs/rootCA.crt
         clientAuthType: RequireAndVerifyClientCert
+    syslog:
+      minVersion: VersionTLS12
   stores:
     default:
       defaultCertificate:
@@ -157,6 +176,8 @@ entryPoints:
     address: "${ADDR}:10911"
   thanos-query:
     address: "${ADDR}:10903"
+  syslog:
+    address: "${ADDR}:1514"
   ping:
     address: "localhost:8080"
 providers:
@@ -197,7 +218,7 @@ if [[ "$ADDR" == *:* ]]; then ADDR="[$ADDR]"; fi
 # first so a failing ss or docker ps stops the script instead of passing it.
 check_exposed() {
 	local OWN listeners published restarting exposed
-	local PORTS='3000|9090|9093|9100|10911|10903'
+	local PORTS='3000|9090|9093|9100|10911|10903|1514'
 	OWN=""
 	# A crash-looping traefik also reports Running while in restart backoff.
 	if [[ "$(docker inspect --format '{{and .State.Running (not .State.Restarting)}}' traefik 2>/dev/null)" == true ]]; then
