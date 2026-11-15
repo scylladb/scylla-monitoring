@@ -205,14 +205,14 @@ def test_start_all_values():
     cfg = example()
     cfg["stack"]["manager_version"] = "none"
     cfg["storage"] = {"prometheus_dir": "/data/prometheus", "alertmanager_dir": "/data/alertmanager",
-                      "retention_days": 30}
+                      "loki_dir": "/data/loki", "retention_days": 30}
     cfg["cluster"] = "#1234"
     with tempfile.TemporaryDirectory() as tmp:
         smc.load(write_config(tmp, cfg))
     argv, _ = smc.normalize(cfg, DIRS)
     assert values(argv, "-M") == ["none"]
     assert values(argv, "-d") == ["/data/prometheus"] and values(argv, "-f") == ["/data/alertmanager"]
-    assert "-G" not in argv
+    assert "-G" not in argv and values(argv, "-k") == ["/data/loki"]
     assert "--storage.tsdb.retention.time=30d" in values(argv, "-b")
     assert values(argv, "--cluster-label") == ["#1234"]
     # prometheus-config.sh renders the label quoted, and promtool accepts it

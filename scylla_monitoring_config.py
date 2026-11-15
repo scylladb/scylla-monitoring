@@ -268,7 +268,8 @@ def derive(cfg, dirs):
     if "bind_address" in stack:
         opts.append(("-A", stack["bind_address"]))
     opts += [("-D", d) for d in stack.get("docker_args", [])]
-    for field, opt in (("prometheus_dir", "-d"), ("grafana_dir", "-G"), ("alertmanager_dir", "-f")):
+    for field, opt in (("prometheus_dir", "-d"), ("grafana_dir", "-G"), ("alertmanager_dir", "-f"),
+                       ("loki_dir", "-k")):
         if field in storage:
             opts.append((opt, storage[field]))
     if "retention_days" in storage:
