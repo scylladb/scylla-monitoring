@@ -28,8 +28,8 @@ Prerequisites
      - Prometheus Version
      - Grafana Version
    * - 4.17
-     - 3.15.1
-     - 13.3.0
+     - 3.16.0
+     - 13.3.1
    * - 4.16
      - 3.12.0
      - 13.2.0
