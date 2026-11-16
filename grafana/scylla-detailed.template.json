@@ -1444,6 +1444,441 @@
                 ]
             },
             {
+                "collapse": true,
+                "title": "Strongly Consistent Tables - Coordinator",
+                "dashversion": [
+                    ">2027.1"
+                ],
+                "rows": [
+                    {
+                        "class": "row",
+                        "height": "25px",
+                        "gridPos/h": 2,
+                        "panels": [
+                            {
+                                "class": "plain_text",
+                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Strongly Consistent Tables - Coordinator</h1>"
+                            }
+                        ],
+                        "hideHeader": true
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "panels": [
+                            {
+                                "span": 3,
+                                "class": "wps_panel",
+                                "spec/title": "SC writes $func by [[by]]",
+                                "spec/description": "Strongly consistent writes, counted on the node that executes them.\n\nscylla_strong_consistency_coordinator_write_latency_summary_count",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "SC average write latency by [[by]]",
+                                "spec/description": "Average latency of strongly consistent writes, measured on the node that executes them.\n\nscylla_strong_consistency_coordinator_write_latency",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_coordinator_write_latency_sum{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name) / (sum(rate(scylla_strong_consistency_coordinator_write_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name) > 0) or sum(histogram_sum(rate(scylla_strong_consistency_coordinator_write_latency{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval]))) by ([[by]], scheduling_group_name) / (sum(histogram_count(rate(scylla_strong_consistency_coordinator_write_latency{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval]))) by ([[by]], scheduling_group_name) > 0))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "SC 95th percentile write latency by [[by]]",
+                                "spec/description": "95th percentile latency of strongly consistent writes, measured on the node that executes them. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_coordinator_write_latency_summary",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_strong_consistency_coordinator_write_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}>0)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "SC 99th percentile write latency by [[by]]",
+                                "spec/description": "99th percentile latency of strongly consistent writes, measured on the node that executes them. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_coordinator_write_latency_summary",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_strong_consistency_coordinator_write_latency_summary{quantile=\"0.99\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}>0)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "rps_panel",
+                                "spec/title": "SC reads $func by [[by]]",
+                                "spec/description": "Strongly consistent reads, by read type (linearizable, non_linearizable), counted on the node that executes them.\n\nscylla_strong_consistency_coordinator_read_latency_summary_count",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, read_type))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "SC average read latency by [[by]]",
+                                "spec/description": "Average latency of strongly consistent reads, by read type, measured on the node that executes them.\n\nscylla_strong_consistency_coordinator_read_latency",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_coordinator_read_latency_sum{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, read_type) / (sum(rate(scylla_strong_consistency_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, read_type) > 0) or sum(histogram_sum(rate(scylla_strong_consistency_coordinator_read_latency{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval]))) by ([[by]], scheduling_group_name, read_type) / (sum(histogram_count(rate(scylla_strong_consistency_coordinator_read_latency{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval]))) by ([[by]], scheduling_group_name, read_type) > 0))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "SC 95th percentile read latency by [[by]]",
+                                "spec/description": "95th percentile latency of strongly consistent reads, by read type, measured on the node that executes them. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_coordinator_read_latency_summary",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_strong_consistency_coordinator_read_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}>0)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "SC 99th percentile read latency by [[by]]",
+                                "spec/description": "99th percentile latency of strongly consistent reads, by read type, measured on the node that executes them. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_coordinator_read_latency_summary",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_strong_consistency_coordinator_read_latency_summary{quantile=\"0.99\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}>0)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "graph_panel_int",
+                                "spec/title": "SC writes in flight $func by [[by]]",
+                                "spec/description": "Strongly consistent writes being executed. A write redirected to another node is counted there.\n\nscylla_strong_consistency_coordinator_foreground_writes",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_strong_consistency_coordinator_foreground_writes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}) by ([[by]], scheduling_group_name))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "graph_panel_int",
+                                "spec/title": "SC reads in flight $func by [[by]]",
+                                "spec/description": "Strongly consistent reads being executed. A read redirected to another node is counted there.\n\nscylla_strong_consistency_coordinator_foreground_reads",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_strong_consistency_coordinator_foreground_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}) by ([[by]], scheduling_group_name))"
+                            }
+                        ]
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "panels": [
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Redirected to another node $func by [[by]]",
+                                "spec/description": "Strongly consistent requests redirected to another node, counted on the redirecting node.\n\nscylla_strong_consistency_coordinator_write_node_bounces\nscylla_strong_consistency_coordinator_read_node_bounces",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_strong_consistency_coordinator_write_node_bounces{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name) or on([[by]], scheduling_group_name) $func(scylla_strong_consistency_coordinator_foreground_writes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}) by ([[by]], scheduling_group_name) * 0)",
+                                        "spec/query/spec/legendFormat": "writes {{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_strong_consistency_coordinator_read_node_bounces{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name) or on([[by]], scheduling_group_name) $func(scylla_strong_consistency_coordinator_foreground_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}) by ([[by]], scheduling_group_name) * 0)",
+                                        "spec/query/spec/legendFormat": "reads {{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Redirected to another shard $func by [[by]]",
+                                "spec/description": "Strongly consistent requests redirected to another shard of the same node, counted on the redirecting shard.\n\nscylla_strong_consistency_coordinator_write_shard_bounces\nscylla_strong_consistency_coordinator_read_shard_bounces",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_strong_consistency_coordinator_write_shard_bounces{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name) or on([[by]], scheduling_group_name) $func(scylla_strong_consistency_coordinator_foreground_writes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}) by ([[by]], scheduling_group_name) * 0)",
+                                        "spec/query/spec/legendFormat": "writes {{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_strong_consistency_coordinator_read_shard_bounces{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name) or on([[by]], scheduling_group_name) $func(scylla_strong_consistency_coordinator_foreground_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}) by ([[by]], scheduling_group_name) * 0)",
+                                        "spec/query/spec/legendFormat": "reads {{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "span": 3,
+                                "class": "percentunit_panel",
+                                "spec/title": "Redirected requests ratio",
+                                "spec/description": "Redirects per executed strongly consistent request. The DC, rack, node and shard filters do not apply.\n\nscylla_strong_consistency_coordinator_write_node_bounces\nscylla_strong_consistency_coordinator_read_node_bounces\nscylla_strong_consistency_coordinator_write_shard_bounces\nscylla_strong_consistency_coordinator_read_shard_bounces\nscylla_strong_consistency_coordinator_write_latency_summary_count\nscylla_strong_consistency_coordinator_read_latency_summary_count",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "((sum(rate(scylla_strong_consistency_coordinator_write_node_bounces{cluster=\"$cluster\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) or vector(0)) + (sum(rate(scylla_strong_consistency_coordinator_read_node_bounces{cluster=\"$cluster\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) or vector(0))) / (((sum(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) or vector(0)) + (sum(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) or vector(0))) > 0)",
+                                        "spec/query/spec/legendFormat": "to another node"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "((sum(rate(scylla_strong_consistency_coordinator_write_shard_bounces{cluster=\"$cluster\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) or vector(0)) + (sum(rate(scylla_strong_consistency_coordinator_read_shard_bounces{cluster=\"$cluster\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) or vector(0))) / (((sum(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) or vector(0)) + (sum(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) or vector(0))) > 0)",
+                                        "spec/query/spec/legendFormat": "to another shard"
+                                    }
+                                ]
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Forwarded CQL requests $func by [[by]]",
+                                "spec/description": "Replies to CQL requests forwarded to another node, by reply type, counted on the forwarding node.\n\nscylla_transport_requests_forwarded_successfully\nscylla_transport_requests_forwarded_redirected\nscylla_transport_requests_forwarded_failed\nscylla_transport_requests_forwarded_prepared_not_found",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_transport_requests_forwarded_successfully{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) or on([[by]]) $func(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}) by ([[by]]) * 0)",
+                                        "spec/query/spec/legendFormat": "succeeded {{dc}} {{rack}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_transport_requests_forwarded_redirected{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) or on([[by]]) $func(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}) by ([[by]]) * 0)",
+                                        "spec/query/spec/legendFormat": "redirected {{dc}} {{rack}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "C",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_transport_requests_forwarded_failed{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) or on([[by]]) $func(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}) by ([[by]]) * 0)",
+                                        "spec/query/spec/legendFormat": "failed {{dc}} {{rack}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "D",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_transport_requests_forwarded_prepared_not_found{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]]) or on([[by]]) $func(scylla_reactor_utilization{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}) by ([[by]]) * 0)",
+                                        "spec/query/spec/legendFormat": "not prepared on target {{dc}} {{rack}} {{instance}} {{shard}}"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "panels": [
+                            {
+                                "span": 3,
+                                "class": "wps_panel",
+                                "spec/title": "SC write errors $func by [[by]]",
+                                "spec/description": "Strongly consistent writes that failed on the node that executed them, by reason (timeout, status_unknown, unavailable, table_dropped, other).\n\nscylla_strong_consistency_coordinator_write_errors",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_strong_consistency_coordinator_write_errors{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], reason, scheduling_group_name))[$__interval:]) or on([[by]], scheduling_group_name) $func(scylla_strong_consistency_coordinator_foreground_writes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}) by ([[by]], scheduling_group_name) * 0)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{reason}} {{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "wps_panel",
+                                "spec/title": "SC write retries $func by [[by]]",
+                                "spec/description": "Times strongly consistent writes had to be retried, by reason (wait_for_leader, stale_leader, not_a_leader, dropped_entry).\n\nscylla_strong_consistency_coordinator_write_retries",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_strong_consistency_coordinator_write_retries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], reason, scheduling_group_name))[$__interval:]) or on([[by]], scheduling_group_name) $func(scylla_strong_consistency_coordinator_foreground_writes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}) by ([[by]], scheduling_group_name) * 0)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{reason}} {{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "rps_panel",
+                                "spec/title": "SC read errors $func by [[by]]",
+                                "spec/description": "Strongly consistent reads that failed on the node that executed them, by reason (timeout, unavailable, table_dropped, other).\n\nscylla_strong_consistency_coordinator_read_errors",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_strong_consistency_coordinator_read_errors{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], reason, scheduling_group_name))[$__interval:]) or on([[by]], scheduling_group_name) $func(scylla_strong_consistency_coordinator_foreground_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}) by ([[by]], scheduling_group_name) * 0)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{reason}} {{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "rps_panel",
+                                "spec/title": "SC read retries $func by [[by]]",
+                                "spec/description": "Times strongly consistent reads had to be retried, by reason (wait_for_leader, stale_leader).\n\nscylla_strong_consistency_coordinator_read_retries",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_strong_consistency_coordinator_read_retries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], reason, scheduling_group_name))[$__interval:]) or on([[by]], scheduling_group_name) $func(scylla_strong_consistency_coordinator_foreground_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sg\"}) by ([[by]], scheduling_group_name) * 0)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{reason}} {{scheduling_group_name}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "collapse": true,
+                "title": "Strongly Consistent Tables - Raft",
+                "dashversion": [
+                    ">2027.1"
+                ],
+                "rows": [
+                    {
+                        "class": "row",
+                        "height": "25px",
+                        "gridPos/h": 2,
+                        "panels": [
+                            {
+                                "class": "plain_text",
+                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Strongly Consistent Tables - Raft</h1>"
+                            }
+                        ],
+                        "hideHeader": true
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "panels": [
+                            {
+                                "span": 3,
+                                "class": "graph_panel_int",
+                                "spec/title": "Raft group leaders by [[by]]",
+                                "spec/description": "Tablet Raft groups, counted on the node that leads them.\n\nscylla_strong_consistency_raft_leaders",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_strong_consistency_raft_leaders{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Raft entries applied by [[by]]",
+                                "spec/description": "Commands applied from the Raft logs.\n\nscylla_strong_consistency_raft_applied_entries",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_raft_applied_entries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "graph_panel_int",
+                                "spec/title": "Uncommitted Raft entries by [[by]]",
+                                "spec/description": "Raft log entries not committed yet.\n\nscylla_strong_consistency_raft_uncommitted_entries",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_strong_consistency_raft_uncommitted_entries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "graph_panel_int",
+                                "spec/title": "Unapplied Raft entries by [[by]]",
+                                "spec/description": "Committed Raft log entries not applied yet.\n\nscylla_strong_consistency_raft_unapplied_entries",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_strong_consistency_raft_unapplied_entries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Read barrier messages by [[by]]",
+                                "spec/description": "Raft read_quorum messages the leaders send for read barriers, such as the one a linearizable read runs.\n\nscylla_strong_consistency_raft_messages_sent",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_raft_messages_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", message_type=\"read_quorum\"}[$__rate_interval])) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "graph_panel",
+                                "spec/title": "Read barrier messages per linearizable read by [[by]]",
+                                "spec/description": "Raft read_quorum messages sent per linearizable read.\n\nscylla_strong_consistency_raft_messages_sent\nscylla_strong_consistency_table_read_latency",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum without(shard) (sum(rate(scylla_strong_consistency_raft_messages_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", message_type=\"read_quorum\"}[$__rate_interval])) by ([[by]])) / (sum(rate(scylla_strong_consistency_table_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", read_type=\"linearizable\"}[$__rate_interval])) by ([[by]]) > 0) or sum without(shard) (sum(rate(scylla_strong_consistency_raft_messages_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", message_type=\"read_quorum\"}[$__rate_interval])) by ([[by]])) / (sum(histogram_count(rate(scylla_strong_consistency_table_read_latency{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", read_type=\"linearizable\"}[$__rate_interval]))) by ([[by]]) > 0))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Raft elections by [[by]]",
+                                "spec/description": "Vote requests sent by candidates, pre-votes included, and timeout_now messages sent by leaders that hand over leadership.\n\nscylla_strong_consistency_raft_messages_sent",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_raft_messages_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", message_type=\"request_vote\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(scylla_strong_consistency_raft_leaders{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]) * 0)",
+                                        "spec/query/spec/legendFormat": "vote requests {{dc}} {{rack}} {{instance}} {{shard}}"
+                                    },
+                                    {
+                                        "class": "graph_query",
+                                        "spec/refId": "B",
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_raft_messages_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", message_type=\"timeout_now\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(scylla_strong_consistency_raft_leaders{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]) * 0)",
+                                        "spec/query/spec/legendFormat": "leadership transfers {{dc}} {{rack}} {{instance}} {{shard}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Snapshot transfers by [[by]]",
+                                "spec/description": "Attempts by the leaders to send a snapshot to a follower that cannot catch up from its leader's log.\n\nscylla_strong_consistency_raft_messages_sent",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_raft_messages_sent{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", message_type=\"install_snapshot\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(scylla_strong_consistency_raft_leaders{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]) * 0)"
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Dropped Raft waiters by [[by]]",
+                                "spec/description": "Requests that waited for a Raft log entry and got no result back. A write among them fails with status_unknown.\n\nscylla_strong_consistency_raft_waiter_dropped",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_raft_waiter_dropped{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(scylla_strong_consistency_raft_leaders{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]) * 0)"
+                            },
+                            {
+                                "span": 3,
+                                "class": "graph_panel",
+                                "spec/title": "Raft entries persisted per poll by [[by]]",
+                                "spec/description": "Raft log entries persisted per poll, a pass of a Raft group member over its pending output.\n\nscylla_strong_consistency_raft_persisted_log_entries\nscylla_strong_consistency_raft_polls",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_raft_persisted_log_entries{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) / (sum(rate(scylla_strong_consistency_raft_polls{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) > 0))"
+                            }
+                        ]
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "panels": [
+                            {
+                                "span": 3,
+                                "class": "graph_panel_int",
+                                "spec/title": "Full Raft logs by [[by]]",
+                                "spec/description": "Raft logs with no room for the next entry, so entries from their leaders are refused.\n\nscylla_strong_consistency_raft_full_logs",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_strong_consistency_raft_full_logs{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "graph_panel_int",
+                                "spec/title": "Blocked followers by [[by]]",
+                                "spec/description": "Followers the leaders cannot send entries to, by reason (probe, pipeline_full, snapshot, log_full). Followers reported down are not counted.\n\nscylla_strong_consistency_raft_blocked_followers",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_strong_consistency_raft_blocked_followers{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]], reason))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{reason}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                            },
+                            {
+                                "span": 3,
+                                "class": "graph_panel_int",
+                                "spec/title": "Entries waiting for log space by [[by]]",
+                                "spec/description": "Entries waiting for an in-memory Raft log to shrink below its size limit.\n\nscylla_strong_consistency_raft_log_limiter_waiters",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_strong_consistency_raft_log_limiter_waiters{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Waits for log space by [[by]]",
+                                "spec/description": "Entries that had to wait for an in-memory Raft log to shrink below its size limit.\n\nscylla_strong_consistency_raft_log_limiter_waits",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_raft_log_limiter_waits{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(scylla_strong_consistency_raft_leaders{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]) * 0)"
+                            },
+                            {
+                                "span": 3,
+                                "class": "bytes_panel",
+                                "spec/title": "Raft log memory by [[by]]",
+                                "spec/description": "Memory used by the Raft logs.\n\nscylla_strong_consistency_raft_log_memory_usage",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_strong_consistency_raft_log_memory_usage{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "bytes_panel",
+                                "spec/title": "Append request bytes in flight by [[by]]",
+                                "spec/description": "Bytes of in-flight Raft append requests.\n\nscylla_strong_consistency_raft_append_entries_in_flight_bytes",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_strong_consistency_raft_append_entries_in_flight_bytes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "graph_panel_int",
+                                "spec/title": "Append requests waiting for memory by [[by]]",
+                                "spec/description": "Raft append requests waiting for the memory of other in-flight append requests to be released.\n\nscylla_strong_consistency_raft_append_entries_memory_waiters",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(scylla_strong_consistency_raft_append_entries_memory_waiters{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Waits for append memory by [[by]]",
+                                "spec/description": "Raft append requests that had to wait for the memory of other in-flight append requests to be released.\n\nscylla_strong_consistency_raft_append_entries_memory_waits",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_raft_append_entries_memory_waits{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(scylla_strong_consistency_raft_leaders{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]) * 0)"
+                            }
+                        ]
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "panels": [
+                            {
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "Average apply latency by [[by]]",
+                                "spec/description": "Average time to apply a write from a Raft log to the tablet replica on a node.\n\nscylla_strong_consistency_state_machine_apply_latency",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_state_machine_apply_latency_sum{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) / (sum(rate(scylla_strong_consistency_state_machine_apply_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) > 0) or sum(histogram_sum(rate(scylla_strong_consistency_state_machine_apply_latency{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))) by ([[by]]) / (sum(histogram_count(rate(scylla_strong_consistency_state_machine_apply_latency{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))) by ([[by]]) > 0))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "us_panel",
+                                "spec/title": "99th percentile apply latency by [[by]]",
+                                "spec/description": "99th percentile of the time to apply a write from a Raft log to the tablet replica on a node. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_state_machine_apply_latency",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]], le)) or histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]])))"
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Schema barrier waits by [[by]]",
+                                "spec/description": "Waits for a group 0 read barrier before applying Raft log entries written with a schema the node did not know yet.\n\nscylla_strong_consistency_state_machine_schema_barrier_waits",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_state_machine_schema_barrier_waits{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(scylla_strong_consistency_raft_leaders{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]) * 0)"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
                 "title": "CDC - Replica",
                 "collapse": true,
                 "rows": [
