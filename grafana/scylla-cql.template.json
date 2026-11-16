@@ -5,20 +5,6 @@
         "rows": [
             {
                 "class": "row",
-                "hideHeader": true,
-                "height": "25px",
-                "gridPos/h": 2,
-                "panels": [
-                    {
-                        "class": "plain_text",
-                        "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">CQL - Coordinator</h1>"
-                    }
-                ],
-                "title": ""
-            },
-            {
-                "class": "row",
-                "hideHeader": true,
                 "panels": [
                     {
                         "class": "ops_panel",
@@ -121,7 +107,7 @@
                         "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(node_netstat_TcpExt_ListenOverflows{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]))"
                     }
                 ],
-                "title": ""
+                "title": "CQL - Coordinator"
             },
             {
                 "title": "CQL System Tables",
@@ -454,6 +440,10 @@
             {
                 "title": "LWT",
                 "collapse": true,
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "lwt"
+                },
                 "rows": [
                     {
                         "class": "row",
@@ -700,7 +690,7 @@
                         "panels": [
                             {
                                 "class": "plain_text",
-                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Cross DC Information</h1><h5>This section is relevant only if you have more than one DC</h5>"
+                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Cross DC Information</h1>"
                             }
                         ]
                     },
@@ -750,7 +740,11 @@
                             }
                         ]
                     }
-                ]
+                ],
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "multi_dc"
+                }
             },
             {
                 "class": "monitoring_version_row"
@@ -852,6 +846,18 @@
                     "name": "dc",
                     "label": "dc"
                 }
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "multi_dc",
+                "spec/label": "multi_dc",
+                "spec/query/spec/__legacyStringValue": "query_result(count(count by (dc) (scylla_reactor_utilization{cluster=\"$cluster\", dc!=\"\"})) > 1 or count(count by (dc) (max_over_time(scylla_reactor_utilization{cluster=\"$cluster\", dc!=\"\"}[24h:1h]))) > 1)"
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "lwt",
+                "spec/label": "lwt",
+                "spec/query/spec/__legacyStringValue": "query_result(sum(scylla_storage_proxy_coordinator_cas_total_operations{cluster=\"$cluster\"}) > 0 or sum(max_over_time(scylla_storage_proxy_coordinator_cas_total_operations{cluster=\"$cluster\"}[24h:1h])) > 0)"
             },
             {
                 "kind": "QueryVariable",
