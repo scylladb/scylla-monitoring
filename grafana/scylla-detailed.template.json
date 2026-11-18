@@ -1958,9 +1958,10 @@
                         }
                     }
                 ],
-                "dashversion": [
-                    ">2027.1"
-                ],
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "sc"
+                },
                 "rows": [
                     {
                         "class": "row",
@@ -2194,9 +2195,10 @@
             {
                 "collapse": true,
                 "title": "Strongly Consistent Tables - Raft",
-                "dashversion": [
-                    ">2027.1"
-                ],
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "sc"
+                },
                 "rows": [
                     {
                         "class": "row",
@@ -2742,6 +2744,12 @@
                 "spec/name": "mv",
                 "spec/label": "mv",
                 "spec/query/spec/__legacyStringValue": "query_result(sum(scylla_database_total_view_updates_pushed_local{cluster=\"$cluster\"}) > 0 or sum(scylla_database_total_view_updates_pushed_remote{cluster=\"$cluster\"}) > 0 or sum(max_over_time(scylla_database_total_view_updates_pushed_local{cluster=\"$cluster\"}[24h:1h])) > 0 or sum(max_over_time(scylla_database_total_view_updates_pushed_remote{cluster=\"$cluster\"}[24h:1h])) > 0 or sum(scylla_database_dropped_view_updates{cluster=\"$cluster\"}) > 0 or sum(max_over_time(scylla_database_dropped_view_updates{cluster=\"$cluster\"}[24h:1h])) > 0)"
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "sc",
+                "spec/label": "sc",
+                "spec/query/spec/__legacyStringValue": "query_result(count(scylla_strong_consistency_raft_leaders{cluster=\"$cluster\"}) or count(max_over_time(scylla_strong_consistency_raft_leaders{cluster=\"$cluster\"}[24h:1h])))"
             }
         ]
     }
