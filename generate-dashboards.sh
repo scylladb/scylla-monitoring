@@ -192,14 +192,19 @@ for oring_v in $MANAGER_VERSION; do
 		VERDIR="grafana/build/manager_$v"
 		mkdir -p $VERDIR
 		set_loader "manager_$v" "" "manager_$v"
-		if [ ! -f "$VERDIR/scylla-manager.$v.json" ] || [ "$VERDIR/scylla-manager.$v.json" -ot "grafana/scylla-manager.template.json" ] || [ "$VERDIR/scylla-manager.$v.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
-			if [[ -z "$TEST_ONLY" ]]; then
-				echo "updating grafana/scylla-manager.$v.template.json"
-				./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/scylla-manager.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -R "__REFRESH_INTERVAL__=$DASHBOARD_REFRESH" --replace-file docs/source/reference/metrics.yaml -V $v
-			else
-				echo "notice: grafana/scylla-manager.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
+		for f in scylla-manager scylla-manager-tasks; do
+			if [ ! -e "grafana/$f.template.json" ]; then
+				continue
 			fi
-		fi
+			if [ ! -f "$VERDIR/$f.$v.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/$f.template.json" ] || [ "$VERDIR/$f.$v.json" -ot "grafana/types.json" ] || [ ! -z "$FORCEUPDATE" ]; then
+				if [[ -z "$TEST_ONLY" ]]; then
+					echo "updating grafana/$f.$v.template.json"
+					./make_dashboards.py ${PRODUCTS[@]} -af $VERDIR -t grafana/types.json -d grafana/$f.template.json -R "__MONITOR_VERSION__=$CURRENT_VERSION" -R "__SCYLLA_VERSION_DOT__=$v" -R "__MONITOR_BRANCH_VERSION=$BRANCH_VERSION" -R "__REFRESH_INTERVAL__=$DASHBOARD_REFRESH" --replace-file docs/source/reference/metrics.yaml -V $v
+				else
+					echo "notice: grafana/$f.template.json was updated, run ./generate-dashboards.sh $FORMAT_COMAND"
+				fi
+			fi
+		done
 	fi
 done
 

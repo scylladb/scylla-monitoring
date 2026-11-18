@@ -54,7 +54,7 @@ If not used, each run of the containers will clear all of Grafana's information.
 
 **-v comma-separated versions** Each Scylla version comes with its own set of dashboards. By default, Grafana starts with the two latest versions. The ``-v`` flag allows specifying a specific version or versions.
 
-**-M scylla-manager version** Each Scylla-Manager version has its own dashboard. By default, Grafana starts with the latest Scylla Manager version.  The ``-M`` flag allows specifying a specific version.
+**-M scylla-manager version** Each Scylla-Manager version has its own dashboards: Scylla Manager Metrics, and Scylla Manager Tasks with the health check, repair and backup task status. By default, Grafana starts with the latest Scylla Manager version.  The ``-M`` flag allows specifying a specific version.
 
 **--no-manager** Run the stack without Scylla Manager: no manager dashboards, and Prometheus scrapes neither Scylla Manager nor its agents, so no manager target file is needed.
 ``-M none`` is the same, and ``NO_MANAGER=1`` in ``env.sh`` or the environment sets it as the default, which a ``-M`` on the command line overrides.
