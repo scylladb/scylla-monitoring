@@ -26,3 +26,4 @@ Each Advisor issue is explained in detail:
 * :doc:`Some operations failed on the replica side <nodeLocalErrors>`
 * :doc:`CQL queries are not balanced among shards  <nonBalancedcqlTraffic>`
 * :doc:`Prepared statements cache eviction <preparedCacheEviction>`
+* :doc:`Requests to strongly consistent tables fail <scRequestErrors>`

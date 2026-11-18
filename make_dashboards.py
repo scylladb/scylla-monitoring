@@ -270,6 +270,8 @@ def update_object(obj, types, version, products, exact_match_replace):
     if (version and should_version_reject(version, obj)) or should_product_reject(products, obj):
         trace("version-reject", "rejecting obj", obj)
         return None
+    for key in ("dashversion", "dashproduct", "dashproductreject"):
+        obj.pop(key, None)
     return obj
 
 def compact_obj(obj, types, args):
@@ -454,9 +456,9 @@ def make_grafana_13(results, args):
             elements[element_name] = panel
 
             # Strip template-engine keys that must not appear in Grafana output.
-            # gridPos and span are consumed for layout above; directive keys were
-            # used for filtering and must not leak into the rendered dashboard.
-            _STRIP_FROM_PANEL = ("gridPos", "span", "dashproductreject", "dashproduct", "dashproduc", "dashversion")
+            # gridPos and span are consumed for layout above; dashproduc is set by a
+            # template but read by no directive, so it must not leak either.
+            _STRIP_FROM_PANEL = ("gridPos", "span", "dashproduc")
             panel_body = panel.get("spec", panel)  # inside spec for wrapped panels
             for _k in _STRIP_FROM_PANEL:
                 panel.pop(_k, None)

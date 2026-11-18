@@ -248,7 +248,37 @@
                      },
                      "refId": "B",
                      "hidden": false
-                  }
+                  },
+                  "dashversion": [
+                     "<2027.1"
+                  ]
+               },
+               {
+                  "kind": "PanelQuery",
+                  "spec": {
+                     "query": {
+                        "kind": "DataQuery",
+                        "group": "prometheus",
+                        "version": "v0",
+                        "datasource": {
+                           "name": "prometheus"
+                        },
+                        "spec": {
+                           "editorMode": "code",
+                           "exemplar": false,
+                           "expr": "(sum(rate(scylla_storage_proxy_coordinator_write_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) or on() vector(0)) + (sum(rate(scylla_storage_proxy_coordinator_read_timeouts{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) or on() vector(0)) + (sum(rate(scylla_strong_consistency_coordinator_write_errors{reason=\"timeout\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) or on() vector(0)) + (sum(rate(scylla_strong_consistency_coordinator_read_errors{reason=\"timeout\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) or on() vector(0))>0",
+                           "format": "time_series",
+                           "instant": true,
+                           "legendFormat": "Timeouts",
+                           "range": false
+                        }
+                     },
+                     "refId": "B",
+                     "hidden": false
+                  },
+                  "dashversion": [
+                     ">2027.1"
+                  ]
                },
                {
                   "kind": "PanelQuery",
@@ -608,7 +638,20 @@
                   "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
                   "spec/query/spec/legendFormat": "Writes/s",
                   "spec/query/spec/instant": false,
-                  "spec/query/spec/range": true
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     "<2027.1"
+                  ]
+               },
+               {
+                  "class": "panel_query",
+                  "spec/query/spec/expr": "(sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)) + (sum(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0))",
+                  "spec/query/spec/legendFormat": "Writes/s",
+                  "spec/query/spec/instant": false,
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     ">2027.1"
+                  ]
                },
                {
                   "class": "panel_query",
@@ -616,7 +659,21 @@
                   "spec/query/spec/expr": "avg(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.5\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"}>0)",
                   "spec/query/spec/legendFormat": "Avg Write Latency",
                   "spec/query/spec/instant": false,
-                  "spec/query/spec/range": true
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     "<2027.1"
+                  ]
+               },
+               {
+                  "class": "panel_query",
+                  "spec/refId": "B",
+                  "spec/query/spec/expr": "avg((scylla_coordinator_write_latency_summary{quantile=\"0.5\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"} or scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.5\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"})>0)",
+                  "spec/query/spec/legendFormat": "Avg Write Latency",
+                  "spec/query/spec/instant": false,
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     ">2027.1"
+                  ]
                },
                {
                   "class": "panel_query",
@@ -624,7 +681,21 @@
                   "spec/query/spec/expr": "avg(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"}>0)",
                   "spec/query/spec/legendFormat": "P99 Write Latency",
                   "spec/query/spec/instant": false,
-                  "spec/query/spec/range": true
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     "<2027.1"
+                  ]
+               },
+               {
+                  "class": "panel_query",
+                  "spec/refId": "C",
+                  "spec/query/spec/expr": "avg((scylla_coordinator_write_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"} or scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"})>0)",
+                  "spec/query/spec/legendFormat": "P99 Write Latency",
+                  "spec/query/spec/instant": false,
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     ">2027.1"
+                  ]
                }
             ],
             "vizConfig/spec/options/colorMode": "background_solid",
@@ -664,7 +735,20 @@
                   "spec/query/spec/expr": "sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)",
                   "spec/query/spec/legendFormat": "Reads/s",
                   "spec/query/spec/instant": false,
-                  "spec/query/spec/range": true
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     "<2027.1"
+                  ]
+               },
+               {
+                  "class": "panel_query",
+                  "spec/query/spec/expr": "(sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0)) + (sum(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval])) or vector(0))",
+                  "spec/query/spec/legendFormat": "Reads/s",
+                  "spec/query/spec/instant": false,
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     ">2027.1"
+                  ]
                },
                {
                   "class": "panel_query",
@@ -672,7 +756,21 @@
                   "spec/query/spec/expr": "avg(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.5\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"}>0)",
                   "spec/query/spec/legendFormat": "Avg Read Latency",
                   "spec/query/spec/instant": false,
-                  "spec/query/spec/range": true
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     "<2027.1"
+                  ]
+               },
+               {
+                  "class": "panel_query",
+                  "spec/refId": "B",
+                  "spec/query/spec/expr": "avg((scylla_coordinator_read_latency_summary{quantile=\"0.5\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"} or scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.5\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"})>0)",
+                  "spec/query/spec/legendFormat": "Avg Read Latency",
+                  "spec/query/spec/instant": false,
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     ">2027.1"
+                  ]
                },
                {
                   "class": "panel_query",
@@ -680,7 +778,21 @@
                   "spec/query/spec/expr": "avg(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"}>0)",
                   "spec/query/spec/legendFormat": "P99 Read Latency",
                   "spec/query/spec/instant": false,
-                  "spec/query/spec/range": true
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     "<2027.1"
+                  ]
+               },
+               {
+                  "class": "panel_query",
+                  "spec/refId": "C",
+                  "spec/query/spec/expr": "avg((scylla_coordinator_read_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"} or scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|^$\",scheduling_group_name=~\"sl:.*\"})>0)",
+                  "spec/query/spec/legendFormat": "P99 Read Latency",
+                  "spec/query/spec/instant": false,
+                  "spec/query/spec/range": true,
+                  "dashversion": [
+                     ">2027.1"
+                  ]
                }
             ],
             "vizConfig/spec/options/colorMode": "background_solid",
@@ -2459,7 +2571,21 @@
             "spec/query/spec/expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": false,
-            "spec/query/spec/range": true
+            "spec/query/spec/range": true,
+            "dashversion": [
+               "<2027.1"
+            ]
+         },
+         {
+            "class": "panel_query",
+            "spec/refId": "B",
+            "spec/query/spec/expr": "round((sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group) + on(group) sum(label_replace(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group)) or sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group) or sum(label_replace(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
+            "spec/query/spec/legendFormat": "__auto",
+            "spec/query/spec/instant": false,
+            "spec/query/spec/range": true,
+            "dashversion": [
+               ">2027.1"
+            ]
          },
          {
             "class": "panel_query",
@@ -2467,7 +2593,21 @@
             "spec/query/spec/expr": "round(sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
             "spec/query/spec/legendFormat": "__auto",
             "spec/query/spec/instant": false,
-            "spec/query/spec/range": true
+            "spec/query/spec/range": true,
+            "dashversion": [
+               "<2027.1"
+            ]
+         },
+         {
+            "class": "panel_query",
+            "spec/refId": "C",
+            "spec/query/spec/expr": "round((sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group) + on(group) sum(label_replace(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group)) or sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group) or sum(label_replace(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\", scheduling_group_name=~\"sl:.*\"}[$__rate_interval]), \"group\", \"$1\", \"scheduling_group_name\", \"(.*)\")) by (group))",
+            "spec/query/spec/legendFormat": "__auto",
+            "spec/query/spec/instant": false,
+            "spec/query/spec/range": true,
+            "dashversion": [
+               ">2027.1"
+            ]
          },
          {
             "class": "panel_query",
@@ -4075,7 +4215,22 @@
             "spec/query/spec/instant": true,
             "spec/query/spec/range": false,
             "spec/query/spec/format": "table",
-            "spec/query/spec/legendFormat": "writes"
+            "spec/query/spec/legendFormat": "writes",
+            "dashversion": [
+               "<2027.1"
+            ]
+         },
+         {
+            "class": "panel_query",
+            "spec/refId": "D",
+            "spec/query/spec/expr": "(sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) + on(dc) sum(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)) or sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) or sum(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)",
+            "spec/query/spec/instant": true,
+            "spec/query/spec/range": false,
+            "spec/query/spec/format": "table",
+            "spec/query/spec/legendFormat": "writes",
+            "dashversion": [
+               ">2027.1"
+            ]
          },
          {
             "class": "panel_query",
@@ -4084,7 +4239,22 @@
             "spec/query/spec/instant": true,
             "spec/query/spec/range": false,
             "spec/query/spec/format": "table",
-            "spec/query/spec/legendFormat": "reads"
+            "spec/query/spec/legendFormat": "reads",
+            "dashversion": [
+               "<2027.1"
+            ]
+         },
+         {
+            "class": "panel_query",
+            "spec/refId": "E",
+            "spec/query/spec/expr": "(sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) + on(dc) sum(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)) or sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) or sum(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)",
+            "spec/query/spec/instant": true,
+            "spec/query/spec/range": false,
+            "spec/query/spec/format": "table",
+            "spec/query/spec/legendFormat": "reads",
+            "dashversion": [
+               ">2027.1"
+            ]
          }
       ],
       "spec/data/spec/transformations": [
