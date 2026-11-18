@@ -1,0 +1,18 @@
+{
+	"name": "Disk space is running low {{cluster.name}} {{instance.name}} ",
+	"type": "query alert",
+	"query": "min(last_5m):avg:scylla.scylla_node_filesystem_avail_bytes{by:cluster} by {cluster,instance,mountpoint} / avg:scylla.scylla_node_filesystem_size_bytes{by:cluster} by {cluster,instance,mountpoint} < 0.1",
+	"message": "One of the disk partitions {{mountpoint.name}} is running out of disk space.\n\nCheck {{instance.name}} that belongs to {{cluster.name}} ",
+	"tags": [],
+	"options": {
+		"thresholds": {
+			"critical": 0.1
+		},
+		"notify_audit": false,
+		"require_full_window": false,
+		"notify_no_data": false,
+		"renotify_interval": 0,
+		"new_group_delay": 60
+	}
+}
+
