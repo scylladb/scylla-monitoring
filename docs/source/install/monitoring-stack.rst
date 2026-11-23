@@ -425,7 +425,7 @@ The recommended method to do this is by using rsyslog_, where Scylla Monitoring 
 
 **Prerequisite**, make sure rsyslog is installed and running. If rsyslog is not installed, follow the installation instruction_.
 
-.. _instruction: https://www.rsyslog.com/doc/v8-stable/installation/index.html
+.. _instruction: https://docs.rsyslog.com/doc/installation/index.html
 
 Add scylla's rsyslog configuration file. Add the file: ``/etc/rsyslog.d/scylla.conf``.
 
