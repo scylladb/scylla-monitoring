@@ -70,7 +70,7 @@ OPTIONS = {
     "--archive": (True, "stack"), "--cluster-label": (True, "prometheus"),
     "--verbose": (False, "stack"), "--no-loki": (False, "loki"), "--no-log-collector": (False, "loki"),
     "--no-alertmanager": (False, "alertmanager"), "--quick-startup": (False, "stack"),
-    "--no-manager": (False, "stack"),
+    "--no-manager": (False, "stack"), "--p999": (False, "prometheus"),
     "--no-renderer": (False, "grafana"), "--thanos-sc": (False, "thanos-sc"),
     "--thanos": (False, "thanos"), "--local-thanos": (False, "thanos"),
     "--no-thanos-datasource": (False, "grafana"), "--auto-restart": (False, "stack"),
@@ -265,6 +265,8 @@ def derive(cfg, dirs):
         opts.append(("--local-thanos", None))
     if stack.get("quick_startup"):
         opts.append(("--quick-startup", None))
+    if stack.get("p999"):
+        opts.append(("--p999", None))
     if "bind_address" in stack:
         opts.append(("-A", stack["bind_address"]))
     opts += [("-D", d) for d in stack.get("docker_args", [])]

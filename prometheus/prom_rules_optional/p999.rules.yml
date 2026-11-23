@@ -1,0 +1,495 @@
+# 99.9th percentile latency recording rules, the P99 rules of prom_rules/prometheus.latency.rules.yml at quantile 0.999.
+# Loaded only with start-all.sh --p999 (or P999=1 in env.sh).
+groups:
+- name: scylla.p999.rules
+  rules:
+  - record: scylla_storage_proxy_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket[60s])) by (cluster, dc, rack, instance, scheduling_group_name, le))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket[60s])) by (cluster, dc, scheduling_group_name, le))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket[60s])) by (cluster, dc, rack, scheduling_group_name, le))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket[60s])) by (cluster, scheduling_group_name, le))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket[60s])) by (cluster, dc, rack, instance, scheduling_group_name, le))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket[60s])) by (cluster, dc, scheduling_group_name, le))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket[60s])) by (cluster, dc, rack, scheduling_group_name, le))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket[60s])) by (cluster, scheduling_group_name, le))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_write_latency_bucket[60s])) by (cluster, dc, rack, instance, le, scheduling_group_name))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_write_latency_bucket[60s])) by (cluster, dc, le, scheduling_group_name))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_write_latency_bucket[60s])) by (cluster, dc, rack, le, scheduling_group_name))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_write_latency_bucket[60s])) by (cluster, le, scheduling_group_name))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_read_latency_bucket[60s])) by (cluster, dc, rack, instance, le, scheduling_group_name, read_type))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_read_latency_bucket[60s])) by (cluster, dc, le, scheduling_group_name, read_type))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_read_latency_bucket[60s])) by (cluster, dc, rack, le, scheduling_group_name, read_type))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_read_latency_bucket[60s])) by (cluster, le, scheduling_group_name, read_type))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_bucket[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_write_latency_bucket[60s]), "kind", "sc", "", "")) by (cluster, dc, rack, instance, scheduling_group_name, le))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_bucket[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_write_latency_bucket[60s]), "kind", "sc", "", "")) by (cluster, dc, scheduling_group_name, le))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_bucket[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_write_latency_bucket[60s]), "kind", "sc", "", "")) by (cluster, dc, rack, scheduling_group_name, le))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency_bucket[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_write_latency_bucket[60s]), "kind", "sc", "", "")) by (cluster, scheduling_group_name, le))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_bucket[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_read_latency_bucket[60s]), "kind", "sc", "", "")) by (cluster, dc, rack, instance, scheduling_group_name, le))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_bucket[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_read_latency_bucket[60s]), "kind", "sc", "", "")) by (cluster, dc, scheduling_group_name, le))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_bucket[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_read_latency_bucket[60s]), "kind", "sc", "", "")) by (cluster, dc, rack, scheduling_group_name, le))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency_bucket[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_read_latency_bucket[60s]), "kind", "sc", "", "")) by (cluster, scheduling_group_name, le))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_alternator_op_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_alternator_op_latency_bucket[60s])>0) by (cluster, dc, rack, instance, le, op))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_alternator_op_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_alternator_op_latency_bucket[60s])>0) by (cluster, dc, le, op))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_alternator_op_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_alternator_op_latency_bucket[60s])>0) by (cluster, dc, rack, le, op))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_alternator_op_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_alternator_op_latency_bucket[60s])>0) by (cluster, op, le))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_write_latency[60s])) by (cluster, dc, rack, instance, scheduling_group_name))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_write_latency[60s])) by (cluster, dc, scheduling_group_name))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_write_latency[60s])) by (cluster, dc, rack, scheduling_group_name))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_write_latency[60s])) by (cluster, scheduling_group_name))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_read_latency[60s])) by (cluster, dc, rack, instance, scheduling_group_name))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_read_latency[60s])) by (cluster, dc, scheduling_group_name))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_read_latency[60s])) by (cluster, dc, rack, scheduling_group_name))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_storage_proxy_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_storage_proxy_coordinator_read_latency[60s])) by (cluster, scheduling_group_name))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_write_latency[60s])) by (cluster, dc, rack, instance, scheduling_group_name))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_write_latency[60s])) by (cluster, dc, scheduling_group_name))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_write_latency[60s])) by (cluster, dc, rack, scheduling_group_name))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_write_latency[60s])) by (cluster, scheduling_group_name))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_read_latency[60s])) by (cluster, dc, rack, instance, scheduling_group_name, read_type))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_read_latency[60s])) by (cluster, dc, scheduling_group_name, read_type))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_read_latency[60s])) by (cluster, dc, rack, scheduling_group_name, read_type))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_coordinator_read_latency[60s])) by (cluster, scheduling_group_name, read_type))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_write_latency[60s]), "kind", "sc", "", "")) by (cluster, dc, rack, instance, scheduling_group_name))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_write_latency[60s]), "kind", "sc", "", "")) by (cluster, dc, scheduling_group_name))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_write_latency[60s]), "kind", "sc", "", "")) by (cluster, dc, rack, scheduling_group_name))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_write_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_write_latency[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_write_latency[60s]), "kind", "sc", "", "")) by (cluster, scheduling_group_name))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_read_latency[60s]), "kind", "sc", "", "")) by (cluster, dc, rack, instance, scheduling_group_name))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_read_latency[60s]), "kind", "sc", "", "")) by (cluster, dc, scheduling_group_name))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_read_latency[60s]), "kind", "sc", "", "")) by (cluster, dc, rack, scheduling_group_name))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_coordinator_read_latency_summary
+    expr: histogram_quantile(0.999, sum(label_replace(rate(scylla_storage_proxy_coordinator_read_latency[60s]), "kind", "sp", "", "") or label_replace(rate(scylla_strong_consistency_coordinator_read_latency[60s]), "kind", "sc", "", "")) by (cluster, scheduling_group_name))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_request_summary_bytes
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, rack, instance, le, scheduling_group_name))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_request_summary_bytes
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, le, scheduling_group_name))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_request_summary_bytes
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, rack, le, scheduling_group_name))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_request_summary_bytes
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, le, scheduling_group_name))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_response_summary_bytes
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_response_histogram_bytes_bucket[60s])) by (cluster, dc, rack, instance, le, scheduling_group_name))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_response_summary_bytes
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_response_histogram_bytes_bucket[60s])) by (cluster, dc, le, scheduling_group_name))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_response_summary_bytes
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_response_histogram_bytes_bucket[60s])) by (cluster, dc, rack, le, scheduling_group_name))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_response_summary_bytes
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_response_histogram_bytes_bucket[60s])) by (cluster, le, scheduling_group_name))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_request_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_request_latency_histogram_bucket[60s])) by (cluster, dc, rack, instance, le, scheduling_group_name))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_request_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_request_latency_histogram_bucket[60s])) by (cluster, dc, le, scheduling_group_name))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_request_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_request_latency_histogram_bucket[60s])) by (cluster, dc, rack, le, scheduling_group_name))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_request_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_request_latency_histogram_bucket[60s])) by (cluster, le, scheduling_group_name))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_client_timestamp_drift_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_client_timestamp_drift_histogram_bucket[60s])) by (cluster, dc, rack, instance, le, scheduling_group_name))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_client_timestamp_drift_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_client_timestamp_drift_histogram_bucket[60s])) by (cluster, dc, le, scheduling_group_name))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_client_timestamp_drift_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_client_timestamp_drift_histogram_bucket[60s])) by (cluster, dc, rack, le, scheduling_group_name))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_transport_cql_client_timestamp_drift_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_transport_cql_client_timestamp_drift_histogram_bucket[60s])) by (cluster, le, scheduling_group_name))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_alternator_op_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_alternator_op_latency[60s])>0) by (cluster, dc, rack, instance, op))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_alternator_op_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_alternator_op_latency[60s])>0) by (cluster, dc, op))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_alternator_op_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_alternator_op_latency[60s])>0) by (cluster, dc, rack, op))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_alternator_op_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_alternator_op_latency[60s])>0) by (cluster, op))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket{shard!=""}[60s])) by (cluster, dc, rack, instance, shard, le))
+    labels:
+      by: "instance,shard"
+      quantile: "0.999"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket[60s])) by (cluster, dc, rack, instance, le))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket[60s])) by (cluster, dc, le))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket[60s])) by (cluster, dc, rack, le))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket[60s])) by (cluster, le))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_state_machine_apply_latency{shard!=""}[60s])) by (cluster, dc, rack, instance, shard))
+    labels:
+      by: "instance,shard"
+      quantile: "0.999"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_state_machine_apply_latency[60s])) by (cluster, dc, rack, instance))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_state_machine_apply_latency[60s])) by (cluster, dc))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_state_machine_apply_latency[60s])) by (cluster, dc, rack))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_strong_consistency_state_machine_apply_latency[60s])) by (cluster))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"

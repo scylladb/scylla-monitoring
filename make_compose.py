@@ -295,6 +295,8 @@ def options(argv, v, paths):
         "params": {k: val for k, val in v.get("DOCKER_PARAMS", {}).items()},
         "docker_param": v.get("DOCKER_PARAM", ""), "docker_param_from_file": bool(v.get("DOCKER_PARAM")),
         "traefik": False, "up": False, "enterprise": argv[:1] == ["-e"], "no_manager": False,
+        # P999=1 is --p999
+        "p999": v.get("P999") == "1",
     }
     # env.sh can set start-all.sh's option variables, which hold the option
     # with its value ("-L <address>"); the command line comes after them
@@ -464,6 +466,8 @@ def options(argv, v, paths):
             o["alternator"] = True
         elif opt in ("--no-cas-cdc", "--no-cas", "--no-cdc"):
             o["prom_targets"].append(opt)
+        elif opt == "--p999":
+            o["p999"] = True
         elif opt in ("-e", "--verbose", "--quick-startup"):
             pass  # -e only matters for -v latest; nothing waits to be quick about
     if o["auto_restart"]:
@@ -726,6 +730,10 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
                               "shutdown, use the -d command line flag for data persistence.")
     stack.config += [paths.abs("prometheus/build" + stack_dir),
                      paths.abs((o["prom_rules"] or "prometheus/prom_rules/:").split(":")[0])]
+    # --p999: the optional rules are mounted next to prom_rules, so -R keeps them
+    p999_mounts = ["./prometheus/prom_rules_optional/p999.rules.yml:/etc/prometheus/prom_rules_optional/p999.rules.yml:z"] if o["p999"] else []
+    if o["p999"]:
+        stack.config.append(paths.abs("prometheus/prom_rules_optional/p999.rules.yml"))  # a changed rule file restarts the service
     if o["victoria_metrics"]:
         if o["data_dir"]:
             data_volumes = [paths(o["data_dir"]) + ":/victoria-metrics-data"]
@@ -736,8 +744,10 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
                 command=prom_args + ["-promscrape.config=/etc/prometheus/config/prometheus.yml",
                                      "-promscrape.config.strictParse=false", "-httpListenAddr=:9090"])
         service("vmalert", "vmalert", "victoriametrics/vmalert:" + v["VICTORIA_METRICS_VERSION"],
-                volumes=[(o["prom_rules"] or "./prometheus/prom_rules/:/etc/prometheus/prom_rules/") + ":z"],
-                command=["-rule=/etc/prometheus/prom_rules/*yml", "-datasource.url=http://" + db_address,
+                volumes=[(o["prom_rules"] or "./prometheus/prom_rules/:/etc/prometheus/prom_rules/") + ":z"] + p999_mounts,
+                command=["-rule=/etc/prometheus/prom_rules/*yml"]
+                + (["-rule=/etc/prometheus/prom_rules_optional/*yml"] if o["p999"] else [])
+                + ["-datasource.url=http://" + db_address,
                          "-notifier.url=http://" + am_address, "-remoteWrite.url=http://" + db_address,
                          "-remoteRead.url=http://" + db_address])
     else:
@@ -747,7 +757,7 @@ def build(argv, environ=None, cwd=None, env_file=None, ids=None):
                 ports=ports((prom_port, 9090)), user=user if o["data_dir"] else None, userns_mode=userns,
                 volumes=data_volumes + ["./prometheus/build%s/:/etc/prometheus/config/:z" % stack_dir,
                                         (o["prom_rules"] or "./prometheus/prom_rules/:/etc/prometheus/prom_rules/")
-                                        + ":z"] + target_mounts,
+                                        + ":z"] + p999_mounts + target_mounts,
                 command=["--web.enable-lifecycle", "--enable-feature=promql-experimental-functions",
                          "--config.file=/etc/prometheus/config/prometheus.yml"] + prom_args)
 

@@ -60,6 +60,10 @@ If not used, each run of the containers will clear all of Grafana's information.
 ``-M none`` is the same, and ``NO_MANAGER=1`` in ``env.sh`` or the environment sets it as the default, which a ``-M`` on the command line overrides.
 ``--no-manager`` takes precedence over ``-M``, and ``--no-manager``, ``-M none`` and ``NO_MANAGER=1`` take precedence over the manager version recorded with an ``--archive``.
 
+**--p999** Record the 99.9th percentile latencies, in addition to the 99th. The rules are in ``prometheus/prom_rules_optional/p999.rules.yml``;
+they add one series for each 99th percentile series, so on a cluster with many tables they add to the Prometheus load.
+``P999=1`` in ``env.sh`` or the environment sets it as the default.
+
 **-j dashboard** Allows adding dashboards to Grafana. Multiple parameters are supported.
 
 **-c Grafana environment variable** Use this parameter to override Grafana's configuration settings.  The ``-c`` flag allows adding an environment variable to Grafana and, by doing so, alters its configuration.

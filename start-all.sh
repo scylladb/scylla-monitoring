@@ -106,7 +106,7 @@ elif [[ $(uname) == "Darwin" ]]; then
 fi
 
 function usage {
-	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [--servers comma separated server list] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--log-collector alloy|promtail] [--no-log-collector] [--no-alertmanager] [--no-manager] [--loki-port port] [--promtail-port port] [--alloy-port port] [--alloy-syslog-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir] [--grafana-render-token token] [--grafana-render-token-to-file path]
+	__usage="Usage: $(basename $0) [-h] [--version] [-e] [-d Prometheus data-dir] [-L resolve the servers from the manager running on the given address] [-G path to grafana data-dir] [-s scylla-target-file] [--servers comma separated server list] [-n node-target-file] [-l] [-v comma separated versions] [-j additional dashboard to load to Grafana, multiple params are supported] [-c grafana environment variable, multiple params are supported] [-b Prometheus command line options] [-g grafana port ] [ -p prometheus port ] [-a admin password] [-m alertmanager port] [ -M scylla-manager version ] [-D encapsulate docker param] [-r alert-manager-config] [-R prometheus-alert-file] [-N manager target file] [-A bind-to-ip-address] [-C alertmanager commands] [-Q Grafana anonymous role (Admin/Editor/Viewer)] [--allow-embedding] [--disable-embedding] [-S start with a system specific dashboard set] [-T additional-prometheus-targets] [--log-collector alloy|promtail] [--no-log-collector] [--no-alertmanager] [--no-manager] [--p999] [--loki-port port] [--promtail-port port] [--alloy-port port] [--alloy-syslog-port port] [--auto-restart] [--no-renderer] [-f alertmanager-dir] [--grafana-render-token token] [--grafana-render-token-to-file path]
 
 Options:
   -h print this help and exit
@@ -152,6 +152,9 @@ Options:
   --no-manager                   - If set, there is no Scylla Manager: no manager dashboards, and Prometheus
                                    scrapes neither the manager nor its agents. Same as -M none.
                                    Can also be set with NO_MANAGER=1 in env.sh/environment.
+  --p999                         - If set, Prometheus also records the 99.9th percentile latencies
+                                   (prometheus/prom_rules_optional/p999.rules.yml).
+                                   Can also be set with P999=1 in env.sh/environment.
   --loki-port port               - If set, loki would use the given port number
   --promtail-port port           - If set, promtail would use the given port number
   --promtail-binary-port port    - If set, promtail would use the given port number for the binary protocol
@@ -337,6 +340,9 @@ for arg; do
 			;;
 		--no-manager)
 			NO_MANAGER_ARG=1
+			;;
+		--p999)
+			P999=1
 			;;
         --quick-startup)
             QUICK_STARTUP=1
@@ -1098,6 +1104,14 @@ fi
 if [  "$HOST_NETWORK" != "host" ]; then
 	PORT_MAPPING="-p $BIND_ADDRESS$PROMETHEUS_PORT:9090"
 fi
+# --p999 or P999=1: the optional rules are mounted next to prom_rules, so
+# they are loaded with -R too
+P999_RULES=""
+P999_VMALERT=""
+if [ "$P999" = "1" ]; then
+	P999_RULES="-v $PWD/prometheus/prom_rules_optional/p999.rules.yml:/etc/prometheus/prom_rules_optional/p999.rules.yml:z"
+	P999_VMALERT="-rule=/etc/prometheus/prom_rules_optional/*yml"
+fi
 if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	echo "Using victoria metrics"
 
@@ -1115,6 +1129,7 @@ else
 		"${group_args[@]}" \
 		-v $PWD/prometheus/build$STACK/:/etc/prometheus/config/:z \
 		-v $PROMETHEUS_RULES:z \
+		$P999_RULES \
 		$SCYLLA_TARGET_FILE \
 		$SCYLLA_MANGER_TARGET_FILE \
 		$NODE_TARGET_FILE \
@@ -1162,7 +1177,8 @@ if [[ "$VICTORIA_METRICS" = "1" ]]; then
 	docker run -d $DOCKER_PARAM ${DOCKER_LIMITS["vmalert"]} \
 		--name vmalert \
 		-v $PROMETHEUS_RULES:z \
-		victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml \
+		$P999_RULES \
+		victoriametrics/vmalert:$VICTORIA_METRICS_VERSION -rule=/etc/prometheus/prom_rules/*yml $P999_VMALERT \
 		-datasource.url=http://$DB_ADDRESS \
 		-notifier.url=http://$AM_ADDRESS \
 		-remoteWrite.url=http://$DB_ADDRESS \
