@@ -76,17 +76,17 @@
                                 },
                                 "class": "us_panel",
                                 "spec/title": "P95 Latencies",
-                                "spec/description": "The P95 Latencies per operation",
+                                "spec/description": "The P95 latencies per operation, for the whole cluster",
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op, le))",
+                                        "spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.95\", by=\"cluster\", cluster=~\"$cluster|$^\", op=~\"$ops|$ops_batch\"} or on() histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op, le))",
                                         "spec/query/spec/legendFormat": "{{op}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
+                                        "spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.95\", by=\"cluster\", cluster=~\"$cluster|$^\", op=~\"$ops\"} or on() histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
                                         "spec/query/spec/legendFormat": "{{op}}"
                                     }
                                 ]
@@ -100,17 +100,17 @@
                                 },
                                 "class": "us_panel",
                                 "spec/title": "P99 Latencies",
-                                "spec/description": "The P99 Latencies per operation",
+                                "spec/description": "The P99 latencies per operation, for the whole cluster",
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
+                                        "spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|$^\", op=~\"$ops\"} or on() histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
                                         "spec/query/spec/legendFormat": "{{op}}"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
-                                        "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op, le))",
+                                        "spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|$^\", op=~\"$ops|$ops_batch\"} or on() histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op, le))",
                                         "spec/query/spec/legendFormat": "{{op}}"
                                     }
                                 ]
@@ -192,13 +192,13 @@
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "95th percentile $ops_batch latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]], le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.95\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"} or on() histogram_quantile(0.95, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]], le))"
                             },
                             {
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "99th percentile $ops_batch latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]], le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.99\", by=\"$by\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"} or on() histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=\"$ops_batch\"}[$__rate_interval])) by ([[by]], le))"
                             }
                         ]
                     },

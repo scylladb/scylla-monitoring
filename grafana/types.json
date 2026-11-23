@@ -865,7 +865,7 @@
                {
                   "class": "panel_query",
                   "spec/refId": "B",
-                  "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops_batch\"}[$__rate_interval])>0) by (op, le))",
+                  "spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|$^\", op=~\"$ops_batch\"} or on() histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops_batch\"}[$__rate_interval])>0) by (op, le))",
                   "spec/query/spec/legendFormat": "{{op}}",
                   "spec/query/spec/instant": true,
                   "dashversion": [
