@@ -1025,73 +1025,73 @@ groups:
       quantile: "0.5"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.5, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, dc, rack, instance, scheduling_group_name))
+    expr: histogram_quantile(0.5, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, rack, instance, le, scheduling_group_name))
     labels:
       by: "instance"
       quantile: "0.5"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.5, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, dc, scheduling_group_name))
+    expr: histogram_quantile(0.5, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, le, scheduling_group_name))
     labels:
       by: "dc"
       quantile: "0.5"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.5, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, dc, rack, scheduling_group_name))
+    expr: histogram_quantile(0.5, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, rack, le, scheduling_group_name))
     labels:
       by: "dc,rack"
       quantile: "0.5"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.5, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, scheduling_group_name))
+    expr: histogram_quantile(0.5, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, le, scheduling_group_name))
     labels:
       by: "cluster"
       quantile: "0.5"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.95, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, dc, rack, instance, scheduling_group_name))
+    expr: histogram_quantile(0.95, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, rack, instance, le, scheduling_group_name))
     labels:
       by: "instance"
       quantile: "0.95"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.95, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, dc, scheduling_group_name))
+    expr: histogram_quantile(0.95, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, le, scheduling_group_name))
     labels:
       by: "dc"
       quantile: "0.95"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.95, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, dc, rack, scheduling_group_name))
+    expr: histogram_quantile(0.95, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, rack, le, scheduling_group_name))
     labels:
       by: "dc,rack"
       quantile: "0.95"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.95, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, scheduling_group_name))
+    expr: histogram_quantile(0.95, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, le, scheduling_group_name))
     labels:
       by: "cluster"
       quantile: "0.95"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.99, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, dc, rack, instance, scheduling_group_name))
+    expr: histogram_quantile(0.99, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, rack, instance, le, scheduling_group_name))
     labels:
       by: "instance"
       quantile: "0.99"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.99, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, dc, scheduling_group_name))
+    expr: histogram_quantile(0.99, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, le, scheduling_group_name))
     labels:
       by: "dc"
       quantile: "0.99"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.99, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, dc, rack, scheduling_group_name))
+    expr: histogram_quantile(0.99, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, dc, rack, le, scheduling_group_name))
     labels:
       by: "dc,rack"
       quantile: "0.99"
       dd: "1"
   - record: scylla_transport_cql_request_summary_bytes
-    expr: histogram_quantile(0.99, sum(rate(scylla_transport_cql_request_histogram_bytes[60s])) by (cluster, scheduling_group_name))
+    expr: histogram_quantile(0.99, sum(rate(scylla_transport_cql_request_histogram_bytes_bucket[60s])) by (cluster, le, scheduling_group_name))
     labels:
       by: "cluster"
       quantile: "0.99"
@@ -1449,3 +1449,119 @@ groups:
     expr: scylla_storage_proxy_coordinator_cas_read_latency_summary{quantile="0.5"}
   - record: caswlatencya
     expr: scylla_storage_proxy_coordinator_cas_write_latency_summary{quantile="0.5"}
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket{shard!=""}[60s])) by (cluster, dc, rack, instance, shard, le))
+    labels:
+      by: "instance,shard"
+      quantile: "0.99"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket[60s])) by (cluster, dc, rack, instance, le))
+    labels:
+      by: "instance"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket[60s])) by (cluster, dc, le))
+    labels:
+      by: "dc"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket[60s])) by (cluster, dc, rack, le))
+    labels:
+      by: "dc,rack"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket[60s])) by (cluster, le))
+    labels:
+      by: "cluster"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency{shard!=""}[60s])) by (cluster, dc, rack, instance, shard))
+    labels:
+      by: "instance,shard"
+      quantile: "0.99"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency[60s])) by (cluster, dc, rack, instance))
+    labels:
+      by: "instance"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency[60s])) by (cluster, dc))
+    labels:
+      by: "dc"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency[60s])) by (cluster, dc, rack))
+    labels:
+      by: "dc,rack"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_strong_consistency_state_machine_apply_latency_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency[60s])) by (cluster))
+    labels:
+      by: "cluster"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_reactor_stalls_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_reactor_stalls_bucket{shard!=""}[60s])) by (cluster, dc, rack, instance, shard, le))
+    labels:
+      by: "instance,shard"
+      quantile: "0.99"
+  - record: scylla_reactor_stalls_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_reactor_stalls_bucket[60s])) by (cluster, dc, rack, instance, le))
+    labels:
+      by: "instance"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_reactor_stalls_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_reactor_stalls_bucket[60s])) by (cluster, dc, le))
+    labels:
+      by: "dc"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_reactor_stalls_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_reactor_stalls_bucket[60s])) by (cluster, dc, rack, le))
+    labels:
+      by: "dc,rack"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_reactor_stalls_summary
+    expr: histogram_quantile(0.99, sum(rate(scylla_reactor_stalls_bucket[60s])) by (cluster, le))
+    labels:
+      by: "cluster"
+      quantile: "0.99"
+      dd: "1"
+  - record: scylla_reactor_stalls_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_reactor_stalls_bucket{shard!=""}[60s])) by (cluster, dc, rack, instance, shard, le))
+    labels:
+      by: "instance,shard"
+      quantile: "0.999"
+  - record: scylla_reactor_stalls_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_reactor_stalls_bucket[60s])) by (cluster, dc, rack, instance, le))
+    labels:
+      by: "instance"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_reactor_stalls_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_reactor_stalls_bucket[60s])) by (cluster, dc, le))
+    labels:
+      by: "dc"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_reactor_stalls_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_reactor_stalls_bucket[60s])) by (cluster, dc, rack, le))
+    labels:
+      by: "dc,rack"
+      quantile: "0.999"
+      dd: "1"
+  - record: scylla_reactor_stalls_summary
+    expr: histogram_quantile(0.999, sum(rate(scylla_reactor_stalls_bucket[60s])) by (cluster, le))
+    labels:
+      by: "cluster"
+      quantile: "0.999"
+      dd: "1"
