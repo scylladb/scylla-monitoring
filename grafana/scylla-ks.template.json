@@ -50,16 +50,23 @@
                             },
                             {
                                 "span": 3,
+                                "repeat": "quantile",
                                 "class": "us_panel",
-                                "spec/title": "95th percentile write latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_write_latency_summary{quantile=\"0.95\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\"} "
-                            },
-                            {
-                                "span": 3,
-                                "class": "us_panel",
-                                "spec/title": "99th percentile write latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_write_latency_summary{quantile=\"0.99\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\"} "
-                            },
+                                "spec/title": "${quantile:text} write latency by [[by]]",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_write_latency_summary{quantile=\"${quantile:raw}\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\"} or on() histogram_quantile(${quantile:raw}, sum(rate(scylla_column_family_write_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le))"
+                            }
+                        ],
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 6,
+                            "spec/columnWidthMode": "custom",
+                            "spec/columnWidth": 280
+                        }
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "panels": [
                             {
                                 "span": 3,
                                 "class": "rps_panel",
@@ -74,16 +81,23 @@
                             },
                             {
                                 "span": 3,
+                                "repeat": "quantile",
                                 "class": "us_panel",
-                                "spec/title": "95th percentile read latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_read_latency_summary{quantile=\"0.95\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\"} "
-                            },
-                            {
-                                "span": 3,
-                                "class": "us_panel",
-                                "spec/title": "99th percentile read latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_read_latency_summary{quantile=\"0.99\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\"} "
-                            },
+                                "spec/title": "${quantile:text} read latency by [[by]]",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_read_latency_summary{quantile=\"${quantile:raw}\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\"} or on() histogram_quantile(${quantile:raw}, sum(rate(scylla_column_family_read_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le))"
+                            }
+                        ],
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 6,
+                            "spec/columnWidthMode": "custom",
+                            "spec/columnWidth": 280
+                        }
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "panels": [
                             {
                                 "span": 3,
                                 "class": "percentunit_panel",
@@ -114,15 +128,22 @@
                                 "spec/title": "Tablets $func by [[by]]",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$func(scylla_column_family_tablet_count{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by([[by]])"
                             }
-                        ]
+                        ],
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 6,
+                            "spec/columnWidthMode": "custom",
+                            "spec/columnWidth": 280
+                        }
                     },
                     {
                         "class": "row",
                         "hideHeader": true,
                         "layout": {
                             "class": "auto_grid_layout",
-                            "spec/maxColumnCount": 4,
-                            "spec/columnWidthMode": "narrow"
+                            "spec/maxColumnCount": 6,
+                            "spec/columnWidthMode": "custom",
+                            "spec/columnWidth": 280
                         },
                         "conditionalRendering": {
                             "class": "conditionalRendering_var",
@@ -151,24 +172,42 @@
                             },
                             {
                                 "span": 3,
+                                "repeat": "quantile",
                                 "class": "us_panel",
-                                "spec/title": "SC 95th percentile write latency by [[by]]",
-                                "spec/description": "95th percentile latency of strongly consistent writes that reached a Raft group of the table and ended there. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_table_write_latency",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_strong_consistency_table_write_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)) or histogram_quantile(0.95, sum(rate(scylla_strong_consistency_table_write_latency{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]))",
+                                "spec/title": "SC ${quantile:text} write latency by [[by]]",
+                                "spec/description": "${quantile:text} latency of strongly consistent writes that reached a Raft group of the table and ended there. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_table_write_latency",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(${quantile:raw}, sum(rate(scylla_strong_consistency_table_write_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)) or histogram_quantile(${quantile:raw}, sum(rate(scylla_strong_consistency_table_write_latency{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]))",
                                 "conditionalRendering": {
                                     "class": "conditionalRendering_data"
                                 }
                             },
                             {
                                 "span": 3,
-                                "class": "us_panel",
-                                "spec/title": "SC 99th percentile write latency by [[by]]",
-                                "spec/description": "99th percentile latency of strongly consistent writes that reached a Raft group of the table and ended there. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_table_write_latency",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_strong_consistency_table_write_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)) or histogram_quantile(0.99, sum(rate(scylla_strong_consistency_table_write_latency{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]))",
+                                "class": "wps_panel",
+                                "spec/title": "SC write errors $func by [[by]]",
+                                "spec/description": "Strongly consistent writes that reached a Raft group of the table and failed there, by reason (timeout, status_unknown, other).\n\nscylla_strong_consistency_table_write_errors",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "max_over_time(($func(irate(scylla_strong_consistency_table_write_errors{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], reason))[$__interval:]) or on([[by]]) $func(scylla_strong_consistency_raft_leaders{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]]) * 0",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{reason}} {{dc}} {{rack}} {{instance}}",
                                 "conditionalRendering": {
                                     "class": "conditionalRendering_data"
                                 }
-                            },
+                            }
+                        ]
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 6,
+                            "spec/columnWidthMode": "custom",
+                            "spec/columnWidth": 280
+                        },
+                        "conditionalRendering": {
+                            "class": "conditionalRendering_var",
+                            "spec/items/0/spec/variable": "sc_table"
+                        },
+                        "panels": [
                             {
                                 "span": 3,
                                 "class": "rps_panel",
@@ -193,33 +232,12 @@
                             },
                             {
                                 "span": 3,
+                                "repeat": "quantile",
                                 "class": "us_panel",
-                                "spec/title": "SC 95th percentile read latency by [[by]]",
-                                "spec/description": "95th percentile latency of strongly consistent reads that reached a Raft group of the table and ended there, by read type. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_table_read_latency",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(scylla_strong_consistency_table_read_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type, le)) or histogram_quantile(0.95, sum(rate(scylla_strong_consistency_table_read_latency{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type))",
+                                "spec/title": "SC ${quantile:text} read latency by [[by]]",
+                                "spec/description": "${quantile:text} latency of strongly consistent reads that reached a Raft group of the table and ended there, by read type. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_table_read_latency",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(${quantile:raw}, sum(rate(scylla_strong_consistency_table_read_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type, le)) or histogram_quantile(${quantile:raw}, sum(rate(scylla_strong_consistency_table_read_latency{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type))",
                                 "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{dc}} {{rack}} {{instance}}",
-                                "conditionalRendering": {
-                                    "class": "conditionalRendering_data"
-                                }
-                            },
-                            {
-                                "span": 3,
-                                "class": "us_panel",
-                                "spec/title": "SC 99th percentile read latency by [[by]]",
-                                "spec/description": "99th percentile latency of strongly consistent reads that reached a Raft group of the table and ended there, by read type. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_table_read_latency",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_strong_consistency_table_read_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type, le)) or histogram_quantile(0.99, sum(rate(scylla_strong_consistency_table_read_latency{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], read_type))",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{dc}} {{rack}} {{instance}}",
-                                "conditionalRendering": {
-                                    "class": "conditionalRendering_data"
-                                }
-                            },
-                            {
-                                "span": 3,
-                                "class": "wps_panel",
-                                "spec/title": "SC write errors $func by [[by]]",
-                                "spec/description": "Strongly consistent writes that reached a Raft group of the table and failed there, by reason (timeout, status_unknown, other).\n\nscylla_strong_consistency_table_write_errors",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "max_over_time(($func(irate(scylla_strong_consistency_table_write_errors{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], reason))[$__interval:]) or on([[by]]) $func(scylla_strong_consistency_raft_leaders{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}) by ([[by]]) * 0",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{reason}} {{dc}} {{rack}} {{instance}}",
                                 "conditionalRendering": {
                                     "class": "conditionalRendering_data"
                                 }
@@ -234,7 +252,23 @@
                                 "conditionalRendering": {
                                     "class": "conditionalRendering_data"
                                 }
-                            },
+                            }
+                        ]
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 6,
+                            "spec/columnWidthMode": "custom",
+                            "spec/columnWidth": 280
+                        },
+                        "conditionalRendering": {
+                            "class": "conditionalRendering_var",
+                            "spec/items/0/spec/variable": "sc_table"
+                        },
+                        "panels": [
                             {
                                 "span": 3,
                                 "class": "graph_panel_int",
@@ -308,10 +342,11 @@
                             },
                             {
                                 "span": 3,
+                                "repeat": "quantile",
                                 "class": "us_panel",
-                                "spec/title": "99th percentile apply latency by [[by]]",
-                                "spec/description": "99th percentile of the time to apply a write from a Raft log of the table to the tablet replica on a node. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_state_machine_apply_latency",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)) or histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]))",
+                                "spec/title": "${quantile:text} apply latency by [[by]]",
+                                "spec/description": "${quantile:text} of the time to apply a write from a Raft log of the table to the tablet replica on a node. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_state_machine_apply_latency",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(${quantile:raw}, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)) or histogram_quantile(${quantile:raw}, sum(rate(scylla_strong_consistency_state_machine_apply_latency{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]]))",
                                 "conditionalRendering": {
                                     "class": "conditionalRendering_data"
                                 }
@@ -355,18 +390,17 @@
                     },
                     {
                         "span": 3,
+                        "repeat": "quantile",
                         "class": "us_panel",
-                        "spec/title": "P95 read latency by [[by]]",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95,sum(rate(scylla_index_query_latencies_bucket{ks=\"$ks\", idx=\"$index\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le))"
-                    },
-                    {
-                        "span": 3,
-                        "class": "us_panel",
-                        "spec/title": "P99 read latency by [[by]]",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99,sum(rate(scylla_index_query_latencies_bucket{ks=\"$ks\", idx=\"$index\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le))"
+                        "spec/title": "${quantile:text} read latency by [[by]]",
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(${quantile:raw},sum(rate(scylla_index_query_latencies_bucket{ks=\"$ks\", idx=\"$index\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le))"
                     }
                 ],
-                "title": "Index: $ks:$index"
+                "title": "Index: $ks:$index",
+                "layout": {
+                    "class": "auto_grid_layout",
+                    "spec/maxColumnCount": 4
+                }
             },
             {
                 "class": "monitoring_version_row"
@@ -402,6 +436,9 @@
                     "allowCustomValue": true,
                     "valuesFormat": "csv"
                 }
+            },
+            {
+                "class": "quantile_variable"
             },
             {
                 "kind": "QueryVariable",

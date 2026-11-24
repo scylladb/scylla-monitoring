@@ -336,6 +336,9 @@
                     },
                     {
                         "class": "g13_aggregation_function"
+                    },
+                    {
+                        "class": "quantile_variable"
                     }
                 ],
                 "tabs": [
@@ -417,21 +420,18 @@
                                     },
                                     {
                                         "span": 2,
+                                        "repeat": "quantile",
                                         "class": "seconds_panel",
-                                        "spec/title": "P95 Latency",
-                                        "spec/description": "95th percentile latency of requests to the index by operation",
-                                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.95, sum(rate(request_latency_seconds_bucket{ks_index=\"$index\", operation=~\"$operation\", instance=~\"$vector_search_node\"}[$__rate_interval])) by ([[by]], index_name, operation, le))",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{cluster}} {{instance}} {{index_name}} {{operation}}"
-                                    },
-                                    {
-                                        "span": 2,
-                                        "class": "seconds_panel",
-                                        "spec/title": "P99 Latency",
-                                        "spec/description": "99th percentile latency of requests to the index by operation",
-                                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(request_latency_seconds_bucket{ks_index=\"$index\", operation=~\"$operation\", instance=~\"$vector_search_node\"}[$__rate_interval])) by ([[by]], index_name, operation, le))",
+                                        "spec/title": "${quantile:text} Latency",
+                                        "spec/description": "${quantile:text} latency of requests to the index by operation",
+                                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(${quantile:raw}, sum(rate(request_latency_seconds_bucket{ks_index=\"$index\", operation=~\"$operation\", instance=~\"$vector_search_node\"}[$__rate_interval])) by ([[by]], index_name, operation, le))",
                                         "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{cluster}} {{instance}} {{index_name}} {{operation}}"
                                     }
-                                ]
+                                ],
+                                "layout": {
+                                    "class": "auto_grid_layout",
+                                    "spec/maxColumnCount": 6
+                                }
                             },
                             {
                                 "class": "row",
