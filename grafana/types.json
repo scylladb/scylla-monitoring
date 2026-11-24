@@ -5754,5 +5754,522 @@
             }
          ]
       }
-   }
+   },
+    "manager_server_stat": {
+        "class": "small_stat_area",
+        "span": 4,
+        "gridPos": {
+            "h": 4
+        },
+        "vizConfig/spec/fieldConfig/defaults/decimals": 1,
+        "vizConfig/spec/fieldConfig/defaults/thresholds/steps": [
+            {
+                "value": 0,
+                "color": "green"
+            },
+            {
+                "value": 80,
+                "color": "yellow"
+            },
+            {
+                "value": 90,
+                "color": "red"
+            }
+        ]
+    },
+    "manager_instance_query": {
+        "class": "graph_query",
+        "spec/query/spec/legendFormat": "{{instance}}"
+    },
+    "manager_health_stat": {
+        "class": "small_stat",
+        "span": 4,
+        "gridPos": {
+            "h": 4
+        },
+        "vizConfig/spec/fieldConfig/defaults/mappings": [
+            {
+                "type": "value",
+                "options": {
+                    "0": {
+                        "text": " ",
+                        "color": "green",
+                        "index": 0
+                    },
+                    "-1": {
+                        "text": "no data",
+                        "color": "#808080",
+                        "index": 1
+                    }
+                }
+            }
+        ],
+        "vizConfig/spec/fieldConfig/defaults/color": {
+            "mode": "thresholds"
+        },
+        "vizConfig/spec/fieldConfig/defaults/thresholds/steps": [
+            {
+                "value": null,
+                "color": "#808080"
+            },
+            {
+                "value": 0,
+                "color": "green"
+            },
+            {
+                "value": 1,
+                "color": "red"
+            }
+        ],
+        "vizConfig/spec/options/orientation": "horizontal",
+        "vizConfig/spec/options/colorMode": "background",
+        "vizConfig/spec/options/textMode": "value_and_name",
+        "vizConfig/spec/options/reduceOptions/calcs": [
+            "lastNotNull"
+        ]
+    },
+    "manager_health_mapping": {
+        "type": "value",
+        "options": {
+            "1": {
+                "text": "OK",
+                "color": "green",
+                "index": 0
+            },
+            "-1": {
+                "text": "DOWN",
+                "color": "red",
+                "index": 1
+            },
+            "0": {
+                "text": " ",
+                "index": 2
+            }
+        }
+    },
+    "manager_health_history": {
+        "class": "graph_panel",
+        "span": 12,
+        "gridPos": {
+            "h": 7
+        },
+        "spec/vizConfig/spec/fieldConfig/defaults/custom/lineWidth": 2,
+        "spec/vizConfig/spec/fieldConfig/defaults/custom/showPoints": "always",
+        "spec/vizConfig/spec/fieldConfig/defaults/custom/lineInterpolation": "stepAfter",
+        "spec/vizConfig/spec/fieldConfig/defaults/max": 1.2,
+        "spec/vizConfig/spec/fieldConfig/defaults/decimals": 0,
+        "spec/vizConfig/spec/options/legend/calcs": [
+            "lastNotNull",
+            "min"
+        ],
+        "spec/vizConfig/spec/options/legend/showLegend": true,
+        "spec/vizConfig/spec/options/legend/displayMode": "table",
+        "spec/vizConfig/spec/fieldConfig/defaults/min": -1.2,
+        "spec/vizConfig/spec/fieldConfig/defaults/mappings": [
+            {
+                "class": "manager_health_mapping"
+            }
+        ]
+    },
+    "manager_host_query": {
+        "class": "graph_query",
+        "spec/query/spec/legendFormat": "{{host}} ({{dc}}/{{rack}})"
+    },
+    "manager_table": {
+        "class": "single_value_table",
+        "span": 12,
+        "spec/vizConfig/spec/fieldConfig/defaults/thresholds/steps/0/value": null,
+        "spec/vizConfig/spec/fieldConfig/defaults/thresholds/steps/0/color": "text",
+        "spec/vizConfig/spec/options/sortBy": [
+            {
+                "desc": false,
+                "displayName": "Name"
+            }
+        ]
+    },
+    "manager_table_query": {
+        "class": "panel_query",
+        "spec/query/spec/format": "table"
+    },
+    "manager_task_table": {
+        "class": "manager_table",
+        "gridPos": {
+            "h": 7
+        },
+        "spec/data/spec/transformations": [
+            {
+                "kind": "Transformation",
+                "group": "joinByField",
+                "spec": {
+                    "options": {
+                        "byField": "task",
+                        "mode": "outerTabular"
+                    }
+                }
+            },
+            {
+                "kind": "Transformation",
+                "group": "organize",
+                "spec": {
+                    "options": {
+                        "excludeByName": {
+                            "Time": true,
+                            "Time 1": true,
+                            "Time 2": true,
+                            "Time 3": true,
+                            "Time 4": true,
+                            "Time 5": true,
+                            "Value #D": true,
+                            "Value #E": true,
+                            "task": true
+                        },
+                        "indexByName": {
+                            "name": 0,
+                            "type": 1,
+                            "Value #A": 2,
+                            "Value #C": 3,
+                            "Value #B": 4,
+                            "cron": 5,
+                            "location": 6,
+                            "keyspace": 7,
+                            "keyspace_replication": 8,
+                            "incremental_mode": 9,
+                            "dc": 10,
+                            "host": 11,
+                            "retention": 12,
+                            "retention_days": 13,
+                            "method": 14,
+                            "retention_lock_mode": 15,
+                            "purge_only": 16,
+                            "skip_schema": 17,
+                            "fail_fast": 18,
+                            "ignore_down_hosts": 19
+                        },
+                        "renameByName": {
+                            "Value #A": "State",
+                            "Value #B": "Since last success start",
+                            "Value #C": "Progress",
+                            "cron": "Cron",
+                            "dc": "DC",
+                            "fail_fast": "Fail fast",
+                            "host": "Host",
+                            "ignore_down_hosts": "Ignore down hosts",
+                            "incremental_mode": "Incremental mode",
+                            "keyspace": "Keyspace filter",
+                            "keyspace_replication": "Replication",
+                            "name": "Name",
+                            "type": "Type",
+                            "location": "Location",
+                            "method": "Method",
+                            "purge_only": "Purge only",
+                            "retention": "Retention",
+                            "retention_days": "Retention days",
+                            "retention_lock_mode": "Retention lock",
+                            "skip_schema": "Skip schema"
+                        }
+                    }
+                }
+            }
+        ],
+        "spec/vizConfig/spec/fieldConfig/overrides": [
+            {
+                "matcher": {
+                    "id": "byName",
+                    "options": "State"
+                },
+                "properties": [
+                    {
+                        "id": "mappings",
+                        "value": [
+                            {
+                                "options": {
+                                    "0": {
+                                        "color": "text",
+                                        "index": 0,
+                                        "text": "NEVER RUN"
+                                    },
+                                    "1": {
+                                        "color": "blue",
+                                        "index": 1,
+                                        "text": "RUNNING"
+                                    },
+                                    "2": {
+                                        "color": "green",
+                                        "index": 2,
+                                        "text": "DONE"
+                                    },
+                                    "3": {
+                                        "color": "red",
+                                        "index": 3,
+                                        "text": "ERROR"
+                                    },
+                                    "4": {
+                                        "color": "yellow",
+                                        "index": 4,
+                                        "text": "STOPPED"
+                                    },
+                                    "5": {
+                                        "color": "orange",
+                                        "index": 5,
+                                        "text": "WAITING"
+                                    }
+                                },
+                                "type": "value"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "custom.cellOptions",
+                        "value": {
+                            "type": "color-background"
+                        }
+                    },
+                    {
+                        "id": "custom.width",
+                        "value": 105
+                    }
+                ]
+            },
+            {
+                "matcher": {
+                    "id": "byName",
+                    "options": "Progress"
+                },
+                "properties": [
+                    {
+                        "id": "unit",
+                        "value": "percent"
+                    },
+                    {
+                        "id": "decimals",
+                        "value": 0
+                    },
+                    {
+                        "id": "min",
+                        "value": 0
+                    },
+                    {
+                        "id": "max",
+                        "value": 100
+                    },
+                    {
+                        "id": "custom.cellOptions",
+                        "value": {
+                            "mode": "gradient",
+                            "type": "gauge"
+                        }
+                    },
+                    {
+                        "id": "custom.width",
+                        "value": 110
+                    }
+                ]
+            },
+            {
+                "matcher": {
+                    "id": "byName",
+                    "options": "Since last success start"
+                },
+                "properties": [
+                    {
+                        "id": "unit",
+                        "value": "dthms"
+                    },
+                    {
+                        "id": "mappings",
+                        "value": [
+                            {
+                                "options": {
+                                    "99999999": {
+                                        "color": "red",
+                                        "index": 0,
+                                        "text": "never"
+                                    }
+                                },
+                                "type": "value"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "custom.cellOptions",
+                        "value": {
+                            "type": "color-text"
+                        }
+                    },
+                    {
+                        "id": "custom.width",
+                        "value": 200
+                    }
+                ]
+            },
+            {
+                "matcher": {
+                    "id": "byRegexp",
+                    "options": "^(Cron|Location|Keyspace filter|Replication|Incremental mode|DC|Host|Retention|Retention days|Method|Retention lock|Purge only|Skip schema|Fail fast|Ignore down hosts)$"
+                },
+                "properties": [
+                    {
+                        "id": "color",
+                        "value": {
+                            "fixedColor": "rgba(108, 142, 191, 0.18)",
+                            "mode": "fixed"
+                        }
+                    },
+                    {
+                        "id": "custom.cellOptions",
+                        "value": {
+                            "mode": "basic",
+                            "type": "color-background"
+                        }
+                    }
+                ]
+            },
+            {
+                "matcher": {
+                    "id": "byName",
+                    "options": "Name"
+                },
+                "properties": [
+                    {
+                        "id": "custom.width",
+                        "value": 170
+                    }
+                ]
+            },
+            {
+                "matcher": {
+                    "id": "byName",
+                    "options": "Cron"
+                },
+                "properties": [
+                    {
+                        "id": "custom.width",
+                        "value": 120
+                    }
+                ]
+            },
+            {
+                "matcher": {
+                    "id": "byName",
+                    "options": "Location"
+                },
+                "properties": [
+                    {
+                        "id": "custom.width",
+                        "value": 195
+                    }
+                ]
+            }
+        ]
+    },
+    "manager_task_state_timeline": {
+        "class": "graph_panel",
+        "span": 12,
+        "spec/vizConfig/group": "state-timeline",
+        "spec/vizConfig/spec/fieldConfig/defaults/custom/fillOpacity": 85,
+        "spec/vizConfig/spec/fieldConfig/defaults/custom/lineWidth": 0,
+        "spec/vizConfig/spec/fieldConfig/defaults/mappings": [
+            {
+                "type": "value",
+                "options": {
+                    "-10": {
+                        "text": "never executed yet",
+                        "color": "rgba(128, 128, 128, 0.7)",
+                        "index": 4
+                    },
+                    "-5": {
+                        "text": "prev execution hit its window end",
+                        "color": "orange",
+                        "index": 5
+                    },
+                    "-6": {
+                        "text": "prev execution stopped",
+                        "color": "yellow",
+                        "index": 3
+                    },
+                    "-7": {
+                        "text": "prev execution failed",
+                        "color": "red",
+                        "index": 2
+                    },
+                    "-8": {
+                        "text": "prev execution succeeded",
+                        "color": "rgba(128, 128, 128, 0.25)",
+                        "index": 1
+                    }
+                }
+            },
+            {
+                "type": "range",
+                "options": {
+                    "from": 0,
+                    "to": 100,
+                    "result": {
+                        "color": "blue",
+                        "index": 0
+                    }
+                }
+            }
+        ],
+        "spec/vizConfig/spec/fieldConfig/defaults/color/fixedColor": "text",
+        "spec/vizConfig/spec/fieldConfig/defaults/color/mode": "fixed",
+        "spec/vizConfig/spec/fieldConfig/defaults/thresholds/steps": [
+            {
+                "value": null,
+                "color": "text"
+            },
+            {
+                "value": 1,
+                "color": "blue"
+            },
+            {
+                "value": 2,
+                "color": "green"
+            },
+            {
+                "value": 3,
+                "color": "red"
+            },
+            {
+                "value": 4,
+                "color": "yellow"
+            }
+        ],
+        "spec/vizConfig/spec/fieldConfig/defaults/unit": "percent",
+        "spec/vizConfig/spec/options/mergeValues": true,
+        "spec/vizConfig/spec/options/tooltip/sort": "none",
+        "spec/vizConfig/spec/options/tooltip/mode": "single",
+        "spec/vizConfig/spec/options/showValue": "never",
+        "spec/vizConfig/spec/options/alignValue": "center",
+        "spec/vizConfig/spec/options/rowHeight": 0.9,
+        "spec/vizConfig/spec/options/perPage": 3
+    },
+    "manager_task_success_age": {
+        "class": "seconds_panel",
+        "span": 12,
+        "gridPos": {
+            "h": 9
+        },
+        "spec/vizConfig/spec/fieldConfig/defaults/custom/lineWidth": 2,
+        "spec/vizConfig/spec/fieldConfig/defaults/custom/showPoints": "auto",
+        "spec/vizConfig/spec/fieldConfig/defaults/min": 0,
+        "spec/vizConfig/spec/options/legend/calcs": [
+            "lastNotNull",
+            "max"
+        ],
+        "spec/vizConfig/spec/options/legend/showLegend": true,
+        "spec/vizConfig/spec/options/legend/displayMode": "table"
+    },
+    "manager_task_state_legend": {
+        "class": "plain_text",
+        "gridPos": {
+            "h": 2
+        },
+        "spec/vizConfig/spec/options/content": "<span style=\"color:#5794F2\">&#9679;</span> running &middot; <span style=\"color:rgba(128, 128, 128, 0.7)\">&#9679;</span> never executed yet &middot; <span style=\"color:#F2495C\">&#9679;</span> prev execution failed &middot; <span style=\"color:#FADE2A\">&#9679;</span> prev execution stopped &middot; <span style=\"color:#FF9830\">&#9679;</span> prev execution hit its window end"
+    },
+    "manager_task_variable": {
+        "class": "query_variable_all",
+        "spec/regex": "/name=\"(?<text>[^\"]+)\".*task=\"(?<value>[^\"]+)\"/",
+        "spec/allValue": ""
+    }
 }

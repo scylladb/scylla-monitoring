@@ -4,501 +4,401 @@
         "originalTitle": "Scylla Manager Metrics",
         "rows": [
             {
-                "title": "Manager Summary $cluster",
+                "title": "Manager Server",
                 "collapse": false,
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "sm_node"
+                },
                 "rows": [
                     {
-                        "class": "row",
+                        "class": "base_row",
                         "panels": [
                             {
-                                "class": "small_stat",
-                                "span": 3,
-                                "vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "noValue": " Offline",
-                                        "thresholds": {
-                                            "mode": "absolute",
-                                            "steps": [
-                                                {
-                                                    "color": "red",
-                                                    "value": null
-                                                },
-                                                {
-                                                    "color": "green",
-                                                    "value": 0
-                                                }
-                                            ]
-                                        },
-                                        "mappings": [
-                                            {
-                                                "type": "value",
-                                                "options": {
-                                                    "0": {
-                                                        "text": "Online"
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "type": "value",
-                                                "options": {
-                                                    "1": {
-                                                        "text": "Offline"
-                                                    }
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    "overrides": []
-                                },
-                                "data/spec/queries/0/spec/query/spec/expr": "count(scrape_samples_scraped{job=\"scylla_manager\"}==0) OR vector(0)",
-                                "title": "Manager"
+                                "class": "manager_server_stat",
+                                "title": "SM node memory used",
+                                "data/spec/queries": [
+                                    {
+                                        "class": "manager_instance_query",
+                                        "spec/query/spec/expr": "100 * (1 - node_memory_MemAvailable_bytes{job=\"scylla_manager\", cluster=~\"$cluster|\"} / node_memory_MemTotal_bytes{job=\"scylla_manager\", cluster=~\"$cluster|\"})"
+                                    }
+                                ]
                             },
                             {
-                                "class": "small_stat",
-                                "data/spec/queries/0/spec/query/spec/expr": "count(scylla_manager_healthcheck_cql_rtt_ms{cluster=\"$cluster\"})",
-                                "data/spec/queries/0/spec/query/spec/legendFormat": "Total Nodes",
-                                "title": "Total Nodes"
+                                "class": "manager_server_stat",
+                                "title": "SM node swap used",
+                                "data/spec/queries": [
+                                    {
+                                        "class": "manager_instance_query",
+                                        "spec/query/spec/expr": "100 * (node_memory_SwapTotal_bytes{job=\"scylla_manager\", cluster=~\"$cluster|\"} - node_memory_SwapFree_bytes{job=\"scylla_manager\", cluster=~\"$cluster|\"}) / clamp_min(node_memory_SwapTotal_bytes{job=\"scylla_manager\", cluster=~\"$cluster|\"}, 1)"
+                                    }
+                                ]
                             },
                             {
-                                "class": "small_stat",
-                                "vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "custom": {},
-                                        "thresholds": {
-                                            "mode": "absolute",
-                                            "steps": [
-                                                {
-                                                    "color": "green",
-                                                    "value": null
-                                                },
-                                                {
-                                                    "value": 0,
-                                                    "color": "green"
-                                                },
-                                                {
-                                                    "value": 1,
-                                                    "color": "red"
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    "overrides": []
-                                },
-                                "data/spec/queries/0/spec/query/spec/expr": "count((scylla_manager_healthcheck_cql_status{cluster=\"$cluster\"}==-1) and on(instance) (scylla_node_operation_mode{cluster=\"$cluster\"} == 3) ) OR vector(0)",
-                                "data/spec/queries/0/spec/query/spec/legendFormat": "Nodes without CQL connection",
-                                "title": "CQL Fail",
-                                "description": "The number of nodes that Scylla manager CQL probe failed connecting to. It could indicate a network or a node problem"
-                            },
-                            {
-                                "gridPos/w": 2,
-                                "class": "vertical_lcd",
-                                "span": 2,
-                                "spec/title": "Repair",
-                                "spec/vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "custom": {},
-                                        "unit": "percent",
-                                        "decimals": 0,
-                                        "thresholds": {
-                                            "mode": "absolute",
-                                            "steps": [
-                                                {
-                                                    "color": "green",
-                                                    "value": null
-                                                }
-                                            ]
-                                        },
-                                        "mappings": []
-                                    },
-                                    "overrides": []
-                                },
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(scylla_manager_repair_progress{cluster=\"$cluster\", job=\"scylla_manager\"}) or on() manager:repair_progress{cluster=~\"[[cluster]]\"}*100"
-                            },
-                            {
-                                "gridPos": {
-                                    "w": 2,
-                                    "h": 6
-                                },
-                                "class": "small_stat",
-                                "vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "custom": {},
-                                        "thresholds": {
-                                            "mode": "absolute",
-                                            "steps": []
-                                        },
-                                        "mappings": [],
-                                        "color": {
-                                            "mode": "fixed",
-                                            "fixedColor": "green"
-                                        },
-                                        "unit": "dateTimeAsIsoNoDateIfToday",
-                                        "noValue": "Never"
-                                    },
-                                    "overrides": []
-                                },
-                                "data/spec/queries/0/spec/query/spec/expr": "manager:repair_done_ts{cluster=\"$cluster\"}*1000",
-                                "title": "Last repair",
-                                "description": "The time of the last successful repair"
-                            },
-                            {
-                                "gridPos": {
-                                    "w": 2,
-                                    "h": 6
-                                },
-                                "class": "small_stat",
-                                "vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "custom": {},
-                                        "thresholds": {
-                                            "mode": "absolute",
-                                            "steps": []
-                                        },
-                                        "mappings": [],
-                                        "color": {
-                                            "mode": "fixed",
-                                            "fixedColor": "green"
-                                        },
-                                        "unit": "dateTimeAsIsoNoDateIfToday",
-                                        "noValue": "Never"
-                                    },
-                                    "overrides": []
-                                },
-                                "data/spec/queries/0/spec/query/spec/expr": "manager:repair_fail_ts{cluster=\"$cluster\"}*1000",
-                                "title": "Last Failure",
-                                "description": "The time of the last failed repair"
-                            },
-                            {
-                                "gridPos/w": 2,
-                                "class": "vertical_lcd",
-                                "span": 2,
-                                "spec/title": "Backup",
-                                "spec/vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "custom": {},
-                                        "unit": "percent",
-                                        "decimals": 0,
-                                        "thresholds": {
-                                            "mode": "absolute",
-                                            "steps": [
-                                                {
-                                                    "color": "green",
-                                                    "value": null
-                                                }
-                                            ]
-                                        },
-                                        "mappings": []
-                                    },
-                                    "overrides": []
-                                },
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "manager:backup_progress{cluster=~\"[[cluster]]\"}*100"
-                            },
-                            {
-                                "gridPos": {
-                                    "w": 2,
-                                    "h": 6
-                                },
-                                "class": "small_stat",
-                                "vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "custom": {},
-                                        "thresholds": {
-                                            "mode": "absolute",
-                                            "steps": []
-                                        },
-                                        "mappings": [],
-                                        "color": {
-                                            "mode": "fixed",
-                                            "fixedColor": "green"
-                                        },
-                                        "unit": "dateTimeAsIsoNoDateIfToday",
-                                        "noValue": "Never"
-                                    },
-                                    "overrides": []
-                                },
-                                "data/spec/queries/0/spec/query/spec/expr": "manager:backup_done_ts{cluster=\"$cluster\"}*1000",
-                                "title": "Last Backup",
-                                "description": "The time of the last successful backup"
-                            },
-                            {
-                                "gridPos": {
-                                    "w": 2,
-                                    "h": 6
-                                },
-                                "class": "small_stat",
-                                "vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "custom": {},
-                                        "thresholds": {
-                                            "mode": "absolute",
-                                            "steps": []
-                                        },
-                                        "mappings": [],
-                                        "color": {
-                                            "mode": "fixed",
-                                            "fixedColor": "green"
-                                        },
-                                        "unit": "dateTimeAsIsoNoDateIfToday",
-                                        "noValue": "Never"
-                                    },
-                                    "overrides": []
-                                },
-                                "data/spec/queries/0/spec/query/spec/expr": "manager:backup_fail_ts{cluster=\"$cluster\"}*1000",
-                                "title": "Last Failure",
-                                "description": "The time of the last failed backup"
+                                "class": "manager_server_stat",
+                                "title": "SM node CPU busy",
+                                "data/spec/queries": [
+                                    {
+                                        "class": "manager_instance_query",
+                                        "spec/query/spec/expr": "clamp(100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{job=\"scylla_manager\", cluster=~\"$cluster|\", mode=\"idle\"}[5m]))), 0, 100)"
+                                    }
+                                ]
                             }
                         ],
                         "hideHeader": true
+                    }
+                ]
+            },
+            {
+                "title": "Scylla Manager -> cluster nodes connectivity health check",
+                "collapse": false,
+                "variables": [
+                    {
+                        "class": "query_variable_all",
+                        "spec/name": "dc",
+                        "spec/label": "DC",
+                        "spec/query/spec/__legacyStringValue": "label_values({__name__=~\"scylla_manager_healthcheck_(cql|rest|alternator)_status\", exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"}, dc)"
+                    },
+                    {
+                        "class": "query_variable_all",
+                        "spec/name": "host",
+                        "spec/label": "Host",
+                        "spec/query/spec/__legacyStringValue": "label_values({__name__=~\"scylla_manager_healthcheck_(cql|rest|alternator)_status\", exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\"}, host)"
+                    }
+                ],
+                "rows": [
+                    {
+                        "class": "base_row",
+                        "panels": [
+                            {
+                                "class": "manager_health_stat",
+                                "title": "CQL",
+                                "data/spec/queries": [
+                                    {
+                                        "class": "panel_query",
+                                        "spec/query/spec/expr": "count(scylla_manager_healthcheck_cql_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} != 1) or (count(scylla_manager_healthcheck_cql_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}) * 0) or vector(-1)",
+                                        "spec/query/spec/legendFormat": "now"
+                                    },
+                                    {
+                                        "class": "panel_query",
+                                        "spec/query/spec/expr": "count(min_over_time(scylla_manager_healthcheck_cql_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}[$__range]) != 1) or (count(last_over_time(scylla_manager_healthcheck_cql_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}[$__range])) * 0) or vector(-1)",
+                                        "spec/query/spec/legendFormat": "in range",
+                                        "spec/refId": "B"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "manager_health_stat",
+                                "title": "REST",
+                                "data/spec/queries": [
+                                    {
+                                        "class": "panel_query",
+                                        "spec/query/spec/expr": "count(scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} != 1) or (count(scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}) * 0) or vector(-1)",
+                                        "spec/query/spec/legendFormat": "now"
+                                    },
+                                    {
+                                        "class": "panel_query",
+                                        "spec/query/spec/expr": "count(min_over_time(scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}[$__range]) != 1) or (count(last_over_time(scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}[$__range])) * 0) or vector(-1)",
+                                        "spec/query/spec/legendFormat": "in range",
+                                        "spec/refId": "B"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "manager_health_stat",
+                                "title": "Alternator",
+                                "data/spec/queries": [
+                                    {
+                                        "class": "panel_query",
+                                        "spec/query/spec/expr": "count(scylla_manager_healthcheck_alternator_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} != 1) or (count(scylla_manager_healthcheck_alternator_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}) * 0) or vector(-1)",
+                                        "spec/query/spec/legendFormat": "now"
+                                    },
+                                    {
+                                        "class": "panel_query",
+                                        "spec/query/spec/expr": "count(min_over_time(scylla_manager_healthcheck_alternator_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}[$__range]) != 1) or (count(last_over_time(scylla_manager_healthcheck_alternator_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}[$__range])) * 0) or vector(-1)",
+                                        "spec/query/spec/legendFormat": "in range",
+                                        "spec/refId": "B"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "manager_table",
+                                "spec/title": "Nodes not healthy for the whole range",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "manager_table_query",
+                                        "spec/query/spec/expr": "label_replace(min_over_time(((scylla_manager_healthcheck_cql_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -1) unless on(cluster, dc, rack, host) (scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -2))[$__range:]) or min without () ((scylla_manager_healthcheck_cql_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -1) unless on(cluster, dc, rack, host) (scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -2)), \"protocol\", \"CQL\", \"\", \"\") or label_replace(min_over_time((scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -1)[$__range:]) or min without () (scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -1), \"protocol\", \"REST\", \"\", \"\") or label_replace(min_over_time(((scylla_manager_healthcheck_alternator_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -1) unless on(cluster, dc, rack, host) (scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -2))[$__range:]) or min without () ((scylla_manager_healthcheck_alternator_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -1) unless on(cluster, dc, rack, host) (scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -2)), \"protocol\", \"Alternator\", \"\", \"\") or label_replace(min_over_time((scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -2)[$__range:]) or min without () (scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"} == -2), \"protocol\", \"Agent\", \"\", \"\")"
+                                    }
+                                ],
+                                "spec/data/spec/transformations": [
+                                    {
+                                        "kind": "Transformation",
+                                        "group": "labelsToFields",
+                                        "spec": {
+                                            "options": {
+                                                "mode": "columns"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "kind": "Transformation",
+                                        "group": "organize",
+                                        "spec": {
+                                            "options": {
+                                                "excludeByName": {
+                                                    "Time": true,
+                                                    "Value": true,
+                                                    "__name__": true,
+                                                    "cluster": true,
+                                                    "instance": true,
+                                                    "job": true,
+                                                    "exported_cluster": true
+                                                },
+                                                "indexByName": {
+                                                    "dc": 2,
+                                                    "host": 1,
+                                                    "protocol": 0,
+                                                    "rack": 3
+                                                },
+                                                "renameByName": {
+                                                    "dc": "DC",
+                                                    "host": "Host",
+                                                    "protocol": "Protocol",
+                                                    "rack": "Rack"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "spec/vizConfig/spec/options/sortBy": [
+                                    {
+                                        "desc": false,
+                                        "displayName": "Host"
+                                    }
+                                ]
+                            }
+                        ],
+                        "hideHeader": true
+                    },
+                    {
+                        "class": "base_row",
+                        "panels": [
+                            {
+                                "class": "manager_health_history",
+                                "spec/title": "CQL status",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "manager_host_query",
+                                        "spec/query/spec/expr": "scylla_manager_healthcheck_cql_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "manager_health_history",
+                                "spec/title": "REST status",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "manager_host_query",
+                                        "spec/query/spec/expr": "scylla_manager_healthcheck_rest_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}"
+                                    }
+                                ],
+                                "spec/vizConfig/spec/fieldConfig/defaults/min": -2.2,
+                                "spec/vizConfig/spec/fieldConfig/defaults/mappings": [
+                                    {
+                                        "class": "manager_health_mapping",
+                                        "options/-2": {
+                                            "text": "AGENT UNREACHABLE",
+                                            "color": "purple",
+                                            "index": 3
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "manager_health_history",
+                                "spec/title": "Alternator status",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "manager_host_query",
+                                        "spec/query/spec/expr": "scylla_manager_healthcheck_alternator_status{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", dc=~\"$dc\", host=~\"$host\"}"
+                                    }
+                                ]
+                            }
+                        ],
+                        "title": "Connectivity health check history",
+                        "collapse": true
                     }
                 ]
             },
             {
                 "title": "Repair",
                 "collapse": false,
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "sm_repair_tasks"
+                },
+                "variables": [
+                    {
+                        "class": "manager_task_variable",
+                        "spec/name": "repair_task",
+                        "spec/label": "Repair task",
+                        "spec/query/spec/__legacyStringValue": "query_result(scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\", cron!=\"ad-hoc\"} or (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\", cron=\"ad-hoc\"} and on(task) ((scylla_manager_scheduler_task_run_start_seconds{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} >= time() - $__range_s) or max_over_time((scylla_manager_scheduler_task_state{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} == 1)[$__range:]))))"
+                    }
+                ],
                 "rows": [
                     {
-                        "class": "row",
-                        "gridPos/h": 2,
+                        "class": "base_row",
                         "panels": [
                             {
-                                "class": "plain_text",
-                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Repair</h1>"
+                                "class": "manager_task_table",
+                                "spec/title": "Repair tasks",
+                                "spec/description": "Name, Type and Cron are the task's current configuration. The remaining properties are the ones the most recent run started with, so they stay unchanged until the task runs again and are empty until it runs for the first time after Scylla Manager restarts.",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "manager_table_query",
+                                        "spec/query/spec/expr": "max by (task) (scylla_manager_scheduler_task_state{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\"} and on(task) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\", task=~\"$repair_task\"}))"
+                                    },
+                                    {
+                                        "class": "manager_table_query",
+                                        "spec/query/spec/expr": "(max by (task) ((time() - scylla_manager_scheduler_last_success{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\"}) and on(task) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\", task=~\"$repair_task\"}))) or (max by (task) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\", task=~\"$repair_task\"}) * 0 + 99999999)",
+                                        "spec/refId": "B"
+                                    },
+                                    {
+                                        "class": "manager_table_query",
+                                        "spec/query/spec/expr": "max by (task) ((scylla_manager_repair_progress{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} or avg by (cluster, task) (scylla_manager_tablet_repair_progress{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"})) and on(task) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\", task=~\"$repair_task\"}))",
+                                        "spec/refId": "C"
+                                    },
+                                    {
+                                        "class": "manager_table_query",
+                                        "spec/query/spec/expr": "max by (task, name, cron, type) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\", task=~\"$repair_task\"})",
+                                        "spec/refId": "D"
+                                    },
+                                    {
+                                        "class": "manager_table_query",
+                                        "spec/query/spec/expr": "max by (task, keyspace, dc, keyspace_replication, incremental_mode, host, fail_fast, ignore_down_hosts) (scylla_manager_repair_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} and on(task) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\", task=~\"$repair_task\"}))",
+                                        "spec/refId": "E"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "manager_task_state_timeline",
+                                "spec/title": "Repair task state",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "(max by (task) ((scylla_manager_repair_progress{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} or avg by (cluster, task) (scylla_manager_tablet_repair_progress{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"})) and on(task) (scylla_manager_scheduler_task_state{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\"} == 1)) or max by (task) ((scylla_manager_scheduler_task_state{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\"} != 1) - 10) or max by (task) ((scylla_manager_scheduler_task_state{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\"} == 1) * 0)) * on(task) group_left(name, type) (topk(1, scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\", task=~\"$repair_task\"}) by (task))",
+                                        "spec/query/spec/legendFormat": "{{name}} ({{type}})"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "manager_task_state_legend"
                             }
                         ],
                         "hideHeader": true
                     },
                     {
-                        "class": "row",
+                        "class": "base_row",
                         "panels": [
                             {
-                                "class": "percent_panel",
-                                "span": 2,
-                                "spec/title": "Repair Progress",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(scylla_manager_repair_progress{cluster=\"$cluster\", job=\"scylla_manager\"}) or on() manager:repair_progress{cluster=~\"[[cluster]]\"}*100"
-                            },
-                            {
-                                "class": "ops_panel",
-                                "spec/title": "Repair Token-Range Rate",
-                                "spec/vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "links": [],
-                                        "unit": "si:tr/s"
-                                    },
-                                    "overrides": []
-                                },
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(scylla_manager_repair_token_ranges_success{cluster=~\"[[cluster]]\", instance=~\"$instance\", shard=~\"$shard\"}[$__rate_interval])) by ([[by]])"
-                            },
-                            {
-                                "class": "ops_panel",
-                                "spec/title": "Repair Token-Range Error Rate",
-                                "spec/vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "links": [],
-                                        "unit": "si:tr/s"
-                                    },
-                                    "overrides": []
-                                },
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(scylla_manager_repair_token_ranges_error{cluster=~\"[[cluster]]\", instance=~\"$instance\", shard=~\"$shard\"}[$__rate_interval])) by ([[by]])"
+                                "class": "manager_task_success_age",
+                                "spec/title": "Time since the last successful repair started",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "time() - max by (task, name, type) (scylla_manager_scheduler_last_success{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} * on(task) group_left(name) (topk(1, scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=~\"repair|tablet_repair\", task=~\"$repair_task\"}) by (task)))",
+                                        "spec/query/spec/legendFormat": "{{name}} ({{type}})"
+                                    }
+                                ]
                             }
                         ],
-                        "hideHeader": true
+                        "title": "Time since the last successful repair started"
                     }
                 ]
             },
             {
                 "title": "Backup",
                 "collapse": false,
-                "rows": [
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "sm_backup_tasks"
+                },
+                "variables": [
                     {
-                        "class": "row",
-                        "gridPos/h": 2,
-                        "panels": [
-                            {
-                                "class": "plain_text",
-                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Backup</h1>"
-                            }
-                        ],
-                        "hideHeader": true
-                    },
-                    {
-                        "class": "row",
-                        "panels": [
-                            {
-                                "class": "percentunit_panel",
-                                "span": 2,
-                                "spec/title": "Backup Progress",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "manager:backup_progress{cluster=~\"[[cluster]]\"}"
-                            },
-                            {
-                                "class": "ops_panel",
-                                "span": 3,
-                                "spec/title": "Uploaded bytes",
-                                "spec/vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "links": [],
-                                        "unit": "decbytes"
-                                    },
-                                    "overrides": []
-                                },
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(scylla_manager_backup_files_uploaded_bytes{cluster=~\"[[cluster]]\", instance=~\"$instance\", shard=~\"$shard\"}) by ([[by]])"
-                            },
-                            {
-                                "class": "ops_panel",
-                                "span": 3,
-                                "spec/title": "Uploaded skipped",
-                                "spec/vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "links": [],
-                                        "unit": "decbytes"
-                                    },
-                                    "overrides": []
-                                },
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(scylla_manager_backup_files_skipped_bytes{cluster=~\"[[cluster]]\", instance=~\"$instance\", shard=~\"$shard\"}) by ([[by]])"
-                            },
-                            {
-                                "class": "ops_panel",
-                                "span": 3,
-                                "spec/title": "Uploaded Failed",
-                                "spec/vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "links": [],
-                                        "unit": "decbytes"
-                                    },
-                                    "overrides": []
-                                },
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(scylla_manager_backup_files_failed_bytes{cluster=~\"[[cluster]]\", instance=~\"$instance\", shard=~\"$shard\"}) by ([[by]])"
-                            }
-                        ],
-                        "hideHeader": true
+                        "class": "manager_task_variable",
+                        "spec/name": "backup_task",
+                        "spec/label": "Backup task",
+                        "spec/query/spec/__legacyStringValue": "query_result(scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\", cron!=\"ad-hoc\"} or (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\", cron=\"ad-hoc\"} and on(task) ((scylla_manager_scheduler_task_run_start_seconds{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} >= time() - $__range_s) or max_over_time((scylla_manager_scheduler_task_state{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} == 1)[$__range:]))))"
                     }
-                ]
-            },
-            {
-                "title": "Restore",
-                "collapse": false,
+                ],
                 "rows": [
                     {
-                        "class": "row",
-                        "gridPos/h": 2,
+                        "class": "base_row",
                         "panels": [
                             {
-                                "class": "plain_text",
-                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Restore</h1>"
-                            }
-                        ],
-                        "hideHeader": true
-                    },
-                    {
-                        "class": "row",
-                        "panels": [
-                            {
-                                "class": "percent_panel",
-                                "span": 3,
-                                "spec/title": "Restore Progress",
-                                "spec/description": "Shows current restore progress",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_manager_restore_progress{cluster=~\"[[cluster]]\"} < 100"
-                            },
-                            {
-                                "class": "ops_panel",
-                                "span": 3,
-                                "spec/title": "Restore Remaining Bytes",
-                                "spec/description": "Shows restore progress, the remaining bytes to complete",
-                                "spec/vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "links": [],
-                                        "unit": "decbytes"
+                                "class": "manager_task_table",
+                                "spec/title": "Backup tasks",
+                                "spec/description": "Name and Cron are the task's current configuration. The remaining properties are the ones the most recent run started with, so they stay unchanged until the task runs again and are empty until it runs for the first time after Scylla Manager restarts.",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "manager_table_query",
+                                        "spec/query/spec/expr": "max by (task) (scylla_manager_scheduler_task_state{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\"} and on(task) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\", task=~\"$backup_task\"}))"
                                     },
-                                    "overrides": []
-                                },
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(scylla_manager_restore_remaining_bytes{cluster=~\"[[cluster]]\", instance=~\"$instance\", shard=~\"$shard\"}) by ([[by]])"
-                            },
-                            {
-                                "class": "percent_panel",
-                                "span": 3,
-                                "spec/title": "one to one Restore Progress",
-                                "spec/description": "Shows current one to one restore progress",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_manager_one2onerestore_progress{cluster=~\"[[cluster]]\"} < 100"
-                            },
-                            {
-                                "class": "bytes_panel",
-                                "span": 3,
-                                "spec/title": "one to one Remaining Bytes",
-                                "spec/description": "Shows one to one restore progress, the remaining bytes to complete",
-                                "spec/vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "links": [],
-                                        "unit": "decbytes"
+                                    {
+                                        "class": "manager_table_query",
+                                        "spec/query/spec/expr": "(max by (task) ((time() - scylla_manager_scheduler_last_success{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\"}) and on(task) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\", task=~\"$backup_task\"}))) or (max by (task) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\", task=~\"$backup_task\"}) * 0 + 99999999)",
+                                        "spec/refId": "B"
                                     },
-                                    "overrides": []
-                                },
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(scylla_manager_one2onerestore_download_remaining_bytes{cluster=~\"[[cluster]]\", node=~\"$instance\"}) by ([[by]])"
-                            }
-                        ],
-                        "hideHeader": true
-                    }
-                ]
-            },
-            {
-                "title": "Health Check",
-                "collapse": false,
-                "rows": [
-                    {
-                        "class": "row",
-                        "gridPos/h": 2,
-                        "panels": [
-                            {
-                                "class": "plain_text",
-                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">CQL Health Check</h1>"
-                            }
-                        ],
-                        "hideHeader": true
-                    },
-                    {
-                        "class": "row",
-                        "panels": [
-                            {
-                                "class": "ms_panel",
-                                "spec/title": "CQL probe duration by $by",
-                                "spec/description": "Average duration time for a CQL ping operation",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "avg(scylla_manager_healthcheck_cql_rtt_ms{instance=~\"$instance\", cluster=~\"[[cluster]]\"}) by ($by)"
-                            }
-                        ],
-                        "hideHeader": true
-                    }
-                ]
-            },
-            {
-                "title": "Manager Agent",
-                "collapse": false,
-                "rows": [
-                    {
-                        "class": "row",
-                        "gridPos/h": 2,
-                        "panels": [
-                            {
-                                "class": "plain_text",
-                                "spec/vizConfig/spec/options/content": "<h1 style=\"color:#5780C1; border-bottom: 3px solid #5780C1;\">Manager Agent</h1>"
-                            }
-                        ],
-                        "hideHeader": true
-                    },
-                    {
-                        "class": "row",
-                        "panels": [
-                            {
-                                "class": "bytes_panel",
-                                "spec/title": "Agent Memory Heap usage",
-                                "spec/description": "An increase in memory can indicate an issue with the Manager agent",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "sum(go_memstats_heap_inuse_bytes{job=~\"manager_agent.?\", instance=~\"$instance\"}) by ($by)"
+                                    {
+                                        "class": "manager_table_query",
+                                        "spec/query/spec/expr": "max by (task) (scylla_manager_backup_task_progress{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} and on(task) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\", task=~\"$backup_task\"}))",
+                                        "spec/refId": "C"
+                                    },
+                                    {
+                                        "class": "manager_table_query",
+                                        "spec/query/spec/expr": "max by (task, name, cron) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\", task=~\"$backup_task\"})",
+                                        "spec/refId": "D"
+                                    },
+                                    {
+                                        "class": "manager_table_query",
+                                        "spec/query/spec/expr": "max by (task, keyspace, dc, location, retention, retention_days, method, purge_only, skip_schema, retention_lock_mode) (scylla_manager_backup_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} and on(task) (scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\", task=~\"$backup_task\"}))",
+                                        "spec/refId": "E"
+                                    }
+                                ]
                             },
                             {
-                                "class": "graph_panel",
-                                "spec/title": "Agent Threads",
-                                "spec/description": "An increase in the number of threads can indicate an issue with the Manager agent",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "avg(go_threads{job=~\"manager_agent.?\", instance=~\"$instance\"}) by ($by)"
+                                "class": "manager_task_state_timeline",
+                                "spec/title": "Backup task state",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "(max by (task) (scylla_manager_backup_task_progress{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} and on(task) (scylla_manager_scheduler_task_state{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\"} == 1)) or max by (task) ((scylla_manager_scheduler_task_state{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\"} != 1) - 10) or max by (task) ((scylla_manager_scheduler_task_state{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\"} == 1) * 0)) * on(task) group_left(name) (topk(1, scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\", task=~\"$backup_task\"}) by (task))",
+                                        "spec/query/spec/legendFormat": "{{name}}"
+                                    }
+                                ]
+                            },
+                            {
+                                "class": "manager_task_state_legend"
                             }
                         ],
                         "hideHeader": true
+                    },
+                    {
+                        "class": "base_row",
+                        "panels": [
+                            {
+                                "class": "manager_task_success_age",
+                                "spec/title": "Time since the last successful backup started",
+                                "spec/data/spec/queries": [
+                                    {
+                                        "class": "graph_query",
+                                        "spec/query/spec/expr": "time() - max by (task, name) (scylla_manager_scheduler_last_success{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\"} * on(task) group_left(name) (topk(1, scylla_manager_scheduler_task_properties{exported_cluster=~\"$sm_cluster\", cluster=\"$cluster\", type=\"backup\", task=~\"$backup_task\"}) by (task)))",
+                                        "spec/query/spec/legendFormat": "{{name}}"
+                                    }
+                                ]
+                            }
+                        ],
+                        "title": "Time since the last successful backup started"
                     }
                 ]
             },
@@ -518,46 +418,6 @@
         "spec/title": "Scylla Manager Metrics",
         "metadata/name": "manager-__SCYLLA_VERSION_DASHED__",
         "spec/variables": [
-            {
-                "kind": "CustomVariable",
-                "spec": {
-                    "name": "by",
-                    "label": "by",
-                    "multi": false,
-                    "includeAll": false,
-                    "options": [
-                        {
-                            "selected": true,
-                            "text": "Cluster",
-                            "value": "cluster"
-                        },
-                        {
-                            "selected": false,
-                            "text": "Instance",
-                            "value": "instance"
-                        },
-                        {
-                            "selected": false,
-                            "text": "Keyspace",
-                            "value": "keyspace"
-                        },
-                        {
-                            "selected": false,
-                            "text": "Shard",
-                            "value": "shard"
-                        }
-                    ],
-                    "current": {
-                        "tags": [],
-                        "text": "Cluster",
-                        "value": "cluster"
-                    },
-                    "hide": "dontHide",
-                    "query": "Instance,Shard,Keyspace,Cluster",
-                    "skipUrlSync": false,
-                    "allowCustomValue": false
-                }
-            },
             {
                 "kind": "QueryVariable",
                 "spec": {
@@ -625,74 +485,6 @@
                 }
             },
             {
-                "kind": "QueryVariable",
-                "spec": {
-                    "current": {
-                        "text": "All",
-                        "value": "$__all"
-                    },
-                    "hide": "dontHide",
-                    "refresh": "onTimeRangeChanged",
-                    "skipUrlSync": false,
-                    "query": {
-                        "kind": "DataQuery",
-                        "group": "prometheus",
-                        "version": "v0",
-                        "datasource": {
-                            "name": "prometheus"
-                        },
-                        "spec": {
-                            "__legacyStringValue": "label_values(scylla_manager_healthcheck_cql_rtt_ms{cluster=\"$cluster\"}, instance)"
-                        }
-                    },
-                    "regex": "",
-                    "regexApplyTo": "value",
-                    "sort": "alphabeticalAsc",
-                    "definition": "",
-                    "options": [],
-                    "multi": true,
-                    "includeAll": true,
-                    "allValue": ".*",
-                    "allowCustomValue": true,
-                    "name": "instance",
-                    "label": "instance"
-                }
-            },
-            {
-                "kind": "QueryVariable",
-                "spec": {
-                    "current": {
-                        "text": "All",
-                        "value": "$__all"
-                    },
-                    "hide": "dontHide",
-                    "refresh": "onTimeRangeChanged",
-                    "skipUrlSync": false,
-                    "query": {
-                        "kind": "DataQuery",
-                        "group": "prometheus",
-                        "version": "v0",
-                        "datasource": {
-                            "name": "prometheus"
-                        },
-                        "spec": {
-                            "__legacyStringValue": "label_values(scylla_manager_repair_segments_total, shard)"
-                        }
-                    },
-                    "regex": "",
-                    "regexApplyTo": "value",
-                    "sort": "numericalAsc",
-                    "definition": "",
-                    "options": [],
-                    "multi": true,
-                    "includeAll": true,
-                    "allValue": ".*",
-                    "allowCustomValue": true,
-                    "name": "shard",
-                    "label": "shard"
-                }
-            },
-            {
                 "kind": "CustomVariable",
                 "spec": {
                     "current": {
@@ -733,6 +525,31 @@
                     "allowCustomValue": true,
                     "valuesFormat": "csv"
                 }
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "sm_cluster",
+                "spec/label": "sm_cluster",
+                "spec/query/spec/__legacyStringValue": "query_result(scylla_manager_cluster_name{name=\"$cluster_name\", cluster=\"$cluster\"})",
+                "spec/regex": "/exported_cluster=\"([^\"]+)\"/"
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "sm_repair_tasks",
+                "spec/label": "sm_repair_tasks",
+                "spec/query/spec/__legacyStringValue": "query_result(count(scylla_manager_scheduler_task_properties{cluster=\"$cluster\", exported_cluster=~\"$sm_cluster\", type=~\"repair|tablet_repair\"}))"
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "sm_backup_tasks",
+                "spec/label": "sm_backup_tasks",
+                "spec/query/spec/__legacyStringValue": "query_result(count(scylla_manager_scheduler_task_properties{cluster=\"$cluster\", exported_cluster=~\"$sm_cluster\", type=\"backup\"}))"
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "sm_node",
+                "spec/label": "sm_node",
+                "spec/query/spec/__legacyStringValue": "query_result(count(node_memory_MemTotal_bytes{job=\"scylla_manager\", cluster=~\"$cluster|\"}))"
             }
         ]
     }
