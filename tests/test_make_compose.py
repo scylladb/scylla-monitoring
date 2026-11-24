@@ -143,6 +143,18 @@ def test_no_manager():
             assert {c[c.index("-M") + 1] for c in cmds if c[0] == "./generate-dashboards.sh"} == {manager}, argv
 
 
+def test_p999():
+    """--p999 and P999=1 mount the optional P99.9 rules, with -R and for vmalert too."""
+    def mounted(argv, service="aprom", **environ):
+        return any("p999.rules.yml" in m for m in build(["-v", "2025.3"] + argv + TARGETS, **environ).compose["services"][service]["volumes"])
+    assert not mounted([])
+    assert mounted(["--p999"]) and mounted([], P999="1") and mounted(["--p999", "-R", "prometheus/prom_rules"])
+    vmalert = build(["-v", "2025.3", "--p999", "--victoria-metrics"] + TARGETS).compose["services"]["vmalert"]
+    assert mounted(["--p999", "--victoria-metrics"], "vmalert") and "-rule=/etc/prometheus/prom_rules_optional/*yml" in vmalert["command"]
+    # the rule file is part of the config hash, so editing it restarts Prometheus
+    assert any(c.endswith("prom_rules_optional/p999.rules.yml") for c in build(["-v", "2025.3", "--p999"] + TARGETS).config)
+
+
 def test_secrets_stay_out_of_compose():
     stack = build(CASES["grafana"] + ["--datadog-api-keys", "dd-key"])
     text = yaml.safe_dump(stack.compose)

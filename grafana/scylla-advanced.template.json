@@ -328,13 +328,13 @@
                                         "class": "graph_query",
                                         "spec/refId": "A",
                                         "spec/query/spec/legendFormat": "P99 {{dc}} {{rack}} {{instance}}",
-                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], histogram_quantile(0.99, sum(rate(scylla_reactor_stalls_bucket{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_reactor_stalls_summary{quantile=\"0.99\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\"} or on([[by]]) histogram_quantile(0.99, sum(rate(scylla_reactor_stalls_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
                                     },
                                     {
                                         "class": "graph_query",
                                         "spec/refId": "B",
                                         "spec/query/spec/legendFormat": "P999 {{dc}} {{rack}} {{instance}}",
-                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], histogram_quantile(0.999, sum(rate(scylla_reactor_stalls_bucket{instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
+                                        "spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_reactor_stalls_summary{quantile=\"0.999\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\"} or on([[by]]) histogram_quantile(0.999, sum(rate(scylla_reactor_stalls_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
                                     }
                                 ]
                             },
@@ -759,6 +759,9 @@
                     "allowCustomValue": true,
                     "valuesFormat": "csv"
                 }
+            },
+            {
+                "class": "on_the_fly_switch"
             },
             {
                 "kind": "QueryVariable",

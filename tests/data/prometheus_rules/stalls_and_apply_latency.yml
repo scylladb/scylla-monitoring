@@ -1,0 +1,59 @@
+# Tests the recorded percentiles of the reactor stalls and of the strongly consistent apply latency (MONITOR-141).
+rule_files:
+  - ../../../prometheus/prom_rules/prometheus.latency.rules.yml
+evaluation_interval: 1m
+tests:
+  - interval: 20s
+    input_series:
+      # two shards of one node: 80 of 100 samples up to 1000 on shard 0, 20 of 100 on shard 1, the rest up to 2000
+      - series: 'scylla_reactor_stalls_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", le="1000"}'
+        values: '0+80x30'
+      - series: 'scylla_reactor_stalls_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", le="2000"}'
+        values: '0+100x30'
+      - series: 'scylla_reactor_stalls_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", le="+Inf"}'
+        values: '0+100x30'
+      - series: 'scylla_reactor_stalls_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="1", le="1000"}'
+        values: '0+20x30'
+      - series: 'scylla_reactor_stalls_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="1", le="2000"}'
+        values: '0+100x30'
+      - series: 'scylla_reactor_stalls_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="1", le="+Inf"}'
+        values: '0+100x30'
+      - series: 'scylla_strong_consistency_state_machine_apply_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", ks="k", cf="t", le="1000"}'
+        values: '0+80x30'
+      - series: 'scylla_strong_consistency_state_machine_apply_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", ks="k", cf="t", le="2000"}'
+        values: '0+100x30'
+      - series: 'scylla_strong_consistency_state_machine_apply_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="0", ks="k", cf="t", le="+Inf"}'
+        values: '0+100x30'
+      - series: 'scylla_strong_consistency_state_machine_apply_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="1", ks="k", cf="t", le="1000"}'
+        values: '0+20x30'
+      - series: 'scylla_strong_consistency_state_machine_apply_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="1", ks="k", cf="t", le="2000"}'
+        values: '0+100x30'
+      - series: 'scylla_strong_consistency_state_machine_apply_latency_bucket{cluster="c", dc="d", rack="r", instance="n1", shard="1", ks="k", cf="t", le="+Inf"}'
+        values: '0+100x30'
+    promql_expr_test:
+      - expr: scylla_reactor_stalls_summary{by="instance,shard", quantile="0.99", shard="1"}
+        eval_time: 5m
+        exp_samples:
+          - labels: 'scylla_reactor_stalls_summary{by="instance,shard", quantile="0.99", cluster="c", dc="d", rack="r", instance="n1", shard="1"}'
+            value: 1987.5
+      - expr: scylla_reactor_stalls_summary{by="instance", quantile="0.99"}
+        eval_time: 5m
+        exp_samples:
+          - labels: 'scylla_reactor_stalls_summary{by="instance", quantile="0.99", dd="1", cluster="c", dc="d", rack="r", instance="n1"}'
+            value: 1980
+      - expr: scylla_reactor_stalls_summary{by="cluster", quantile="0.999"}
+        eval_time: 5m
+        exp_samples:
+          - labels: 'scylla_reactor_stalls_summary{by="cluster", quantile="0.999", dd="1", cluster="c"}'
+            value: 1998
+      # every table of the node together
+      - expr: scylla_strong_consistency_state_machine_apply_latency_summary{by="dc,rack"}
+        eval_time: 5m
+        exp_samples:
+          - labels: 'scylla_strong_consistency_state_machine_apply_latency_summary{by="dc,rack", quantile="0.99", dd="1", cluster="c", dc="d", rack="r"}'
+            value: 1980
+      - expr: scylla_strong_consistency_state_machine_apply_latency_summary{by="instance,shard", shard="1"}
+        eval_time: 5m
+        exp_samples:
+          - labels: 'scylla_strong_consistency_state_machine_apply_latency_summary{by="instance,shard", quantile="0.99", cluster="c", dc="d", rack="r", instance="n1", shard="1"}'
+            value: 1987.5
