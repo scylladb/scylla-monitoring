@@ -519,7 +519,7 @@
                             "allValue": ".*",
                             "allowCustomValue": true,
                             "name": "sg",
-                            "label": "SG"
+                            "label": "Service Levels"
                         }
                     },
                     {
@@ -555,6 +555,12 @@
                             "name": "kind",
                             "label": "cql_kind"
                         }
+                    },
+                    {
+                        "class": "quantile_variable"
+                    },
+                    {
+                        "class": "on_the_fly_switch"
                     }
                 ],
                 "rows": [
@@ -574,138 +580,132 @@
                         "tabs": [
                             {
                                 "class": "row",
-                                "panels": [
+                                "title": "Combined scheduling groups",
+                                "rows": [
                                     {
-                                        "span": 3,
-                                        "class": "wps_panel",
-                                        "spec/title": "Writes $func by [[by]]",
-                                        "spec/description": "writes rate",
-                                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))"
-                                    },
-                                    {
-                                        "span": 3,
-                                        "class": "us_panel",
-                                        "spec/title": "Average write latency by [[by]]",
-                                        "spec/description": "The average write latency",
-                                        "spec/data/spec/queries": [
+                                        "class": "row",
+                                        "title": "Writes",
+                                        "panels": [
                                             {
-                                                "class": "graph_query",
-                                                "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.5\", by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                "span": 3,
+                                                "class": "wps_panel",
+                                                "spec/title": "Writes $func by [[by]]",
+                                                "spec/description": "writes rate",
+                                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_write_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))"
                                             },
                                             {
-                                                "class": "graph_query",
-                                                "spec/refId": "B",
-                                                "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.5\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "span": 3,
-                                        "class": "us_panel",
-                                        "spec/title": "95th percentile write latency by [[by]]",
-                                        "spec/description": "The 95th percentile write latency",
-                                        "spec/data/spec/queries": [
-                                            {
-                                                "class": "graph_query",
-                                                "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                "span": 3,
+                                                "class": "us_panel",
+                                                "spec/title": "Average write latency by [[by]]",
+                                                "spec/description": "The average write latency",
+                                                "spec/data/spec/queries": [
+                                                    {
+                                                        "class": "graph_query",
+                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], (scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.5\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"} or on([[by]], scheduling_group_name) histogram_quantile(0.5, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le)))))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                    },
+                                                    {
+                                                        "class": "graph_query",
+                                                        "spec/refId": "B",
+                                                        "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.5\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                    }
+                                                ]
                                             },
                                             {
-                                                "class": "graph_query",
-                                                "spec/refId": "B",
-                                                "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.95\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                "span": 3,
+                                                "repeat": "quantile",
+                                                "class": "us_panel",
+                                                "spec/title": "${quantile:text} write latency by [[by]]",
+                                                "spec/description": "${quantile:text} write latency",
+                                                "spec/data/spec/queries": [
+                                                    {
+                                                        "class": "graph_query",
+                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], (scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"${quantile:raw}\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"} or on([[by]], scheduling_group_name) histogram_quantile(${quantile:raw}, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le)))))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                    },
+                                                    {
+                                                        "class": "graph_query",
+                                                        "spec/refId": "B",
+                                                        "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"${quantile:raw}\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                    }
+                                                ],
+                                                "conditionalRendering": {
+                                                    "class": "conditionalRendering_data"
+                                                }
                                             }
-                                        ]
+                                        ],
+                                        "layout": {
+                                            "class": "auto_grid_layout",
+                                            "spec/maxColumnCount": 6,
+                                            "spec/columnWidthMode": "custom",
+                                            "spec/columnWidth": 280
+                                        }
                                     },
                                     {
-                                        "span": 3,
-                                        "class": "us_panel",
-                                        "spec/title": "99th percentile write latency by [[by]]",
-                                        "spec/description": "99th percentile write latency",
-                                        "spec/data/spec/queries": [
+                                        "class": "row",
+                                        "title": "Reads",
+                                        "panels": [
                                             {
-                                                "class": "graph_query",
-                                                "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.99\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                "span": 3,
+                                                "class": "rps_panel",
+                                                "spec/title": "Reads $func by [[by]]",
+                                                "spec/description": "Reads rate",
+                                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name) or on ([[by]],scheduling_group_name) $func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))",
+                                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                             },
                                             {
-                                                "class": "graph_query",
-                                                "spec/refId": "B",
-                                                "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.99\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "span": 3,
-                                        "class": "rps_panel",
-                                        "spec/title": "Reads $func by [[by]]",
-                                        "spec/description": "Reads rate",
-                                        "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_read_latency_summary_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name) or on ([[by]],scheduling_group_name) $func(rate(scylla_storage_proxy_coordinator_read_latency_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\",scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]],scheduling_group_name))",
-                                        "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
-                                    },
-                                    {
-                                        "span": 3,
-                                        "class": "us_panel",
-                                        "spec/title": "Average read latency by [[by]]",
-                                        "spec/description": "Average read latency",
-                                        "spec/data/spec/queries": [
-                                            {
-                                                "class": "graph_query",
-                                                "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.5\", by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                "span": 3,
+                                                "class": "us_panel",
+                                                "spec/title": "Average read latency by [[by]]",
+                                                "spec/description": "Average read latency",
+                                                "spec/data/spec/queries": [
+                                                    {
+                                                        "class": "graph_query",
+                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], (scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.5\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"} or on([[by]], scheduling_group_name) histogram_quantile(0.5, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le)))))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                    },
+                                                    {
+                                                        "class": "graph_query",
+                                                        "spec/refId": "B",
+                                                        "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.5\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                    }
+                                                ]
                                             },
                                             {
-                                                "class": "graph_query",
-                                                "spec/refId": "B",
-                                                "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.5\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                "span": 3,
+                                                "repeat": "quantile",
+                                                "class": "us_panel",
+                                                "spec/title": "${quantile:text} read latency by [[by]]",
+                                                "spec/description": "${quantile:text} read latency",
+                                                "spec/data/spec/queries": [
+                                                    {
+                                                        "class": "graph_query",
+                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], (scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"${quantile:raw}\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"} or on([[by]], scheduling_group_name) histogram_quantile(${quantile:raw}, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le)))))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                    },
+                                                    {
+                                                        "class": "graph_query",
+                                                        "spec/refId": "B",
+                                                        "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"${quantile:raw}\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
+                                                    }
+                                                ],
+                                                "conditionalRendering": {
+                                                    "class": "conditionalRendering_data"
+                                                }
                                             }
-                                        ]
-                                    },
-                                    {
-                                        "span": 3,
-                                        "class": "us_panel",
-                                        "spec/title": "95th percentile read latency by [[by]]",
-                                        "spec/description": "95th percentile read latency",
-                                        "spec/data/spec/queries": [
-                                            {
-                                                "class": "graph_query",
-                                                "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
-                                            },
-                                            {
-                                                "class": "graph_query",
-                                                "spec/refId": "B",
-                                                "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.95\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "span": 3,
-                                        "class": "us_panel",
-                                        "spec/title": "99th percentile read latency by [[by]]",
-                                        "spec/description": "99th percentile read latency",
-                                        "spec/data/spec/queries": [
-                                            {
-                                                "class": "graph_query",
-                                                "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.99\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
-                                            },
-                                            {
-                                                "class": "graph_query",
-                                                "spec/refId": "B",
-                                                "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.99\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
-                                                "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
-                                            }
-                                        ]
+                                        ],
+                                        "layout": {
+                                            "class": "auto_grid_layout",
+                                            "spec/maxColumnCount": 6,
+                                            "spec/columnWidthMode": "custom",
+                                            "spec/columnWidth": 280
+                                        }
                                     }
-                                ],
-                                "title": "Combined scheduling groups"
+                                ]
                             },
                             {
                                 "class": "row",
@@ -730,7 +730,7 @@
                                                 "spec/data/spec/queries": [
                                                     {
                                                         "class": "graph_query",
-                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.5\", by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], (scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.5\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"} or on([[by]], scheduling_group_name) histogram_quantile(0.5, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le)))))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                                                         "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                                     },
                                                     {
@@ -743,41 +743,33 @@
                                             },
                                             {
                                                 "span": 3,
+                                                "repeat": "quantile",
                                                 "class": "us_panel",
-                                                "spec/title": "95th percentile write latency by [[by]]",
+                                                "spec/title": "${quantile:text} write latency by [[by]]",
                                                 "spec/data/spec/queries": [
                                                     {
                                                         "class": "graph_query",
-                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg|$\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], (scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"${quantile:raw}\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"} or on([[by]], scheduling_group_name) histogram_quantile(${quantile:raw}, sum(rate(scylla_storage_proxy_coordinator_write_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le)))))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                                                         "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                                     },
                                                     {
                                                         "class": "graph_query",
                                                         "spec/refId": "B",
-                                                        "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.95\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"${quantile:raw}\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
                                                         "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                                     }
-                                                ]
-                                            },
-                                            {
-                                                "span": 3,
-                                                "class": "us_panel",
-                                                "spec/title": "99th percentile write latency by [[by]]",
-                                                "spec/data/spec/queries": [
-                                                    {
-                                                        "class": "graph_query",
-                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.99\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
-                                                    },
-                                                    {
-                                                        "class": "graph_query",
-                                                        "spec/refId": "B",
-                                                        "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_write_latency_summary{quantile=\"0.99\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
-                                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
-                                                    }
-                                                ]
+                                                ],
+                                                "conditionalRendering": {
+                                                    "class": "conditionalRendering_data"
+                                                }
                                             }
-                                        ]
+                                        ],
+                                        "layout": {
+                                            "class": "auto_grid_layout",
+                                            "spec/maxColumnCount": 6,
+                                            "spec/columnWidthMode": "custom",
+                                            "spec/columnWidth": 280
+                                        }
                                     },
                                     {
                                         "class": "row",
@@ -797,7 +789,7 @@
                                                 "spec/data/spec/queries": [
                                                     {
                                                         "class": "graph_query",
-                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.5\", by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], (scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.5\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"} or on([[by]], scheduling_group_name) histogram_quantile(0.5, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le)))))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                                                         "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                                     },
                                                     {
@@ -810,41 +802,33 @@
                                             },
                                             {
                                                 "span": 3,
+                                                "repeat": "quantile",
                                                 "class": "us_panel",
-                                                "spec/title": "95th percentile read latency by [[by]]",
+                                                "spec/title": "${quantile:text} read latency by [[by]]",
                                                 "spec/data/spec/queries": [
                                                     {
                                                         "class": "graph_query",
-                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], (scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"${quantile:raw}\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"} or on([[by]], scheduling_group_name) histogram_quantile(${quantile:raw}, sum(rate(scylla_storage_proxy_coordinator_read_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le)))))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
                                                         "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                                     },
                                                     {
                                                         "class": "graph_query",
                                                         "spec/refId": "B",
-                                                        "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.95\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
+                                                        "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"${quantile:raw}\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
                                                         "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
                                                     }
-                                                ]
-                                            },
-                                            {
-                                                "span": 3,
-                                                "class": "us_panel",
-                                                "spec/title": "99th percentile read latency by [[by]]",
-                                                "spec/data/spec/queries": [
-                                                    {
-                                                        "class": "graph_query",
-                                                        "spec/query/spec/expr": "($topbottom([[filter_limit]], scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.99\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"}))/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) ==bool  count(scylla_reactor_utilization))",
-                                                        "spec/query/spec/legendFormat": "{{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
-                                                    },
-                                                    {
-                                                        "class": "graph_query",
-                                                        "spec/refId": "B",
-                                                        "spec/query/spec/expr": "$func(scylla_storage_proxy_coordinator_read_latency_summary{quantile=\"0.99\", by=\"instance,shard\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"$sg\"})by ([[by]], scheduling_group_name)/scalar($func(count(scylla_reactor_utilization) by (instance,shard)) !=bool  count(scylla_reactor_utilization))",
-                                                        "spec/query/spec/legendFormat": "{{func}} {{scheduling_group_name}} {{cluster}} {{dc}} {{rack}} {{instance}} {{shard}}"
-                                                    }
-                                                ]
+                                                ],
+                                                "conditionalRendering": {
+                                                    "class": "conditionalRendering_data"
+                                                }
                                             }
-                                        ]
+                                        ],
+                                        "layout": {
+                                            "class": "auto_grid_layout",
+                                            "spec/maxColumnCount": 6,
+                                            "spec/columnWidthMode": "custom",
+                                            "spec/columnWidth": 280
+                                        }
                                     },
                                     {
                                         "class": "row",
@@ -922,27 +906,41 @@
                                         "panels": [
                                             {
                                                 "span": 3,
+                                                "repeat": "quantile",
                                                 "class": "us_panel",
                                                 "dashversion": [
                                                     ">2026.3"
                                                 ],
-                                                "spec/title": "CQL request latency by [[by]]",
+                                                "spec/title": "${quantile:text} CQL request latency by [[by]]",
                                                 "spec/description": "CQL request latencies, measuring from the start of the request processing until the response is written to the socket.",
-                                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_transport_cql_request_latency_summary{quantile=~\"0.9.*\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", scheduling_group_name=\"$sg\", by=\"[[by]]\"})",
-                                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "P{{quantile}} - {{scheduling_group_name}} {{dc}} {{rack}} {{instance}}"
+                                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], (scylla_transport_cql_request_latency_summary{quantile=\"${quantile:raw}\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", scheduling_group_name=\"$sg\", by=\"[[by]]\"} or on([[by]], scheduling_group_name) histogram_quantile(${quantile:raw}, sum(rate(scylla_transport_cql_request_latency_histogram_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le))))",
+                                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{rack}} {{instance}}",
+                                                "conditionalRendering": {
+                                                    "class": "conditionalRendering_data"
+                                                }
                                             },
                                             {
                                                 "span": 3,
+                                                "repeat": "quantile",
                                                 "class": "us_panel",
                                                 "dashversion": [
                                                     ">2026.3"
                                                 ],
-                                                "spec/title": "CQL client timestamp drift by [[by]]",
+                                                "spec/title": "${quantile:text} CQL client timestamp drift by [[by]]",
                                                 "spec/description": "CQL client timestamp drifts, the drift time between the client-provided CQL timestamp and the server time at request arrival. Useful for detecting transport delays before requests reach the CQL server.",
-                                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_transport_cql_client_timestamp_drift_summary{quantile=~\"0.9.*\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", scheduling_group_name=\"$sg\", by=\"[[by]]\"})",
-                                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "P{{quantile}} - {{scheduling_group_name}} {{dc}} {{rack}} {{instance}}"
+                                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], (scylla_transport_cql_client_timestamp_drift_summary{quantile=\"${quantile:raw}\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", scheduling_group_name=\"$sg\", by=\"[[by]]\"} or on([[by]], scheduling_group_name) histogram_quantile(${quantile:raw}, sum(rate(scylla_transport_cql_client_timestamp_drift_histogram_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le))))",
+                                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} {{dc}} {{rack}} {{instance}}",
+                                                "conditionalRendering": {
+                                                    "class": "conditionalRendering_data"
+                                                }
                                             }
-                                        ]
+                                        ],
+                                        "layout": {
+                                            "class": "auto_grid_layout",
+                                            "spec/maxColumnCount": 6,
+                                            "spec/columnWidthMode": "custom",
+                                            "spec/columnWidth": 280
+                                        }
                                     }
                                 ]
                             }
@@ -1729,11 +1727,15 @@
                             },
                             {
                                 "span": 3,
+                                "repeat": "quantile",
                                 "class": "us_panel",
-                                "spec/title": "95% latency",
-                                "spec/description": "LWT 95% Read latency.",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_storage_proxy_coordinator_cas_read_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$lwt_sg\"})",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
+                                "spec/title": "LWT ${quantile:text} read latency",
+                                "spec/description": "LWT ${quantile:text} Read latency.",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], (scylla_storage_proxy_coordinator_cas_read_latency_summary{quantile=\"${quantile:raw}\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$lwt_sg\"} or on([[by]], scheduling_group_name) histogram_quantile(${quantile:raw}, sum(rate(scylla_storage_proxy_coordinator_cas_read_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$lwt_sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le))))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}",
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                }
                             },
                             {
                                 "span": 3,
@@ -1741,7 +1743,19 @@
                                 "spec/title": "LWT Read Timeouts $func by [[by]]",
                                 "spec/description": "LWT Read Timeouts",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(rate(scylla_storage_proxy_coordinator_cas_read_timeouts{instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\",scheduling_group_name=~\"statement|$\"}[$__rate_interval]))  by ([[by]]))"
-                            },
+                            }
+                        ],
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 6,
+                            "spec/columnWidthMode": "custom",
+                            "spec/columnWidth": 280
+                        }
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "panels": [
                             {
                                 "span": 3,
                                 "class": "wps_panel",
@@ -1759,11 +1773,15 @@
                             },
                             {
                                 "span": 3,
+                                "repeat": "quantile",
                                 "class": "us_panel",
-                                "spec/title": "95% latency",
-                                "spec/description": "LWT 95% write latency.",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_storage_proxy_coordinator_cas_write_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$lwt_sg\"})",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
+                                "spec/title": "LWT ${quantile:text} write latency",
+                                "spec/description": "LWT ${quantile:text} write latency.",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], (scylla_storage_proxy_coordinator_cas_write_latency_summary{quantile=\"${quantile:raw}\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$lwt_sg\"} or on([[by]], scheduling_group_name) histogram_quantile(${quantile:raw}, sum(rate(scylla_storage_proxy_coordinator_cas_write_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$lwt_sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le))))",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}",
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                }
                             },
                             {
                                 "span": 3,
@@ -1771,7 +1789,19 @@
                                 "spec/title": "LWT Write Timeouts $func by [[by]]",
                                 "spec/description": "LWT Write Timeouts",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], max_over_time(($func(irate(scylla_storage_proxy_coordinator_cas_write_timeouts{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval]))  by ([[by]]))[$__interval:]))"
-                            },
+                            }
+                        ],
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 6,
+                            "spec/columnWidthMode": "custom",
+                            "spec/columnWidth": 280
+                        }
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "panels": [
                             {
                                 "span": 3,
                                 "class": "ops_panel",
@@ -1910,8 +1940,14 @@
                             "allValue": "",
                             "allowCustomValue": true,
                             "name": "lwt_sg",
-                            "label": "SG"
+                            "label": "Service Levels"
                         }
+                    },
+                    {
+                        "class": "quantile_variable"
+                    },
+                    {
+                        "class": "on_the_fly_switch"
                     }
                 ],
                 "conditionalRendering": {
@@ -1954,8 +1990,14 @@
                             "allValue": ".*",
                             "allowCustomValue": true,
                             "name": "sc_sg",
-                            "label": "SG"
+                            "label": "Service Levels"
                         }
+                    },
+                    {
+                        "class": "quantile_variable"
+                    },
+                    {
+                        "class": "on_the_fly_switch"
                     }
                 ],
                 "conditionalRendering": {
@@ -1996,20 +2038,35 @@
                             },
                             {
                                 "span": 3,
+                                "repeat": "quantile",
                                 "class": "us_panel",
-                                "spec/title": "SC 95th percentile write latency by [[by]]",
-                                "spec/description": "95th percentile latency of strongly consistent writes, measured on the node that executes them. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_coordinator_write_latency_summary",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_strong_consistency_coordinator_write_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sc_sg\"}>0)",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
+                                "spec/title": "SC ${quantile:text} write latency by [[by]]",
+                                "spec/description": "${quantile:text} latency of strongly consistent writes, measured on the node that executes them. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_coordinator_write_latency_summary",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], (scylla_strong_consistency_coordinator_write_latency_summary{quantile=\"${quantile:raw}\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sc_sg\"} or on([[by]], scheduling_group_name) histogram_quantile(${quantile:raw}, sum(rate(scylla_strong_consistency_coordinator_write_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sc_sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le)))>0)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}",
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                }
                             },
                             {
                                 "span": 3,
-                                "class": "us_panel",
-                                "spec/title": "SC 99th percentile write latency by [[by]]",
-                                "spec/description": "99th percentile latency of strongly consistent writes, measured on the node that executes them. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_coordinator_write_latency_summary",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_strong_consistency_coordinator_write_latency_summary{quantile=\"0.99\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sc_sg\"}>0)",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
-                            },
+                                "class": "graph_panel_int",
+                                "spec/title": "SC writes in flight $func by [[by]]",
+                                "spec/description": "Strongly consistent writes being executed. A write redirected to another node is counted there.\n\nscylla_strong_consistency_coordinator_foreground_writes",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_strong_consistency_coordinator_foreground_writes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sc_sg\"}) by ([[by]], scheduling_group_name))"
+                            }
+                        ],
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 6,
+                            "spec/columnWidthMode": "custom",
+                            "spec/columnWidth": 280
+                        }
+                    },
+                    {
+                        "class": "row",
+                        "hideHeader": true,
+                        "panels": [
                             {
                                 "span": 3,
                                 "class": "rps_panel",
@@ -2028,26 +2085,15 @@
                             },
                             {
                                 "span": 3,
+                                "repeat": "quantile",
                                 "class": "us_panel",
-                                "spec/title": "SC 95th percentile read latency by [[by]]",
-                                "spec/description": "95th percentile latency of strongly consistent reads, by read type, measured on the node that executes them. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_coordinator_read_latency_summary",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_strong_consistency_coordinator_read_latency_summary{quantile=\"0.95\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sc_sg\"}>0)",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
-                            },
-                            {
-                                "span": 3,
-                                "class": "us_panel",
-                                "spec/title": "SC 99th percentile read latency by [[by]]",
-                                "spec/description": "99th percentile latency of strongly consistent reads, by read type, measured on the node that executes them. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_coordinator_read_latency_summary",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_strong_consistency_coordinator_read_latency_summary{quantile=\"0.99\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sc_sg\"}>0)",
-                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}"
-                            },
-                            {
-                                "span": 3,
-                                "class": "graph_panel_int",
-                                "spec/title": "SC writes in flight $func by [[by]]",
-                                "spec/description": "Strongly consistent writes being executed. A write redirected to another node is counted there.\n\nscylla_strong_consistency_coordinator_foreground_writes",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_strong_consistency_coordinator_foreground_writes{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sc_sg\"}) by ([[by]], scheduling_group_name))"
+                                "spec/title": "SC ${quantile:text} read latency by [[by]]",
+                                "spec/description": "${quantile:text} latency of strongly consistent reads, by read type, measured on the node that executes them. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_coordinator_read_latency_summary",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], (scylla_strong_consistency_coordinator_read_latency_summary{quantile=\"${quantile:raw}\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sc_sg\"} or on([[by]], scheduling_group_name, read_type) histogram_quantile(${quantile:raw}, sum(rate(scylla_strong_consistency_coordinator_read_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", scheduling_group_name=~\"$sc_sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, read_type, le)))>0)",
+                                "spec/data/spec/queries/0/spec/query/spec/legendFormat": "{{read_type}} {{scheduling_group_name}} - {{dc}} {{rack}} {{instance}} {{shard}}",
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                }
                             },
                             {
                                 "span": 3,
@@ -2056,7 +2102,13 @@
                                 "spec/description": "Strongly consistent reads being executed. A read redirected to another node is counted there.\n\nscylla_strong_consistency_coordinator_foreground_reads",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_strong_consistency_coordinator_foreground_reads{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", scheduling_group_name=~\"$sc_sg\"}) by ([[by]], scheduling_group_name))"
                             }
-                        ]
+                        ],
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 6,
+                            "spec/columnWidthMode": "custom",
+                            "spec/columnWidth": 280
+                        }
                     },
                     {
                         "class": "row",
@@ -2195,6 +2247,14 @@
             {
                 "collapse": true,
                 "title": "Strongly Consistent Tables - Raft",
+                "variables": [
+                    {
+                        "class": "quantile_variable"
+                    },
+                    {
+                        "class": "on_the_fly_switch"
+                    }
+                ],
                 "conditionalRendering": {
                     "class": "conditionalRendering_var",
                     "spec/items/0/spec/variable": "sc"
@@ -2376,10 +2436,14 @@
                             },
                             {
                                 "span": 3,
+                                "repeat": "quantile",
                                 "class": "us_panel",
-                                "spec/title": "99th percentile apply latency by [[by]]",
-                                "spec/description": "99th percentile of the time to apply a write from a Raft log to the tablet replica on a node. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_state_machine_apply_latency",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_strong_consistency_state_machine_apply_latency_summary{quantile=\"0.99\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\", shard=~\"[[shard]]|$^\"} or on() (histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]], le)) or histogram_quantile(0.99, sum(rate(scylla_strong_consistency_state_machine_apply_latency{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]))))"
+                                "spec/title": "${quantile:text} apply latency by [[by]]",
+                                "spec/description": "${quantile:text} of the time to apply a write from a Raft log to the tablet replica on a node. Latencies below 0.64 ms are not resolved.\n\nscylla_strong_consistency_state_machine_apply_latency",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_strong_consistency_state_machine_apply_latency_summary{quantile=\"${quantile:raw}\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", shard=~\"[[shard]]|$^\"} or on([[by]]) (histogram_quantile(${quantile:raw}, sum(rate(scylla_strong_consistency_state_machine_apply_latency_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]], le)) or histogram_quantile(${quantile:raw}, sum(rate(scylla_strong_consistency_state_machine_apply_latency{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]))))",
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                }
                             },
                             {
                                 "span": 3,
@@ -2388,7 +2452,13 @@
                                 "spec/description": "Waits for a group 0 read barrier before applying Raft log entries written with a schema the node did not know yet.\n\nscylla_strong_consistency_state_machine_schema_barrier_waits",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_state_machine_schema_barrier_waits{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(scylla_strong_consistency_raft_leaders{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]) * 0)"
                             }
-                        ]
+                        ],
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 6,
+                            "spec/columnWidthMode": "custom",
+                            "spec/columnWidth": 280
+                        }
                     }
                 ]
             },

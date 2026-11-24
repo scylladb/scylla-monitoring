@@ -46,14 +46,17 @@
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "Average write latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_write_latency_summary{quantile=\"0.5\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\"}"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "(scylla_column_family_write_latency_summary{quantile=\"0.5\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\"} or on([[by]]) histogram_quantile(0.5, sum(rate(scylla_column_family_write_latency_bucket{cluster!~\".*${on_the_fly:raw}\", ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
                             },
                             {
                                 "span": 3,
                                 "repeat": "quantile",
                                 "class": "us_panel",
                                 "spec/title": "${quantile:text} write latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_write_latency_summary{quantile=\"${quantile:raw}\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\"} or on() histogram_quantile(${quantile:raw}, sum(rate(scylla_column_family_write_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_write_latency_summary{quantile=\"${quantile:raw}\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\"} or on([[by]]) histogram_quantile(${quantile:raw}, sum(rate(scylla_column_family_write_latency_bucket{cluster!~\".*${on_the_fly:raw}\", ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le))",
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                }
                             }
                         ],
                         "layout": {
@@ -77,14 +80,17 @@
                                 "span": 3,
                                 "class": "us_panel",
                                 "spec/title": "Average read latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_read_latency_summary{quantile=\"0.5\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|$^\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\"}"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "(scylla_column_family_read_latency_summary{quantile=\"0.5\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\"} or on([[by]]) histogram_quantile(0.5, sum(rate(scylla_column_family_read_latency_bucket{cluster!~\".*${on_the_fly:raw}\", ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
                             },
                             {
                                 "span": 3,
                                 "repeat": "quantile",
                                 "class": "us_panel",
                                 "spec/title": "${quantile:text} read latency by [[by]]",
-                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_read_latency_summary{quantile=\"${quantile:raw}\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|^$\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|^$\"} or on() histogram_quantile(${quantile:raw}, sum(rate(scylla_column_family_read_latency_bucket{ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le))"
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "scylla_column_family_read_latency_summary{quantile=\"${quantile:raw}\", ks=\"$ks\", cf=\"$table\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\"} or on([[by]]) histogram_quantile(${quantile:raw}, sum(rate(scylla_column_family_read_latency_bucket{cluster!~\".*${on_the_fly:raw}\", ks=\"$ks\", cf=\"$table\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le))",
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                }
                             }
                         ],
                         "layout": {
@@ -393,7 +399,10 @@
                         "repeat": "quantile",
                         "class": "us_panel",
                         "spec/title": "${quantile:text} read latency by [[by]]",
-                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(${quantile:raw},sum(rate(scylla_index_query_latencies_bucket{ks=\"$ks\", idx=\"$index\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le))"
+                        "spec/data/spec/queries/0/spec/query/spec/expr": "histogram_quantile(${quantile:raw},sum(rate(scylla_index_query_latencies_bucket{ks=\"$ks\", idx=\"$index\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le))",
+                        "conditionalRendering": {
+                            "class": "conditionalRendering_data"
+                        }
                     }
                 ],
                 "title": "Index: $ks:$index",
@@ -439,6 +448,9 @@
             },
             {
                 "class": "quantile_variable"
+            },
+            {
+                "class": "on_the_fly_switch"
             },
             {
                 "kind": "QueryVariable",

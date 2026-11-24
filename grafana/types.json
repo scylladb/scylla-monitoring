@@ -865,7 +865,7 @@
                {
                   "class": "panel_query",
                   "spec/refId": "B",
-                  "spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|$^\", op=~\"$ops_batch\"} or on() histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops_batch\"}[$__rate_interval])>0) by (op, le))",
+                  "spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|$^\", op=~\"$ops_batch\"} or on(op) histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{cluster!~\".*${on_the_fly:raw}\", cluster=~\"$cluster|$^\", op=~\"$ops_batch\"}[$__rate_interval])>0) by (op, le))",
                   "spec/query/spec/legendFormat": "{{op}}",
                   "spec/query/spec/instant": true,
                   "dashversion": [
@@ -5729,6 +5729,7 @@
       "spec": {
          "name": "quantile",
          "label": "Percentile",
+         "description": "A panel is shown for a selected percentile only when there is data for it. Most latencies are recorded for P50, P95 and P99, and for P99.9 with the optional rules (--p999). In a panel that reads recorded percentiles, one that is not recorded, such as P90, is shown only when Calculate on the fly is on.",
          "query": "P50 : 0.5,P90 : 0.9,P95 : 0.95,P99 : 0.99,P99.9 : 0.999",
          "current": {
             "text": [
@@ -5745,8 +5746,21 @@
          "includeAll": false,
          "hide": "dontHide",
          "skipUrlSync": false,
-         "allowCustomValue": true,
+         "allowCustomValue": false,
          "valuesFormat": "csv"
+      }
+   },
+   "on_the_fly_switch": {
+      "kind": "SwitchVariable",
+      "spec": {
+         "name": "on_the_fly",
+         "label": "Calculate on the fly",
+         "description": "Off: the latency panels read the recorded percentiles. On: what is not recorded is calculated from the histograms, such as P90, P99.9 without the optional rules, or one rack or node of a DC. It is slower on a large cluster.",
+         "current": "()",
+         "enabledValue": "on-the-fly",
+         "disabledValue": "()",
+         "hide": "dontHide",
+         "skipUrlSync": false
       }
    },
    "conditionalRendering_var": {
