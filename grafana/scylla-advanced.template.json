@@ -25,14 +25,8 @@
                                 "span": 3,
                                 "spec/title": "I/O Group Queue flow ratio",
                                 "spec/description": "This graph shows the ratio of dispatch rate to completion rate. It is expected to be 1.0, growing larger on reactor stalls or disk problems.\n\nscylla_io_queue_flow_ratio",
-                                "spec/vizConfig/spec/fieldConfig": {
-                                    "defaults": {
-                                        "class": "fieldConfig_defaults",
-                                        "custom/axisSoftMax": 1.15,
-                                        "custom/axisSoftMin": 0.85
-                                    },
-                                    "overrides": []
-                                },
+                                "spec/vizConfig/spec/fieldConfig/defaults/custom/axisSoftMax": 1.15,
+                                "spec/vizConfig/spec/fieldConfig/defaults/custom/axisSoftMin": 0.85,
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_io_queue_flow_ratio{iogroup=~\"$iogroup\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"})",
                                 "spec/data/spec/queries/0/spec/query/spec/legendFormat": "Group {{iogroup}} {{dc}} {{rack}} {{instance}} {{shard}}"
                             }
@@ -41,7 +35,6 @@
                     },
                     {
                         "title": "$classes",
-                        "collapse": false,
                         "repeat": "classes",
                         "class": "row",
                         "panels": [
@@ -326,7 +319,6 @@
                                 "spec/data/spec/queries": [
                                     {
                                         "class": "graph_query",
-                                        "spec/refId": "A",
                                         "spec/query/spec/legendFormat": "P99 {{dc}} {{rack}} {{instance}}",
                                         "spec/query/spec/expr": "$topbottom([[filter_limit]], scylla_reactor_stalls_summary{quantile=\"0.99\", by=\"[[by]]\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\"} or on([[by]]) histogram_quantile(0.99, sum(rate(scylla_reactor_stalls_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\" ,cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[$__rate_interval])) by ([[by]], le)))"
                                     },

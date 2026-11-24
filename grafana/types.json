@@ -46,6 +46,13 @@
       "spec/query/spec/instant": false,
       "spec/query/spec/range": true
    },
+   "scylla_datasource_query": {
+      "class": "graph_query",
+      "spec/query/group": "scylladb-scylla-datasource",
+      "spec/query/datasource": {
+         "name": "scylla-datasource"
+      }
+   },
    "small_stat": {
       "id": "auto",
       "span": 1,
@@ -528,7 +535,6 @@
          {
             "class": "panel_query",
             "spec/query/spec/expr": "sum(count(scylla_reactor_utilization{job=\"scylla\", cluster=\"$cluster\"}) by (instance) * on(instance) (scylla_node_operation_mode{job=\"scylla\", cluster=\"$cluster\"}== bool 3))",
-            "spec/query/spec/legendFormat": "",
             "spec/query/spec/instant": false,
             "spec/query/spec/range": true
          }
@@ -568,7 +574,6 @@
                {
                   "class": "panel_query",
                   "spec/query/spec/expr": "1-sum(scylla_column_family_total_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})/sum(scylla_column_family_total_disk_space_before_compression{cluster=\"$cluster\", ks!~\"system.*\"})",
-                  "spec/query/spec/legendFormat": "",
                   "spec/query/spec/instant": false,
                   "spec/query/spec/range": true
                }
@@ -587,7 +592,6 @@
                {
                   "class": "panel_query",
                   "spec/query/spec/expr": "sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})",
-                  "spec/query/spec/legendFormat": "",
                   "spec/query/spec/instant": false,
                   "spec/query/spec/range": true
                }
@@ -629,7 +633,6 @@
             ],
             "vizConfig/spec/options/colorMode": "background_solid",
             "vizConfig/spec/fieldConfig/defaults/unit": "µs",
-            "vizConfig/spec/fieldConfig/defaults/decimals": 0,
             "vizConfig/spec/fieldConfig/defaults/min": null,
             "vizConfig/spec/fieldConfig/defaults/max": null,
             "vizConfig/spec/fieldConfig/defaults/thresholds/steps": [
@@ -685,7 +688,6 @@
             ],
             "vizConfig/spec/options/colorMode": "background_solid",
             "vizConfig/spec/fieldConfig/defaults/unit": "µs",
-            "vizConfig/spec/fieldConfig/defaults/decimals": 0,
             "vizConfig/spec/fieldConfig/defaults/min": null,
             "vizConfig/spec/fieldConfig/defaults/max": null,
             "vizConfig/spec/fieldConfig/defaults/thresholds/steps": [
@@ -744,7 +746,6 @@
                {
                   "class": "panel_query",
                   "spec/query/spec/expr": "1-sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})/sum(scylla_column_family_total_disk_space_before_compression{cluster=\"$cluster\", ks!~\"system.*\"})",
-                  "spec/query/spec/legendFormat": "",
                   "spec/query/spec/instant": false,
                   "spec/query/spec/range": true
                }
@@ -763,7 +764,6 @@
                {
                   "class": "panel_query",
                   "spec/query/spec/expr": "sum(scylla_column_family_live_disk_space{cluster=\"$cluster\", ks!~\"system.*\"})",
-                  "spec/query/spec/legendFormat": "",
                   "spec/query/spec/instant": false,
                   "spec/query/spec/range": true
                }
@@ -781,8 +781,6 @@
                {
                   "class": "panel_query",
                   "spec/query/spec/expr": "(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", op !~\"Batch.*\"}[$__rate_interval])) or vector(0))+ on() (sum(rate(scylla_alternator_batch_item_count{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) or vector(0))",
-                  "spec/query/spec/legendFormat": "",
-                  "spec/query/spec/instant": true,
                   "dashversion": [
                      ">2025.1"
                   ]
@@ -790,8 +788,6 @@
                {
                   "class": "panel_query",
                   "spec/query/spec/expr": "(sum(rate(scylla_alternator_operation{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", op !~\"Batch.*Item\"}[$__rate_interval])) or vector(0))",
-                  "spec/query/spec/legendFormat": "",
-                  "spec/query/spec/instant": true,
                   "dashversion": [
                      "<2025.1"
                   ]
@@ -816,7 +812,6 @@
                   "class": "panel_query",
                   "spec/query/spec/expr": "sum(rate(scylla_alternator_op_latency_sum{cluster=~\"$cluster\", op=~\"$ops|$ops_batch\"}[$__rate_interval])) by (op)/sum(rate(scylla_alternator_op_latency_count{cluster=~\"$cluster|^$\", op=~\"$ops|$ops_batch\"}[$__rate_interval])>0) by (op)",
                   "spec/query/spec/legendFormat": "{{op}}",
-                  "spec/query/spec/instant": true,
                   "dashversion": [
                      ">2025.3"
                   ]
@@ -825,7 +820,6 @@
                   "class": "panel_query",
                   "spec/query/spec/expr": "sum(rate(scylla_alternator_op_latency_sum{cluster=~\"$cluster\", op=~\"$ops\"}[$__rate_interval])) by (op)/sum(rate(scylla_alternator_op_latency_count{cluster=~\"$cluster|^$\", op=~\"$ops\"}[$__rate_interval])>0) by (op)",
                   "spec/query/spec/legendFormat": "{{op}}",
-                  "spec/query/spec/instant": true,
                   "dashversion": [
                      "<2025.3"
                   ]
@@ -859,15 +853,13 @@
                {
                   "class": "panel_query",
                   "spec/query/spec/expr": "histogram_quantile(0.99, sum(rate(scylla_alternator_table_op_latency_bucket{instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\", op=~\"$ops\"}[$__rate_interval])>0) by (op, le))",
-                  "spec/query/spec/legendFormat": "{{op}}",
-                  "spec/query/spec/instant": true
+                  "spec/query/spec/legendFormat": "{{op}}"
                },
                {
                   "class": "panel_query",
                   "spec/refId": "B",
                   "spec/query/spec/expr": "scylla_alternator_op_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=~\"$cluster|$^\", op=~\"$ops_batch\"} or on(op) histogram_quantile(0.99, sum(rate(scylla_alternator_op_latency_bucket{cluster!~\".*${on_the_fly:raw}\", cluster=~\"$cluster|$^\", op=~\"$ops_batch\"}[$__rate_interval])>0) by (op, le))",
                   "spec/query/spec/legendFormat": "{{op}}",
-                  "spec/query/spec/instant": true,
                   "dashversion": [
                      ">2025.3"
                   ]
@@ -1238,14 +1230,12 @@
          {
             "class": "plain_text",
             "dashproductreject": "no-your-pannels",
-            "spec/vizConfig/spec/options/content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - __MONITOR_VERSION__</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1&kiosk\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>",
-            "spec/vizConfig/spec/options/mode": "html"
+            "spec/vizConfig/spec/options/content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - __MONITOR_VERSION__</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1&kiosk\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div>"
          },
          {
             "class": "plain_text",
             "dashproduct": "no-your-pannels",
-            "spec/vizConfig/spec/options/content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - __MONITOR_VERSION__</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1&kiosk\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div><script type=\"text/javascript\">  window.heapReadyCb=window.heapReadyCb||[],window.heap=window.heap||[],heap.load=function(e,t){window.heap.envId=e,window.heap.clientConfig=t=t||{},window.heap.clientConfig.shouldFetchServerConfig=!1;var a=document.createElement(\"script\");a.type=\"text/javascript\",a.async=!0,a.src=\"https://cdn.us.heap-api.com/config/\"+e+\"/heap_config.js\";var r=document.getElementsByTagName(\"script\")[0];r.parentNode.insertBefore(a,r);var n=[\"init\",\"startTracking\",\"stopTracking\",\"track\",\"resetIdentity\",\"identify\",\"getSessionId\",\"getUserId\",\"getIdentity\",\"addUserProperties\",\"addEventProperties\",\"removeEventProperty\",\"clearEventProperties\",\"addAccountProperties\",\"addAdapter\",\"addTransformer\",\"addTransformerFn\",\"onReady\",\"addPageviewProperties\",\"removePageviewProperty\",\"clearPageviewProperties\",\"trackPageview\"],i=function(e){return function(){var t=Array.prototype.slice.call(arguments,0);window.heapReadyCb.push({name:e,fn:function(){heap[e]&&heap[e].apply(heap,t)}})}};for(var p=0;p<n.length;p++)heap[n[p]]=i(n[p])};  heap.load('2144880022');</script>",
-            "spec/vizConfig/spec/options/mode": "html"
+            "spec/vizConfig/spec/options/content": "<div style=\"color:#5780C1; border-bottom: 0px solid #5780C1;\">Scylla Monitoring version - __MONITOR_VERSION__</div> <div style=\"\"><a href=\"https://github.com/scylladb/scylla-monitoring/issues/new?body=scylla-version%3D[[scylla_version]]%0Amonitoring-version%3D[[monitoring_version]]%0Adashboard%3D${__dashboard.uid}\" target=\"_blank\">\n<input title=\"Report an issue with Scylla Monitoring\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;Report an issue on this page&nbsp;\"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"render/d/${__dashboard.uid}?orgId=1&from=${__from}&to=${__to}&width=1600&height=-1&kiosk\" target=\"_blank\" download=\"dashboard_${__dashboard.uid}-${__from:date:iso}.png\"><input title=\"Make a Screenshot\" type=\"button\" style=\"background-color:#306EE6;color:white;border-radius: 15px;font-size:14px;line-height:22px;padding:2px\" value=\"&nbsp;&nbsp;&nbsp;Screenshot&nbsp;&nbsp;&nbsp;\"></input></a></span></div><script type=\"text/javascript\">  window.heapReadyCb=window.heapReadyCb||[],window.heap=window.heap||[],heap.load=function(e,t){window.heap.envId=e,window.heap.clientConfig=t=t||{},window.heap.clientConfig.shouldFetchServerConfig=!1;var a=document.createElement(\"script\");a.type=\"text/javascript\",a.async=!0,a.src=\"https://cdn.us.heap-api.com/config/\"+e+\"/heap_config.js\";var r=document.getElementsByTagName(\"script\")[0];r.parentNode.insertBefore(a,r);var n=[\"init\",\"startTracking\",\"stopTracking\",\"track\",\"resetIdentity\",\"identify\",\"getSessionId\",\"getUserId\",\"getIdentity\",\"addUserProperties\",\"addEventProperties\",\"removeEventProperty\",\"clearEventProperties\",\"addAccountProperties\",\"addAdapter\",\"addTransformer\",\"addTransformerFn\",\"onReady\",\"addPageviewProperties\",\"removePageviewProperty\",\"clearPageviewProperties\",\"trackPageview\"],i=function(e){return function(){var t=Array.prototype.slice.call(arguments,0);window.heapReadyCb.push({name:e,fn:function(){heap[e]&&heap[e].apply(heap,t)}})}};for(var p=0;p<n.length;p++)heap[n[p]]=i(n[p])};  heap.load('2144880022');</script>"
          }
       ],
       "title": ""
@@ -1736,47 +1726,13 @@
          "mode": "single",
          "sort": "none"
       },
-      "spec/vizConfig/spec/options/legend": {
-         "showLegend": false,
-         "displayMode": "list",
-         "placement": "bottom",
-         "calcs": []
-      },
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/lineWidth": 1,
       "spec/vizConfig/spec/fieldConfig/defaults/custom/fillOpacity": 80,
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/gradientMode": "none",
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/axisPlacement": "auto",
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/axisLabel": "",
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/axisColorMode": "text",
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/axisBorderShow": false,
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/scaleDistribution": {
-         "type": "linear"
-      },
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/axisCenteredZero": false,
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/hideFrom": {
-         "tooltip": false,
-         "viz": false,
-         "legend": false
-      },
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/thresholdsStyle": {
-         "mode": "off"
-      },
       "spec/vizConfig/spec/fieldConfig/defaults/color": {
          "mode": "fixed",
          "fixedColor": "green"
       },
       "spec/vizConfig/spec/fieldConfig/defaults/mappings": [],
-      "spec/vizConfig/spec/fieldConfig/defaults/min": 0,
-      "spec/vizConfig/spec/fieldConfig/defaults/thresholds": {
-         "mode": "absolute",
-         "steps": [
-            {
-               "color": "green",
-               "value": null
-            }
-         ]
-      },
-      "spec/vizConfig/spec/fieldConfig/overrides": []
+      "spec/vizConfig/spec/fieldConfig/defaults/min": 0
    },
    "hidden_column": {
       "type": "hidden"
@@ -1850,99 +1806,77 @@
             "class": "panel_query",
             "spec/query/spec/expr": "sum(scylla_column_family_live_sstable{ks=\"$ks\", cf=~\"$table\"}) by(ks,cf)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "B",
             "spec/query/spec/expr": "sum(rate(scylla_column_family_write_latency_count{ks=\"$ks\", cf=~\"$table\"}[1m])) by( ks,cf)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "C",
             "spec/query/spec/expr": "scylla_column_family_write_latency_summary{quantile=\"0.95\", ks=\"$ks\", cf=~\"$table\", by=\"cluster\", cluster=\"$cluster\"}",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "D",
             "spec/query/spec/expr": "scylla_column_family_write_latency_summary{quantile=\"0.99\", ks=\"$ks\", cf=~\"$table\", by=\"cluster\", cluster=\"$cluster\"}",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "E",
             "spec/query/spec/expr": "sum(rate(scylla_column_family_read_latency_count{ks=\"$ks\", cf=~\"$table\"}[1m])) by( ks,cf)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "F",
             "spec/query/spec/expr": "scylla_column_family_read_latency_summary{quantile=\"0.95\", ks=\"$ks\", cf=~\"$table\", by=\"cluster\", cluster=\"$cluster\"}",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "G",
             "spec/query/spec/expr": "scylla_column_family_read_latency_summary{quantile=\"0.99\", ks=\"$ks\", cf=~\"$table\", by=\"cluster\", cluster=\"$cluster\"}",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "H",
             "spec/query/spec/expr": "sum(scylla_column_family_total_disk_space{ks=\"$ks\", cf=~\"$table\", cluster=\"$cluster\"}) by (cf)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "I",
             "spec/query/spec/expr": "max_over_time(sum(rate(scylla_column_family_write_latency_count{ks=\"$ks\", cf=~\"$table\"}[1m])) by(cf)[24h:])",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "J",
             "spec/query/spec/expr": "max_over_time(sum(rate(scylla_column_family_read_latency_count{ks=\"$ks\", cf=~\"$table\"}[1m])) by(cf)[24h:])",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "K",
             "spec/query/spec/expr": "1- sum(scylla_column_family_total_disk_space{ks=\"$ks\", cf=~\"$table\", cluster=\"$cluster\"}) by (cf)/sum(scylla_column_family_total_disk_space_before_compression{ks=\"$ks\", cf=~\"$table\", cluster=\"$cluster\"}) by (cf)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
             "spec/query/spec/format": "table",
-            "spec/query/spec/range": false,
             "dashversion": [
                ">2026.1"
             ]
@@ -2022,9 +1956,6 @@
             }
          }
       ],
-      "spec/vizConfig/spec/options/showHeader": true,
-      "spec/vizConfig/spec/options/cellHeight": "sm",
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/filterable": true,
       "spec/vizConfig/spec/fieldConfig/overrides": [
          {
             "matcher": {
@@ -2157,108 +2088,84 @@
             "class": "panel_query",
             "spec/query/spec/expr": "sum(scylla_column_family_live_sstable{}) by(ks)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "B",
             "spec/query/spec/expr": "sum(rate(scylla_column_family_write_latency_count{ks=\"$ks\"}[1m])) by( ks)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "C",
             "spec/query/spec/expr": "avg(scylla_column_family_write_latency_summary{quantile=\"0.95\", by=\"cluster\", cluster=\"$cluster\"}) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "D",
             "spec/query/spec/expr": "avg(scylla_column_family_write_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=\"$cluster\"}) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "E",
             "spec/query/spec/expr": "sum(rate(scylla_column_family_read_latency_count{cluster=\"$cluster\"}[1m])) by( ks)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "F",
             "spec/query/spec/expr": "avg(scylla_column_family_read_latency_summary{quantile=\"0.95\", by=\"cluster\", cluster=\"$cluster\"}) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "G",
             "spec/query/spec/expr": "avg(scylla_column_family_read_latency_summary{quantile=\"0.99\", by=\"cluster\", cluster=\"$cluster\"}) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "H",
             "spec/query/spec/expr": "sum(scylla_column_family_total_disk_space{cluster=\"$cluster\"}) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "I",
             "spec/query/spec/expr": "max_over_time(sum(rate(scylla_column_family_write_latency_count{cluster=\"$cluster\"}[1m])) by(ks)[24h:])",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "J",
             "spec/query/spec/expr": "max_over_time(sum(rate(scylla_column_family_read_latency_count{cluster=\"$cluster\"}[1m])) by(ks)[24h:])",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "K",
             "spec/query/spec/expr": "count(count(scylla_column_family_cache_hit_rate{cluster=\"$cluster\"}) by(cf, ks)) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          },
          {
             "class": "panel_query",
             "spec/refId": "L",
             "spec/query/spec/expr": "count((sum by (ks, cf) (rate(scylla_column_family_read_latency_count{cluster=\"$cluster\"}[1h])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\"}*0) + sum by (ks, cf) (rate(scylla_column_family_write_latency_count{cluster=\"$cluster\"}[1h])or scylla_column_family_cache_hit_rate{cluster=\"$cluster\"}*0))>0) by (ks)",
             "spec/query/spec/legendFormat": "__auto",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/format": "table",
-            "spec/query/spec/range": false
+            "spec/query/spec/format": "table"
          }
       ],
       "spec/data/spec/transformations": [
@@ -2337,9 +2244,6 @@
             }
          }
       ],
-      "spec/vizConfig/spec/options/showHeader": true,
-      "spec/vizConfig/spec/options/cellHeight": "sm",
-      "spec/vizConfig/spec/fieldConfig/defaults/custom/filterable": true,
       "spec/vizConfig/spec/fieldConfig/overrides": [
          {
             "matcher": {
@@ -2619,10 +2523,6 @@
       "gridPos": {
          "h": 12,
          "w": 10
-      },
-      "spec/vizConfig/spec/options": {
-         "showHeader": true,
-         "cellHeight": "sm"
       },
       "spec/vizConfig/spec/fieldConfig": {
          "defaults": {
@@ -4045,8 +3945,6 @@
          {
             "class": "panel_query",
             "spec/query/spec/expr": "count(scylla_scylladb_current_version ) by (dc)",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/range": false,
             "spec/query/spec/format": "table",
             "spec/query/spec/legendFormat": "nodes"
          },
@@ -4054,8 +3952,6 @@
             "class": "panel_query",
             "spec/refId": "B",
             "spec/query/spec/expr": "count(scylla_reactor_utilization) by (dc)",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/range": false,
             "spec/query/spec/format": "table",
             "spec/query/spec/legendFormat": "cores"
          },
@@ -4063,8 +3959,6 @@
             "class": "panel_query",
             "spec/refId": "C",
             "spec/query/spec/expr": "sum(node_filesystem_size_bytes{mountpoint=\"$mount_point\", cluster=\"$cluster\", dc=~\"..*\"} - node_filesystem_avail_bytes{mountpoint=\"$mount_point\",cluster=\"$cluster\", dc=~\"..*\"}) by (dc)",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/range": false,
             "spec/query/spec/format": "table",
             "spec/query/spec/legendFormat": "used_bytes"
          },
@@ -4072,8 +3966,6 @@
             "class": "panel_query",
             "spec/refId": "D",
             "spec/query/spec/expr": "(sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) + on(dc) sum(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)) or sum(rate(scylla_storage_proxy_coordinator_write_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) or sum(rate(scylla_strong_consistency_coordinator_write_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/range": false,
             "spec/query/spec/format": "table",
             "spec/query/spec/legendFormat": "writes"
          },
@@ -4081,8 +3973,6 @@
             "class": "panel_query",
             "spec/refId": "E",
             "spec/query/spec/expr": "(sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) + on(dc) sum(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)) or sum(rate(scylla_storage_proxy_coordinator_read_latency_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc) or sum(rate(scylla_strong_consistency_coordinator_read_latency_summary_count{cluster=\"$cluster\"}[$__rate_interval])) by(dc)",
-            "spec/query/spec/instant": true,
-            "spec/query/spec/range": false,
             "spec/query/spec/format": "table",
             "spec/query/spec/legendFormat": "reads"
          }
@@ -4244,9 +4134,7 @@
                      "class": "panel_query",
                      "spec/query/spec/expr": "bottomk(20, node_filesystem_avail_bytes{job=~\"node_exporter.*\", mountpoint=~\"$mount_point\", instance=~\"$node\"}/node_filesystem_size_bytes{job=~\"node_exporter.*\", mountpoint=~\"$mount_point\", instance=~\"$node\"}<0.11)",
                      "spec/query/spec/legendFormat": "__auto",
-                     "spec/query/spec/instant": true,
-                     "spec/query/spec/format": "table",
-                     "spec/query/spec/range": false
+                     "spec/query/spec/format": "table"
                   }
                ],
                "transformations": [
@@ -4397,27 +4285,21 @@
                      "class": "panel_query",
                      "spec/query/spec/expr": "label_join(label_replace(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}, \"device\", \"$1\", \"device\", \"/dev/(.*)\") * on(instance, device) group_left(model) node_disk_info , \"instance_device\", \":\", \"instance\", \"mountpoint\")",
                      "spec/query/spec/legendFormat": "__auto",
-                     "spec/query/spec/instant": true,
-                     "spec/query/spec/format": "table",
-                     "spec/query/spec/range": false
+                     "spec/query/spec/format": "table"
                   },
                   {
                      "class": "panel_query",
                      "spec/refId": "B",
                      "spec/query/spec/expr": "1- (label_join(label_replace(node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}/node_filesystem_size_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}, \"device\", \"$1\", \"device\", \"/dev/(.*)\"), \"instance_device\", \":\", \"instance\", \"mountpoint\"))",
                      "spec/query/spec/legendFormat": "__auto",
-                     "spec/query/spec/instant": true,
-                     "spec/query/spec/format": "table",
-                     "spec/query/spec/range": false
+                     "spec/query/spec/format": "table"
                   },
                   {
                      "class": "panel_query",
                      "spec/refId": "C",
                      "spec/query/spec/expr": "(label_join(label_replace(node_filesystem_size_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}-node_filesystem_avail_bytes{mountpoint=~\"$mount_point\", instance=~\"$node\", device=~\".*$monitor_disk\", job=~\"node_exporter.*\"}, \"device\", \"$1\", \"device\", \"/dev/(.*)\"), \"instance_device\", \":\", \"instance\", \"mountpoint\"))",
                      "spec/query/spec/legendFormat": "__auto",
-                     "spec/query/spec/instant": true,
-                     "spec/query/spec/format": "table",
-                     "spec/query/spec/range": false
+                     "spec/query/spec/format": "table"
                   }
                ],
                "transformations": [
@@ -5457,7 +5339,6 @@
       "spec/name": "Stall Detector",
       "spec/legacyOptions/titleFormat": "Stall found",
       "spec/legacyOptions/tagKeys": "dc,instance,shard",
-      "spec/iconColor": "rgba(255, 96, 96, 1)",
       "spec/placement": "inControlsMenu"
    },
    "annotation_manager_task": {
