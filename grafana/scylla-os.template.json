@@ -949,8 +949,11 @@
                 ]
             },
             {
-                "title": "ethtool limitations - only applicable if ethtool is enabled on nodetool_exporter",
-                "collapse": true,
+                "title": "ethtool limitations",
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "ethtool_info"
+                },
                 "rows": [
                     {
                         "class": "row",
@@ -958,9 +961,6 @@
                             "class": "auto_grid_layout",
                             "spec/maxColumnCount": 5
                         },
-                        "dashversion": [
-                            ">2025.4"
-                        ],
                         "panels": [
                             {
                                 "span": 3,
@@ -1013,11 +1013,11 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "sum(rate(node_ethtool_linklocal_allowance_exceeded{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\"}[3m])) by ([[by]])"
                             }
                         ]
-                    },
-                    {
-                        "class": "monitoring_version_row"
                     }
                 ]
+            },
+            {
+                "class": "monitoring_version_row"
             }
         ],
         "tags": [
@@ -1416,6 +1416,12 @@
                 "spec/name": "pmu_info",
                 "spec/label": "pmu_info",
                 "spec/query/spec/__legacyStringValue": "label_values(node_pmu_events_total{cluster=\"$cluster\"}, cluster)"
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "ethtool_info",
+                "spec/label": "ethtool_info",
+                "spec/query/spec/__legacyStringValue": "label_values(node_ethtool_bw_in_allowance_exceeded{cluster=\"$cluster\"}, cluster)"
             }
         ]
     }
