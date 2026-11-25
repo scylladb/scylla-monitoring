@@ -840,9 +840,6 @@
                                                 "span": 3,
                                                 "repeat": "quantile",
                                                 "class": "us_panel",
-                                                "dashversion": [
-                                                    ">2026.3"
-                                                ],
                                                 "spec/title": "${quantile:text} CQL request latency by [[by]]",
                                                 "spec/description": "CQL request latencies, measuring from the start of the request processing until the response is written to the socket.",
                                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], (scylla_transport_cql_request_latency_summary{quantile=\"${quantile:raw}\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", scheduling_group_name=\"$sg\", by=\"[[by]]\"} or on([[by]], scheduling_group_name) histogram_quantile(${quantile:raw}, sum(rate(scylla_transport_cql_request_latency_histogram_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le))))",
@@ -855,9 +852,6 @@
                                                 "span": 3,
                                                 "repeat": "quantile",
                                                 "class": "us_panel",
-                                                "dashversion": [
-                                                    ">2026.3"
-                                                ],
                                                 "spec/title": "${quantile:text} CQL client timestamp drift by [[by]]",
                                                 "spec/description": "CQL client timestamp drifts, the drift time between the client-provided CQL timestamp and the server time at request arrival. Useful for detecting transport delays before requests reach the CQL server.",
                                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], (scylla_transport_cql_client_timestamp_drift_summary{quantile=\"${quantile:raw}\", instance=~\"[[node]]|${on_the_fly:raw}\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack|${on_the_fly:raw}\", scheduling_group_name=\"$sg\", by=\"[[by]]\"} or on([[by]], scheduling_group_name) histogram_quantile(${quantile:raw}, sum(rate(scylla_transport_cql_client_timestamp_drift_histogram_bucket{cluster!~\".*${on_the_fly:raw}\", instance=~\"[[node]]\", cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", scheduling_group_name=\"$sg\"}[$__rate_interval])) by ([[by]], scheduling_group_name, le))))",
@@ -1029,38 +1023,26 @@
                         "class": "row",
                         "panels": [
                             {
-                                "gridPos": {
-                                    "w": 3
-                                },
                                 "class": "graph_panel",
                                 "spec/title": "Compactions Shares",
                                 "spec/description": "Shares assigned to the compaction",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], avg(scylla_scheduler_shares{group=\"compaction\", instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}) by ([[by]]))"
                             },
                             {
-                                "gridPos": {
-                                    "w": 5
-                                },
                                 "class": "graph_panel_int",
                                 "spec/title": "Running Compactions $func by [[by]]",
                                 "spec/description": "scylla_compaction_manager_compactions",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_compaction_manager_compactions{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}) by ([[by]]))"
                             },
                             {
-                                "gridPos": {
-                                    "w": 5
-                                },
                                 "class": "percent_panel",
                                 "spec/title": "Compactions CPU Runtime",
                                 "spec/description": "Percentage of CPU time used by compaction",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], ($func(rate(scylla_scheduler_runtime_ms{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\", group=\"compaction\"}[$__rate_interval])) by ([[by]]))/10)"
                             },
                             {
-                                "dashversion": [
-                                    ">2026.1"
-                                ],
-                                "gridPos": {
-                                    "w": 5
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
                                 },
                                 "class": "graph_panel_int",
                                 "spec/title": "Compactions backlog $func by [[by]]",
@@ -1068,11 +1050,8 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_compaction_manager_backlog{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}) by ([[by]]))"
                             },
                             {
-                                "dashversion": [
-                                    ">2026.1"
-                                ],
-                                "gridPos": {
-                                    "w": 5
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
                                 },
                                 "class": "graph_panel",
                                 "spec/title": "Normalized Compactions backlog $func by [[by]]",
@@ -1080,7 +1059,11 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], $func(scylla_compaction_manager_normalized_backlog{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}) by ([[by]]))"
                             }
                         ],
-                        "title": "Compaction"
+                        "title": "Compaction",
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 5
+                        }
                     }
                 ]
             },
