@@ -9,6 +9,9 @@
                 "collapse": false,
                 "rows": [
                     {
+                        "class": "alternator_small_stat_rows_drr"
+                    },
+                    {
                         "class": "alternator_small_stat_rows"
                     },
                     {
@@ -126,9 +129,10 @@
                         "class": "quantile_variable"
                     }
                 ],
-                "dashversion": [
-                    ">2025.3"
-                ],
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "alternator_table_op_latency"
+                },
                 "rows": [
                     {
                         "class": "header_row",
@@ -529,9 +533,10 @@
             {
                 "title": "Data Plane Action Latencies",
                 "collapse": false,
-                "dashversion": [
-                    "<2025.3"
-                ],
+                "conditionalRendering": {
+                    "class": "conditionalRendering_var",
+                    "spec/items/0/spec/variable": "alternator_op_latency_summary"
+                },
                 "rows": [
                     {
                         "class": "header_row",
@@ -812,11 +817,21 @@
                                 "spec/title": "HTTP Reply errors $func by [[by]]",
                                 "spec/description": "Rate of errors while replying to Alternator HTTP requests",
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_httpd_reply_errors{service=~\"http.?-alternator\", instance=~\"[[node]]\",cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]], service)"
-                            },
+                            }
+                        ],
+                        "hideHeader": true
+                    },
+                    {
+                        "class": "row",
+                        "layout": {
+                            "class": "auto_grid_layout",
+                            "spec/maxColumnCount": 4
+                        },
+                        "panels": [
                             {
-                                "dashversion": [
-                                    ">2025.4"
-                                ],
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                },
                                 "span": 3,
                                 "class": "percentunit_panel",
                                 "spec/title": "Expression Cache hit ratio $func by [[by]]",
@@ -824,9 +839,9 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression)/($func(rate(scylla_alternator_expression_cache_hits{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression) + $func(rate(scylla_alternator_expression_cache_misses{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]],expression))"
                             },
                             {
-                                "dashversion": [
-                                    ">2025.4"
-                                ],
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                },
                                 "span": 3,
                                 "class": "graph_panel",
                                 "spec/title": "Expression Cache eviction rate $func by [[by]]",
@@ -834,9 +849,9 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_expression_cache_evictions{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
-                                "dashversion": [
-                                    ">2025.4"
-                                ],
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                },
                                 "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "Authentication failures $func by [[by]]",
@@ -844,9 +859,9 @@
                                 "spec/data/spec/queries/0/spec/query/spec/expr": "$func(rate(scylla_alternator_authentication_failures{cluster=~\"$cluster|$^\", dc=~\"$dc\", rack=~\"$rack\", instance=~\"[[node]]\", shard=~\"[[shard]]\"}[$__rate_interval])) by ([[by]])"
                             },
                             {
-                                "dashversion": [
-                                    ">2025.4"
-                                ],
+                                "conditionalRendering": {
+                                    "class": "conditionalRendering_data"
+                                },
                                 "span": 3,
                                 "class": "ops_panel",
                                 "spec/title": "Authorization failures $func by [[by]]",
@@ -1232,7 +1247,7 @@
                             "name": "prometheus"
                         },
                         "spec": {
-                            "__legacyStringValue": "label_values(scylla_alternator_table_operation, cf)"
+                            "__legacyStringValue": "label_values(scylla_alternator_table_operation{cluster=~\"$cluster|$^\"}, cf)"
                         }
                     },
                     "regex": "",
@@ -1245,10 +1260,7 @@
                     "allowCustomValue": true,
                     "name": "table",
                     "label": "Table"
-                },
-                "dashversion": [
-                    ">2025.3"
-                ]
+                }
             },
             {
                 "kind": "CustomVariable",
@@ -1302,10 +1314,7 @@
                     "valuesFormat": "csv",
                     "name": "alternator_latency_ops",
                     "query": "GetItem,PutItem,UpdateItem,DeleteItem,BatchWriteItem,BatchGetItem"
-                },
-                "dashversion": [
-                    "<2025.3"
-                ]
+                }
             },
             {
                 "kind": "QueryVariable",
@@ -1325,7 +1334,7 @@
                             "name": "prometheus"
                         },
                         "spec": {
-                            "__legacyStringValue": "label_values(scylla_alternator_table_operation{cf=~\"$table\", op!~\"Batch.*\"}, op)"
+                            "__legacyStringValue": "label_values({__name__=~\"scylla_alternator_table_operation|scylla_alternator_operation\", cluster=~\"$cluster|$^\", cf=~\"$table\", op!~\"Batch.*\"}, op)"
                         }
                     },
                     "regex": "",
@@ -1339,10 +1348,7 @@
                     "allowCustomValue": true,
                     "name": "ops",
                     "label": "ops"
-                },
-                "dashversion": [
-                    ">2025.3"
-                ]
+                }
             },
             {
                 "kind": "QueryVariable",
@@ -1362,7 +1368,7 @@
                             "name": "prometheus"
                         },
                         "spec": {
-                            "__legacyStringValue": "label_values(scylla_alternator_operation{op=~\"Batch.*\"}, op)"
+                            "__legacyStringValue": "label_values(scylla_alternator_operation{cluster=~\"$cluster|$^\", op=~\"Batch.*\"}, op)"
                         }
                     },
                     "regex": "",
@@ -1376,10 +1382,7 @@
                     "allowCustomValue": true,
                     "name": "ops_batch",
                     "label": "ops_batch"
-                },
-                "dashversion": [
-                    ">2025.3"
-                ]
+                }
             },
             {
                 "kind": "QueryVariable",
@@ -1402,20 +1405,17 @@
                         },
                         "spec": {
                             "qryType": 1,
-                            "query": "label_values(scylla_alternator_table_op_latency_count{cf=~\"$table\"},op)",
+                            "query": "label_values(scylla_alternator_table_op_latency_count{cluster=~\"$cluster|$^\", cf=~\"$table\"},op)",
                             "refId": "PrometheusVariableQueryEditor-VariableQuery"
                         }
                     },
                     "regex": "",
-                    "definition": "label_values(scylla_alternator_table_op_latency_count{cf=~\"$table\"},op)",
+                    "definition": "label_values(scylla_alternator_table_op_latency_count{cluster=~\"$cluster|$^\", cf=~\"$table\"},op)",
                     "hide": "dontHide",
                     "skipUrlSync": false,
                     "sort": "disabled",
                     "multi": false
-                },
-                "dashversion": [
-                    ">2025.3"
-                ]
+                }
             },
             {
                 "kind": "CustomVariable",
@@ -1445,43 +1445,6 @@
                     "name": "alternator_streams_latency_ops",
                     "query": "GetRecords"
                 }
-            },
-            {
-                "kind": "QueryVariable",
-                "spec": {
-                    "current": {
-                        "text": "All",
-                        "value": "$__all"
-                    },
-                    "hide": "dontHide",
-                    "refresh": "onTimeRangeChanged",
-                    "skipUrlSync": false,
-                    "query": {
-                        "kind": "DataQuery",
-                        "group": "prometheus",
-                        "version": "v0",
-                        "datasource": {
-                            "name": "prometheus"
-                        },
-                        "spec": {
-                            "__legacyStringValue": "label_values(scylla_alternator_operation{cluster=~\"$cluster|$\"},op)"
-                        }
-                    },
-                    "regex": "",
-                    "regexApplyTo": "value",
-                    "sort": "numericalAsc",
-                    "definition": "",
-                    "options": [],
-                    "multi": true,
-                    "includeAll": true,
-                    "allValue": ".+",
-                    "allowCustomValue": true,
-                    "name": "ops",
-                    "label": "ops"
-                },
-                "dashversion": [
-                    "<2025.3"
-                ]
             },
             {
                 "kind": "QueryVariable",
@@ -1526,6 +1489,21 @@
                 "spec/name": "alternator_operation_size",
                 "spec/label": "alternator_operation_size",
                 "spec/query/spec/__legacyStringValue": "query_result(sum(scylla_alternator_table_operation_size_kb_count{cluster=~\"$cluster|$^\"}))"
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "alternator_table_op_latency",
+                "spec/label": "alternator_table_op_latency",
+                "spec/query/spec/__legacyStringValue": "query_result(sum(scylla_alternator_table_op_latency_count{cluster=~\"$cluster|$^\"}))"
+            },
+            {
+                "class": "hidden_query_variable",
+                "spec/name": "alternator_op_latency_summary",
+                "spec/label": "alternator_op_latency_summary",
+                "spec/query/spec/__legacyStringValue": "query_result(sum(scylla_alternator_op_latency_summary_count{cluster=~\"$cluster|$^\"}) unless sum(scylla_alternator_table_op_latency_count{cluster=~\"$cluster|$^\"}))"
+            },
+            {
+                "class": "drr_variable"
             }
         ]
     }
