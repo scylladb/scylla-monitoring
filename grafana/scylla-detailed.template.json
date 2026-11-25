@@ -2236,7 +2236,7 @@
                             {
                                 "span": 3,
                                 "class": "ops_panel",
-                                "spec/title": "Raft elections by [[by]]",
+                                "spec/title": "Raft election messages by [[by]]",
                                 "spec/description": "Vote requests sent by candidates, pre-votes included, and timeout_now messages sent by leaders that hand over leadership.\n\nscylla_strong_consistency_raft_messages_sent",
                                 "spec/data/spec/queries": [
                                     {
@@ -2251,6 +2251,20 @@
                                         "spec/query/spec/legendFormat": "leadership transfers {{dc}} {{rack}} {{instance}} {{shard}}"
                                     }
                                 ]
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Raft term changes by [[by]]",
+                                "spec/description": "Times a replica of a tablet stored a new Raft term or vote: about once per replica for each leader election, and once when a node becomes a new replica of the tablet, for example in a tablet migration. Expect bursts during events such as a node restart or a tablet migration, and zero otherwise.\n\nscylla_strong_consistency_raft_store_term_and_vote",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_raft_store_term_and_vote{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(scylla_strong_consistency_raft_leaders{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]) * 0)"
+                            },
+                            {
+                                "span": 3,
+                                "class": "ops_panel",
+                                "spec/title": "Raft snapshots taken by [[by]]",
+                                "spec/description": "Snapshots the tablet Raft groups take as their logs grow, to drop old entries, so the rate follows writes. A follower that needs entries its leader dropped can catch up only through a snapshot transfer.\n\nscylla_strong_consistency_raft_snapshots_taken",
+                                "spec/data/spec/queries/0/spec/query/spec/expr": "$topbottom([[filter_limit]], sum(rate(scylla_strong_consistency_raft_snapshots_taken{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}[$__rate_interval])) by ([[by]]) or on([[by]]) sum(scylla_strong_consistency_raft_leaders{instance=~\"[[node]]\",cluster=\"$cluster\", dc=~\"$dc\", rack=~\"$rack\", shard=~\"[[shard]]|$^\"}) by ([[by]]) * 0)"
                             },
                             {
                                 "span": 3,
